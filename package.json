@@ -1,0 +1,35 @@
+{
+  "name": "tf2-quickserver",
+  "version": "0.0.1",
+  "description": "TF2 Quick Server Manager",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "dev": "nodemon"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sonikro/TF2-QuickServer.git"
+  },
+  "keywords": [
+    "tf2",
+    "server",
+    "bot",
+    "discord",
+    "manager",
+    "aws",
+    "ecs"
+  ],
+  "author": "sonikro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sonikro/TF2-QuickServer/issues"
+  },
+  "homepage": "https://github.com/sonikro/TF2-QuickServer#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}
