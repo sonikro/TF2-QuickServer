@@ -57,8 +57,6 @@
 **🇧🇷 South America:** sa-east-1 (São Paulo)  
 **Africa:** af-south-1 (Cape Town)  
 
-_(More regions coming soon!)_
-
 ---
 
 ## 🔧 Installation & Self-Hosting
@@ -66,7 +64,7 @@ Want to host your own instance? Follow these steps:
 
 ### **1️⃣ Clone the Repository**
 ```bash
-git clone https://github.com/your-username/TF2-QuickServer.git
+git clone https://github.com/sonikro/TF2-QuickServer.git
 cd TF2-QuickServer
 ```
 
@@ -74,13 +72,16 @@ cd TF2-QuickServer
 Create a `.env` file and configure:
 ```
 DISCORD_TOKEN=your_discord_bot_token
+DISCORD_CLIENT_ID=your_discord_client_id
 AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
 ```
 
-### **3️⃣ Build & Run the Bot**
+### **3️⃣ Run the Bot**
+
 ```bash
-docker-compose up --build
+npm install
+npm run dev
 ```
 
 ---
