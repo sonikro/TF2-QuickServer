@@ -161,3 +161,8 @@ dist
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/node,visualstudiocode
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json

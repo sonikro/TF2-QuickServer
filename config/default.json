@@ -1,0 +1,12 @@
+{
+    "aws": {
+        "regions": {
+            "sa-east-1": {
+                "enabled": true
+            },
+            "us-east-1": {
+                "enabled": true
+            }
+        }
+    }
+}

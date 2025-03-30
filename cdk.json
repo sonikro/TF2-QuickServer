@@ -1,0 +1,3 @@
+{
+    "app": "npx ts-node ./src/infrastructure/cdk/bin/tf2-quickserver.ts"
+}
