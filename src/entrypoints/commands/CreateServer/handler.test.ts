@@ -124,19 +124,16 @@ describe("createServerCommandHandler", () => {
             content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
         })
         expect(interaction.user.send).toHaveBeenCalledWith({
-            content: `Server created successfully! Here are the details:\n\n` +
-                `**Server ID:** ${serverId}\n` +
-                `**Region:** ${region}\n` +
-                `**Variant:** ${variantName}\n` +
-                `**Host IP:** ${deployedServer.hostIp}\n` +
-                `**Host Port:** ${deployedServer.hostPort}\n` +
-                `**TV IP:** ${deployedServer.tvIp}\n` +
-                `**TV Port:** ${deployedServer.tvPort}\n` +
-                `**RCON Password:** ${deployedServer.rconPassword}\n` +
-                `**Host Password:** ${deployedServer.hostPassword}\n` +
-                `**TV Password:** ${deployedServer.tvPassword}\n` +
-                `**Server Connect:** connect ${deployedServer.hostIp}:${deployedServer.hostPort};password ${deployedServer.hostPassword}\n` +
-                `**TV Connect:** connect ${deployedServer.tvIp}:${deployedServer.tvPort};password ${deployedServer.tvPassword}\n`
+            content:  `🎉 **Server Created Successfully!** 🎉\n\n` +
+            `Here are your server details:\n\n` +
+            `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
+            `🌍 **Region:** \`${deployedServer.region}\`\n` +
+            `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
+            `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n\n` +
+            `**Server Connect:**\n` +
+            `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};password ${deployedServer.hostPassword}\n\`\`\`\n` +
+            `**TV Connect:**\n` +
+            `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};password ${deployedServer.tvPassword}\n\`\`\`\n`
         })
 
     })
