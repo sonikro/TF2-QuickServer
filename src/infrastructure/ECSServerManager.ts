@@ -120,6 +120,8 @@ export class ECSServerManager implements ServerManager {
         await waitUntilServicesStable({
             client: ecsClient,
             maxWaitTime: 300,
+            maxDelay: 15,
+            minDelay: 15
         }, {
             cluster: cdkConfig.ecsClusterName,
             services: [serviceArn]

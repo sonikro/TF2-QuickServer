@@ -287,7 +287,7 @@ describe("ECSServerManager", () => {
                         subnets: subnetIds,
                     },
                 },
-                serviceName: `${variantName}-${serverId}`,
+                serviceName: serverId,
                 taskDefinition: taskDefinitionArn,
             });
         })
