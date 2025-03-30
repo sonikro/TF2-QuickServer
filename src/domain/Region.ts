@@ -35,6 +35,41 @@ export enum Region {
     AF_SOUTH_1 = "af-south-1"
 }
 
+export const RegionNames: Record<Region, string> = {
+    [Region.US_EAST_1]: "US - N. Virginia",
+    [Region.US_EAST_2]: "US - Ohio",
+    [Region.US_WEST_1]: "US - N. California",
+    [Region.US_WEST_2]: "US - Oregon",
+    [Region.CA_CENTRAL_1]: "CA - Central",
+    [Region.CA_WEST_1]: "CA - Calgary",
+    [Region.CN_NORTH_1]: "CN - Beijing",
+    [Region.CN_NORTHWEST_1]: "CN - Ningxia",
+    [Region.EU_CENTRAL_1]: "EU - Frankfurt",
+    [Region.EU_CENTRAL_2]: "EU - Zurich",
+    [Region.EU_WEST_1]: "EU - Ireland",
+    [Region.EU_WEST_2]: "EU - London",
+    [Region.EU_WEST_3]: "EU - Paris",
+    [Region.EU_SOUTH_1]: "EU - Milan",
+    [Region.EU_SOUTH_2]: "EU - Spain",
+    [Region.EU_NORTH_1]: "EU - Stockholm",
+    [Region.IL_CENTRAL_1]: "IL - Tel Aviv",
+    [Region.ME_SOUTH_1]: "ME - Bahrain",
+    [Region.ME_CENTRAL_1]: "ME - UAE",
+    [Region.AP_EAST_1]: "AP - Hong Kong",
+    [Region.AP_SOUTH_1]: "AP - Mumbai",
+    [Region.AP_SOUTH_2]: "AP - Hyderabad",
+    [Region.AP_NORTHEAST_1]: "AP - Tokyo",
+    [Region.AP_NORTHEAST_2]: "AP - Seoul",
+    [Region.AP_NORTHEAST_3]: "AP - Osaka",
+    [Region.AP_SOUTHEAST_1]: "AP - Singapore",
+    [Region.AP_SOUTHEAST_2]: "AP - Jakarta",
+    [Region.AP_SOUTHEAST_3]: "AP - Kuala Lumpur",
+    [Region.AP_SOUTHEAST_4]: "AP - Melbourne",
+    [Region.AP_SOUTHEAST_5]: "AP - Auckland",
+    [Region.SA_EAST_1]: "SA - São Paulo",
+    [Region.AF_SOUTH_1]: "AF - Cape Town"
+};
+
 export type RegionConfig = {
     enabled: boolean;
     srcdsHostname: string;
@@ -48,4 +83,21 @@ export function isValidRegion(region: string): region is Region {
 export function getRegionConfig(region: Region): RegionConfig {
     const regionConfig = config.get<RegionConfig>(`aws.regions.${region}`);
     return regionConfig;
+}
+
+
+/**
+ * Retrieves a list of enabled AWS regions based on the application's configuration.
+ *
+ * This function reads the AWS region configurations from the application's settings,
+ * filters out the regions that are not enabled, and returns an array of enabled regions.
+ *
+ * @returns {Region[]} An array of enabled AWS regions.
+ */
+export function getEnabledRegions(): Region[] {
+    const regions = config.get<Record<string, RegionConfig>>(`aws.regions`);
+    const enabledRegions = Object.entries(regions)
+        .filter(([_, regionConfig]) => regionConfig.enabled)
+        .map(([region]) => region as Region);
+    return enabledRegions;
 }
