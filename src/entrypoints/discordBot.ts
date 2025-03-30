@@ -48,7 +48,7 @@ export async function startDiscordBot() {
         const { commandName } = chatInputInteraction;
 
         // Check if the command exists in the DiscordCommands object
-        const command = Object.values(DiscordCommands).find(cmd => cmd.name === commandName);
+        const command = Object.values(DiscordCommands).find(cmd => cmd.name === 'create-server');
         if (!command) {
             await chatInputInteraction.reply({ content: 'Command not found'});
             return;
