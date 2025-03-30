@@ -27,7 +27,9 @@
   },
   "homepage": "https://github.com/sonikro/TF2-QuickServer#readme",
   "devDependencies": {
+    "@types/chance": "^1.1.6",
     "@vitest/coverage-v8": "^3.0.9",
+    "chance": "^1.1.12",
     "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
