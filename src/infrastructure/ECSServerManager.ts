@@ -1,13 +1,9 @@
-import { ECSClient, RegisterTaskDefinitionCommand, CreateServiceCommand, DescribeTasksCommand, DescribeServicesCommand, ListTasksCommand } from "@aws-sdk/client-ecs";
-import { ServerManager } from "../application/services/ServerManager";
-import { DeployedServer } from "../domain/DeployedServer";
-import { getRegionConfig, Region } from "../domain/Region";
-import { getVariantConfig, Variant } from "../domain/Variant";
-import { v4 as uuid } from "uuid";
+import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, DescribeSubnetsCommand, DescribeVpcsCommand, EC2Client } from "@aws-sdk/client-ec2";
+import { CreateServiceCommand, DeleteServiceCommand, DescribeServicesCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, UpdateServiceCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
 import { Chance } from "chance";
-import { getCdkConfig } from "../domain/CDKConfig";
-import { EC2Client, DescribeVpcsCommand, DescribeSubnetsCommand, DescribeSecurityGroupsCommand, DescribeNetworkInterfacesCommand } from "@aws-sdk/client-ec2";
-import { waitUntilServicesStable } from "@aws-sdk/client-ecs";
+import { v4 as uuid } from "uuid";
+import { ServerManager } from "../application/services/ServerManager";
+import { DeployedServer, getRegionConfig, getVariantConfig, Region, Variant, getCdkConfig } from "../domain";
 
 export class ECSServerManager implements ServerManager {
 
@@ -28,7 +24,7 @@ export class ECSServerManager implements ServerManager {
 
         // Register Task Definition
         const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
-            family: `${variantName}-${serverId}`,
+            family: serverId,
             networkMode: "awsvpc",
             requiresCompatibilities: ["FARGATE"],
             cpu: variantConfig.cpu.toString(),
@@ -62,10 +58,7 @@ export class ECSServerManager implements ServerManager {
             ],
         }));
 
-        const taskDefinitionArn = taskDefinitionResponse.taskDefinition?.taskDefinitionArn;
-        if (!taskDefinitionArn) {
-            throw new Error("Failed to register task definition.");
-        }
+        const taskDefinitionArn = taskDefinitionResponse.taskDefinition?.taskDefinitionArn!;
 
         // Reads the VPC and Subnets from the vpcName
         const ec2Client = new EC2Client({ region });
@@ -107,8 +100,8 @@ export class ECSServerManager implements ServerManager {
 
         // Create ECS Service
         const serviceResponse = await ecsClient.send(new CreateServiceCommand({
-            cluster: "TF2-QuickServer-Cluster",
-            serviceName: `${variantName}-${serverId}`,
+            cluster: cdkConfig.ecsClusterName,
+            serviceName: serverId,
             taskDefinition: taskDefinitionArn,
             desiredCount: 1,
             launchType: "FARGATE",
@@ -138,7 +131,7 @@ export class ECSServerManager implements ServerManager {
         const listTasksResponse = await ecsClient.send(
             new ListTasksCommand({
                 cluster: cdkConfig.ecsClusterName,
-                serviceName: `${variantName}-${serverId}`,
+                serviceName: serverId
             })
         );
 
@@ -171,7 +164,19 @@ export class ECSServerManager implements ServerManager {
         };
     }
 
-    deleteServer(args: { serverId: string; }): Promise<void> {
-        throw new Error("Method not implemented.");
+    async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
+        const { serverId, region } = args;
+        const cdkConfig = getCdkConfig();
+        const ecsClient = new ECSClient({ region });
+
+        const serviceName = serverId;
+
+        // Delete the service with force flag
+        await ecsClient.send(new DeleteServiceCommand({
+            cluster: cdkConfig.ecsClusterName,
+            service: serviceName,
+            force: true,
+        }));
+
     }
 }

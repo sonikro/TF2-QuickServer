@@ -1,6 +1,4 @@
-import { DeployedServer } from "../../domain/DeployedServer";
-import { Region } from "../../domain/Region";
-import { Variant } from "../../domain/Variant";
+import { Variant, DeployedServer, Region} from "../../domain";
 
 export interface ServerManager {
     /**
@@ -11,5 +9,5 @@ export interface ServerManager {
     /**
      * Deletes an existing TF2 server.
      */
-    deleteServer(args: {serverId: string}): Promise<void>;
+    deleteServer(args: {serverId: string, region: Region}): Promise<void>;
 }
