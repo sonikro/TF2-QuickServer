@@ -1,12 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
-import { createServerCommandHandlerFactory } from "./handler";
+import { Chance } from "chance";
 import { ChatInputCommandInteraction } from "discord.js";
-import { ServerManager } from "../../../application/services/ServerManager";
+import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { Chance } from "chance"
-import { Region } from "../../../domain/Region";
 import { when } from "vitest-when";
+import { ServerManager } from "../../../application/services/ServerManager";
+import { DeployedServer } from "../../../domain/DeployedServer";
+import { Region } from "../../../domain/Region";
 import { Variant } from "../../../domain/Variant";
+import { createServerCommandHandlerFactory } from "./handler";
 
 describe("createServerCommandHandler", () => {
     const chance = new Chance();
@@ -77,7 +78,7 @@ describe("createServerCommandHandler", () => {
         // Given
         const { handler, interaction, serverManager } = createHandler();
         interaction.options = mock()
-
+        interaction.user.send = vi.fn()
         
         const region = chance.pickone(Object.values(Region));
         const variantName = chance.pickone(Object.values(Variant));
@@ -91,15 +92,25 @@ describe("createServerCommandHandler", () => {
         .thenReturn(variantName);
 
         const serverId = chance.guid();
-        
+
+        const deployedServer = mock<DeployedServer>({
+            serverId,
+            region,
+            variant: variantName,
+            hostIp: chance.ip(),
+            hostPort: chance.integer(),
+            tvIp: chance.ip(),
+            tvPort: chance.integer(),
+            rconPassword: chance.word(),
+            hostPassword: chance.word(),
+            tvPassword: chance.word()
+        });
+
         when(serverManager.deployServer).calledWith({
             region,
             variantName
-        }).thenResolve({
-            serverId,
-            region,
-            variant: variantName
-        })
+        }).thenResolve(deployedServer);
+        
         // When
         await handler(interaction);
 
@@ -110,7 +121,22 @@ describe("createServerCommandHandler", () => {
             variantName: interaction.options.getString('variant_name')
         })
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: `Server ID: ${serverId}\nRegion: ${region}\nVariant: ${variantName} is being created. You will be notified when the server is ready.`,
+            content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
+        })
+        expect(interaction.user.send).toHaveBeenCalledWith({
+            content: `Server created successfully! Here are the details:\n\n` +
+                `**Server ID:** ${serverId}\n` +
+                `**Region:** ${region}\n` +
+                `**Variant:** ${variantName}\n` +
+                `**Host IP:** ${deployedServer.hostIp}\n` +
+                `**Host Port:** ${deployedServer.hostPort}\n` +
+                `**TV IP:** ${deployedServer.tvIp}\n` +
+                `**TV Port:** ${deployedServer.tvPort}\n` +
+                `**RCON Password:** ${deployedServer.rconPassword}\n` +
+                `**Host Password:** ${deployedServer.hostPassword}\n` +
+                `**TV Password:** ${deployedServer.tvPassword}\n` +
+                `**Server Connect:** connect ${deployedServer.hostIp}:${deployedServer.hostPort};password ${deployedServer.hostPassword}\n` +
+                `**TV Connect:** connect ${deployedServer.tvIp}:${deployedServer.tvPort};password ${deployedServer.tvPassword}\n`
         })
 
     })
@@ -141,7 +167,7 @@ describe("createServerCommandHandler", () => {
 
         // Then
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(interaction.followUp).toHaveBeenCalledWith({
+        expect(interaction.editReply).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
         })
     })
