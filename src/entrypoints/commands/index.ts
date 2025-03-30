@@ -1,21 +1,27 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import { createServerCommandDefinition, createServerCommandHandler } from "./CreateServer";
-import { terminateServerCommandDefinition, terminateServerCommandHandler } from "./TerminateServer";
+import { ServerManager } from "../../application/services/ServerManager";
+import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
+import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 
+export type CommandDependencies = {
+    serverManager: ServerManager;
+}
 
-export default {
-    createServer: {
-        name: "create-server",
-        definition: createServerCommandDefinition,
-        handler: createServerCommandHandler,
-    },
-    terminateServer: {
-        name: "terminate-server",
-        definition: terminateServerCommandDefinition,
-        handler: terminateServerCommandHandler,
-    },
-} satisfies Record<string, {
-    name: string;
-    definition: SlashCommandOptionsOnlyBuilder,
-    handler: (interaction: ChatInputCommandInteraction) => Promise<void>;
-}>
+export function createCommands(dependencies: CommandDependencies) {
+    return {
+        createServer: {
+            name: "create-server",
+            definition: createServerCommandDefinition,
+            handler: createServerCommandHandlerFactory(dependencies),
+        },
+        terminateServer: {
+            name: "terminate-server",
+            definition: terminateServerCommandDefinition,
+            handler: terminateServerHandlerFactory(dependencies),
+        },
+    } satisfies Record<string, {
+        name: string;
+        definition: SlashCommandOptionsOnlyBuilder,
+        handler: (interaction: ChatInputCommandInteraction) => Promise<void>;
+    }>
+}

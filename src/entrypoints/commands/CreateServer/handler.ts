@@ -1,9 +1,13 @@
 import { ChatInputCommandInteraction } from "discord.js";
+import { ServerManager } from "../../../application/services/ServerManager";
 
-export async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
-    const region = interaction.options.getString('region');
-    const variantName = interaction.options.getString('variant_name');
-
-    // Logic for deploying server
-    await interaction.reply(`Server created in region ${region} with the variant ${variantName}`);
+export function createServerCommandHandlerFactory(dependencies: {
+    serverManager: ServerManager
+}) {
+    return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
+        const region = interaction.options.getString('region');
+        const variantName = interaction.options.getString('variant_name');
+        // Logic for deploying server
+        await interaction.reply(`Server created in region ${region} with the variant ${variantName}`);
+    }
 }

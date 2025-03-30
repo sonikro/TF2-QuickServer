@@ -1,2 +1,2 @@
 export { createServerCommandDefinition } from "./definition"
-export { createServerCommandHandler } from "./handler"
+export { createServerCommandHandlerFactory } from "./handler"

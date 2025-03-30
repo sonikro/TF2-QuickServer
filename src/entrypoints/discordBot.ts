@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import DiscordCommands from "./commands";
+import { ServerManager } from "../application/services/ServerManager";
+import { createCommands } from "./commands";
 
 export async function startDiscordBot() {
 
@@ -20,8 +21,13 @@ export async function startDiscordBot() {
         throw new Error('DISCORD_CLIENT_ID is not set in the environment variables.');
     }
 
+    // Initialize Bot Dependencies
+    const discordCommands = createCommands({
+        serverManager: {} as ServerManager
+    })
+
     // Slash commands
-    const commands = Object.values(DiscordCommands).map(command => command.definition)
+    const commands = Object.values(discordCommands).map(command => command.definition)
 
     // Register commands with Discord API
     const rest = new REST({ version: '10' }).setToken(token);
@@ -48,7 +54,7 @@ export async function startDiscordBot() {
         const { commandName } = chatInputInteraction;
 
         // Check if the command exists in the DiscordCommands object
-        const command = Object.values(DiscordCommands).find(cmd => cmd.name === commandName);
+        const command = Object.values(discordCommands).find(cmd => cmd.name === commandName);
         if (!command) {
             await chatInputInteraction.reply({ content: 'Command not found'});
             return;

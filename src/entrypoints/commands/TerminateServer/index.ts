@@ -1,2 +1,2 @@
 export { terminateServerCommandDefinition } from "./definition"
-export { terminateServerCommandHandler } from "./handler"
+export { terminateServerHandlerFactory } from "./handler"

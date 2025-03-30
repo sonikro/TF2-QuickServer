@@ -1,9 +1,18 @@
-import { ChatInputCommandInteraction, Client, CommandInteraction, Interaction, REST, Routes } from 'discord.js';
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Client, CommandInteraction, REST, Routes } from 'discord.js';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mock } from "vitest-mock-extended";
+import { when } from "vitest-when";
+import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
-import DiscordCommands from "./commands"
-import { when } from "vitest-when"
+
+vi.mock("./commands", async (importOriginal) => {
+    const actual = await importOriginal() as typeof import('./commands');
+    // Forces createCommands to always return the same commands so mocks can be used
+    const commands = actual.createCommands(({} as any));
+    return {
+        createCommands: vi.fn().mockReturnValue(commands),
+    }
+})
 
 vi.mock('discord.js', async (importOriginal) => {
     const actual = await importOriginal() as typeof import('discord.js');
@@ -13,8 +22,9 @@ vi.mock('discord.js', async (importOriginal) => {
         REST: vi.fn(),
     };
 })
-
 describe("startDiscordBot", () => {
+
+    const discordCommands = createCommands(mock())
 
     describe("errors", () => {
         it("should throw an error if DISCORD_TOKEN is not set", async () => {
@@ -55,7 +65,7 @@ describe("startDiscordBot", () => {
         })
 
         it("should register all commands globally with Discord API", async () => {
-            const expectedCommands = Object.values(DiscordCommands)
+            const expectedCommands = Object.values(discordCommands)
                 .map(command => command.definition.toJSON());
 
             expect(rest.put).toHaveBeenCalledWith(
@@ -75,7 +85,7 @@ describe("startDiscordBot", () => {
         })
 
         describe("interaction handlers", () => {
-            it.each(Object.values(DiscordCommands))("should setup a event handler for interactions that redirects to the command handler for $name", (receivedCommand) => {
+            it.each(Object.values(discordCommands))("should setup a event handler for interactions that redirects to the command handler for $name", (receivedCommand) => {
                 client.on.mock.calls[0][0]; // 'interactionCreate'
                 const handler = client.on.mock.calls[0][1]; // the handler function
                 const interaction = mock<CommandInteraction>()
@@ -109,7 +119,7 @@ describe("startDiscordBot", () => {
                 expect(interaction.reply).toHaveBeenCalledWith({ content: 'Command not found' });
             })
 
-            it.each(Object.values(DiscordCommands))("should reply with an error message if the command handler for $name throws an error", async (receivedCommand) => {
+            it.each(Object.values(discordCommands))("should reply with an error message if the command handler for $name throws an error", async (receivedCommand) => {
                 const interaction = mock<CommandInteraction>()
                 when(interaction.isCommand).calledWith().thenReturn(true);
                 interaction.commandName = receivedCommand.name;
