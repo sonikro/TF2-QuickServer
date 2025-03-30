@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import { ServerManager } from "../application/services/ServerManager";
+import { ECSServerManager } from "../infrastructure/ECSServerManager";
 import { createCommands } from "./commands";
 
 export async function startDiscordBot() {
@@ -23,7 +23,7 @@ export async function startDiscordBot() {
 
     // Initialize Bot Dependencies
     const discordCommands = createCommands({
-        serverManager: {} as ServerManager
+        serverManager: new ECSServerManager()
     })
 
     // Slash commands

@@ -42,10 +42,13 @@
     "vitest-when": "^0.6.0"
   },
   "dependencies": {
+    "@aws-sdk/client-ec2": "^3.777.0",
+    "@aws-sdk/client-ecs": "^3.778.0",
     "aws-cdk-lib": "^2.186.0",
     "config": "^3.3.12",
     "constructs": "^10.4.2",
     "discord.js": "^14.18.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "uuid": "^11.1.0"
   }
 }

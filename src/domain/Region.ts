@@ -1,3 +1,5 @@
+import config from "config";
+
 export enum Region {
     US_EAST_1 = "us-east-1",
     US_EAST_2 = "us-east-2",
@@ -33,6 +35,17 @@ export enum Region {
     AF_SOUTH_1 = "af-south-1"
 }
 
+export type RegionConfig = {
+    enabled: boolean;
+    srcdsHostname: string;
+    tvHostname: string;
+}
+
 export function isValidRegion(region: string): region is Region {
     return Object.values(Region).includes(region as Region);
+}
+
+export function getRegionConfig(region: Region): RegionConfig {
+    const regionConfig = config.get<RegionConfig>(`aws.regions.${region}`);
+    return regionConfig;
 }
