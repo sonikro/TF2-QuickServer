@@ -10,7 +10,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"vitest.explorer"
+				"vitest.explorer",
+				"github.vscode-github-actions"
 			]
 		}
 	}
