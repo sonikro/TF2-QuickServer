@@ -1,0 +1,77 @@
+#!/bin/bash
+
+# Base URL for downloads
+BASE_URL="https://fastdl.serveme.tf/maps/"
+
+MAPS=(
+    "cp_reckoner_rc6"
+    "cp_process_f12"
+    "cp_metalworks_f5"
+    "cp_gullywash_f9"
+    "cp_granary_pro_rc8"
+    "cp_granary_pro_rc16f"
+    "cp_prolands_rc2ta"
+    "cp_sultry_b8a"
+    "cp_villa_b19"
+    "koth_clearcut_b17"
+    "koth_bagel_rc8"
+    "koth_bagel_rc10"
+    "koth_product_final"
+    "cp_badlands"
+    "pl_vigil_rc10"
+    "koth_ashville_final1"
+    "koth_lakeside_r2"
+    "koth_proot_b6c_alt2"
+    "koth_proot_b5b"
+    "pl_upward_f12"
+    "cp_steel_f12"
+    "pl_eruption_b13"
+    "koth_cascade_rc1a"
+    "cp_sunshine"
+    "cp_reckoner"
+    "cp_snakewater_final1"
+    "pl_badwater"
+    "pl_swiftwater_final1"
+    "pl_prowater_b12"
+    "koth_lakeside_f5"
+    "koth_warmtic_f10"
+    "ultiduo_baloo_v2"
+    "ultiduo_champions_b1"
+    "ultiduo_ozf_r"
+    "ultiduo_swine_b06"
+    "ultiduo_furnace_b2"
+    "ultiduo_gullywash_b2"
+    "ultiduo_furnace_b2"
+    "ultiduo_fira_b2a"
+    "ultiduo_noodle"
+    "ultiduo_champions_legacy_a7"
+    "ultiduo_spytech_rc4"
+    "koth_ultiduo_r_b7"
+    "koth_proot_b6c-alt2"
+)
+
+# Function to download a map
+download_map() {
+    local map=$1
+    local file="./maps/${map}.bsp"
+    
+    if [ -f "$file" ]; then
+        echo "Map $map.bsp already exists. Skipping download."
+    else
+        echo "Downloading $map.bsp..."
+        wget -q --show-progress -O "$file" "${BASE_URL}${map}.bsp"
+        
+        if [ $? -eq 0 ]; then
+            echo "Download completed: $map.bsp"
+        else
+            echo "Error downloading $map.bsp"
+        fi
+    fi
+}
+
+# Iterate over the list of maps and download each one
+for map in "${MAPS[@]}"; do
+    download_map "$map"
+done
+
+echo "Download process completed."

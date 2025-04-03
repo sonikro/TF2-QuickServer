@@ -8,7 +8,8 @@
     "dev": "nodemon",
     "cdk:bootstrap": "ts-node ./src/infrastructure/cdk/bin/cdk-bootstrap.ts",
     "cdk:synth": "cdk synth",
-    "cdk:deploy": "cdk deploy --all"
+    "cdk:deploy": "cdk deploy --all --require-approval never",
+    "cdk:destroy": "cdk destroy --all"
   },
   "repository": {
     "type": "git",
