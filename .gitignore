@@ -166,3 +166,5 @@ dist
 .cdk.staging
 cdk.out
 cdk.context.json
+# TF2 Maps
+*.bsp

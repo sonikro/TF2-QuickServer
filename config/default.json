@@ -3,7 +3,9 @@
         "cdk": {
             "ecsClusterName": "TF2-QuickServer-Cluster",
             "vpcName": "TF2-QuickServer-VPC",
-            "sgName": "TF2-QuickServer-SG"
+            "sgName": "TF2-QuickServer-SG",
+            "efsName": "TF2-QuickServer-EFS",
+            "bucketName": "tf2-quickserver-fastdl"
         },
         "regions": {
             "sa-east-1": {
