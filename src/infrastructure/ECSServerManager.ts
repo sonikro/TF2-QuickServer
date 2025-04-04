@@ -1,9 +1,11 @@
 import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, DescribeSubnetsCommand, DescribeVpcsCommand, EC2Client } from "@aws-sdk/client-ec2";
-import { CreateServiceCommand, DeleteServiceCommand, DescribeServicesCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, UpdateServiceCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
+import { CreateServiceCommand, DeleteServiceCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
+import { DescribeFileSystemsCommand, EFSClient } from "@aws-sdk/client-efs";
+import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { Chance } from "chance";
 import { v4 as uuid } from "uuid";
 import { ServerManager } from "../application/services/ServerManager";
-import { DeployedServer, getRegionConfig, getVariantConfig, Region, Variant, getCdkConfig } from "../domain";
+import { DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, Variant } from "../domain";
 
 export class ECSServerManager implements ServerManager {
 
@@ -22,6 +24,23 @@ export class ECSServerManager implements ServerManager {
         const serverPassword = this.chance.string();
         const rconPassword = this.chance.string();
 
+        // Fetch the EFS File System ID by Name
+        const efsClient = new EFSClient({ region });
+        // There is no filter for name in the DescribeFileSystemsCommand, so we need to fetch all file systems and filter by name
+        const efsResponse = await efsClient.send(new DescribeFileSystemsCommand({}));
+        const fileSystem = efsResponse.FileSystems?.find(fs => fs.Name === cdkConfig.efsName);
+
+        const efsId = fileSystem?.FileSystemId;
+        if (!efsId) {
+            throw new Error(`EFS with name ${cdkConfig.efsName} not found. Did you deploy the CDK stack?`);
+        }
+
+        // Get TaskRole ARN from the Name
+        const stsClient = new STSClient({ region });
+        // Get the account ID
+        const identity = await stsClient.send(new GetCallerIdentityCommand());
+        const taskExecutionRoleArn = `arn:aws:iam::${identity.Account}:role/${cdkConfig.ecsTaskExecutionRoleName}-${region}`;
+
         // Register Task Definition
         const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
             family: serverId,
@@ -29,6 +48,7 @@ export class ECSServerManager implements ServerManager {
             requiresCompatibilities: ["FARGATE"],
             cpu: variantConfig.cpu.toString(),
             memory: variantConfig.memory.toString(),
+            executionRoleArn: taskExecutionRoleArn,
             containerDefinitions: [
                 {
                     name: "tf2-server",
@@ -54,6 +74,23 @@ export class ECSServerManager implements ServerManager {
                         "+map",
                         variantConfig.map,
                     ],
+                    mountPoints: [
+                        {
+                            sourceVolume: "tf2-maps",
+                            containerPath: "/home/tf2/server/tf/maps",
+                            readOnly: true,
+                        },
+                    ],
+                },
+            ],
+            volumes: [
+                {
+                    name: "tf2-maps",
+                    efsVolumeConfiguration: {
+                        fileSystemId: efsId, // Use the dynamically fetched EFS ID
+                        transitEncryption: "ENABLED",
+                        rootDirectory: "maps",
+                    },
                 },
             ],
         }));

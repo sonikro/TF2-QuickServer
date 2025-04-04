@@ -1,5 +1,7 @@
 import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, DescribeSubnetsCommand, DescribeVpcsCommand, EC2Client } from "@aws-sdk/client-ec2";
-import { CreateServiceCommand, DeleteServiceCommand, DescribeServicesCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand } from "@aws-sdk/client-ecs";
+import { CreateServiceCommand, CreateServiceCommandInput, DeleteServiceCommand, DescribeServicesCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, RegisterTaskDefinitionCommandInput } from "@aws-sdk/client-ecs";
+import { DescribeFileSystemsCommand, EFSClient, FileSystemDescription } from "@aws-sdk/client-efs";
+import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
 import { mockClient } from 'aws-sdk-client-mock';
 import {
     allCustomMatcher,
@@ -43,6 +45,9 @@ describe("ECSServerManager", () => {
     const createTestEnvironment = () => {
         const ecsMock = mockClient(ECSClient);
         const ec2Mock = mockClient(EC2Client);
+        const efsMock = mockClient(EFSClient);
+        const stsMock = mockClient(STSClient);
+
         const region = chance.pickone(Object.values(Region))
         const variantName = chance.pickone(Object.values(Variant))
         const taskDefinitionArn = chance.string();
@@ -73,13 +78,39 @@ describe("ECSServerManager", () => {
         const cdkConfig: CdkConfig = {
             ecsClusterName: chance.string(),
             sgName: chance.string(),
-            vpcName: chance.string()
+            vpcName: chance.string(),
+            ecsTaskExecutionRoleName: chance.string(),
+            efsName: chance.string(),
         }
 
         process.env.DEMOS_TF_APIKEY = chance.string();
         process.env.LOGS_TF_APIKEY = chance.string();
         process.env.STV_PASSWORD = chance.string();
 
+        const efsSystem: FileSystemDescription = {
+            CreationTime: chance.date(),
+            FileSystemId: chance.string(),
+            Name: cdkConfig.efsName,
+            OwnerId: chance.string(),
+            SizeInBytes: { Value: 0 },
+            CreationToken: chance.string(),
+            LifeCycleState: "available",
+            NumberOfMountTargets: 0,
+            PerformanceMode: "generalPurpose",
+            Tags: [],
+        }
+
+        const accountId = chance.string();
+
+        efsMock.on(DescribeFileSystemsCommand).resolves({
+            FileSystems: [
+                efsSystem
+            ]
+        })
+
+        stsMock.on(GetCallerIdentityCommand).resolves({
+            Account: accountId,
+        })
         ecsMock.on(RegisterTaskDefinitionCommand).resolves({
             taskDefinition: { taskDefinitionArn: taskDefinitionArn },
         });
@@ -191,121 +222,216 @@ describe("ECSServerManager", () => {
         vi.mocked(v4).mockReturnValue(serverId as any);
 
         return {
-            ecsMock,
-            ec2Mock,
-            region,
-            variantName,
-            taskDefinitionArn,
-            serverId,
-            vpcId,
-            subnetIds,
-            sgId,
-            serviceArn,
-            taskArn,
-            eniId,
-            publicIp,
-            variantConfig,
-            regionConfig,
-            cdkConfig
+            awsClients: {
+                ecsMock,
+                ec2Mock,
+                efsMock,
+                stsMock,
+            },
+            values: {
+                region,
+                variantName,
+                taskDefinitionArn,
+                serverId,
+                vpcId,
+                subnetIds,
+                sgId,
+                serviceArn,
+                taskArn,
+                eniId,
+                publicIp,
+                variantConfig,
+                regionConfig,
+                cdkConfig,
+                efsSystem,
+                accountId
+            }
         }
     }
 
     describe("deployServer", () => {
 
-        const {
-            ecsMock,
-            region,
-            variantName,
-            taskDefinitionArn,
-            serverId,
-            subnetIds,
-            sgId,
-            publicIp,
-            variantConfig,
-            regionConfig,
-            cdkConfig
-        } = createTestEnvironment();
+        describe("happy path", () => {
+            
 
-        let deployedServer: DeployedServer;
-        beforeAll(async () => {
-            const ecsServerManager = new ECSServerManager();
-
-
-            deployedServer = await ecsServerManager.deployServer({
-                region,
-                variantName,
-            });
-        })
-
-        it("should create a task definition based on the variant config", () => {
-            expect(ecsMock).toHaveReceivedCommandWith(RegisterTaskDefinitionCommand, {
-                family: serverId,
-                networkMode: "awsvpc",
-                requiresCompatibilities: ["FARGATE"],
-                cpu: variantConfig.cpu.toString(),
-                memory: variantConfig.memory.toString(),
-                containerDefinitions: [
-                    {
-                        name: "tf2-server",
-                        image: variantConfig.image,
-                        memory: variantConfig.memory,
-                        cpu: variantConfig.cpu,
-                        essential: true,
-                        environment: expect.arrayContaining([
-                            { name: "SERVER_HOSTNAME", value: regionConfig.srcdsHostname },
-                            { name: "SERVER_PASSWORD", value: expect.any(String) },
-                            { name: "DEMOS_TF_APIKEY", value: process.env.DEMOS_TF_APIKEY },
-                            { name: "LOGS_TF_APIKEY", value: process.env.LOGS_TF_APIKEY },
-                            { name: "RCON_PASSWORD", value: expect.any(String) },
-                            { name: "STV_NAME", value: regionConfig.tvHostname },
-                            { name: "STV_PASSWORD", value: process.env.STV_PASSWORD },
-                        ]),
-                        command: [
-                            "-enablefakeip",
-                            "+sv_pure",
-                            variantConfig.svPure.toString(),
-                            "+maxplayers",
-                            variantConfig.maxPlayers.toString(),
-                            "+map",
-                            variantConfig.map,
-                        ],
-                    },
-                ],
-            });
-
-        })
-
-        it("should create a ECS Service with the correct settings", () => {
-            expect(ecsMock).toHaveReceivedCommandWith(CreateServiceCommand, {
-                cluster: cdkConfig.ecsClusterName,
-                desiredCount: 1,
-                launchType: "FARGATE",
-                networkConfiguration: {
-                    awsvpcConfiguration: {
-                        assignPublicIp: "ENABLED",
-                        securityGroups: [sgId],
-                        subnets: subnetIds,
-                    },
+            const {
+                awsClients: {
+                    ecsMock,
                 },
-                serviceName: serverId,
-                taskDefinition: taskDefinitionArn,
-            });
+                values: {
+                    region,
+                    variantName,
+                    taskDefinitionArn,
+                    serverId,
+                    subnetIds,
+                    sgId,
+                    publicIp,
+                    variantConfig,
+                    cdkConfig,
+                    accountId,
+                    efsSystem
+                }
+            } = createTestEnvironment();
+
+            let deployedServer: DeployedServer;
+            let registerTaskDefinitionCommandInput: RegisterTaskDefinitionCommandInput
+            let createServiceCommandInput: CreateServiceCommandInput
+            beforeAll(async () => {
+                const ecsServerManager = new ECSServerManager();
+
+
+                deployedServer = await ecsServerManager.deployServer({
+                    region,
+                    variantName,
+                });
+                registerTaskDefinitionCommandInput = ecsMock.commandCall(0, RegisterTaskDefinitionCommand).args[0].input
+                createServiceCommandInput = ecsMock.commandCall(0, CreateServiceCommand).args[0].input
+            })
+
+            describe("Task Definition", () => {
+
+
+                it("should create an ECS Fargate task definition", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        family: serverId,
+                        networkMode: "awsvpc",
+                        requiresCompatibilities: ["FARGATE"],
+                    }));
+                });
+
+                it("should use the correct execution role ARN", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        executionRoleArn: `arn:aws:iam::${accountId}:role/${cdkConfig.ecsTaskExecutionRoleName}-${region}`,
+                    }));
+                });
+
+                it("should set the correct CPU and memory", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        cpu: variantConfig.cpu.toString(),
+                        memory: variantConfig.memory.toString(),
+                    }));
+                });
+
+                it("should contain the correct container definition properties", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        containerDefinitions: expect.arrayContaining([
+                            expect.objectContaining({
+                                name: "tf2-server",
+                                image: variantConfig.image,
+                                essential: true,
+                            }),
+                        ]),
+                    }));
+                });
+
+                it("should contain the correct TF2 server commands", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        containerDefinitions: expect.arrayContaining([
+                            expect.objectContaining({
+                                command: [
+                                    "-enablefakeip",
+                                    "+sv_pure",
+                                    variantConfig.svPure.toString(),
+                                    "+maxplayers",
+                                    variantConfig.maxPlayers.toString(),
+                                    "+map",
+                                    variantConfig.map,
+                                ],
+                            }),
+                        ]),
+                    }));
+                });
+
+                it("should contain the correct mount points", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        containerDefinitions: expect.arrayContaining([
+                            expect.objectContaining({
+                                mountPoints: expect.arrayContaining([
+                                    expect.objectContaining({
+                                        sourceVolume: "tf2-maps",
+                                        containerPath: "/home/tf2/server/tf/maps",
+                                        readOnly: true,
+                                    }),
+                                ]),
+                            }),
+                        ]),
+                    }));
+                });
+
+                it("should mount the EFS", () => {
+                    expect(registerTaskDefinitionCommandInput).toEqual(expect.objectContaining({
+                        volumes: expect.arrayContaining([
+                            expect.objectContaining({
+                                name: "tf2-maps",
+                                efsVolumeConfiguration: expect.objectContaining({
+                                    fileSystemId: efsSystem.FileSystemId,
+                                    transitEncryption: "ENABLED",
+                                    rootDirectory: "maps",
+                                }),
+                            }),
+                        ]),
+                    }));
+                });
+
+            })
+
+            describe("ECS Service", () => {
+
+                it("should run 1 task in the ecsCluster", () => {
+                    expect(createServiceCommandInput).toEqual(expect.objectContaining({
+                        cluster: cdkConfig.ecsClusterName,
+                        desiredCount: 1,
+                    }));
+                });
+
+                it("should be of type fargate", () => {
+                    expect(createServiceCommandInput).toEqual(expect.objectContaining({
+                        launchType: "FARGATE",
+                    }));
+                });
+
+                it("should be attached to the correct network configuration", () => {
+                    expect(createServiceCommandInput).toEqual(expect.objectContaining({
+                        networkConfiguration: {
+                            awsvpcConfiguration: {
+                                assignPublicIp: "ENABLED",
+                                securityGroups: [sgId],
+                                subnets: subnetIds,
+                            },
+                        },
+                    }));
+                });
+
+                it("should be attached to the correct server id", () => {
+                    expect(createServiceCommandInput).toEqual(expect.objectContaining({
+                        serviceName: serverId,
+                    }));
+                });
+
+                it("should use the correct taskDefinitionArn", () => {
+                    expect(createServiceCommandInput).toEqual(expect.objectContaining({
+                        taskDefinition: taskDefinitionArn,
+                    }));
+                });
+
+            })
+
+            it("should return a DeployedServer object with the correct properties", () => {
+                expect(deployedServer).toEqual({
+                    hostIp: publicIp,
+                    serverId,
+                    hostPort: 27015,
+                    rconPassword: expect.any(String),
+                    region,
+                    tvIp: publicIp,
+                    tvPort: 27020,
+                    variant: variantName,
+                    hostPassword: expect.any(String),
+                    tvPassword: process.env.STV_PASSWORD,
+                } as DeployedServer);
+            })
         })
 
-        it("should return a DeployedServer object with the correct properties", () => {
-            expect(deployedServer).toEqual({
-                hostIp: publicIp,
-                serverId,
-                hostPort: 27015,
-                rconPassword: expect.any(String),
-                region,
-                tvIp: publicIp,
-                tvPort: 27020,
-                variant: variantName,
-                hostPassword: expect.any(String),
-                tvPassword: process.env.STV_PASSWORD,
-            } as DeployedServer);
-        })
     })
 
     describe("deleteServer", () => {
@@ -313,11 +439,14 @@ describe("ECSServerManager", () => {
 
         it("should force terminate the service", async () => {
             const {
-                ecsMock,
-                region,
-                variantName,
-                serverId,
-                cdkConfig
+                awsClients: {
+                    ecsMock,
+                },
+                values: {
+                    region,
+                    serverId,
+                    cdkConfig
+                }
             } = createTestEnvironment();
             const ecsServerManager = new ECSServerManager();
 
