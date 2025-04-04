@@ -96,12 +96,15 @@ export class TF2RegionalStack extends cdk.Stack {
     // Add an inbound rule to allow connections on port 2049
     efsSecurityGroup.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(2049), 'Allow NFS Connections');
 
+    efsSecurityGroup.addIngressRule(securityGroup, ec2.Port.tcp(2049), 'Allow ECS to connect to EFS');
+
     // Create an EFS File System
     const fileSystem = new efs.FileSystem(this, 'TF2QuickServerEFS', {
       vpc,
       performanceMode: efs.PerformanceMode.GENERAL_PURPOSE,
       throughputMode: efs.ThroughputMode.BURSTING,
       fileSystemName: this.cdkConfig.efsName,
+      securityGroup: efsSecurityGroup,
     });
 
     const accessPoint = fileSystem.addAccessPoint('AccessPoint', {
@@ -155,6 +158,16 @@ export class TF2RegionalStack extends cdk.Stack {
         {
           subnetType: ec2.SubnetType.PUBLIC, // Attach the endpoint to public subnets
         },
+      ],
+    });
+
+    // Create a ECS Task Execution Role with permissions to use EFS
+    const taskExecutionRole = new cdk.aws_iam.Role(this, 'TaskExecutionRole', {
+      roleName: `${this.cdkConfig.ecsTaskExecutionRoleName}-${this.region}`,
+      assumedBy: new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [
+        cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonECSTaskExecutionRolePolicy'),
+        cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonElasticFileSystemClientFullAccess'),
       ],
     });
 

@@ -5,6 +5,7 @@ export type CdkConfig = {
     vpcName: string;
     sgName: string;
     efsName: string;
+    ecsTaskExecutionRoleName: string;
 }
 
 export function getCdkConfig(): CdkConfig {
