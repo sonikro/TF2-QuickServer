@@ -3,7 +3,6 @@ import * as cdk from 'aws-cdk-lib';
 import { Tags } from 'aws-cdk-lib';
 import appConfig from 'config';
 import { config } from 'dotenv';
-import { TF2GlobalStack } from '../lib/tf2-global-stack';
 import { TF2RegionalStack } from '../lib/tf2-regional-stack';
 
 // Load environment variables from .env file
@@ -15,25 +14,8 @@ const app = new cdk.App();
 // Add default tags to all resources
 Tags.of(app).add('Project', 'TF2-QuickServer');
 
-// Deploy the Global Maps Stack
-const globalStack = createGlobalMapsStack(app);
 // Deploy regional stacks based on configuration
-createRegionalStacks(app, [globalStack]);
-
-// Deploy the Map Files Stack
-
-/**
- * Creates the Global Maps Stack.
- */
-function createGlobalMapsStack(app: cdk.App): TF2GlobalStack {
-  return new TF2GlobalStack(app, 'Tf2MapsStack', {
-    crossRegionReferences: true,
-    env: {
-      account: process.env.AWS_ACCOUNT_ID,
-      region: 'us-east-1', // Global resources should be in us-east-1
-    },
-  });
-}
+createRegionalStacks(app, []);
 
 /**
  * Creates regional stacks based on the configuration.
