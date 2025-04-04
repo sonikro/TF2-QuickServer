@@ -19,6 +19,30 @@ export class TF2RegionalStack extends cdk.Stack {
 
     this.cdkConfig = getCdkConfig();
 
+     // Create an S3 bucket
+    const bucket = new s3.Bucket(this, 'Tf2MapsBucket', {
+      versioned: false,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true, // Automatically delete objects when the bucket is destroyed
+      publicReadAccess: true, // Make the bucket public
+      websiteIndexDocument: 'index.html', // Optional: Enable static website hosting
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicAcls: false,
+        ignorePublicAcls: true,
+        blockPublicPolicy: false,
+        restrictPublicBuckets: false,
+      }),
+      lifecycleRules: [
+      {
+        transitions: [
+        {
+          storageClass: s3.StorageClass.INTELLIGENT_TIERING,
+          transitionAfter: cdk.Duration.days(0), // Move to Intelligent Tiering immediately for better cost management
+        },
+        ],
+      },
+      ],
+    });
 
     // Create a VPC with public subnets only (no NAT Gateways)
     const vpc = new ec2.Vpc(this, 'TF2QuickServerVpc', {
@@ -34,14 +58,13 @@ export class TF2RegionalStack extends cdk.Stack {
       ],
     });
 
-    const bucket = s3.Bucket.fromBucketName(this, 'Tf2MapsBucket', this.cdkConfig.bucketName);
     // Deploy files from the "maps" directory under the current working directory to the "maps" folder in the S3 bucket
     new s3deploy.BucketDeployment(this, 'DeployMapFiles', {
       sources: [s3deploy.Source.asset(`${process.cwd()}/maps`)],
       destinationBucket: bucket,
       destinationKeyPrefix: 'maps/', // Upload to the "maps" folder in the bucket
-      ephemeralStorageSize: cdk.Size.mebibytes(5120), // 5 gb of ephemeral storage to support all maps
-      memoryLimit: 5120, // 5 gb of memory to support all maps
+      ephemeralStorageSize: cdk.Size.mebibytes(2048),
+      memoryLimit: 2048,
     });
 
     // Create an ECS Cluster in the VPC
@@ -83,39 +106,59 @@ export class TF2RegionalStack extends cdk.Stack {
 
     const accessPoint = fileSystem.addAccessPoint('AccessPoint', {
       createAcl: {
-        ownerUid: '1000',
-        ownerGid: '1000',
-        permissions: '750',
+        ownerUid: '0',
+        ownerGid: '0',
+        permissions: '777',
       },
       posixUser: {
-        uid: '1000',
-        gid: '1000',
+        uid: '0',
+        gid: '0',
       },
     });
-
     // Create a Lambda function to copy files from S3 to EFS
     const s3ToEfsLambda = new lambda.Function(this, 'S3ToEfsLambda', {
       functionName: 'S3ToEfsLambda',
       description: 'Lambda function to copy files from S3 to EFS',
-      memorySize: 2048,
+      memorySize: 1024,
       timeout: cdk.Duration.minutes(15),
       runtime: lambda.Runtime.NODEJS_LATEST,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, 'lambda')), // Path to Lambda code
+      code: lambda.Code.fromAsset(path.join(__dirname, 'S3ToEfsLambda')), // Path to Lambda code
       vpc,
       securityGroups: [efsSecurityGroup],
       filesystem: lambda.FileSystem.fromEfsAccessPoint(accessPoint, '/mnt/efs'),
       environment: {
-        BUCKET_NAME: this.cdkConfig.bucketName,
-        EFS_MOUNT_PATH: '/mnt/efs',
+      BUCKET_NAME: bucket.bucketName,
+      EFS_MOUNT_PATH: '/mnt/efs',
       },
       allowPublicSubnet: true, // Lambdas in public subnets have no internet access, but we don't need it
     });
 
+    // Attach the AmazonElasticFileSystemClientFullAccess policy to the Lambda's execution role
+    s3ToEfsLambda.role?.addManagedPolicy(
+      cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonElasticFileSystemClientFullAccess')
+    );
+
     // Grant the Lambda function permissions to read from the S3 bucket using the bucket name
     bucket.grantRead(s3ToEfsLambda);
 
-    // Triggers the lambda function 
+    // Grant the Lambda function permissions to write to the EFS file system
+    fileSystem.grant(s3ToEfsLambda, 'elasticfilesystem:ClientMount', 'elasticfilesystem:ClientWrite', 'elasticfilesystem:ClientRootAccess');
+
+    // Add a Gateway VPC Endpoint for S3. Required for the Lambda function to access S3 without going through the internet
+    // This is necessary because the Lambda function is in a VPC with no NAT Gateway
+    // and needs to access S3 without going through the internet
+    new ec2.GatewayVpcEndpoint(this, 'S3VpcEndpoint', {
+      vpc, // Use the existing VPC
+      service: ec2.GatewayVpcEndpointAwsService.S3, // Specify the S3 service
+      subnets: [
+        {
+          subnetType: ec2.SubnetType.PUBLIC, // Attach the endpoint to public subnets
+        },
+      ],
+    });
+
+    // Triggers the lambda function to copy files from S3 to EFS when the CloudFormation stack is created or updated
     new events.Rule(this, "DeploymentHook", {
       eventPattern: {
         detailType: ["CloudFormation Stack Status Change"],
@@ -129,6 +172,7 @@ export class TF2RegionalStack extends cdk.Stack {
       },
       targets: [new eventsTargets.LambdaFunction(s3ToEfsLambda)],
     });
+
 
   }
 }

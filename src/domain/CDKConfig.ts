@@ -5,7 +5,6 @@ export type CdkConfig = {
     vpcName: string;
     sgName: string;
     efsName: string;
-    bucketName: string;
 }
 
 export function getCdkConfig(): CdkConfig {
