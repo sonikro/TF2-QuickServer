@@ -37,7 +37,7 @@
 | Command | Description |
 |---------|-------------|
 | `/create-server <region> <variant_name>` | Deploys a new TF2 server in the selected region with a specific variant |
-| `/terminate-server <server_id>` | Shuts down a specified TF2 server |
+| `/terminate-server <server_id> <region>` | Shuts down a specified TF2 server |
 
 ### **Available Variants**
 - **competitive** – Competitive server, with logs.tf, demos.tf and all 6v6 and 9v9 maps
@@ -84,6 +84,7 @@ Install the required dependencies using `npm`:
 npm install
 ```
 
+
 This will install all the necessary packages listed in the `package.json` file.
 
 ### **4️⃣ Download the Maps**
@@ -99,7 +100,67 @@ npm run download:maps
 This will create the `maps` folder and download all maps listed in the `maps.json` file.
 
 ### **5️⃣ Deploy the Infrastructure**
-Once the maps are downloaded, deploy the infrastructure using AWS CDK:
+Once the maps are downloaded, you can deploy the infrastructure using AWS CDK. 
+
+### **Configure Deployment Parameters**
+Before proceeding, ensure that all desired parameters are set in the `default.json` file located inside the `config` directory. Below is an example configuration:
+
+```json
+{
+    "aws": {
+        "cdk": {
+            "ecsClusterName": "TF2-QuickServer-Cluster",
+            "vpcName": "TF2-QuickServer-VPC",
+            "sgName": "TF2-QuickServer-SG",
+            "efsName": "TF2-QuickServer-EFS",
+            "ecsTaskExecutionRoleName": "TF2-QuickServer-TaskRole"
+        },
+        "regions": {
+            "sa-east-1": {
+                "enabled": true,
+                "srcdsHostname": "TF2-QuickServer | São Paulo @ Sonikro Solutions",
+                "tvHostname": "TF2-QuickServer TV | São Paulo @ Sonikro Solutions"
+            },
+            "us-east-1": {
+                "enabled": true,
+                "srcdsHostname": "TF2-QuickServer | Virginia @ Sonikro Solutions",
+                "tvHostname": "TF2-QuickServer TV | Virginia @ Sonikro Solutions"
+            }
+        }
+    },
+    "variants": {
+        "standard-competitive": {
+            "image": "ghcr.io/melkortf/tf2-competitive:latest",
+            "cpu": 2048,
+            "memory": 4096,
+            "maxPlayers": 24,
+            "map": "cp_badlands",
+            "svPure": 2
+        }
+    }
+}
+```
+
+### **Key Notes:**
+- The `regions` object defines the AWS regions where servers can be deployed. To add or remove regions, simply modify the `regions` object by adding the desired AWS region key and setting `enabled` to `true`. The CDK will automatically create the necessary infrastructure for all enabled regions.
+- The `variants` object specifies server configurations, such as the Docker image, CPU, memory, maximum players, and default map.
+
+> **Note:** The list of possible regions in the Discord command is dynamically extracted from the enabled regions in the `config/default.json` file.
+
+### **Deploy the Infrastructure**
+Once your configuration is ready, deploy the infrastructure using the following command:
+
+```bash
+npm run cdk:deploy
+```
+
+> ⚠️ **Note:** If this is your first time using AWS CDK in your account, you must initialize the required infrastructure by running:
+
+```bash
+npm run cdk:bootstrap
+```
+
+For additional details, refer to the [AWS CDK Bootstrap documentation](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html).
 
 ```bash
 npm run cdk:deploy
