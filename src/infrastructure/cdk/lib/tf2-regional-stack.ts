@@ -171,6 +171,15 @@ export class TF2RegionalStack extends cdk.Stack {
       ],
     });
 
+    // Create an ECS Task Role with permissions for ECS Exec
+    const taskRole = new cdk.aws_iam.Role(this, 'TaskRole', {
+      roleName: `${this.cdkConfig.ecsTaskRoleName}-${this.region}`,
+      assumedBy: new cdk.aws_iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [
+        cdk.aws_iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMManagedInstanceCore'), // Required for ECS Exec
+      ],
+    });
+
     // Triggers the lambda function to copy files from S3 to EFS when the CloudFormation stack is created or updated
     new events.Rule(this, "DeploymentHook", {
       eventPattern: {

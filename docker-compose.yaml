@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  tf2-server:
+    image: ghcr.io/melkortf/tf2-competitive:latest
+    container_name: tf2-server
+    environment:
+      SERVER_HOSTNAME: Local TF2 Server
+      SERVER_PASSWORD: ${SERVER_PASSWORD:-""}
+      DEMOS_TF_APIKEY: ${DEMOS_TF_APIKEY:-""}
+      LOGS_TF_APIKEY: ${LOGS_TF_APIKEY:-""}
+      RCON_PASSWORD: ${RCON_PASSWORD:-""}
+      STV_NAME: ${TV_NAME:-""}
+      STV_PASSWORD: ${TV_PASSWORD:-""}
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2~
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+    volumes:
+      - ./maps:/home/tf2/server/tf/maps:ro
