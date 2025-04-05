@@ -58,6 +58,7 @@
     "constructs": "^10.4.2",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
+    "p-limit": "^6.2.0",
     "ssm-session": "^1.0.6",
     "uuid": "^11.1.0",
     "websocket": "^1.0.35"

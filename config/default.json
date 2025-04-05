@@ -24,8 +24,8 @@
     "variants": {
         "standard-competitive": {
             "image": "ghcr.io/melkortf/tf2-competitive:latest",
-            "cpu": 2048,
-            "memory": 4096,
+            "cpu": 1024,
+            "memory": 2048,
             "maxPlayers": 24,
             "map": "cp_badlands",
             "svPure": 2

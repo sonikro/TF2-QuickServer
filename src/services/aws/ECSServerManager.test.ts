@@ -11,7 +11,7 @@ import { Chance } from "chance";
 import { v4 } from "uuid";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { when } from "vitest-when";
-import { CdkConfig, DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, RegionConfig, Variant, VariantConfig } from "../domain";
+import { CdkConfig, DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, RegionConfig, Variant, VariantConfig } from "../../domain";
 import { ECSServerManager } from "./ECSServerManager";
 
 expect.extend(allCustomMatcher)
@@ -22,7 +22,7 @@ declare module "vitest" {
 }
 
 vi.mock("../domain", async (importOriginal) => {
-    const actual = await importOriginal() as typeof import('../domain');
+    const actual = await importOriginal() as typeof import('../../domain');
     return {
         ...actual,
         getRegionConfig: vi.fn(),

@@ -2,19 +2,21 @@ import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, Descri
 import { CreateServiceCommand, DeleteServiceCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
 import { DescribeFileSystemsCommand, EFSClient } from "@aws-sdk/client-efs";
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
+import waitUntil from "async-wait-until";
 import { Chance } from "chance";
 import { v4 as uuid } from "uuid";
-import { ServerManager } from "../application/services/ServerManager";
-import { DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, Variant } from "../domain";
-import { ExecuteCommandCommand } from "@aws-sdk/client-ecs";
-import waitUntil from "async-wait-until";
-import { DescribeSessionsCommand, GetCommandInvocationCommand, SSMClient } from "@aws-sdk/client-ssm";
+import { ServerManager } from "../../application/services/ServerManager";
+import { DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, Variant } from "../../domain";
+import { ECSCommandExecutor } from "./ECSCommandExecutor";
 
 
 export class ECSServerManager implements ServerManager {
 
     private readonly chance = new Chance();
 
+    constructor(private readonly dependencies: {
+        ecsCommandExecutor: ECSCommandExecutor;
+    }) {}
     async deployServer(args: { region: Region; variantName: Variant; }): Promise<DeployedServer> {
         const { region, variantName } = args;
         const variantConfig = getVariantConfig(variantName);
@@ -194,69 +196,42 @@ export class ECSServerManager implements ServerManager {
         }));
         const networkInterface = networkInterfaceResponse.NetworkInterfaces?.[0]!;
         const publicIp = networkInterface.Association?.PublicIp!;
+        const privateIp = networkInterface.PrivateIpAddress!;
 
 
         // Wait until the Agent is ready to receive commands
         // Run the RCON status command using ECS Exec
-
-        let statusOutput: string[] = [];
-        await waitUntil(async () => {
+        const statusOutput = await waitUntil(async () => {
             try {
-                const executeCommandResponse = await ecsClient.send(new ExecuteCommandCommand({
+                const result =  await this.dependencies.ecsCommandExecutor.runCommand({
+                    taskArn,
+                    command: `/home/tf2/server/rcon -H ${privateIp} -p 27015 -P "${rconPassword}" status`,
                     cluster: cdkConfig.ecsClusterName,
-                    container: "tf2-server",
-                    command: `/home/tf2/server/rcon -H 0.0.0.0 -p 27015 -P "${rconPassword}" status`,
-                    interactive: true,
-                    task: taskArn,
-                }));
+                    containerName: "tf2-server",
+                    ecsClient,
+                });
 
-                console.log(JSON.stringify(executeCommandResponse))
-
-                const sessionId = executeCommandResponse.session?.sessionId;
-                if (!sessionId) {
-                    throw new Error("Failed to start ECS Exec session.");
+                if(result.includes(`Failed`)){
+                    // Server is not ready yet, return empty string to retry
+                    return ``; // Return an empty string to indicate failure
                 }
-                const ssmClient = new SSMClient({ region });
-                const commandSession = await ssmClient.send(new DescribeSessionsCommand({
-                    State: "History",
-                    Filters: [
-                        {
-                            key: "SessionId",
-                            value: sessionId,
-                        },  
-                    ],
-                }))
-                console.log(JSON.stringify(commandSession))
-                const commandInvocation = await ssmClient.send(new GetCommandInvocationCommand({
-                    CommandId: commandSession.Sessions?.[0]?.SessionId,
-                    InstanceId: commandSession.Sessions?.[0]?.Target,
-                }))
-                console.log(JSON.stringify(commandInvocation))
-                statusOutput.push(commandInvocation.StandardOutputContent!);
-                return true;
+                return result
             } catch (error) {
-                console.error("Error executing ECS Exec command:", error);
-                return false; // Retry if there's an error
+                // Log the error and retry
+                console.error("Error executing RCON command, retrying...", error);
+                return ``; // Return an empty string to indicate failure
             }
         }, {
-            timeout: 60 * 1000, // 60 seconds
-            intervalBetweenAttempts: 5 * 1000, // 5 seconds
-        })
-
+            timeout: 60000, // 60 seconds
+            intervalBetweenAttempts: 5000, // 5 seconds
+        });
 
         // Extract the relevant information from the command output
         const sdrIpRegex = /udp\/ip\s*:\s*([\d.]+:\d+)/;
         const sdrTvRegex = /sourcetv:\s*([\d.]+:\d+)/;
 
-        const srdIpMatch = statusOutput.find(line => sdrIpRegex.test(line));
-        const tvIpMatch = statusOutput.find(line => sdrTvRegex.test(line));
-
-        if (!srdIpMatch || !tvIpMatch) {
-            throw new Error("Failed to extract server information from command output.");
-        }
-
-        const sdrAddress = srdIpMatch.match(sdrIpRegex)?.[1];
-        const tvAddress = tvIpMatch.match(sdrTvRegex)?.[1];
+        const sdrAddress = statusOutput.match(sdrIpRegex)?.[1];
+        const tvAddress = statusOutput.match(sdrTvRegex)?.[1];
 
         if (!sdrAddress || !tvAddress) {
             throw new Error("Failed to parse server information from command output.");
