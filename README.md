@@ -18,18 +18,17 @@
 ---
 
 ## 🛠️ How It Works
-1. **Invite the Bot** – Add TF2-QuickServer to your Discord server.
+1. **Invite the Bot** – Add TF2-QuickServer to your Discord server or install it for your personal user.
 2. **Run a Command** – Use `/create-server <region> <variant_name>` to instantly deploy a TF2 server.
 3. **Get Server Details** – The bot provides the **IP address & SDR connection info**.
 4. **Join & Play!** – Connect with friends and enjoy lag-free TF2 matches.
 
 ---
 
-## 📦 Deployment Stack
-- **AWS ECS (Elastic Container Service)** – For on-demand TF2 server hosting.
-- **Docker** – Ensures lightweight, isolated TF2 instances.
-- **Steam Datagram Relay (SDR)** – Provides **secure, low-latency connections**.
-- **Discord API** – Enables intuitive bot commands for server deployment.
+## 🛠️ Deployment Stack
+- **AWS CDK** – Used to set up the required infrastructure in each AWS region, including VPCs, ECS clusters, and security groups.
+- **AWS SDK** – Dynamically creates ECS services on demand based on bot commands, ensuring efficient resource utilization.
+- **SQLite** – Lightweight database for storing server and player state, ensuring quick access and persistence.
 
 ---
 
