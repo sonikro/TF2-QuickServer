@@ -77,10 +77,46 @@ AWS_ACCESS_KEY=your_aws_access_key
 AWS_SECRET_KEY=your_aws_secret_key
 ```
 
-### **3️⃣ Run the Bot**
+### **3️⃣ Install Dependencies**
+Install the required dependencies using `npm`:
 
 ```bash
 npm install
+```
+
+This will install all the necessary packages listed in the `package.json` file.
+
+### **4️⃣ Download the Maps**
+Before deploying the bot, ensure that the required server maps are downloaded into the `maps` folder in the root directory. This folder is used by the AWS CDK to automatically upload the maps to the servers created by the bot. 
+
+- If a map is removed from the `maps` folder, it will also be removed from the servers during the next deployment.
+- To download all maps, run the following command:
+
+```bash
+npm run download:maps
+```
+
+This will create the `maps` folder and download all maps listed in the `maps.json` file.
+
+### **5️⃣ Deploy the Infrastructure**
+Once the maps are downloaded, deploy the infrastructure using AWS CDK:
+
+```bash
+npm run cdk:deploy
+```
+
+> ⚠️ **Warning:** If this is the first time you are using the CDK in your AWS Account, please run the following command to initialize the required infrastructure for using AWS CDK:
+
+```bash
+npm run cdk:bootstrap
+```
+
+For more information, check the [official AWS CDK Bootstrap documentation](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html).
+
+### **6️⃣ Run the Bot**
+Start the bot in development mode:
+
+```bash
 npm run dev
 ```
 

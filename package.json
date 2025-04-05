@@ -6,10 +6,11 @@
   "scripts": {
     "test": "vitest",
     "dev": "nodemon",
-    "cdk:bootstrap": "ts-node ./src/infrastructure/cdk/bin/cdk-bootstrap.ts",
+    "cdk:bootstrap": "tsx ./src/infrastructure/cdk/bin/cdk-bootstrap.ts",
     "cdk:synth": "cdk synth",
     "cdk:deploy": "cdk deploy --all --require-approval never",
-    "cdk:destroy": "cdk destroy --all"
+    "cdk:destroy": "cdk destroy --all",
+    "download:maps": "tsx ./scripts/downloadMaps.ts"
   },
   "repository": {
     "type": "git",
@@ -38,7 +39,7 @@
     "aws-sdk-client-mock-vitest": "^6.1.1",
     "chance": "^1.1.12",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.9",
     "vitest-mock-extended": "^3.0.1",
