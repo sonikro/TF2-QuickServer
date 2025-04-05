@@ -69,10 +69,18 @@ cd TF2-QuickServer
 ### **2️⃣ Set Up Environment Variables**
 Create a `.env` file and configure:
 ```
-DISCORD_TOKEN=your_discord_bot_token
-DISCORD_CLIENT_ID=your_discord_client_id
-AWS_ACCESS_KEY=your_aws_access_key
-AWS_SECRET_KEY=your_aws_secret_key
+DISCORD_TOKEN=
+DISCORD_CLIENT_ID=
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_ACCOUNT_ID=
+
+# Used by the servers
+
+DEMOS_TF_APIKEY=
+LOGS_TF_APIKEY=
+STV_PASSWORD=
 ```
 
 ### **3️⃣ Install Dependencies**
@@ -81,7 +89,6 @@ Install the required dependencies using `npm`:
 ```bash
 npm install
 ```
-
 
 This will install all the necessary packages listed in the `package.json` file.
 
