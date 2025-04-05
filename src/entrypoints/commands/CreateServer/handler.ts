@@ -44,10 +44,13 @@ export function createServerCommandHandlerFactory(dependencies: {
                     `🌍 **Region:** \`${deployedServer.region}\`\n` +
                     `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
                     `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n\n` +
+                    `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
                     `**Server Connect:**\n` +
                     `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
                     `**TV Connect:**\n` +
-                    `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n`
+                    `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
+                    `⚠️ **Warning:** The RCON Address IP and password should only be shared with people who need to run RCON commands. To use RCON commands, enter the following in the console:\n` +
+                    `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`
             })
 
             // Send a message to the interaction channel
