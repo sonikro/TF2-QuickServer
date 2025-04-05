@@ -39,8 +39,7 @@
 | `/terminate-server <server_id> <region>` | Shuts down a specified TF2 server |
 
 ### **Available Variants**
-- **competitive** – Competitive server, with logs.tf, demos.tf and all 6v6 and 9v9 maps
-- More to come....
+- **standard-competitive** – Competitive server, with logs.tf, demos.tf. Supports 6v6, 9v9 and ultiduo.
 
 ---
 
