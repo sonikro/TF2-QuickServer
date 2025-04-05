@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/chance": "^1.1.6",
     "@types/config": "^3.3.5",
+    "@types/websocket": "^1.0.10",
     "@vitest/coverage-v8": "^3.0.9",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-vitest": "^6.1.1",
@@ -49,12 +50,16 @@
     "@aws-sdk/client-ec2": "^3.777.0",
     "@aws-sdk/client-ecs": "^3.778.0",
     "@aws-sdk/client-efs": "^3.782.0",
+    "@aws-sdk/client-ssm": "^3.782.0",
     "@aws-sdk/client-sts": "^3.782.0",
+    "async-wait-until": "^2.0.27",
     "aws-cdk-lib": "^2.186.0",
     "config": "^3.3.12",
     "constructs": "^10.4.2",
     "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
-    "uuid": "^11.1.0"
+    "ssm-session": "^1.0.6",
+    "uuid": "^11.1.0",
+    "websocket": "^1.0.35"
   }
 }

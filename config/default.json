@@ -5,7 +5,8 @@
             "vpcName": "TF2-QuickServer-VPC",
             "sgName": "TF2-QuickServer-SG",
             "efsName": "TF2-QuickServer-EFS",
-            "ecsTaskExecutionRoleName": "TF2-QuickServer-TaskRole"
+            "ecsTaskExecutionRoleName": "TF2-QuickServer-Execution",
+            "ecsTaskRoleName": "TF2-QuickServer-Task"	
         },
         "regions": {
             "sa-east-1": {

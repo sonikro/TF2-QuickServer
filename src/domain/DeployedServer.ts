@@ -11,5 +11,6 @@ export interface DeployedServer {
     tvPort: number;
     rconPassword: string;
     hostPassword?: string;
+    rconAddress: string;
     tvPassword?: string;
 }

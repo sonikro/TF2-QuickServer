@@ -6,6 +6,7 @@ export type CdkConfig = {
     sgName: string;
     efsName: string;
     ecsTaskExecutionRoleName: string;
+    ecsTaskRoleName: string;
 }
 
 export function getCdkConfig(): CdkConfig {

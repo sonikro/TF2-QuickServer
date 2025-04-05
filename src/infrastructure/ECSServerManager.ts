@@ -6,6 +6,10 @@ import { Chance } from "chance";
 import { v4 as uuid } from "uuid";
 import { ServerManager } from "../application/services/ServerManager";
 import { DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, Variant } from "../domain";
+import { ExecuteCommandCommand } from "@aws-sdk/client-ecs";
+import waitUntil from "async-wait-until";
+import { DescribeSessionsCommand, GetCommandInvocationCommand, SSMClient } from "@aws-sdk/client-ssm";
+
 
 export class ECSServerManager implements ServerManager {
 
@@ -40,6 +44,7 @@ export class ECSServerManager implements ServerManager {
         // Get the account ID
         const identity = await stsClient.send(new GetCallerIdentityCommand());
         const taskExecutionRoleArn = `arn:aws:iam::${identity.Account}:role/${cdkConfig.ecsTaskExecutionRoleName}-${region}`;
+        const taskRoleArn = `arn:aws:iam::${identity.Account}:role/${cdkConfig.ecsTaskRoleName}-${region}`;
 
         // Register Task Definition
         const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
@@ -49,6 +54,7 @@ export class ECSServerManager implements ServerManager {
             cpu: variantConfig.cpu.toString(),
             memory: variantConfig.memory.toString(),
             executionRoleArn: taskExecutionRoleArn,
+            taskRoleArn: taskRoleArn,
             containerDefinitions: [
                 {
                     name: "tf2-server",
@@ -142,6 +148,7 @@ export class ECSServerManager implements ServerManager {
             taskDefinition: taskDefinitionArn,
             desiredCount: 1,
             launchType: "FARGATE",
+            enableExecuteCommand: true,
             networkConfiguration: {
                 awsvpcConfiguration: {
                     subnets,
@@ -164,7 +171,6 @@ export class ECSServerManager implements ServerManager {
             services: [serviceArn]
         },);
 
-        // Gets the TaskArn from the Service
 
         // List tasks associated with the service
         const listTasksResponse = await ecsClient.send(
@@ -189,16 +195,87 @@ export class ECSServerManager implements ServerManager {
         const networkInterface = networkInterfaceResponse.NetworkInterfaces?.[0]!;
         const publicIp = networkInterface.Association?.PublicIp!;
 
+
+        // Wait until the Agent is ready to receive commands
+        // Run the RCON status command using ECS Exec
+
+        let statusOutput: string[] = [];
+        await waitUntil(async () => {
+            try {
+                const executeCommandResponse = await ecsClient.send(new ExecuteCommandCommand({
+                    cluster: cdkConfig.ecsClusterName,
+                    container: "tf2-server",
+                    command: `/home/tf2/server/rcon -H 0.0.0.0 -p 27015 -P "${rconPassword}" status`,
+                    interactive: true,
+                    task: taskArn,
+                }));
+
+                console.log(JSON.stringify(executeCommandResponse))
+
+                const sessionId = executeCommandResponse.session?.sessionId;
+                if (!sessionId) {
+                    throw new Error("Failed to start ECS Exec session.");
+                }
+                const ssmClient = new SSMClient({ region });
+                const commandSession = await ssmClient.send(new DescribeSessionsCommand({
+                    State: "History",
+                    Filters: [
+                        {
+                            key: "SessionId",
+                            value: sessionId,
+                        },  
+                    ],
+                }))
+                console.log(JSON.stringify(commandSession))
+                const commandInvocation = await ssmClient.send(new GetCommandInvocationCommand({
+                    CommandId: commandSession.Sessions?.[0]?.SessionId,
+                    InstanceId: commandSession.Sessions?.[0]?.Target,
+                }))
+                console.log(JSON.stringify(commandInvocation))
+                statusOutput.push(commandInvocation.StandardOutputContent!);
+                return true;
+            } catch (error) {
+                console.error("Error executing ECS Exec command:", error);
+                return false; // Retry if there's an error
+            }
+        }, {
+            timeout: 60 * 1000, // 60 seconds
+            intervalBetweenAttempts: 5 * 1000, // 5 seconds
+        })
+
+
+        // Extract the relevant information from the command output
+        const sdrIpRegex = /udp\/ip\s*:\s*([\d.]+:\d+)/;
+        const sdrTvRegex = /sourcetv:\s*([\d.]+:\d+)/;
+
+        const srdIpMatch = statusOutput.find(line => sdrIpRegex.test(line));
+        const tvIpMatch = statusOutput.find(line => sdrTvRegex.test(line));
+
+        if (!srdIpMatch || !tvIpMatch) {
+            throw new Error("Failed to extract server information from command output.");
+        }
+
+        const sdrAddress = srdIpMatch.match(sdrIpRegex)?.[1];
+        const tvAddress = tvIpMatch.match(sdrTvRegex)?.[1];
+
+        if (!sdrAddress || !tvAddress) {
+            throw new Error("Failed to parse server information from command output.");
+        }
+
+        const [sdrIp, sdrPort] = sdrAddress.split(":");
+        const [tvIp, tvPort] = tvAddress.split(":");
+
         return {
             serverId: serverId,
             region,
             variant: variantName,
-            hostIp: publicIp,
-            hostPort: 27015,
+            hostIp: sdrIp,
+            hostPort: Number(sdrPort),
             rconPassword,
+            rconAddress: publicIp,
             hostPassword: serverPassword,
-            tvIp: publicIp,
-            tvPort: 27020,
+            tvIp: tvIp,
+            tvPort: Number(tvPort),
             tvPassword: process.env.STV_PASSWORD || "",
         };
     }
