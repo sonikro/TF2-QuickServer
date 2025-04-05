@@ -124,7 +124,7 @@ describe("createServerCommandHandler", () => {
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
         })
-        await interaction.user.send({
+        expect(interaction.user.send).toHaveBeenCalledWith({
             content: `🎉 **Server Created Successfully!** 🎉\n\n` +
             `Here are your server details:\n\n` +
             `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
