@@ -1,37 +1,41 @@
-import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, DescribeSubnetsCommand, DescribeVpcsCommand, EC2Client } from "@aws-sdk/client-ec2";
-import { CreateServiceCommand, DeleteServiceCommand, DescribeTasksCommand, ECSClient, ListTasksCommand, RegisterTaskDefinitionCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
-import { DescribeFileSystemsCommand, EFSClient } from "@aws-sdk/client-efs";
-import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
-import waitUntil from "async-wait-until";
-import { Chance } from "chance";
+import { DescribeNetworkInterfacesCommand, DescribeSecurityGroupsCommand, DescribeSubnetsCommand, DescribeVpcsCommand } from "@aws-sdk/client-ec2";
+import { CreateServiceCommand, DeleteServiceCommand, DeleteTaskDefinitionsCommand, DeregisterTaskDefinitionCommand, DescribeServicesCommand, DescribeTasksCommand, ListTasksCommand, RegisterTaskDefinitionCommand, waitUntilServicesStable } from "@aws-sdk/client-ecs";
+import { DescribeFileSystemsCommand } from "@aws-sdk/client-efs";
+import { GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 import { v4 as uuid } from "uuid";
-import { ServerManager } from "../../application/services/ServerManager";
-import { DeployedServer, getCdkConfig, getRegionConfig, getVariantConfig, Region, Variant } from "../../domain";
+import { ConfigManager } from "../../core/utils/ConfigManager";
+import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
+import { AWSServiceFactory } from "../../core/services/AWSServiceFactory";
+import { ServerManager } from "../../core/services/ServerManager";
+import { DeployedServer, Region, Variant } from "../../core/domain";
+import { waitUntil } from "../../utils/waitUntil";
 import { ECSCommandExecutor } from "./ECSCommandExecutor";
 
 
 export class ECSServerManager implements ServerManager {
 
-    private readonly chance = new Chance();
-
     constructor(private readonly dependencies: {
         ecsCommandExecutor: ECSCommandExecutor;
-    }) {}
+        awsServiceFactory: AWSServiceFactory,
+        configManager: ConfigManager;
+        passwordGenerator: PasswordGenerator
+    }) { }
+
     async deployServer(args: { region: Region; variantName: Variant; }): Promise<DeployedServer> {
+        const { awsServiceFactory, ecsCommandExecutor, configManager, passwordGenerator } = this.dependencies;
         const { region, variantName } = args;
-        const variantConfig = getVariantConfig(variantName);
-        const regionConfig = getRegionConfig(region)
-        const cdkConfig = getCdkConfig();
+        const { ecsClient, efsClient, ec2Client, stsClient } = awsServiceFactory({ region });
+        const variantConfig = configManager.getVariantConfig(variantName);
+        const regionConfig = configManager.getRegionConfig(region)
+        const cdkConfig = configManager.getCdkConfig();
 
         const serverId = uuid()
 
-        const ecsClient = new ECSClient({ region });
-
-        const serverPassword = this.chance.string();
-        const rconPassword = this.chance.string();
-
+        const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false }
+        const serverPassword = passwordGenerator(passwordSettings);
+        const rconPassword = passwordGenerator(passwordSettings);
+        const tvPassword = passwordGenerator(passwordSettings);
         // Fetch the EFS File System ID by Name
-        const efsClient = new EFSClient({ region });
         // There is no filter for name in the DescribeFileSystemsCommand, so we need to fetch all file systems and filter by name
         const efsResponse = await efsClient.send(new DescribeFileSystemsCommand({}));
         const fileSystem = efsResponse.FileSystems?.find(fs => fs.Name === cdkConfig.efsName);
@@ -42,7 +46,6 @@ export class ECSServerManager implements ServerManager {
         }
 
         // Get TaskRole ARN from the Name
-        const stsClient = new STSClient({ region });
         // Get the account ID
         const identity = await stsClient.send(new GetCallerIdentityCommand());
         const taskExecutionRoleArn = `arn:aws:iam::${identity.Account}:role/${cdkConfig.ecsTaskExecutionRoleName}-${region}`;
@@ -71,7 +74,7 @@ export class ECSServerManager implements ServerManager {
                         { name: "LOGS_TF_APIKEY", value: process.env.LOGS_TF_APIKEY || "" },
                         { name: "RCON_PASSWORD", value: rconPassword },
                         { name: "STV_NAME", value: regionConfig.tvHostname },
-                        { name: "STV_PASSWORD", value: process.env.STV_PASSWORD || "" },
+                        { name: "STV_PASSWORD", value: tvPassword },
                     ],
                     command: [
                         "-enablefakeip",
@@ -106,7 +109,6 @@ export class ECSServerManager implements ServerManager {
         const taskDefinitionArn = taskDefinitionResponse.taskDefinition?.taskDefinitionArn!;
 
         // Reads the VPC and Subnets from the vpcName
-        const ec2Client = new EC2Client({ region });
 
         const vpcResponse = await ec2Client.send(new DescribeVpcsCommand({
             Filters: [
@@ -201,41 +203,33 @@ export class ECSServerManager implements ServerManager {
 
         // Wait until the Agent is ready to receive commands
         // Run the RCON status command using ECS Exec
-        const statusOutput = await waitUntil(async () => {
-            try {
-                const result =  await this.dependencies.ecsCommandExecutor.runCommand({
-                    taskArn,
-                    command: `/home/tf2/server/rcon -H ${privateIp} -p 27015 -P "${rconPassword}" status`,
-                    cluster: cdkConfig.ecsClusterName,
-                    containerName: "tf2-server",
-                    ecsClient,
-                });
+        const { sdrAddress, tvAddress } = await waitUntil<{ sdrAddress: string, tvAddress: string }>(async () => {
+            const result = await ecsCommandExecutor.runCommand({
+                taskArn,
+                command: `/home/tf2/server/rcon -H ${privateIp} -p 27015 -P "${rconPassword}" status`,
+                cluster: cdkConfig.ecsClusterName,
+                containerName: "tf2-server",
+                ecsClient,
+            });
 
-                if(result.includes(`Failed`)){
-                    // Server is not ready yet, return empty string to retry
-                    return ``; // Return an empty string to indicate failure
-                }
-                return result
-            } catch (error) {
-                // Log the error and retry
-                console.error("Error executing RCON command, retrying...", error);
-                return ``; // Return an empty string to indicate failure
+            // Extract the relevant information from the command output
+            const sdrIpRegex = /udp\/ip\s*:\s*([\d.]+:\d+)/;
+            const sdrTvRegex = /sourcetv:\s*([\d.]+:\d+)/;
+
+            const sdrAddress: string | undefined = result.match(sdrIpRegex)?.[1];
+            const tvAddress: string | undefined = result.match(sdrTvRegex)?.[1];
+
+            if (!sdrAddress || !tvAddress) {
+                throw new Error("Server is not ready yet");
+            }
+            return {
+                sdrAddress,
+                tvAddress,
             }
         }, {
-            timeout: 60000, // 60 seconds
-            intervalBetweenAttempts: 5000, // 5 seconds
+            timeout: 120000, // 120 seconds
+            interval: 5000, // 5 seconds
         });
-
-        // Extract the relevant information from the command output
-        const sdrIpRegex = /udp\/ip\s*:\s*([\d.]+:\d+)/;
-        const sdrTvRegex = /sourcetv:\s*([\d.]+:\d+)/;
-
-        const sdrAddress = statusOutput.match(sdrIpRegex)?.[1];
-        const tvAddress = statusOutput.match(sdrTvRegex)?.[1];
-
-        if (!sdrAddress || !tvAddress) {
-            throw new Error("Failed to parse server information from command output.");
-        }
 
         const [sdrIp, sdrPort] = sdrAddress.split(":");
         const [tvIp, tvPort] = tvAddress.split(":");
@@ -251,16 +245,28 @@ export class ECSServerManager implements ServerManager {
             hostPassword: serverPassword,
             tvIp: tvIp,
             tvPort: Number(tvPort),
-            tvPassword: process.env.STV_PASSWORD || "",
+            tvPassword,
         };
     }
 
     async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
+        const { awsServiceFactory, configManager } = this.dependencies;
         const { serverId, region } = args;
-        const cdkConfig = getCdkConfig();
-        const ecsClient = new ECSClient({ region });
+        const cdkConfig = configManager.getCdkConfig();
+        const { ecsClient } = awsServiceFactory({ region });
 
         const serviceName = serverId;
+
+        // Describe the service to get the task definition
+        const describeServiceResponse = await ecsClient.send(new DescribeServicesCommand({
+            cluster: cdkConfig.ecsClusterName,
+            services: [serviceName],
+        }));
+
+        const taskDefinitionArn = describeServiceResponse.services?.[0]?.taskDefinition;
+        if (!taskDefinitionArn) {
+            throw new Error(`Task definition not found for service ${serviceName}`);
+        }
 
         // Delete the service with force flag
         await ecsClient.send(new DeleteServiceCommand({
@@ -269,5 +275,14 @@ export class ECSServerManager implements ServerManager {
             force: true,
         }));
 
+        // Deregister the task definition
+        await ecsClient.send(new DeregisterTaskDefinitionCommand({
+            taskDefinition: taskDefinitionArn,
+        }));
+
+        // Delete the Task Definition
+        await ecsClient.send(new DeleteTaskDefinitionsCommand({
+            taskDefinitions: [taskDefinitionArn],
+        }))
     }
 }

@@ -80,7 +80,6 @@ AWS_ACCOUNT_ID=
 
 DEMOS_TF_APIKEY=
 LOGS_TF_APIKEY=
-STV_PASSWORD=
 ```
 
 ### **3️⃣ Install Dependencies**

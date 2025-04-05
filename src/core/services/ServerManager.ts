@@ -1,4 +1,4 @@
-import { Variant, DeployedServer, Region} from "../../domain";
+import { Variant, DeployedServer, Region} from "../domain";
 
 export interface ServerManager {
     /**

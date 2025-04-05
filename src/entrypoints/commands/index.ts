@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import { ServerManager } from "../../application/services/ServerManager";
+import { ServerManager } from "../../core/services/ServerManager";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 

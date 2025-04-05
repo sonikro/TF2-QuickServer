@@ -8,7 +8,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 import * as path from 'path';
-import { CdkConfig, getCdkConfig } from '../../../domain/CDKConfig';
+import { CdkConfig, getCdkConfig } from '../../../core/domain/CDKConfig';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 
 
