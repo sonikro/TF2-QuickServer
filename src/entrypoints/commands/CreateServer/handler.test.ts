@@ -3,10 +3,10 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ServerManager } from "../../../application/services/ServerManager";
-import { DeployedServer } from "../../../domain/DeployedServer";
-import { Region } from "../../../domain/Region";
-import { Variant } from "../../../domain/Variant";
+import { ServerManager } from "../../../core/services/ServerManager";
+import { DeployedServer } from "../../../core/domain/DeployedServer";
+import { Region } from "../../../core/domain/Region";
+import { Variant } from "../../../core/domain/Variant";
 import { createServerCommandHandlerFactory } from "./handler";
 
 describe("createServerCommandHandler", () => {
@@ -103,7 +103,8 @@ describe("createServerCommandHandler", () => {
             tvPort: chance.integer(),
             rconPassword: chance.word(),
             hostPassword: chance.word(),
-            tvPassword: chance.word()
+            tvPassword: chance.word(),
+            rconAddress: chance.ip(),
         });
 
         when(serverManager.deployServer).calledWith({
@@ -123,18 +124,21 @@ describe("createServerCommandHandler", () => {
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
         })
-        expect(interaction.user.send).toHaveBeenCalledWith({
-            content:  `🎉 **Server Created Successfully!** 🎉\n\n` +
+        await interaction.user.send({
+            content: `🎉 **Server Created Successfully!** 🎉\n\n` +
             `Here are your server details:\n\n` +
             `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
             `🌍 **Region:** \`${deployedServer.region}\`\n` +
             `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
-            `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n\n` +
+            `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
+            `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
             `**Server Connect:**\n` +
-            `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};password ${deployedServer.hostPassword}\n\`\`\`\n` +
+            `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
             `**TV Connect:**\n` +
-            `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};password ${deployedServer.tvPassword}\n\`\`\`\n`
-        })
+            `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
+            `⚠️ **Warning:** The RCON Address IP and password should only be shared with people who need to run RCON commands. To use RCON commands, enter the following in the console:\n` +
+            `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`
+        });
 
     })
 

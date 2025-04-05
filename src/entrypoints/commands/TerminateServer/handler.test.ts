@@ -3,9 +3,9 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ServerManager } from "../../../application/services/ServerManager";
+import { ServerManager } from "../../../core/services/ServerManager";
 import { terminateServerHandlerFactory } from "./handler";
-import { Region } from "../../../domain";
+import { Region } from "../../../core/domain";
 
 describe("terminateServerCommandHandler", () => {
     const chance = new Chance();

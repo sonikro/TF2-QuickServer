@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getEnabledRegions, RegionNames } from "../../../domain";
+import { getEnabledRegions, RegionNames } from "../../../core/domain";
 
 export const terminateServerCommandDefinition = new SlashCommandBuilder()
     .setName('terminate-server')

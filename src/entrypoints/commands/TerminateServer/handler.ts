@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { ServerManager } from "../../../application/services/ServerManager";
-import { Region } from "../../../domain";
+import { ServerManager } from "../../../core/services/ServerManager";
+import { Region } from "../../../core/domain";
 
 export function terminateServerHandlerFactory(dependencies: {
     serverManager: ServerManager

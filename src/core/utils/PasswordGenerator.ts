@@ -1,0 +1,1 @@
+export type PasswordGenerator = (args?: { length?: number, alpha?: boolean, numeric?: boolean; symbols?: boolean }) => string

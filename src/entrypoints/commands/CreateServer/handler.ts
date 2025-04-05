@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { ServerManager } from "../../../application/services/ServerManager";
-import { isValidRegion } from "../../../domain/Region";
-import { isValidVariant } from "../../../domain/Variant";
+import { ServerManager } from "../../../core/services/ServerManager";
+import { isValidRegion } from "../../../core/domain/Region";
+import { isValidVariant } from "../../../core/domain/Variant";
 
 export function createServerCommandHandlerFactory(dependencies: {
     serverManager: ServerManager
@@ -43,7 +43,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                     `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
                     `🌍 **Region:** \`${deployedServer.region}\`\n` +
                     `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
-                    `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n\n` +
+                    `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
                     `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
                     `**Server Connect:**\n` +
                     `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +

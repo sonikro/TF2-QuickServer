@@ -1,7 +1,10 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import { ECSServerManager } from "../services/aws/ECSServerManager";
+import { ECSCommandExecutor } from "../providers/services/ECSCommandExecutor";
+import { ECSServerManager } from "../providers/services/ECSServerManager";
+import { defaultAwsServiceFactory } from "../providers/services/defaultAwsServiceFactory";
+import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
+import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
 import { createCommands } from "./commands";
-import { ECSCommandExecutor } from "../services/aws/ECSCommandExecutor";
 
 export async function startDiscordBot() {
 
@@ -26,6 +29,9 @@ export async function startDiscordBot() {
     const discordCommands = createCommands({
         serverManager: new ECSServerManager({
             ecsCommandExecutor: ECSCommandExecutor.getInstance(),
+            awsServiceFactory: defaultAwsServiceFactory,
+            configManager: defaultConfigManager,
+            passwordGenerator: chancePasswordGenerator
         })
     })
 
