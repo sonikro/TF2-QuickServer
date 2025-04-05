@@ -167,18 +167,6 @@ npm run cdk:bootstrap
 
 For additional details, refer to the [AWS CDK Bootstrap documentation](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html).
 
-```bash
-npm run cdk:deploy
-```
-
-> ⚠️ **Warning:** If this is the first time you are using the CDK in your AWS Account, please run the following command to initialize the required infrastructure for using AWS CDK:
-
-```bash
-npm run cdk:bootstrap
-```
-
-For more information, check the [official AWS CDK Bootstrap documentation](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html).
-
 ### **6️⃣ Run the Bot**
 Start the bot in development mode:
 
@@ -199,7 +187,7 @@ This project is licensed under the **MIT License**.
 ---
 
 ## 🌟 Support & Feedback
-Have questions or need support? Join our **Discord Community** or open an **issue** on GitHub.
+Have questions or need support? Open an [issue](https://github.com/sonikro/TF2-QuickServer/issues) on GitHub.
 
 🎩 _Get ready to deploy your TF2 servers in seconds with TF2-QuickServer!_
 
