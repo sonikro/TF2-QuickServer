@@ -23,7 +23,7 @@
     },
     "variants": {
         "standard-competitive": {
-            "image": "ghcr.io/melkortf/tf2-competitive:latest",
+            "image": "sonikro/tf2-standard-competitive:latest",
             "cpu": 1024,
             "memory": 2048,
             "maxPlayers": 24,

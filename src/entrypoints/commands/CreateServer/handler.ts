@@ -9,6 +9,7 @@ export function createServerCommandHandlerFactory(dependencies: {
         const { createServerForUser } = dependencies;
         const region = interaction.options.getString('region') as Region;
         const variantName = interaction.options.getString('variant_name') as Variant;
+        const adminSteamId = interaction.options.getString('admin_steam_id');
 
         await interaction.deferReply();
         // Create server
@@ -20,7 +21,8 @@ export function createServerCommandHandlerFactory(dependencies: {
             const deployedServer = await createServerForUser.execute({
                 region: region,
                 variantName: variantName!,
-                creatorId: interaction.user.id
+                creatorId: interaction.user.id,
+                adminSteamId: adminSteamId!
             })
 
             await interaction.user.send({

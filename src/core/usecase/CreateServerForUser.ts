@@ -13,11 +13,13 @@ export class CreateServerForUser {
         region: Region,
         variantName: Variant,
         creatorId: string
+        adminSteamId?: string
     }): Promise<Server> {
         const { serverManager, serverRepository } = this.dependencies;
         const server = await serverManager.deployServer({
             region: args.region,
             variantName: args.variantName,
+            sourcemodAdminSteamId: args.adminSteamId,
         });
         await serverRepository.upsertServer({
             ...server,
