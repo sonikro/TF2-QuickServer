@@ -1,7 +1,8 @@
-version: "3.8"
 services:
   tf2-server:
-    image: ghcr.io/melkortf/tf2-competitive:latest
+    build:
+      context: ./variants/standard-competitive
+      dockerfile: Dockerfile
     container_name: tf2-server
     environment:
       SERVER_HOSTNAME: Local TF2 Server
@@ -11,13 +12,12 @@ services:
       RCON_PASSWORD: ${RCON_PASSWORD:-""}
       STV_NAME: ${TV_NAME:-""}
       STV_PASSWORD: ${TV_PASSWORD:-""}
+      ADMIN_STEAM_ID: ${ADMIN_STEAM_ID:-""}
     command:
       - "-enablefakeip"
       - "+sv_pure"
-      - "2~
+      - "2"
       - "+maxplayers"
       - "24"
       - "+map"
       - "cp_badlands"
-    volumes:
-      - ./maps:/home/tf2/server/tf/maps:ro
