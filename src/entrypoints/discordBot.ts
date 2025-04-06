@@ -9,6 +9,10 @@ import { createCommands } from "./commands";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
+import { scheduleServerCleanupRoutine } from "./jobs";
+import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
+import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
+import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 
 export async function startDiscordBot() {
 
@@ -42,6 +46,9 @@ export async function startDiscordBot() {
     const serverRepository = new SQLiteServerRepository({
         knex: KnexConnectionManager.client,
     })
+    const serverActivityRepository = new SQliteServerActivityRepository({
+        knex: KnexConnectionManager.client,
+    })
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ecsServerManager,
@@ -51,6 +58,17 @@ export async function startDiscordBot() {
             serverManager: ecsServerManager,
             serverRepository
         }),
+    })
+
+    const serverCommander = new RCONServerCommander()
+    // Schedule jobs
+    scheduleServerCleanupRoutine({
+        terminateEmptyServers: new TerminateEmptyServers({
+            serverManager: ecsServerManager,
+            serverRepository,
+            serverActivityRepository: serverActivityRepository,
+            serverCommander: serverCommander
+        })
     })
 
     // Slash commands
@@ -90,7 +108,7 @@ export async function startDiscordBot() {
             await command.handler(chatInputInteraction);
         }
         catch (error) {
-            if(error.name === 'UserError') {
+            if (error.name === 'UserError') {
                 await chatInputInteraction.reply({
                     content: error.message
                 })

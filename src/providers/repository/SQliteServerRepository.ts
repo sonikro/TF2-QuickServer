@@ -4,9 +4,7 @@ import { ServerRepository } from "../../core/repository/ServerRepository";
 
 export class SQLiteServerRepository implements ServerRepository {
 
-    constructor(private readonly dependencies: {
-        knex: Knex
-    }){}
+    constructor(private readonly dependencies: { knex: Knex }) {}
 
     async upsertServer(server: Server): Promise<void> {
         await this.dependencies.knex<Server>('servers')
@@ -22,12 +20,13 @@ export class SQLiteServerRepository implements ServerRepository {
                 hostPassword: server.hostPassword,
                 rconAddress: server.rconAddress,
                 tvPassword: server.tvPassword,
-                createdAt: new Date(),
+                createdAt: server.createdAt ?? new Date(),
                 createdBy: server.createdBy
             } as Server)
             .onConflict('serverId')
             .merge();
     }
+
     async deleteServer(serverId: string): Promise<void> {
         await this.dependencies.knex<Server>('servers')
             .where({ serverId })
@@ -38,7 +37,25 @@ export class SQLiteServerRepository implements ServerRepository {
         const server = await this.dependencies.knex<Server>('servers')
             .where({ serverId })
             .first();
-        return server || null;
+
+        return server ? this.deserialize(server) : null;
     }
 
+    async getAllServers(): Promise<Server[]> {
+        const servers = await this.dependencies.knex<Server>('servers')
+            .select('*');
+
+        return servers.map(this.deserialize);
+    }
+
+    private deserialize(server: any): Server {
+        return {
+            ...server,
+            createdAt: toDate(server.createdAt),
+        };
+    }
+}
+
+function toDate(value: any): Date | undefined {
+    return value ? new Date(value) : undefined;
 }

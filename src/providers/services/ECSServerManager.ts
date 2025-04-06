@@ -10,6 +10,7 @@ import { ServerManager } from "../../core/services/ServerManager";
 import { Server, Region, Variant } from "../../core/domain";
 import { waitUntil } from "../utils/waitUntil";
 import { ECSCommandExecutor } from "./ECSCommandExecutor";
+import { ServerStatus } from "../../core/domain/ServerStatus";
 
 
 export class ECSServerManager implements ServerManager {
@@ -212,19 +213,14 @@ export class ECSServerManager implements ServerManager {
                 ecsClient,
             });
 
-            // Extract the relevant information from the command output
-            const sdrIpRegex = /udp\/ip\s*:\s*([\d.]+:\d+)/;
-            const sdrTvRegex = /sourcetv:\s*([\d.]+:\d+)/;
+            const serverStatus = new ServerStatus(result);
 
-            const sdrAddress: string | undefined = result.match(sdrIpRegex)?.[1];
-            const tvAddress: string | undefined = result.match(sdrTvRegex)?.[1];
-
-            if (!sdrAddress || !tvAddress) {
+            if (!serverStatus.sourceTVIp || !serverStatus.serverIp) {
                 throw new Error("Server is not ready yet");
             }
             return {
-                sdrAddress,
-                tvAddress,
+                sdrAddress: `${serverStatus.serverIp}:${serverStatus.serverPort}`,
+                tvAddress: `${serverStatus.sourceTVIp}:${serverStatus.sourceTVPort}`,
             }
         }, {
             timeout: 120000, // 120 seconds
