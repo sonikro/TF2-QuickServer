@@ -16,6 +16,7 @@ import { CdkConfig, Region, RegionConfig, Server, Variant, VariantConfig } from 
 import { ECSCommandExecutor } from "./ECSCommandExecutor";
 import { ECSServerManager } from "./ECSServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
+import { ServerCommander } from "../../core/services/ServerCommander";
 
 expect.extend(allCustomMatcher)
 
@@ -80,7 +81,7 @@ const createTestEnvironment = () => {
         ecsTaskRoleName: chance.string()
     }
 
-    const ecsCommandExecutor = mock<ECSCommandExecutor>();
+    const serverCommander = mock<ServerCommander>();
 
     process.env.DEMOS_TF_APIKEY = chance.string();
     process.env.LOGS_TF_APIKEY = chance.string();
@@ -121,7 +122,7 @@ const createTestEnvironment = () => {
             stsMock,
         },
         mocks: {
-            ecsCommandExecutor,
+            serverCommander,
             configManager,
             passwordGenerator
         },
@@ -149,7 +150,7 @@ const createTestEnvironment = () => {
             privateIP,
         },
         sut: new ECSServerManager({
-            ecsCommandExecutor,
+            serverCommander,
             awsServiceFactory: () => ({
                 ecsClient: ecsMock as unknown as ECSClient,
                 ec2Client: ec2Mock as unknown as EC2Client,
@@ -188,7 +189,7 @@ const givenTheExpectedMockResults = (testEnvironment: ReturnType<typeof createTe
             tvPort,
             privateIP
         },
-        mocks: { ecsCommandExecutor, configManager }
+        mocks: { serverCommander, configManager }
     } = testEnvironment;
 
     when(configManager.getVariantConfig).calledWith(variantName).thenReturn(variantConfig);
@@ -313,13 +314,12 @@ const givenTheExpectedMockResults = (testEnvironment: ReturnType<typeof createTe
 
     vi.mocked(v4).mockReturnValue(serverId as any);
 
-
-    when(ecsCommandExecutor.runCommand).calledWith({
-        cluster: cdkConfig.ecsClusterName,
-        command: expect.stringContaining("status"),
-        containerName: "tf2-server",
-        ecsClient: expect.anything(),
-        taskArn: taskArn,
+    when(serverCommander.query).calledWith({
+        command: "status",
+        host: publicIp,
+        password: expect.any(String),
+        port: 27015,
+        timeout: 5000,
     }).thenResolve(`"hostname: TF2-QuickServer | Virginia @ Sonikro Solutions\r
 version : 9543365/24 9543365 secure\r
 udp/ip  : ${sdrIp}:${sdrPort}  (local: 0.0.0.0:27015)  (public IP from Steam: 52.70.193.105)\r

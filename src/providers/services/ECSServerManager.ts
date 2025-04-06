@@ -3,27 +3,27 @@ import { CreateServiceCommand, DeleteServiceCommand, DeleteTaskDefinitionsComman
 import { DescribeFileSystemsCommand } from "@aws-sdk/client-efs";
 import { GetCallerIdentityCommand } from "@aws-sdk/client-sts";
 import { v4 as uuid } from "uuid";
+import { Region, Server, Variant } from "../../core/domain";
+import { ServerStatus } from "../../core/domain/ServerStatus";
+import { AWSServiceFactory } from "../../core/services/AWSServiceFactory";
+import { ServerCommander } from "../../core/services/ServerCommander";
+import { ServerManager } from "../../core/services/ServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
-import { AWSServiceFactory } from "../../core/services/AWSServiceFactory";
-import { ServerManager } from "../../core/services/ServerManager";
-import { Server, Region, Variant } from "../../core/domain";
 import { waitUntil } from "../utils/waitUntil";
-import { ECSCommandExecutor } from "./ECSCommandExecutor";
-import { ServerStatus } from "../../core/domain/ServerStatus";
 
 
 export class ECSServerManager implements ServerManager {
 
     constructor(private readonly dependencies: {
-        ecsCommandExecutor: ECSCommandExecutor;
+        serverCommander: ServerCommander;
         awsServiceFactory: AWSServiceFactory,
         configManager: ConfigManager;
         passwordGenerator: PasswordGenerator
     }) { }
 
     async deployServer(args: { region: Region; variantName: Variant; }): Promise<Server> {
-        const { awsServiceFactory, ecsCommandExecutor, configManager, passwordGenerator } = this.dependencies;
+        const { awsServiceFactory, serverCommander, configManager, passwordGenerator } = this.dependencies;
         const { region, variantName } = args;
         const { ecsClient, efsClient, ec2Client, stsClient } = awsServiceFactory({ region });
         const variantConfig = configManager.getVariantConfig(variantName);
@@ -165,6 +165,8 @@ export class ECSServerManager implements ServerManager {
 
         const serviceArn = serviceResponse.service?.serviceArn!;
 
+        console.log(`Service created: ${serviceArn}. Waiting for it to be stable...`);
+
         // Wait for the service to be healthy
         await waitUntilServicesStable({
             client: ecsClient,
@@ -176,6 +178,8 @@ export class ECSServerManager implements ServerManager {
             services: [serviceArn]
         },);
 
+
+        console.log(`Service is stable: ${serviceArn}.`);
 
         // List tasks associated with the service
         const listTasksResponse = await ecsClient.send(
@@ -204,14 +208,15 @@ export class ECSServerManager implements ServerManager {
 
         // Wait until the Agent is ready to receive commands
         // Run the RCON status command using ECS Exec
+        console.log(`Waiting for the server to be ready...`);
         const { sdrAddress, tvAddress } = await waitUntil<{ sdrAddress: string, tvAddress: string }>(async () => {
-            const result = await ecsCommandExecutor.runCommand({
-                taskArn,
-                command: `/home/tf2/server/rcon -H ${privateIp} -p 27015 -P "${rconPassword}" status`,
-                cluster: cdkConfig.ecsClusterName,
-                containerName: "tf2-server",
-                ecsClient,
-            });
+            const result = await serverCommander.query({
+                command: "status",
+                host: publicIp,
+                password: rconPassword,
+                port: 27015,
+                timeout: 5000,
+            })
 
             const serverStatus = new ServerStatus(result);
 
@@ -229,6 +234,8 @@ export class ECSServerManager implements ServerManager {
 
         const [sdrIp, sdrPort] = sdrAddress.split(":");
         const [tvIp, tvPort] = tvAddress.split(":");
+
+        console.log(`Server ${serverId} is ready.`);
 
         return {
             serverId: serverId,
