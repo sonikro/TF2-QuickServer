@@ -1,10 +1,12 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import { ServerManager } from "../../core/services/ServerManager";
+import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
+import { DeleteServerForUser } from "../../core/usecase/DeleteServerForUser";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 
 export type CommandDependencies = {
-    serverManager: ServerManager;
+    createServerForUser: CreateServerForUser;
+    deleteServerForUser: DeleteServerForUser;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -12,12 +14,16 @@ export function createCommands(dependencies: CommandDependencies) {
         createServer: {
             name: "create-server",
             definition: createServerCommandDefinition,
-            handler: createServerCommandHandlerFactory(dependencies),
+            handler: createServerCommandHandlerFactory({
+                createServerForUser: dependencies.createServerForUser,
+            }),
         },
         terminateServer: {
             name: "terminate-server",
             definition: terminateServerCommandDefinition,
-            handler: terminateServerHandlerFactory(dependencies),
+            handler: terminateServerHandlerFactory({
+                deleteServerForUser: dependencies.deleteServerForUser,
+            }),
         },
     } satisfies Record<string, {
         name: string;

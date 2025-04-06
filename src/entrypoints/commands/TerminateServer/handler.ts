@@ -1,25 +1,22 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { ServerManager } from "../../../core/services/ServerManager";
 import { Region } from "../../../core/domain";
+import { DeleteServerForUser } from "../../../core/usecase/DeleteServerForUser";
 
 export function terminateServerHandlerFactory(dependencies: {
-    serverManager: ServerManager
+    deleteServerForUser: DeleteServerForUser
 }) {
     return async function terminateServerCommandHandler(interaction: ChatInputCommandInteraction) {
         const serverId = interaction.options.getString('server_id');
         const region = interaction.options.getString('region');
+        const userId = interaction.user.id;
+        const { deleteServerForUser } = dependencies;
+        await deleteServerForUser.execute({
+            region: region as Region,
+            serverId: serverId!,
+            userId: userId,
+        })
 
-        try {
-            await dependencies.serverManager.deleteServer({
-                region: region as Region,
-                serverId: serverId!
-            })
-    
-            await interaction.reply(`Server has been terminated.`);
-        } catch (error) {
-            console.error("Error terminating server:", error);
-            await interaction.reply(`Failed to terminate server. Please contact the administrator.`);
-        }
+        await interaction.reply(`Server has been terminated.`);
     }
 
 }

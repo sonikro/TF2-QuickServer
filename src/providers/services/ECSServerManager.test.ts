@@ -12,7 +12,7 @@ import { v4 } from "uuid";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { CdkConfig, DeployedServer, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
+import { CdkConfig, Region, RegionConfig, Server, Variant, VariantConfig } from "../../core/domain";
 import { ECSCommandExecutor } from "./ECSCommandExecutor";
 import { ECSServerManager } from "./ECSServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
@@ -359,7 +359,7 @@ describe("ECSServerManager", () => {
         } = testEnvironment
         describe("happy path", () => {
 
-            let deployedServer: DeployedServer;
+            let deployedServer: Server;
             let registerTaskDefinitionCommandInput: RegisterTaskDefinitionCommandInput
             let createServiceCommandInput: CreateServiceCommandInput
 
@@ -526,7 +526,7 @@ describe("ECSServerManager", () => {
                     hostPassword: expect.any(String),
                     rconAddress: publicIp,
                     tvPassword: expect.any(String),
-                } as DeployedServer);
+                } as Server);
             })
         })
 

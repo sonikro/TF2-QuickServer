@@ -1,12 +1,18 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
 import { ECSCommandExecutor } from "../providers/services/ECSCommandExecutor";
 import { ECSServerManager } from "../providers/services/ECSServerManager";
+import { KnexConnectionManager } from "../providers/repository/KnexConnectionManager";
 import { defaultAwsServiceFactory } from "../providers/services/defaultAwsServiceFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
 import { createCommands } from "./commands";
+import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
+import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
+import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
 
 export async function startDiscordBot() {
+
+    KnexConnectionManager.initialize();
 
     // Initialize the client with necessary intents
     const client = new Client({
@@ -26,13 +32,25 @@ export async function startDiscordBot() {
     }
 
     // Initialize Bot Dependencies
+    const ecsServerManager = new ECSServerManager({
+        ecsCommandExecutor: ECSCommandExecutor.getInstance(),
+        awsServiceFactory: defaultAwsServiceFactory,
+        configManager: defaultConfigManager,
+        passwordGenerator: chancePasswordGenerator
+    })
+
+    const serverRepository = new SQLiteServerRepository({
+        knex: KnexConnectionManager.client,
+    })
     const discordCommands = createCommands({
-        serverManager: new ECSServerManager({
-            ecsCommandExecutor: ECSCommandExecutor.getInstance(),
-            awsServiceFactory: defaultAwsServiceFactory,
-            configManager: defaultConfigManager,
-            passwordGenerator: chancePasswordGenerator
-        })
+        createServerForUser: new CreateServerForUser({
+            serverManager: ecsServerManager,
+            serverRepository
+        }),
+        deleteServerForUser: new DeleteServerForUser({
+            serverManager: ecsServerManager,
+            serverRepository
+        }),
     })
 
     // Slash commands
@@ -65,15 +83,21 @@ export async function startDiscordBot() {
         // Check if the command exists in the DiscordCommands object
         const command = Object.values(discordCommands).find(cmd => cmd.name === commandName);
         if (!command) {
-            await chatInputInteraction.reply({ content: 'Command not found'});
+            await chatInputInteraction.reply({ content: 'Command not found' });
             return;
         }
         try {
             await command.handler(chatInputInteraction);
         }
         catch (error) {
-            console.error(`Error executing command ${commandName}:`, error);
-            await chatInputInteraction.reply({ content: 'There was an error while executing this command!' });
+            if(error.name === 'UserError') {
+                await chatInputInteraction.reply({
+                    content: error.message
+                })
+            } else {
+                console.error(`Error executing command ${commandName}:`, error);
+                await chatInputInteraction.reply({ content: 'There was an error while executing this command!' });
+            }
         }
     });
 

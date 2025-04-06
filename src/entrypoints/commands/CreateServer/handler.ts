@@ -1,30 +1,14 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { ServerManager } from "../../../core/services/ServerManager";
-import { isValidRegion } from "../../../core/domain/Region";
-import { isValidVariant } from "../../../core/domain/Variant";
+import { Region, Variant } from "../../../core/domain";
+import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 
 export function createServerCommandHandlerFactory(dependencies: {
-    serverManager: ServerManager
+    createServerForUser: CreateServerForUser
 }) {
     return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
-        const { serverManager } = dependencies;
-        const region = interaction.options.getString('region');
-        const variantName = interaction.options.getString('variant_name');
-
-        // Validate inputs
-        if (!isValidRegion(region!)) {
-            await interaction.reply({
-                content: `Invalid region: ${region}`,
-            });
-            return;
-        }
-
-        if (!isValidVariant(variantName!)) {
-            await interaction.reply({
-                content: `Invalid variant name: ${variantName}`,
-            });
-            return;
-        }
+        const { createServerForUser } = dependencies;
+        const region = interaction.options.getString('region') as Region;
+        const variantName = interaction.options.getString('variant_name') as Variant;
 
         await interaction.deferReply();
         // Create server
@@ -32,9 +16,11 @@ export function createServerCommandHandlerFactory(dependencies: {
             await interaction.followUp({
                 content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
             })
-            const deployedServer = await serverManager.deployServer({
+
+            const deployedServer = await createServerForUser.execute({
                 region: region,
-                variantName: variantName!
+                variantName: variantName!,
+                creatorId: interaction.user.id
             })
 
             await interaction.user.send({
@@ -60,9 +46,15 @@ export function createServerCommandHandlerFactory(dependencies: {
 
         } catch (error) {
             console.error('Error creating server:', error);
-            await interaction.editReply({
-                content: `There was an error creating the server. Please reach out to the App Administrator.`,
-            })
+            if(error.name === 'UserError') {
+                await interaction.editReply({
+                    content: error.message
+                })
+            } else {
+                await interaction.editReply({
+                    content: `There was an error creating the server. Please reach out to the App Administrator.`,
+                })
+            }
         }
     }
 }

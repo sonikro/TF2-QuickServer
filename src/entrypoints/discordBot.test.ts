@@ -2,8 +2,21 @@ import { Client, CommandInteraction, REST, Routes } from 'discord.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
+import { UserError } from '../core/errors/UserError';
+import { KnexConnectionManager } from '../providers/repository/KnexConnectionManager';
 import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
+
+vi.mock("../providers/repository/KnexConnectionManager", async () => {
+    const actual = await import("../providers/repository/KnexConnectionManager") as typeof import('../providers/repository/KnexConnectionManager');
+    return {
+        ...actual,
+        KnexConnectionManager: {
+            initialize: vi.fn(),
+            client: mock(),
+        }
+    }
+})
 
 vi.mock("./commands", async (importOriginal) => {
     const actual = await importOriginal() as typeof import('./commands');
@@ -64,6 +77,9 @@ describe("startDiscordBot", () => {
             await startDiscordBot();
         })
 
+        it("should initialize KnexConnectionManager", () => {
+            expect(KnexConnectionManager.initialize).toHaveBeenCalled();
+        })
         it("should register all commands globally with Discord API", async () => {
             const expectedCommands = Object.values(discordCommands)
                 .map(command => command.definition.toJSON());
@@ -91,20 +107,20 @@ describe("startDiscordBot", () => {
                 const interaction = mock<CommandInteraction>()
                 when(interaction.isCommand).calledWith().thenReturn(true);
                 interaction.commandName = receivedCommand.name
-    
+
                 vi.spyOn(receivedCommand, 'handler').mockImplementation(() => Promise.resolve());
                 handler(interaction);
-    
+
                 expect(receivedCommand.handler).toHaveBeenCalledWith(interaction);
             })
 
             it("should ignore non-command interactions", () => {
                 const interaction = mock<CommandInteraction>()
                 when(interaction.isCommand).calledWith().thenReturn(false);
-    
+
                 const handler = client.on.mock.calls[0][1]; // the handler function
                 handler(interaction);
-    
+
                 expect(interaction.isCommand).toHaveBeenCalled();
             })
 
@@ -119,6 +135,21 @@ describe("startDiscordBot", () => {
                 expect(interaction.reply).toHaveBeenCalledWith({ content: 'Command not found' });
             })
 
+            it("should reply with an error message if the command handler throws a UserError", async () => {
+                const interaction = mock<CommandInteraction>()
+                when(interaction.isCommand).calledWith().thenReturn(true);
+                interaction.commandName = discordCommands.createServer.name;
+                const handler = client.on.mock.calls[0][1]; // the handler function
+                const error = new UserError('Test error');
+
+                vi.spyOn(discordCommands.createServer, 'handler').mockRejectedValue(error);
+
+                handler(interaction);
+
+                await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
+                expect(interaction.reply).toHaveBeenCalledWith({ content: error.message });
+            })
+
             it.each(Object.values(discordCommands))("should reply with an error message if the command handler for $name throws an error", async (receivedCommand) => {
                 const interaction = mock<CommandInteraction>()
                 when(interaction.isCommand).calledWith().thenReturn(true);
@@ -127,7 +158,7 @@ describe("startDiscordBot", () => {
                 const error = new Error('Test error');
 
                 vi.spyOn(receivedCommand, 'handler').mockRejectedValue(error);
-                
+
                 handler(interaction);
 
                 await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
