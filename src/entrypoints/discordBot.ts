@@ -36,8 +36,10 @@ export async function startDiscordBot() {
     }
 
     // Initialize Bot Dependencies
+    const serverCommander = new RCONServerCommander()
+
     const ecsServerManager = new ECSServerManager({
-        ecsCommandExecutor: ECSCommandExecutor.getInstance(),
+        serverCommander,
         awsServiceFactory: defaultAwsServiceFactory,
         configManager: defaultConfigManager,
         passwordGenerator: chancePasswordGenerator
@@ -60,7 +62,6 @@ export async function startDiscordBot() {
         }),
     })
 
-    const serverCommander = new RCONServerCommander()
     // Schedule jobs
     scheduleServerCleanupRoutine({
         terminateEmptyServers: new TerminateEmptyServers({
