@@ -3,82 +3,38 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ServerManager } from "../../../core/services/ServerManager";
-import { DeployedServer } from "../../../core/domain/DeployedServer";
+import { Server } from "../../../core/domain/DeployedServer";
 import { Region } from "../../../core/domain/Region";
 import { Variant } from "../../../core/domain/Variant";
+import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createServerCommandHandlerFactory } from "./handler";
+import { UserError } from "../../../core/errors/UserError";
 
 describe("createServerCommandHandler", () => {
     const chance = new Chance();
 
     const createHandler = () => {
-        const serverManager = mock<ServerManager>();
         const interaction = mock<ChatInputCommandInteraction>();
         interaction.options = mock()
+        const createServerForUser = mock<CreateServerForUser>()
 
         const handler = createServerCommandHandlerFactory({
-            serverManager
+            createServerForUser
         });
 
         return {
-            serverManager,
+            createServerForUser,
             interaction,
             handler,
         }
     }
 
-    it("should reply with an error if the region is not valid", async () => {
-        // Given
-        const { handler, interaction } = createHandler();
-        interaction.options = mock()
-
-        const invalidRegion = chance.word();
-
-        when(interaction.options.getString)
-            .calledWith('region')
-            .thenReturn(invalidRegion);
-
-        // When
-        await handler(interaction);
-
-        // Then
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: `Invalid region: ${invalidRegion}`,
-        })
-    })
-
-    it("should reply with an error if the variant name is not valid", async () => {
-        // Given
-        const { handler, interaction } = createHandler();
-        interaction.options = mock()
-
-        const validRegion = chance.pickone(Object.values(Region));
-
-        when(interaction.options.getString)
-            .calledWith('region')
-            .thenReturn(validRegion);
-
-        const invalidVariantName = chance.word();
-
-        when(interaction.options.getString)
-            .calledWith('variant_name')
-            .thenReturn(invalidVariantName);
-
-        // When
-        await handler(interaction);
-
-        // Then
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: `Invalid variant name: ${invalidVariantName}`,
-        })
-    })
-
     it("should create a server with the specified region and variant", async () => {
         // Given
-        const { handler, interaction, serverManager } = createHandler();
+        const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock()
         interaction.user.send = vi.fn()
+        interaction.user.id = chance.guid()
         
         const region = chance.pickone(Object.values(Region));
         const variantName = chance.pickone(Object.values(Variant));
@@ -93,7 +49,7 @@ describe("createServerCommandHandler", () => {
 
         const serverId = chance.guid();
 
-        const deployedServer = mock<DeployedServer>({
+        const deployedServer = mock<Server>({
             serverId,
             region,
             variant: variantName,
@@ -107,9 +63,10 @@ describe("createServerCommandHandler", () => {
             rconAddress: chance.ip(),
         });
 
-        when(serverManager.deployServer).calledWith({
+        when(createServerForUser.execute).calledWith({
             region,
-            variantName
+            variantName,
+            creatorId: interaction.user.id
         }).thenResolve(deployedServer);
         
         // When
@@ -117,9 +74,10 @@ describe("createServerCommandHandler", () => {
 
         // Then
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(serverManager.deployServer).toHaveBeenCalledWith({
+        expect(createServerForUser.execute).toHaveBeenCalledWith({
             region: interaction.options.getString('region'),
-            variantName: interaction.options.getString('variant_name')
+            variantName: interaction.options.getString('variant_name'),
+            creatorId: interaction.user.id
         })
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
@@ -144,8 +102,10 @@ describe("createServerCommandHandler", () => {
 
     it("should reply with an error if the server creation fails", async () => {
         // Given
-        const { handler, interaction, serverManager } = createHandler();
+        const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock()
+        interaction.user.send = vi.fn()
+        interaction.user.id = chance.guid()
 
         const region = chance.pickone(Object.values(Region));
         const variantName = chance.pickone(Object.values(Variant));
@@ -158,9 +118,10 @@ describe("createServerCommandHandler", () => {
             .calledWith('variant_name')
             .thenReturn(variantName);
 
-        when(serverManager.deployServer).calledWith({
+        when(createServerForUser.execute).calledWith({
             region,
-            variantName
+            variantName,
+            creatorId: interaction.user.id
         }).thenReject(new Error("Server creation failed"));
 
         // When
@@ -170,6 +131,40 @@ describe("createServerCommandHandler", () => {
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.editReply).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
+        })
+    })
+
+    it("should reply with user errors", async () => {
+        // Given
+        const { handler, interaction, createServerForUser } = createHandler();
+        interaction.options = mock()
+        interaction.user.send = vi.fn()
+        interaction.user.id = chance.guid()
+
+        const region = chance.pickone(Object.values(Region));
+        const variantName = chance.pickone(Object.values(Variant));
+
+        when(interaction.options.getString)
+            .calledWith('region')
+            .thenReturn(region);
+
+        when(interaction.options.getString)
+            .calledWith('variant_name')
+            .thenReturn(variantName);
+
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id
+        }).thenReject(new UserError("User error occurred"));
+
+        // When
+        await handler(interaction);
+
+        // Then
+        expect(interaction.deferReply).toHaveBeenCalled();
+        expect(interaction.editReply).toHaveBeenCalledWith({
+            content: `User error occurred`,
         })
     })
 

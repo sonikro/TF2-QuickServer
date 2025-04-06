@@ -1,26 +1,26 @@
 import { Chance } from "chance";
 import { ChatInputCommandInteraction } from "discord.js";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ServerManager } from "../../../core/services/ServerManager";
-import { terminateServerHandlerFactory } from "./handler";
 import { Region } from "../../../core/domain";
+import { DeleteServerForUser } from "../../../core/usecase/DeleteServerForUser";
+import { terminateServerHandlerFactory } from "./handler";
 
 describe("terminateServerCommandHandler", () => {
     const chance = new Chance();
 
     const createHandler = () => {
-        const serverManager = mock<ServerManager>();
+        const deleteServerForUser = mock<DeleteServerForUser>();
         const interaction = mock<ChatInputCommandInteraction>();
         interaction.options = mock();
 
         const handler = terminateServerHandlerFactory({
-            serverManager
+            deleteServerForUser
         });
 
         return {
-            serverManager,
+            deleteServerForUser,
             interaction,
             handler,
         };
@@ -29,10 +29,12 @@ describe("terminateServerCommandHandler", () => {
 
     it("should terminate the server with the specified server ID and Region", async () => {
         // Given
-        const { handler, interaction, serverManager } = createHandler();
+        const { handler, interaction, deleteServerForUser } = createHandler();
         const serverId = chance.guid();
         const region = chance.pickone(Object.values(Region))
 
+        interaction.user = mock();
+        interaction.user.id = chance.guid();
         when(interaction.options.getString)
             .calledWith("server_id")
             .thenReturn(serverId);
@@ -41,48 +43,22 @@ describe("terminateServerCommandHandler", () => {
             .calledWith("region")
             .thenReturn(region);
 
-        when(serverManager.deleteServer)
-            .calledWith({ serverId, region })
+        when(deleteServerForUser.execute)
+            .calledWith({ serverId, region, userId: interaction.user.id })
             .thenResolve();
 
         // When
         await handler(interaction);
 
         // Then
-        expect(serverManager.deleteServer).toHaveBeenCalledWith({
+        expect(deleteServerForUser.execute).toHaveBeenCalledWith({
             serverId,
-            region
+            region,
+            userId: interaction.user.id,
         });
         expect(interaction.reply).toHaveBeenCalledWith(
             `Server has been terminated.`,
         );
     });
 
-    it("should reply with an error if the server termination fails", async () => {
-        // Given
-        const { handler, interaction, serverManager } = createHandler();
-        const serverId = chance.guid();
-        const region = chance.pickone(Object.values(Region))
-
-        when(interaction.options.getString)
-            .calledWith("server_id")
-            .thenReturn(serverId);
-
-        when(interaction.options.getString)
-            .calledWith("region")
-            .thenReturn(region);
-
-        when(serverManager.deleteServer)
-            .calledWith({ serverId, region })
-            .thenReject(new Error("Termination failed"));
-
-
-        // When
-        await handler(interaction);
-
-        // Then
-        expect(interaction.reply).toHaveBeenCalledWith(
-            'Failed to terminate server. Please contact the administrator.'
-        );
-    });
 });

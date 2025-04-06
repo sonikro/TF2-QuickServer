@@ -1,7 +1,7 @@
 import { Region } from "./Region";
 import { Variant } from "./Variant";
 
-export interface DeployedServer {
+export interface Server {
     serverId: string;
     region: Region;
     variant: Variant;
@@ -13,4 +13,6 @@ export interface DeployedServer {
     hostPassword?: string;
     rconAddress: string;
     tvPassword?: string;
+    createdAt?: Date;
+    createdBy?: string;
 }

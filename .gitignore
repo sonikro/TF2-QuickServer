@@ -168,3 +168,5 @@ cdk.out
 cdk.context.json
 # TF2 Maps
 *.bsp
+*.sqlite3
+*.sqlite3-journal

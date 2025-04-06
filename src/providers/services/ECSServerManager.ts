@@ -7,8 +7,8 @@ import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { AWSServiceFactory } from "../../core/services/AWSServiceFactory";
 import { ServerManager } from "../../core/services/ServerManager";
-import { DeployedServer, Region, Variant } from "../../core/domain";
-import { waitUntil } from "../../utils/waitUntil";
+import { Server, Region, Variant } from "../../core/domain";
+import { waitUntil } from "../utils/waitUntil";
 import { ECSCommandExecutor } from "./ECSCommandExecutor";
 
 
@@ -21,7 +21,7 @@ export class ECSServerManager implements ServerManager {
         passwordGenerator: PasswordGenerator
     }) { }
 
-    async deployServer(args: { region: Region; variantName: Variant; }): Promise<DeployedServer> {
+    async deployServer(args: { region: Region; variantName: Variant; }): Promise<Server> {
         const { awsServiceFactory, ecsCommandExecutor, configManager, passwordGenerator } = this.dependencies;
         const { region, variantName } = args;
         const { ecsClient, efsClient, ec2Client, stsClient } = awsServiceFactory({ region });
