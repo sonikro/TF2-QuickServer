@@ -56,6 +56,7 @@ const createTestEnvironment = () => {
     const taskArn = chance.string();
     const eniId = chance.string();
     const publicIp = chance.ip();
+    const adminSteamId = chance.string();
     const variantConfig: VariantConfig = {
         cpu: chance.integer({ min: 256, max: 2048 }),
         memory: chance.integer({ min: 512, max: 4096 }),
@@ -148,6 +149,7 @@ const createTestEnvironment = () => {
             tvIp,
             tvPort,
             privateIP,
+            adminSteamId
         },
         sut: new ECSServerManager({
             serverCommander,
@@ -354,7 +356,8 @@ describe("ECSServerManager", () => {
                 sdrIp,
                 sdrPort,
                 tvIp,
-                tvPort
+                tvPort,
+                regionConfig
             }
         } = testEnvironment
         describe("happy path", () => {
@@ -368,6 +371,7 @@ describe("ECSServerManager", () => {
                 deployedServer = await testEnvironment.sut.deployServer({
                     region: testEnvironment.values.region,
                     variantName: testEnvironment.values.variantName,
+                    sourcemodAdminSteamId: testEnvironment.values.adminSteamId
                 });
                 registerTaskDefinitionCommandInput = testEnvironment.awsClients.ecsMock.commandCall(0, RegisterTaskDefinitionCommand).args[0].input
                 createServiceCommandInput = testEnvironment.awsClients.ecsMock.commandCall(0, CreateServiceCommand).args[0].input
@@ -412,6 +416,16 @@ describe("ECSServerManager", () => {
                             }),
                         ]),
                     }));
+                });
+
+                it("should set the correct environment variables", () => {
+                    expect(registerTaskDefinitionCommandInput.containerDefinitions![0].environment).toEqual(expect.arrayContaining([
+                        { name: "SERVER_HOSTNAME", value: regionConfig.srcdsHostname },
+                        { name: "DEMOS_TF_APIKEY", value: process.env.DEMOS_TF_APIKEY },
+                        { name: "LOGS_TF_APIKEY", value: process.env.LOGS_TF_APIKEY },
+                        { name: "STV_NAME", value: regionConfig.tvHostname },
+                        { name: "ADMIN_STEAM_ID", value: testEnvironment.values.adminSteamId },
+                    ]));
                 });
 
                 it("should contain the correct TF2 server commands", () => {

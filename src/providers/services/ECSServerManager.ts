@@ -22,9 +22,9 @@ export class ECSServerManager implements ServerManager {
         passwordGenerator: PasswordGenerator
     }) { }
 
-    async deployServer(args: { region: Region; variantName: Variant; }): Promise<Server> {
+    async deployServer(args: { region: Region; variantName: Variant; sourcemodAdminSteamId?: string }): Promise<Server> {
         const { awsServiceFactory, serverCommander, configManager, passwordGenerator } = this.dependencies;
-        const { region, variantName } = args;
+        const { region, variantName, sourcemodAdminSteamId } = args;
         const { ecsClient, efsClient, ec2Client, stsClient } = awsServiceFactory({ region });
         const variantConfig = configManager.getVariantConfig(variantName);
         const regionConfig = configManager.getRegionConfig(region)
@@ -76,6 +76,7 @@ export class ECSServerManager implements ServerManager {
                         { name: "RCON_PASSWORD", value: rconPassword },
                         { name: "STV_NAME", value: regionConfig.tvHostname },
                         { name: "STV_PASSWORD", value: tvPassword },
+                        { name: "ADMIN_STEAM_ID", value: sourcemodAdminSteamId || "" },
                     ],
                     command: [
                         "-enablefakeip",
