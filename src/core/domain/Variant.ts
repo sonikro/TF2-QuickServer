@@ -12,6 +12,12 @@ export type VariantConfig = {
     serverName: string;
     map: string;
     svPure: number;
+    defaultCfgs?: {
+        "5cp": string;
+        "koth": string;
+        "pl": string;
+        "ultiduo": string;
+    };
 }
 
 export function isValidVariant(variant: string): variant is Variant {

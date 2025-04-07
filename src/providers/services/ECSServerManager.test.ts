@@ -13,10 +13,9 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { CdkConfig, Region, RegionConfig, Server, Variant, VariantConfig } from "../../core/domain";
-import { ECSCommandExecutor } from "./ECSCommandExecutor";
-import { ECSServerManager } from "./ECSServerManager";
-import { ConfigManager } from "../../core/utils/ConfigManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
+import { ConfigManager } from "../../core/utils/ConfigManager";
+import { ECSServerManager } from "./ECSServerManager";
 
 expect.extend(allCustomMatcher)
 
@@ -65,6 +64,12 @@ const createTestEnvironment = () => {
         map: chance.string(),
         maxPlayers: chance.integer({ min: 1, max: 32 }),
         serverName: chance.string(),
+        defaultCfgs: {
+            "5cp": chance.string(),
+            "koth": chance.string(),
+            "pl": chance.string(),
+            "ultiduo": chance.string()
+        }
     }
 
     const regionConfig: RegionConfig = {
@@ -425,6 +430,10 @@ describe("ECSServerManager", () => {
                         { name: "LOGS_TF_APIKEY", value: process.env.LOGS_TF_APIKEY },
                         { name: "STV_NAME", value: regionConfig.tvHostname },
                         { name: "ADMIN_STEAM_ID", value: testEnvironment.values.adminSteamId },
+                        { name: "DEFAULT_5CP_CFG", value: variantConfig.defaultCfgs?.["5cp"] },
+                        { name: "DEFAULT_KOTH_CFG", value: variantConfig.defaultCfgs?.["koth"] },
+                        { name: "DEFAULT_PL_CFG", value: variantConfig.defaultCfgs?.["pl"] },
+                        { name: "DEFAULT_ULTIDUO_CFG", value: variantConfig.defaultCfgs?.["ultiduo"] },
                     ]));
                 });
 

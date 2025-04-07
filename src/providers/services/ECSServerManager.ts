@@ -77,6 +77,10 @@ export class ECSServerManager implements ServerManager {
                         { name: "STV_NAME", value: regionConfig.tvHostname },
                         { name: "STV_PASSWORD", value: tvPassword },
                         { name: "ADMIN_STEAM_ID", value: sourcemodAdminSteamId || "" },
+                        ...(variantConfig.defaultCfgs ? Object.entries(variantConfig.defaultCfgs).map(([key, value]) => ({
+                            name: `DEFAULT_${key.toUpperCase()}_CFG`,
+                            value: value,
+                        })) : []),
                     ],
                     command: [
                         "-enablefakeip",
