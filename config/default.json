@@ -32,8 +32,8 @@
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
-                "pl": "etf2l_9v9_stopwatch.cfg",
-                "ultiduo": "etf2l_ultiduo.cfg"
+                "pl": "rgl_HL_stopwatch.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
             }
         }
     }

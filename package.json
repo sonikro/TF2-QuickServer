@@ -4,6 +4,7 @@
   "description": "TF2 Quick Server Manager",
   "main": "index.js",
   "scripts": {
+    "start": "tsx ./src/index.ts",
     "test": "vitest",
     "dev": "nodemon",
     "cdk:bootstrap": "tsx ./src/infrastructure/cdk/bin/cdk-bootstrap.ts",
