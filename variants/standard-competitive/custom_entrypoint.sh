@@ -51,5 +51,31 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
     echo "$map_name" >> "$SERVER_DIR/tf/cfg/mapcycle.txt"
 done
 
+# Create a cfg file for each map in the $SERVER_DIR/tf/maps directory
+find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
+    # Get the map name without the directory and file extension
+    map_name="$(basename "$map_file" .bsp)"
+    
+    # Determine the default CFG based on the map name
+    if [[ "$map_name" == cp_* ]]; then
+        default_cfg="$DEFAULT_5CP_CFG"
+    elif [[ "$map_name" == pl_* ]]; then
+        default_cfg="$DEFAULT_PL_CFG"
+    elif [[ "$map_name" == koth_* ]]; then
+        default_cfg="$DEFAULT_KOTH_CFG"
+    elif [[ "$map_name" == ultiduo* ]]; then
+        default_cfg="$DEFAULT_ULTIDUO_CFG"
+    else
+        default_cfg=""
+    fi
+
+    # Create a cfg file for the map
+    if [[ -n "$default_cfg" ]]; then
+        echo "exec $default_cfg" > "$SERVER_DIR/tf/cfg/$map_name.cfg"
+    else
+        echo "exec $map_name.cfg" > "$SERVER_DIR/tf/cfg/$map_name.cfg"
+    fi
+done
+
 # Executes the original entrypoint script
 exec "$SERVER_DIR/entrypoint.sh" "$@"

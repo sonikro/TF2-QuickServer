@@ -4,15 +4,13 @@ services:
       context: ./variants/standard-competitive
       dockerfile: Dockerfile
     container_name: tf2-server
-    environment:
-      SERVER_HOSTNAME: Local TF2 Server
-      SERVER_PASSWORD: ${SERVER_PASSWORD:-""}
-      DEMOS_TF_APIKEY: ${DEMOS_TF_APIKEY:-""}
-      LOGS_TF_APIKEY: ${LOGS_TF_APIKEY:-""}
-      RCON_PASSWORD: ${RCON_PASSWORD:-""}
-      STV_NAME: ${TV_NAME:-""}
-      STV_PASSWORD: ${TV_PASSWORD:-""}
-      ADMIN_STEAM_ID: ${ADMIN_STEAM_ID:-""}
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
     command:
       - "-enablefakeip"
       - "+sv_pure"
