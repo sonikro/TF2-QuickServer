@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { Region, Variant } from "../../../core/domain";
+import { Region, RegionNames, Variant } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 
 export function createServerCommandHandlerFactory(dependencies: {
@@ -29,7 +29,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                 content: `🎉 **Server Created Successfully!** 🎉\n\n` +
                     `Here are your server details:\n\n` +
                     `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-                    `🌍 **Region:** \`${deployedServer.region}\`\n` +
+                    `🌍 **Region:** \`${RegionNames[deployedServer.region]}\`\n` +
                     `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
                     `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
                     `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +

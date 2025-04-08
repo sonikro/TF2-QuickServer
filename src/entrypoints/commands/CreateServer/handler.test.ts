@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { Server } from "../../../core/domain/DeployedServer";
-import { Region } from "../../../core/domain/Region";
+import { Region, RegionNames } from "../../../core/domain/Region";
 import { Variant } from "../../../core/domain/Variant";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createServerCommandHandlerFactory } from "./handler";
@@ -86,7 +86,7 @@ describe("createServerCommandHandler", () => {
             content: `🎉 **Server Created Successfully!** 🎉\n\n` +
             `Here are your server details:\n\n` +
             `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-            `🌍 **Region:** \`${deployedServer.region}\`\n` +
+            `🌍 **Region:** \`${RegionNames[deployedServer.region]}\`\n` +
             `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
             `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
             `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
