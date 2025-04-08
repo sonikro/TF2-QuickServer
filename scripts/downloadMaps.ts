@@ -1,14 +1,11 @@
 import fs from 'fs';
-import path from 'path';
 import https from 'https';
-import { fileURLToPath } from 'url';
+import path from 'path';
 
 // Base URL for downloads
 const BASE_URL = "https://fastdl.serveme.tf/maps/";
 
 // Resolve paths
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const mapsDir = path.resolve(__dirname, '../maps');
 const mapsJsonPath = path.resolve(__dirname, '../maps.json');
 

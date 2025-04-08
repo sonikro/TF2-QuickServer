@@ -46,7 +46,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                 content: `Server created successfully! Check your DMs for the details.`,
             })
 
-        } catch (error) {
+        } catch (error: Error | any) {
             console.error('Error creating server:', error);
             if(error.name === 'UserError') {
                 await interaction.editReply({

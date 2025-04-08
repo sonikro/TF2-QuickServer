@@ -1,10 +1,10 @@
 export class ServerStatus {
 
-    public readonly numberOfPlayers: number;
-    public readonly serverIp: string;
-    public readonly serverPort: number;
-    public readonly sourceTVIp: string | null;
-    public readonly sourceTVPort: number | null;
+    public readonly numberOfPlayers?: number;
+    public readonly serverIp?: string;
+    public readonly serverPort?: number;
+    public readonly sourceTVIp?: string | null;
+    public readonly sourceTVPort?: number | null;
 
     constructor(private readonly statusString: string) {
         // Server IP and Source TV IP extraction

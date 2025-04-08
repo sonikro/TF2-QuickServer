@@ -13,7 +13,8 @@
     "cdk:destroy": "cdk destroy --all",
     "download:maps": "tsx ./scripts/downloadMaps.ts",
     "migration:run": "knex --knexfile knexfile.ts migrate:latest",
-    "migration:create": "knex --knexfile knexfile.ts migrate:make"
+    "migration:create": "knex --knexfile knexfile.ts migrate:make",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
@@ -41,7 +42,6 @@
     "@vitest/coverage-v8": "^3.0.9",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-vitest": "^6.1.1",
-    "chance": "^1.1.12",
     "nodemon": "^3.1.9",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
@@ -51,6 +51,7 @@
     "@types/node-schedule": "^2.1.7"
   },
   "dependencies": {
+    "chance": "^1.1.12",
     "@aws-sdk/client-ec2": "^3.777.0",
     "@aws-sdk/client-ecs": "^3.778.0",
     "@aws-sdk/client-efs": "^3.782.0",

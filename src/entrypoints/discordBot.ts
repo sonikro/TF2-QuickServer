@@ -133,7 +133,7 @@ export async function startDiscordBot() {
         try {
             await command.handler(chatInputInteraction);
         }
-        catch (error) {
+        catch (error: Error | any) {
             if (error.name === 'UserError') {
                 await chatInputInteraction.reply({
                     content: error.message
