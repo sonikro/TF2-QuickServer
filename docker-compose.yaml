@@ -1,4 +1,14 @@
 services:
+  tf2-quickserver:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    container_name: tf2-quickserver
+    env_file:
+      - .env
+    volumes:
+      - db:/app/db
+      - ./config:/app/config
   tf2-server:
     build:
       context: ./variants/standard-competitive
@@ -19,3 +29,8 @@ services:
       - "24"
       - "+map"
       - "cp_badlands"
+    profiles:
+      - server
+
+volumes:
+  db:
