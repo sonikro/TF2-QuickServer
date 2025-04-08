@@ -15,6 +15,8 @@ import { SQliteServerActivityRepository } from "../providers/repository/SQliteSe
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
+import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
+import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
 
 export async function startDiscordBot() {
 
@@ -83,6 +85,15 @@ export async function startDiscordBot() {
         consumeCreditsFromRunningServers: new ConsumeCreditsFromRunningServers({
             serverRepository,
             userCreditsRepository
+        })
+    })
+
+    scheduleTerminateServersWithoutCreditRoutine({
+        terminateServersWithoutCredit: new TerminateServersWithoutCredit({
+            serverRepository,
+            userCreditsRepository,
+            serverManager: ecsServerManager,
+            serverCommander
         })
     })
 
