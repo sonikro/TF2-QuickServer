@@ -60,7 +60,8 @@ export async function startDiscordBot() {
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ecsServerManager,
-            serverRepository
+            serverRepository,
+            userCreditsRepository
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ecsServerManager,
