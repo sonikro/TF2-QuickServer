@@ -214,7 +214,7 @@ export class ECSServerManager implements ServerManager {
         // Wait until the Agent is ready to receive commands
         // Run the RCON status command using ECS Exec
         console.log(`Waiting for the server to be ready...`);
-        const { sdrAddress, tvAddress } = await waitUntil<{ sdrAddress: string, tvAddress: string }>(async () => {
+        const { sdrAddress } = await waitUntil<{ sdrAddress: string }>(async () => {
             const result = await serverCommander.query({
                 command: "status",
                 host: publicIp,
@@ -225,12 +225,11 @@ export class ECSServerManager implements ServerManager {
 
             const serverStatus = new ServerStatus(result);
 
-            if (!serverStatus.sourceTVIp || !serverStatus.serverIp) {
+            if (!serverStatus.sourceTVIp) {
                 throw new Error("Server is not ready yet");
             }
             return {
                 sdrAddress: `${serverStatus.serverIp}:${serverStatus.serverPort}`,
-                tvAddress: `${serverStatus.sourceTVIp}:${serverStatus.sourceTVPort}`,
             }
         }, {
             timeout: 120000, // 120 seconds
@@ -238,7 +237,6 @@ export class ECSServerManager implements ServerManager {
         });
 
         const [sdrIp, sdrPort] = sdrAddress.split(":");
-        const [tvIp, tvPort] = tvAddress.split(":");
 
         console.log(`Server ${serverId} is ready.`);
 
@@ -251,8 +249,8 @@ export class ECSServerManager implements ServerManager {
             rconPassword,
             rconAddress: publicIp,
             hostPassword: serverPassword,
-            tvIp: tvIp,
-            tvPort: Number(tvPort),
+            tvIp: publicIp,
+            tvPort: 27020,
             tvPassword,
         };
     }
