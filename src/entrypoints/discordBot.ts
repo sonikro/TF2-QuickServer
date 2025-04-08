@@ -9,10 +9,12 @@ import { createCommands } from "./commands";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
-import { scheduleServerCleanupRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, scheduleServerCleanupRoutine } from "./jobs";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
 import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
+import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
+import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
 
 export async function startDiscordBot() {
 
@@ -51,6 +53,10 @@ export async function startDiscordBot() {
     const serverActivityRepository = new SQliteServerActivityRepository({
         knex: KnexConnectionManager.client,
     })
+    const userCreditsRepository = new SQliteUserCreditsRepository({
+        knex: KnexConnectionManager.client
+    })
+    
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ecsServerManager,
@@ -69,6 +75,13 @@ export async function startDiscordBot() {
             serverRepository,
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander
+        })
+    })
+
+    scheduleConsumeCreditsRoutine({
+        consumeCreditsFromRunningServers: new ConsumeCreditsFromRunningServers({
+            serverRepository,
+            userCreditsRepository
         })
     })
 

@@ -14,7 +14,8 @@
 		"vscode": {
 			"extensions": [
 				"vitest.explorer",
-				"github.vscode-github-actions"
+				"github.vscode-github-actions",
+				"yy0931.vscode-sqlite3-editor"
 			]
 		}
 	}

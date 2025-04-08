@@ -47,7 +47,8 @@
     "typescript": "^5.8.2",
     "vitest": "^3.0.9",
     "vitest-mock-extended": "^3.0.1",
-    "vitest-when": "^0.6.0"
+    "vitest-when": "^0.6.0",
+    "@types/node-schedule": "^2.1.7"
   },
   "dependencies": {
     "@aws-sdk/client-ec2": "^3.777.0",
