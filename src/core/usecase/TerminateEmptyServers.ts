@@ -80,7 +80,7 @@ export class TerminateEmptyServers {
                     server.emptySince = new Date();
                 }
                 
-                if (serverStatus.numberOfPlayers > 0) {
+                if ((serverStatus.numberOfPlayers ?? 0) > 0) {
                     console.log(`Server ${server.serverId} is not empty.`);
                     server.emptySince = null;
                 }

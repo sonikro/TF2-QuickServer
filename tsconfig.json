@@ -4,7 +4,7 @@
     "target": "ES6",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     /* Modules */
     "module": "CommonJS",                                /* Specify what module code is generated. */
-    "rootDir": "./src",                                  /* Specify the root folder within your source files. */
+    "rootDir": "./",                                  /* Specify the root folder within your source files. */
 
     /* Emit */
     "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */
@@ -15,7 +15,4 @@
     "strict": true,                                      /* Enable all strict type-checking options. */
     "skipLibCheck": true                                /* Skip type checking all .d.ts files. */
   },
-  "include": [
-    "knexfile.ts",
-  ],
 }
