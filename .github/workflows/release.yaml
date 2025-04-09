@@ -45,6 +45,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name == 'push' }}
-          tags: sonikro/tf2-quickserver:latest
+          tags: |
+            sonikro/tf2-quickserver:latest
+            sonikro/tf2-quickserver:${{ github.sha }}
+          platforms: |
+            linux/amd64
+            linux/arm64
           context: .
-
