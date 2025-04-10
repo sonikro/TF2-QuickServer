@@ -65,6 +65,8 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
         default_cfg="$DEFAULT_KOTH_CFG"
     elif [[ "$map_name" == ultiduo* ]]; then
         default_cfg="$DEFAULT_ULTIDUO_CFG"
+    elif [[ "$map_name" == pass* ]]; then
+        default_cfg="$DEFAULT_PASSTIME_CFG"
     else
         default_cfg=""
     fi
