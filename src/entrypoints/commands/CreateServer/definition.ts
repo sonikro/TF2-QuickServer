@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getEnabledRegions, RegionNames } from "../../../core/domain";
+import { getEnabledRegions, RegionNames, Variant } from "../../../core/domain";
 
 export const createServerCommandDefinition = new SlashCommandBuilder()
     .setName('create-server')
@@ -17,7 +17,10 @@ export const createServerCommandDefinition = new SlashCommandBuilder()
         option.setName('variant_name')
             .setDescription('Variant of the TF2 server (6v6, 9v9, etc.)')
             .addChoices([
-                { name: "Standard Competitive", value: "standard-competitive" }
+                ...(Object.values(Variant).map((variant) => ({
+                    name: variant,
+                    value: variant
+                })))
             ])
             .setRequired(true)
     )
