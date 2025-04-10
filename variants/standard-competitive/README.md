@@ -34,6 +34,7 @@ This image supports the following environment variables for customization:
 - `DEFAULT_PL_CFG`: Specify the configuration file to be executed automatically for Payload (PL) maps.
 - `DEFAULT_KOTH_CFG`: Specify the configuration file to be executed automatically for King of the Hill (KOTH) maps.
 - `DEFAULT_ULTIDUO_CFG`: Specify the configuration file to be executed automatically for Ultiduo maps.
+- `DEFAULT_PASSTIME_CFG`: Specify the configuration file to be executed automatically for Pass Time (PASS_) maps.
 
 These variables allow the image to dynamically apply the appropriate settings based on the map type.
 
