@@ -35,6 +35,14 @@
                 "pl": "rgl_HL_stopwatch.cfg",
                 "ultiduo": "rgl_ud_ultiduo.cfg"
             }
+        },
+        "passtime": {
+            "image": "sonikro/tf2-passtime:latest",
+            "cpu": 1024,
+            "memory": 2048,
+            "maxPlayers": 12,
+            "map": "pass_arena2_b14b",
+            "svPure": 2
         }
     }
 }
