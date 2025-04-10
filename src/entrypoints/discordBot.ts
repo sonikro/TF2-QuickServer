@@ -69,6 +69,7 @@ export async function startDiscordBot() {
             serverManager: ecsServerManager,
             serverRepository
         }),
+        userCreditsRepository
     })
 
     // Schedule jobs

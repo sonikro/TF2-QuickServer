@@ -3,10 +3,14 @@ import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../../core/usecase/DeleteServerForUser";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
+import { getBalanceCommandDefinition } from "./GetBalance/definition";
+import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
+import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
     deleteServerForUser: DeleteServerForUser;
+    userCreditsRepository: UserCreditsRepository;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -25,6 +29,13 @@ export function createCommands(dependencies: CommandDependencies) {
                 deleteServerForUser: dependencies.deleteServerForUser,
             }),
         },
+        getBalance: {
+            name: "get-balanced",
+            definition: getBalanceCommandDefinition,
+            handler: createGetBalanceCommandHandlerFactory({
+                userCreditsRepository: dependencies.userCreditsRepository,
+            })
+        }
     } satisfies Record<string, {
         name: string;
         definition: SlashCommandOptionsOnlyBuilder,
