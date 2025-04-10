@@ -11,12 +11,24 @@ export class SQliteUserCreditsRepository implements UserCreditsRepository {
         const { knex } = this.dependencies;
         const { userId, credits } = args;
 
-        const result = await knex('user_credits')
-            .where({ user_id: userId })
-            .decrement('credits', credits)
-            .returning('credits')
+        return await knex.transaction(async (trx) => {
+            // Fetch the current credits with a row lock (if needed)
+            const currentCredits = await trx('user_credits')
+                .where({ user_id: userId })
+                .select('credits')
+                .first();
 
-        return result[0].credits;
+            // Calculate the new credits, ensuring it doesn't go below zero
+            const newCredits = Math.max((currentCredits?.credits || 0) - credits, 0);
+
+            // Update the credits
+            await trx('user_credits')
+                .where({ user_id: userId })
+                .update({ credits: newCredits });
+
+            // Return the updated credits
+            return newCredits;
+        });
     }
 
     async getCredits(args: { userId: string; }): Promise<number> {
