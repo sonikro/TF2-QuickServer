@@ -63,7 +63,7 @@ export class TF2RegionalStack extends cdk.Stack {
       sources: [s3deploy.Source.asset(`${process.cwd()}/maps`)],
       destinationBucket: bucket,
       destinationKeyPrefix: 'maps/', // Upload to the "maps" folder in the bucket
-      ephemeralStorageSize: cdk.Size.mebibytes(2048),
+      ephemeralStorageSize: cdk.Size.mebibytes(4096),
       memoryLimit: 2048,
     });
 
