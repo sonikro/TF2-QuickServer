@@ -30,7 +30,7 @@ export function createCommands(dependencies: CommandDependencies) {
             }),
         },
         getBalance: {
-            name: "get-balanced",
+            name: "get-balance",
             definition: getBalanceCommandDefinition,
             handler: createGetBalanceCommandHandlerFactory({
                 userCreditsRepository: dependencies.userCreditsRepository,
