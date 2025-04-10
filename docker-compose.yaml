@@ -9,6 +9,8 @@ services:
     volumes:
       - db:/app/db
       - ./config:/app/config
+    profiles:
+      - bot
   tf2-server:
     build:
       context: ./variants/standard-competitive
@@ -31,6 +33,24 @@ services:
       - "cp_badlands"
     profiles:
       - server
+  tf2-passtime-variant:
+    build:
+      context: ./variants/passtime
+      dockerfile: Dockerfile
+    volumes:
+      - ./maps:/home/tf2/server/tf/maps
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "12"
+      - "+map"
+      - "pass_stadium_rc3a"
+    profiles:
+      - passtime
 
 volumes:
   db:
