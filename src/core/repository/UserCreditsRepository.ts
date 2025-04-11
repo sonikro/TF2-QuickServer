@@ -6,4 +6,5 @@ export interface UserCreditsRepository {
      */
     subtractCredits(args: { userId: string, credits: number}): Promise<number>;
     getCredits(args: { userId: string }): Promise<number>;
+    addCredits(args: { userId: string, credits: number}): Promise<number>;
 }

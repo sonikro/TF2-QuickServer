@@ -20,6 +20,8 @@ import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersW
 import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
 import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
 import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
+import { initializeExpress } from "./http/express";
+import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
 
 export async function startDiscordBot() {
 
@@ -165,6 +167,15 @@ export async function startDiscordBot() {
 
     // Login to Discord
     client.login(token);
+
+    // Initialize HTTP Server
+    initializeExpress({
+        handleOrderPaid: new HandleOrderPaid({
+            creditOrdersRepository,
+            userCreditsRepository
+        }),
+        paypalService: paymentService,
+    })
 
     return client;
 }

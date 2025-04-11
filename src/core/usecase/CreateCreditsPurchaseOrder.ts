@@ -36,7 +36,8 @@ export class CreateCreditsPurchaseOrder {
             createdAt: new Date(),
             updatedAt: new Date(),
             status: 'pending',
-            link: creditOrder.link
+            link: creditOrder.link,
+            credits: creditsAmount,
         });
 
         return creditOrder
