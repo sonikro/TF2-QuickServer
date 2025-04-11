@@ -6,11 +6,15 @@ import { terminateServerCommandDefinition, terminateServerHandlerFactory } from 
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
 import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
+import { buyCreditsCommandDefinition } from "./BuyCredits";
+import { createBuyCreditsCommandHandlerFactory } from "./BuyCredits/handler";
+import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
     deleteServerForUser: DeleteServerForUser;
     userCreditsRepository: UserCreditsRepository;
+    createCreditsPurchaseOrder: CreateCreditsPurchaseOrder;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -34,6 +38,13 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: getBalanceCommandDefinition,
             handler: createGetBalanceCommandHandlerFactory({
                 userCreditsRepository: dependencies.userCreditsRepository,
+            })
+        },
+        buyCredit: {
+            name: "buy-credits",
+            definition: buyCreditsCommandDefinition,
+            handler: createBuyCreditsCommandHandlerFactory({
+                createCreditsPurchaseOrder: dependencies.createCreditsPurchaseOrder,
             })
         }
     } satisfies Record<string, {
