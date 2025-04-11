@@ -73,7 +73,7 @@ export class PaypalPaymentService implements PaymentService {
         signatureVerification: {
             webhookId: string;
             transmissionId: string;
-            transmissionTime: Date;
+            transmissionTime: string;
             certUrl: string;
             authAlgo: string;
             transmissionSig: string;
@@ -90,7 +90,7 @@ export class PaypalPaymentService implements PaymentService {
             body: JSON.stringify({
                 webhook_id: webhookId,
                 transmission_id: transmissionId,
-                transmission_time: transmissionTime.toISOString(),
+                transmission_time: transmissionTime,
                 cert_url: certUrl,
                 auth_algo: authAlgo,
                 transmission_sig: transmissionSig,

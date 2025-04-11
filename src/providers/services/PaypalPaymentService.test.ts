@@ -279,7 +279,7 @@ describe.each(environments)("PaypalPaymentService in %s environment", ({ sandbox
         // Expected values
         const webhookId = chance.guid();
         const transmissionId = chance.guid();
-        const transmissionTime = new Date();
+        const transmissionTime = new Date().toISOString();
         const certUrl = chance.url({ domain: "paypal.com" });
         const authAlgo = "SHA256withRSA";
         const transmissionSig = chance.string({ length: 64 });
@@ -301,7 +301,7 @@ describe.each(environments)("PaypalPaymentService in %s environment", ({ sandbox
             expect(body).toEqual({
                 webhook_id: webhookId,
                 transmission_id: transmissionId,
-                transmission_time: transmissionTime.toISOString(),
+                transmission_time: transmissionTime,
                 cert_url: certUrl,
                 auth_algo: authAlgo,
                 transmission_sig: transmissionSig,

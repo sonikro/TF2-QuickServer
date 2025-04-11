@@ -22,14 +22,19 @@ export class HandleOrderPaid {
         // Update the order status to paid
         order.status = 'paid';
 
-        await creditOrdersRepository.update(order);
+         await creditOrdersRepository.update(order);
 
         // Update the user's credits
         
-        await userCreditsRepository.addCredits({
+        const newCredits = await userCreditsRepository.addCredits({
             credits: order.credits,
             userId: order.userId
         });
+
         console.log(`User ${order.userId} has been credited with ${order.credits} credits.`); 
+        return {
+            order,
+            newCredits
+        }
     }
 }

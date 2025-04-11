@@ -3,16 +3,17 @@ import { registerPaypalMiddleware } from './middlewares/paypalMiddleware';
 import { HandleOrderPaid } from '../../core/usecase/HandleOrderPaid';
 import bodyParser from 'body-parser';
 import { PaypalPaymentService } from '../../providers/services/PaypalPaymentService';
+import { Client as DiscordClient } from 'discord.js';
 
 export function initializeExpress(dependencies: {
     handleOrderPaid: HandleOrderPaid
     paypalService: PaypalPaymentService
+    discordClient: DiscordClient
 }): Express {
-    const { handleOrderPaid, paypalService } = dependencies;
+    const { handleOrderPaid, paypalService, discordClient } = dependencies;
     const app = express();
     const PORT = process.env.HTTP_PORT || 3000;
 
-    app.use(express.json());
     app.use(bodyParser.json({
         verify: (req: any, res, buf) => {
             req.rawBody = buf.toString(); // Save raw body for PayPal verification
@@ -22,7 +23,8 @@ export function initializeExpress(dependencies: {
     registerPaypalMiddleware({
         app,
         handleOrderPaid,
-        paypalService
+        paypalService,
+        discordClient
     })
 
     if (process.env.NODE_ENV !== 'test') {
