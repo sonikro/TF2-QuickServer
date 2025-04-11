@@ -17,6 +17,9 @@ import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCredits
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
+import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
+import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
+import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
 
 export async function startDiscordBot() {
 
@@ -58,6 +61,16 @@ export async function startDiscordBot() {
     const userCreditsRepository = new SQliteUserCreditsRepository({
         knex: KnexConnectionManager.client
     })
+
+    const paymentService = new PaypalPaymentService({
+        clientId: process.env.PAYPAL_CLIENT_ID!,
+        clientSecret: process.env.PAYPAL_CLIENT_SECRET!,
+        sandbox: process.env.PAYPAL_ENV === 'sandbox'
+    })
+
+    const creditOrdersRepository = new SQliteCreditOrdersRepository({
+        knex: KnexConnectionManager.client
+    })
     
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
@@ -68,6 +81,10 @@ export async function startDiscordBot() {
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ecsServerManager,
             serverRepository
+        }),
+        createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
+            creditOrdersRepository,
+            paymentService
         }),
         userCreditsRepository
     })
