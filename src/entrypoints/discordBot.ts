@@ -175,6 +175,7 @@ export async function startDiscordBot() {
             userCreditsRepository
         }),
         paypalService: paymentService,
+        discordClient: client,
     })
 
     return client;

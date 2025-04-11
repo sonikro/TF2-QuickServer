@@ -4,15 +4,22 @@ import { mock } from 'vitest-mock-extended';
 import { HandleOrderPaid } from '../../core/usecase/HandleOrderPaid';
 import { PaypalPaymentService } from '../../providers/services/PaypalPaymentService';
 import { initializeExpress } from './express';
+import { Client as DiscordClient, User } from 'discord.js';
+import { when } from 'vitest-when';
 
 describe("initializeExpress", () => {
     const handleOrderPaid = mock<HandleOrderPaid>();
     const paypalService = mock<PaypalPaymentService>();
+    const discordUser = mock<User>()
+    const discordClient = mock<DiscordClient>();
+    discordClient.users = mock()
+    discordClient.users.fetch = vi.fn().mockResolvedValue(discordUser);
+
     let app: ReturnType<typeof initializeExpress>;
 
     beforeEach(() => {
         vi.clearAllMocks();
-        app = initializeExpress({ handleOrderPaid, paypalService });
+        app = initializeExpress({ handleOrderPaid, paypalService, discordClient });
     });
 
     it("should return 404 for unknown routes", async () => {
@@ -33,6 +40,14 @@ describe("initializeExpress", () => {
 
             // Mock validateWebhookSignature to return true
             paypalService.validateWebhookSignature.mockResolvedValue(true);
+            const newCredits = 200
+
+            when(handleOrderPaid.execute)
+                .calledWith({ orderId: testOrderId })
+                .thenResolve({
+                    newCredits,
+                    order: mock()
+                })
 
             const response = await request(app)
                 .post("/paypal-webhook")
@@ -46,6 +61,7 @@ describe("initializeExpress", () => {
 
             expect(response.status).toBe(200);
             expect(handleOrderPaid.execute).toHaveBeenCalledWith({ orderId: testOrderId });
+            expect(discordUser.send).toHaveBeenCalledWith(`✅ Your order has been paid! You now have **${newCredits}** credits.`);
         });
 
         it("should return 400 when webhook signature is invalid", async () => {

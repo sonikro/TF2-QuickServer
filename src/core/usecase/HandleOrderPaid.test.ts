@@ -42,13 +42,21 @@ const createTestEnvironment = () => {
 
 describe("HandleOrderPaid", () => {
     const { sut, mocks, values } = createTestEnvironment();
-
+    const newCredits = 100
+    let result: {order: CreditOrder, newCredits: number};
     beforeAll(async () => {
         when(mocks.creditOrdersRepository.findById)
             .calledWith(values.order.id)
             .thenResolve(values.order);
 
-        await sut.execute({
+        when(mocks.userCreditsRepository.addCredits)
+            .calledWith({
+                userId: values.order.userId,
+                credits: values.order.credits
+            })
+            .thenResolve(newCredits);
+
+        result = await sut.execute({
             orderId: values.order.id
         });
     });
@@ -66,6 +74,16 @@ describe("HandleOrderPaid", () => {
         expect(mocks.userCreditsRepository.addCredits).toHaveBeenCalledWith({
             userId: values.order.userId,
             credits: values.order.credits
+        });
+    });
+
+    it("should return the updated order and new credits", () => {
+        expect(result).toEqual({
+            order: {
+                ...values.order,
+                status: "paid"
+            },
+            newCredits
         });
     });
 });
