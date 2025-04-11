@@ -45,7 +45,8 @@ describe("CreateCreditsPurchaseOrder", () => {
             createdAt: new Date(),
             updatedAt: new Date(),
             status: 'pending',
-            link: values.orderLink
+            link: values.orderLink,
+            credits: values.creditsAmount
         })
 
         await sut.execute({
@@ -71,7 +72,8 @@ describe("CreateCreditsPurchaseOrder", () => {
             createdAt: expect.any(Date),
             updatedAt: expect.any(Date),
             status: 'pending',
-            link: values.orderLink
+            link: values.orderLink,
+            credits: values.creditsAmount
         })
     })
 })

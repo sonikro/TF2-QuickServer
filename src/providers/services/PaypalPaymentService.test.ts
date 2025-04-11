@@ -263,4 +263,74 @@ describe.each(environments)("PaypalPaymentService in %s environment", ({ sandbox
             "No approval link found in PayPal response."
         );
     })
+
+    it("should validate a webhook signature and return true when verification succeeds", async () => {
+        const clientId = chance.string({ length: 12 });
+        const clientSecret = chance.string({ length: 24 });
+        const accessToken = chance.guid();
+        const service = new PaypalPaymentService({ clientId, clientSecret, sandbox });
+    
+        // Setup the /v1/oauth2/token response
+        givenATokenResponse(
+            { clientId, clientSecret },
+            { access_token: accessToken }
+        );
+    
+        // Expected values
+        const webhookId = chance.guid();
+        const transmissionId = chance.guid();
+        const transmissionTime = new Date();
+        const certUrl = chance.url({ domain: "paypal.com" });
+        const authAlgo = "SHA256withRSA";
+        const transmissionSig = chance.string({ length: 64 });
+    
+        const webhookEvent = {
+            id: chance.guid(),
+            event_type: "CHECKOUT.ORDER.APPROVED",
+            resource: {
+                id: chance.guid()
+            }
+        };
+    
+        // Setup the /v1/notifications/verify-webhook-signature response
+        const handler = rest.post(`${baseUrl}/v1/notifications/verify-webhook-signature`, async ({ request }) => {
+            const authHeader = request.headers.get("authorization");
+            expect(authHeader).toBe(`Bearer ${accessToken}`);
+    
+            const body = await request.json();
+            expect(body).toEqual({
+                webhook_id: webhookId,
+                transmission_id: transmissionId,
+                transmission_time: transmissionTime.toISOString(),
+                cert_url: certUrl,
+                auth_algo: authAlgo,
+                transmission_sig: transmissionSig,
+                webhook_event: webhookEvent,
+            });
+    
+            return new Response(
+                JSON.stringify({ verification_status: "SUCCESS" }),
+                { status: 200, headers: { "Content-Type": "application/json" } }
+            );
+        });
+    
+        // Use the handler
+        setupServer(handler).listen({ onUnhandledRequest: 'error' });
+    
+        const isValid = await service.validateWebhookSignature({
+            headers: {},
+            body: JSON.stringify(webhookEvent),
+            signatureVerification: {
+                webhookId,
+                transmissionId,
+                transmissionTime,
+                certUrl,
+                authAlgo,
+                transmissionSig
+            }
+        });
+    
+        expect(isValid).toBe(true);
+    });
+
 });

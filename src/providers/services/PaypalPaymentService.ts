@@ -67,6 +67,46 @@ export class PaypalPaymentService implements PaymentService {
         }
     }
 
+    public async validateWebhookSignature(args: {
+        headers: { [key: string]: string | string [] | undefined };
+        body: string;
+        signatureVerification: {
+            webhookId: string;
+            transmissionId: string;
+            transmissionTime: Date;
+            certUrl: string;
+            authAlgo: string;
+            transmissionSig: string;
+        };
+    }): Promise<boolean> {
+        const { webhookId, transmissionId, transmissionTime, certUrl, authAlgo, transmissionSig } = args.signatureVerification;
+
+        const res = await fetch(`${this.baseUrl}/v1/notifications/verify-webhook-signature`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${await this.generateToken()}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                webhook_id: webhookId,
+                transmission_id: transmissionId,
+                transmission_time: transmissionTime.toISOString(),
+                cert_url: certUrl,
+                auth_algo: authAlgo,
+                transmission_sig: transmissionSig,
+                webhook_event: JSON.parse(args.body),
+            }),
+        });
+
+        if (!res.ok) {
+            const errorText = await res.text();
+            throw new Error(`Failed to validate webhook signature: ${errorText}`);
+        }
+
+        const data = await res.json();
+        return data.verification_status === 'SUCCESS';
+    }
+
     private async generateToken(): Promise<string> {
         const { clientId, clientSecret } = this.dependencies;
         const credentials = `${clientId}:${clientSecret}`;
