@@ -30,6 +30,7 @@ describe("createBuyCreditsCommandHandler", () => {
             status: 'pending',
             updatedAt: new Date(),
             userId: chance.guid(),
+            credits: requestedCredits,
         }
 
         return {

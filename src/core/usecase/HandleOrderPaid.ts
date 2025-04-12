@@ -27,7 +27,7 @@ export class HandleOrderPaid {
         // Update the user's credits
         
         const newCredits = await userCreditsRepository.addCredits({
-            credits: order.credits,
+            credits: order.credits!,
             userId: order.userId
         });
 
