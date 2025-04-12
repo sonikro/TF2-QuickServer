@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Region } from "../../../core/domain";
 import { DeleteServerForUser } from "../../../core/usecase/DeleteServerForUser";
 
@@ -16,7 +16,10 @@ export function terminateServerHandlerFactory(dependencies: {
             userId: userId,
         })
 
-        await interaction.reply(`Server has been terminated.`);
+        await interaction.reply({
+            content: `Server has been terminated.`,
+            flags: MessageFlags.Ephemeral
+        });
     }
 
 }

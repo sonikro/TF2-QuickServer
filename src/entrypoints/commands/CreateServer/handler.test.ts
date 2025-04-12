@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -33,7 +33,6 @@ describe("createServerCommandHandler", () => {
         // Given
         const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock()
-        interaction.user.send = vi.fn()
         interaction.user.id = chance.guid()
         
         const region = chance.pickone(Object.values(Region));
@@ -80,9 +79,10 @@ describe("createServerCommandHandler", () => {
             creatorId: interaction.user.id
         })
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
+            content: `Creating server in region ${RegionNames[region]} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
+            flags: MessageFlags.Ephemeral
         })
-        expect(interaction.user.send).toHaveBeenCalledWith({
+        expect(interaction.followUp).toHaveBeenCalledWith({
             content: `🎉 **Server Created Successfully!** 🎉\n\n` +
             `Here are your server details:\n\n` +
             `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
@@ -95,7 +95,8 @@ describe("createServerCommandHandler", () => {
             `**TV Connect:**\n` +
             `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
             `⚠️ **Warning:** The RCON Address IP and password should only be shared with people who need to run RCON commands. To use RCON commands, enter the following in the console:\n` +
-            `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`
+            `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
+            flags: MessageFlags.Ephemeral
         });
 
     })
@@ -104,7 +105,6 @@ describe("createServerCommandHandler", () => {
         // Given
         const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock()
-        interaction.user.send = vi.fn()
         interaction.user.id = chance.guid()
 
         const region = chance.pickone(Object.values(Region));
@@ -129,8 +129,9 @@ describe("createServerCommandHandler", () => {
 
         // Then
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(interaction.editReply).toHaveBeenCalledWith({
+        expect(interaction.followUp).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
+            flags: MessageFlags.Ephemeral
         })
     })
 
@@ -138,7 +139,6 @@ describe("createServerCommandHandler", () => {
         // Given
         const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock()
-        interaction.user.send = vi.fn()
         interaction.user.id = chance.guid()
 
         const region = chance.pickone(Object.values(Region));
@@ -163,8 +163,9 @@ describe("createServerCommandHandler", () => {
 
         // Then
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(interaction.editReply).toHaveBeenCalledWith({
+        expect(interaction.followUp).toHaveBeenCalledWith({
             content: `User error occurred`,
+            flags: MessageFlags.Ephemeral
         })
     })
 

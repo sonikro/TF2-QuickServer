@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -80,7 +80,7 @@ describe("createBuyCreditsCommandHandler", () => {
 
     it("should make the reply ephemeral, so no one else can see it", () => {
         expect(interaction.reply).toHaveBeenCalledWith(expect.objectContaining({
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral
         }));
     })
 
