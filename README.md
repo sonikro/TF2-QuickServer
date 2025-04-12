@@ -1,6 +1,7 @@
 # TF2-QuickServer
 
 ![TF2-QuickServer](https://img.shields.io/badge/TF2-QuickServer-blue?style=for-the-badge&logo=steam)
+[![Discord](https://img.shields.io/discord/1359667090092458055?label=Join%20Our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/HfDgMj73cW)
 
 ## 🎮 Instantly Deploy TF2 Servers via Discord
 
