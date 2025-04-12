@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { UserCreditsRepository } from "../../../core/repository/UserCreditsRepository";
 
 export function createGetBalanceCommandHandlerFactory(dependencies: {
@@ -13,6 +13,7 @@ export function createGetBalanceCommandHandlerFactory(dependencies: {
 
         await interaction.reply({
             content: `💰 You have **${credits}** credits in your account!`,
+            flags: MessageFlags.Ephemeral
         })
 
     }

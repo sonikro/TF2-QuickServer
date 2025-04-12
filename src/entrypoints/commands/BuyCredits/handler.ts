@@ -3,6 +3,7 @@ import {
     ActionRowBuilder,
     ButtonBuilder,
     ButtonStyle,
+    MessageFlags,
 } from "discord.js";
 import { CreateCreditsPurchaseOrder } from "../../../core/usecase/CreateCreditsPurchaseOrder";
 
@@ -29,7 +30,7 @@ export function createBuyCreditsCommandHandlerFactory(dependencies: {
         await interaction.reply({
             content: `🧾 You're purchasing **${creditsAmount}** credits. Click the button below to pay:`,
             components: [row],
-            ephemeral: true, // Optional: makes it visible only to the user
+            flags: MessageFlags.Ephemeral
         });
     }
 }

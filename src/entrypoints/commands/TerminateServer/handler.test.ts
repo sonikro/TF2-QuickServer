@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -56,9 +56,10 @@ describe("terminateServerCommandHandler", () => {
             region,
             userId: interaction.user.id,
         });
-        expect(interaction.reply).toHaveBeenCalledWith(
-            `Server has been terminated.`,
-        );
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: `Server has been terminated.`,
+            flags: MessageFlags.Ephemeral,
+        });
     });
 
 });

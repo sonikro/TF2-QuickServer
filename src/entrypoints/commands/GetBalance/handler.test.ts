@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -42,6 +42,7 @@ describe("createServerCommandHandler", () => {
         // Then
         expect(interaction.reply).toHaveBeenCalledWith({
             content: `💰 You have **${credits}** credits in your account!`,
+            flags: MessageFlags.Ephemeral
         })
 
     })

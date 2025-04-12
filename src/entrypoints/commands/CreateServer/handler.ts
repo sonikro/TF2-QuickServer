@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { Region, RegionNames, Variant } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 
@@ -11,21 +11,22 @@ export function createServerCommandHandlerFactory(dependencies: {
         const variantName = interaction.options.getString('variant_name') as Variant;
         const adminSteamId = interaction.options.getString('admin_steam_id');
 
-        await interaction.deferReply();
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
         // Create server
         try {
             await interaction.followUp({
-                content: `Creating server in region ${region} with the variant ${variantName}. You will receive a DM with the server details.`,
-            })
+                content: `Creating server in region ${RegionNames[region]} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
+                flags: MessageFlags.Ephemeral
+            });
 
             const deployedServer = await createServerForUser.execute({
                 region: region,
                 variantName: variantName!,
                 creatorId: interaction.user.id,
                 adminSteamId: adminSteamId!
-            })
+            });
 
-            await interaction.user.send({
+            await interaction.followUp({
                 content: `🎉 **Server Created Successfully!** 🎉\n\n` +
                     `Here are your server details:\n\n` +
                     `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
@@ -38,24 +39,22 @@ export function createServerCommandHandlerFactory(dependencies: {
                     `**TV Connect:**\n` +
                     `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
                     `⚠️ **Warning:** The RCON Address IP and password should only be shared with people who need to run RCON commands. To use RCON commands, enter the following in the console:\n` +
-                    `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`
-            })
-
-            // Send a message to the interaction channel
-            await interaction.editReply({
-                content: `Server created successfully! Check your DMs for the details.`,
-            })
+                    `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
+                flags: MessageFlags.Ephemeral
+            });
 
         } catch (error: Error | any) {
             console.error('Error creating server:', error);
-            if(error.name === 'UserError') {
-                await interaction.editReply({
-                    content: error.message
-                })
+            if (error.name === 'UserError') {
+                await interaction.followUp({
+                    content: error.message,
+                    flags: MessageFlags.Ephemeral
+                });
             } else {
-                await interaction.editReply({
+                await interaction.followUp({
                     content: `There was an error creating the server. Please reach out to the App Administrator.`,
-                })
+                    flags: MessageFlags.Ephemeral
+                });
             }
         }
     }
