@@ -52,7 +52,7 @@ describe("HandleOrderPaid", () => {
         when(mocks.userCreditsRepository.addCredits)
             .calledWith({
                 userId: values.order.userId,
-                credits: values.order.credits
+                credits: values.order.credits!
             })
             .thenResolve(newCredits);
 

@@ -3,7 +3,7 @@ export type CreditOrderStatus = "pending" | "paid" | "failed"
 export type CreditOrder = {
     id: string;
     amount: number;
-    credits: number;
+    credits?: number;
     currency: string;
     userId: string;
     createdAt: Date;
