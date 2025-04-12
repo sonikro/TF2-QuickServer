@@ -40,13 +40,14 @@ export function createCommands(dependencies: CommandDependencies) {
                 userCreditsRepository: dependencies.userCreditsRepository,
             })
         },
-        buyCredit: {
-            name: "buy-credits",
-            definition: buyCreditsCommandDefinition,
-            handler: createBuyCreditsCommandHandlerFactory({
-                createCreditsPurchaseOrder: dependencies.createCreditsPurchaseOrder,
-            })
-        }
+        // TODO: Uncomment when the PayPal fees are handled
+        // buyCredit: {
+        //     name: "buy-credits",
+        //     definition: buyCreditsCommandDefinition,
+        //     handler: createBuyCreditsCommandHandlerFactory({
+        //         createCreditsPurchaseOrder: dependencies.createCreditsPurchaseOrder,
+        //     })
+        // }
     } satisfies Record<string, {
         name: string;
         definition: SlashCommandOptionsOnlyBuilder,
