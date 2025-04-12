@@ -36,14 +36,16 @@
 ## 🖥️ Commands
 | Command | Description |
 |---------|-------------|
-| `/create-server <region> <variant_name>` | Deploys a new TF2 server in the selected region with a specific variant |
+| `/create-server <region> <variant_name> <steam_id>` | Deploys a new TF2 server in the selected region with a specific variant |
 | `/terminate-server <server_id> <region>` | Shuts down a specified TF2 server |
+| `/get-balance` | Displays the current balance of available server credits for the user |
+| `/buy-credits` *(in-development)* | Allows users to purchase additional server credits |
 
 > **ℹ️ Note:** Empty servers are automatically terminated after being idle for 10 minutes. This ensures cost efficiency and optimal resource usage.
 
 ### **Available Variants**
 - **standard-competitive** – Competitive server, with logs.tf, demos.tf. Supports 6v6, 9v9 and ultiduo.
-
+- **passtime** - Ready to play competitive PassTime
 ---
 
 ## 🎯 Supported Regions
