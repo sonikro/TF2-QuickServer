@@ -24,10 +24,10 @@
     "variants": {
         "standard-competitive": {
             "image": "sonikro/tf2-standard-competitive:latest",
-            "cpu": 1024,
-            "memory": 2048,
+            "cpu": 2048,
+            "memory": 4096,
             "maxPlayers": 24,
-            "map": "cp_badlands",
+            "map": "cp_process_f12",
             "svPure": 2,
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
