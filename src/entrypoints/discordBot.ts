@@ -23,6 +23,7 @@ import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCred
 import { initializeExpress } from "./http/express";
 import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
+import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
 
 export async function startDiscordBot() {
 
@@ -70,10 +71,17 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client
     })
 
-    const paymentService = new PaypalPaymentService({
+    const paypalPaymentService = new PaypalPaymentService({
         clientId: process.env.PAYPAL_CLIENT_ID!,
         clientSecret: process.env.PAYPAL_CLIENT_SECRET!,
         sandbox: process.env.PAYPAL_ENV === 'sandbox'
+    })
+
+    const adyenPaymentService = new AdyenPaymentService({
+        apiKey: process.env.ADYEN_API_KEY!,
+        environment: process.env.ADYEN_ENV! as 'live' | 'test',
+        merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT!,
+        hmacKey: process.env.ADYEN_HMAC_KEY!
     })
 
     const creditOrdersRepository = new SQliteCreditOrdersRepository({
@@ -94,7 +102,7 @@ export async function startDiscordBot() {
         }),
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
-            paymentService,
+            paymentService: adyenPaymentService,
             eventLogger
         }),
         userCreditsRepository
@@ -190,8 +198,10 @@ export async function startDiscordBot() {
             userCreditsRepository,
             eventLogger
         }),
-        paypalService: paymentService,
+        paypalService: paypalPaymentService,
         discordClient: client,
+        eventLogger,
+        adyenPaymentService
     })
 
     return client;
