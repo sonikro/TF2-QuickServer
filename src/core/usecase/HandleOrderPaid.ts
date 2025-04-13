@@ -1,17 +1,19 @@
 import { CreditOrdersRepository } from "../repository/CreditOrdersRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
+import { EventLogger } from "../services/EventLogger";
 
 export class HandleOrderPaid {
 
     constructor(private readonly dependencies: {
         userCreditsRepository: UserCreditsRepository,
         creditOrdersRepository: CreditOrdersRepository
+        eventLogger: EventLogger;
     }){}
     async execute(args: {
         orderId: string,
     }){
         const { orderId } = args;
-        const { creditOrdersRepository, userCreditsRepository } = this.dependencies;
+        const { creditOrdersRepository, userCreditsRepository, eventLogger } = this.dependencies;
 
         // Find the order by ID
         const order = await creditOrdersRepository.findById(orderId);
@@ -31,7 +33,11 @@ export class HandleOrderPaid {
             userId: order.userId
         });
 
-        console.log(`User ${order.userId} has been credited with ${order.credits} credits.`); 
+        await eventLogger.log({
+            eventMessage: `User has been credited with ${order.credits} credits after paying for order ${orderId}.`,
+            actorId: order.userId
+        })
+
         return {
             order,
             newCredits

@@ -6,16 +6,19 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { ServerManager } from "../services/ServerManager";
 import { Region, Server } from "../domain";
 import { Chance } from "chance";
+import { EventLogger } from "../services/EventLogger";
 
 const chance = new Chance();
 
 describe("DeleteServerForUser", () => {
     const mockServerRepository = mock<ServerRepository>();
     const mockServerManager = mock<ServerManager>();
+    const eventLogger = mock<EventLogger>();
 
     const deleteServerForUser = new DeleteServerForUser({
         serverRepository: mockServerRepository,
         serverManager: mockServerManager,
+        eventLogger
     });
 
     const validArgs = {

@@ -22,6 +22,7 @@ import { PaypalPaymentService } from "../providers/services/PaypalPaymentService
 import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
 import { initializeExpress } from "./http/express";
 import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
+import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
 
 export async function startDiscordBot() {
 
@@ -46,6 +47,11 @@ export async function startDiscordBot() {
 
     // Initialize Bot Dependencies
     const serverCommander = new RCONServerCommander()
+
+    const eventLogger = new DiscordEventLogger({
+        discordClient: client,
+        configManager: defaultConfigManager,
+    })
 
     const ecsServerManager = new ECSServerManager({
         serverCommander,
@@ -78,15 +84,18 @@ export async function startDiscordBot() {
         createServerForUser: new CreateServerForUser({
             serverManager: ecsServerManager,
             serverRepository,
-            userCreditsRepository
+            userCreditsRepository,
+            eventLogger
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ecsServerManager,
-            serverRepository
+            serverRepository,
+            eventLogger
         }),
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
-            paymentService
+            paymentService,
+            eventLogger
         }),
         userCreditsRepository
     })
@@ -97,7 +106,8 @@ export async function startDiscordBot() {
             serverManager: ecsServerManager,
             serverRepository,
             serverActivityRepository: serverActivityRepository,
-            serverCommander: serverCommander
+            serverCommander: serverCommander,
+            eventLogger
         })
     })
 
@@ -113,7 +123,8 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
             serverManager: ecsServerManager,
-            serverCommander
+            serverCommander,
+            eventLogger
         })
     })
 
@@ -160,6 +171,10 @@ export async function startDiscordBot() {
                 })
             } else {
                 console.error(`Error executing command ${commandName}:`, error);
+                await eventLogger.log({
+                    eventMessage: `Error executing command ${commandName}: ${error.message}`,
+                    actorId: chatInputInteraction.user.id,
+                })
                 await chatInputInteraction.reply({ content: 'There was an error while executing this command!' });
             }
         }
@@ -172,7 +187,8 @@ export async function startDiscordBot() {
     initializeExpress({
         handleOrderPaid: new HandleOrderPaid({
             creditOrdersRepository,
-            userCreditsRepository
+            userCreditsRepository,
+            eventLogger
         }),
         paypalService: paymentService,
         discordClient: client,

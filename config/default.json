@@ -44,5 +44,8 @@
             "map": "pass_arena2_b14b",
             "svPure": 2
         }
+    },
+    "discord": {
+        "logChannelId": "1360789887208394851"
     }
 }

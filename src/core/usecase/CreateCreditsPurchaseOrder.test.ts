@@ -5,6 +5,7 @@ import { PaymentService } from "../services/PaymentService";
 import { CreditOrdersRepository } from "../repository/CreditOrdersRepository";
 import { when } from "vitest-when";
 import { Chance } from "chance";
+import { EventLogger } from "../services/EventLogger";
 
 const chance = new Chance();
 const createTestEnvironment = () => {
@@ -18,10 +19,12 @@ const createTestEnvironment = () => {
         orderId: chance.guid(),
         orderLink: chance.url()
     }
+    const eventLogger = mock<EventLogger>();
     return {
         sut: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
-            paymentService
+            paymentService,
+            eventLogger
         }),
         mocks: {
             paymentService,

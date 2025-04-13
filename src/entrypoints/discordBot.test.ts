@@ -1,6 +1,6 @@
 import { Client, CommandInteraction, REST, Routes } from 'discord.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { mock } from "vitest-mock-extended";
+import { mock, mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { UserError } from '../core/errors/UserError';
 import { KnexConnectionManager } from '../providers/repository/KnexConnectionManager';
@@ -68,7 +68,7 @@ describe("startDiscordBot", () => {
         });
         vi.mocked(REST).mockImplementation(() => rest);
 
-        const client = mock<Client>()
+        const client = mockDeep<Client>()
         vi.mocked(Client).mockImplementation(() => client);
 
         beforeAll(async () => {

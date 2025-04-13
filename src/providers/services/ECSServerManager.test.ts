@@ -115,7 +115,8 @@ const createTestEnvironment = () => {
     const configManager: ConfigManager = {
         getCdkConfig: vi.fn(),
         getRegionConfig: vi.fn(),
-        getVariantConfig: vi.fn()
+        getVariantConfig: vi.fn(),
+        getDiscordConfig: vi.fn(),
     }
 
     const passwordGenerator = vi.fn().mockImplementation(args => chance.string(args))

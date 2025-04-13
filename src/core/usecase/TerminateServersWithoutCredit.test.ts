@@ -8,6 +8,7 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
 import { TerminateServersWithoutCredit } from "./TerminateServersWithoutCredit";
+import { EventLogger } from "../services/EventLogger";
 
 const chance = new Chance();
 const createServerOwnedByUser = (userId: string) => {
@@ -29,13 +30,15 @@ const createTestEnvironment = () => {
     const userCreditsRepository = mock<UserCreditsRepository>();
     const serverManager = mock<ServerManager>();
     const serverCommander = mock<ServerCommander>();
+    const eventLogger = mock<EventLogger>();
 
     return {
         sut: new TerminateServersWithoutCredit({
             serverRepository,
             userCreditsRepository,
             serverManager,
-            serverCommander
+            serverCommander,
+            eventLogger
         }),
         mocks: {
             serverRepository,
