@@ -6,12 +6,14 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { when } from "vitest-when";
 import { Chance } from "chance";
 import { CreditOrder } from "../domain/CreditOrder";
+import { EventLogger } from "../services/EventLogger";
 
 const chance = new Chance();
 
 const createTestEnvironment = () => {
     const creditOrdersRepository = mock<CreditOrdersRepository>();
     const userCreditsRepository = mock<UserCreditsRepository>();
+    const eventLogger = mock<EventLogger>();
 
     const values = {
         order: {
@@ -30,7 +32,8 @@ const createTestEnvironment = () => {
     return {
         sut: new HandleOrderPaid({
             creditOrdersRepository,
-            userCreditsRepository
+            userCreditsRepository,
+            eventLogger
         }),
         mocks: {
             creditOrdersRepository,
@@ -92,10 +95,12 @@ describe("HandleOrderPaid - Error Case", () => {
     it("should throw an error if the order is not found", async () => {
         const creditOrdersRepository = mock<CreditOrdersRepository>();
         const userCreditsRepository = mock<UserCreditsRepository>();
+        const eventLogger = mock<EventLogger>();
 
         const sut = new HandleOrderPaid({
             creditOrdersRepository,
-            userCreditsRepository
+            userCreditsRepository,
+            eventLogger
         });
 
         const nonExistentOrderId = chance.guid();

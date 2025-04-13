@@ -1,5 +1,6 @@
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
+import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
 
@@ -12,10 +13,11 @@ export class TerminateServersWithoutCredit {
         userCreditsRepository: UserCreditsRepository
         serverManager: ServerManager,
         serverCommander: ServerCommander
+        eventLogger: EventLogger
     }) { }
     async execute() {
 
-        const { serverCommander, serverManager, serverRepository, userCreditsRepository } = this.dependencies
+        const { serverCommander, serverManager, serverRepository, userCreditsRepository, eventLogger } = this.dependencies
 
         const servers = await serverRepository.getAllServers()
 
@@ -57,6 +59,10 @@ export class TerminateServersWithoutCredit {
                 region: server.region
             })
             await serverRepository.deleteServer(server.serverId)
+            await eventLogger.log({
+                eventMessage: `Server ${server.serverId} terminated due to lack of credits.`,
+                actorId: server.createdBy!
+            })
         }))
         settledPromises.push(...terminationPromises)
 

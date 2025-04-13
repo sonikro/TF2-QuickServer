@@ -3,6 +3,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { ServerManager } from "../services/ServerManager";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerStatus } from "../domain/ServerStatus";
+import { EventLogger } from "../services/EventLogger";
 
 export class TerminateEmptyServers {
 
@@ -11,6 +12,7 @@ export class TerminateEmptyServers {
         serverRepository: ServerRepository
         serverActivityRepository: ServerActivityRepository,
         serverCommander: ServerCommander,
+        eventLogger: EventLogger
     }) { }
 
     /**
@@ -22,7 +24,7 @@ export class TerminateEmptyServers {
         minutesEmpty: number,
     }): Promise<void> {
         const { minutesEmpty } = args;
-        const { serverManager, serverRepository, serverActivityRepository, serverCommander } = this.dependencies;
+        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger } = this.dependencies;
 
         // Fetch all servers
         const servers = await serverRepository.getAllServers();
@@ -56,6 +58,12 @@ export class TerminateEmptyServers {
                         if (index !== -1) {
                             mergedServers.splice(index, 1);
                         }
+
+                        // Log the event
+                        await eventLogger.log({
+                            eventMessage: `Server ${server.serverId} terminated due to inactivity for ${minutesEmpty} minutes.`,
+                            actorId: server.createdBy!,
+                        });
                     } catch (error) {
                         console.error(`Failed to terminate server ${server.serverId}:`, error);
                     }

@@ -10,18 +10,21 @@ import { Chance } from "chance";
 import { when } from "vitest-when"
 import { ServerCommander } from "../services/ServerCommander";
 import { emptyServerStatus, nonEmptyServerStatus } from "./__tests__/mockStatusStrings";
+import { EventLogger } from "../services/EventLogger";
 
 function createTestEnvironment() {
     const serverManager = mock<ServerManager>();
     const serverRepository = mock<ServerRepository>();
     const serverActivityRepository = mock<ServerActivityRepository>();
     const serverCommander = mock<ServerCommander>();
+    const eventLogger = mock<EventLogger>();
 
     const sut = new TerminateEmptyServers({
         serverManager,
         serverRepository,
         serverActivityRepository,
-        serverCommander
+        serverCommander,
+        eventLogger
     })
 
     return {

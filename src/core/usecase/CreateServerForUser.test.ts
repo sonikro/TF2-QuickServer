@@ -8,6 +8,7 @@ import { ServerManager } from '../services/ServerManager';
 import { when } from 'vitest-when';
 import {UserError} from "../errors/UserError"
 import { UserCreditsRepository } from '../repository/UserCreditsRepository';
+import { EventLogger } from '../services/EventLogger';
 
 const chance = new Chance();
 
@@ -15,6 +16,7 @@ const createTestEnvironment = () => {
     const serverRepository = mock<ServerRepository>();
     const serverManager = mock<ServerManager>();
     const userCreditsRepository = mock<UserCreditsRepository>();
+    const eventLogger = mock<EventLogger>();
 
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(Object.values(Variant));
@@ -37,7 +39,8 @@ const createTestEnvironment = () => {
         sut: new CreateServerForUser({
             serverManager,
             serverRepository,
-            userCreditsRepository
+            userCreditsRepository,
+            eventLogger
         }),
         mocks: {
             serverRepository,

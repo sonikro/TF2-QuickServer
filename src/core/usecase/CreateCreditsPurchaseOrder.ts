@@ -1,5 +1,6 @@
 import { CreditOrder } from "../domain/CreditOrder";
 import { CreditOrdersRepository } from "../repository/CreditOrdersRepository";
+import { EventLogger } from "../services/EventLogger";
 import { PaymentService } from "../services/PaymentService";
 
 export class CreateCreditsPurchaseOrder {
@@ -7,6 +8,7 @@ export class CreateCreditsPurchaseOrder {
     constructor(private readonly dependencies: {
         paymentService: PaymentService;
         creditOrdersRepository: CreditOrdersRepository
+        eventLogger: EventLogger;
     }) {}
 
     async execute(args: {
@@ -14,7 +16,7 @@ export class CreateCreditsPurchaseOrder {
         creditsAmount: number;
     }): Promise<CreditOrder>{
 
-        const {creditOrdersRepository , paymentService} = this.dependencies;
+        const {creditOrdersRepository , paymentService, eventLogger} = this.dependencies;
 
         const { userId, creditsAmount } = args;
 
@@ -40,6 +42,10 @@ export class CreateCreditsPurchaseOrder {
             credits: creditsAmount,
         });
 
+        await eventLogger.log({
+            eventMessage: `User has created a purchase order for ${creditsAmount} credits.`,
+            actorId: userId,
+        })
         return creditOrder
 
     }
