@@ -40,7 +40,7 @@ export function createCommands(dependencies: CommandDependencies) {
                 userCreditsRepository: dependencies.userCreditsRepository,
             })
         },
-        // TODO: Uncomment when the PayPal fees are handled
+        // TODO: Uncomment when the Pricing Packages are ready
         // buyCredit: {
         //     name: "buy-credits",
         //     definition: buyCreditsCommandDefinition,
