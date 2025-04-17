@@ -2,6 +2,7 @@ import config from "config";
 
 export enum Region {
     SA_SAOPAULO_1 = "sa-saopaulo-1",
+    US_CHICAGO_1 = "us-chicago-1",
 }
 
 export type RegionConfig = {
