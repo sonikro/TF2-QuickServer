@@ -4,6 +4,11 @@
             "displayName": "São Paulo (Brazil)",
             "srcdsHostname": "TF2-QuickServer | São Paulo @ Sonikro Solutions",
             "tvHostname": "TF2-QuickServer TV | São Paulo @ Sonikro Solutions"
+        },
+        "us-chicago-1": {
+            "displayName": "Chicago (USA)",
+            "srcdsHostname": "TF2-QuickServer | Chicago @ Sonikro Solutions",
+            "tvHostname": "TF2-QuickServer TV | Chicago @ Sonikro Solutions"
         }
     },
     "variants": {

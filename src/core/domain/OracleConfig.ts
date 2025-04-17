@@ -18,6 +18,11 @@ export function getOracleConfig(): OracleConfig {
                 availability_domain: config.get<string>(`sao_paulo_availability_domain.value`),
                 nsg_id: config.get<string>(`sao_paulo_nsg_id.value`),
                 subnet_id: config.get<string>(`sao_paulo_subnet_id.value`),
+            },
+            "us-chicago-1": {
+                availability_domain: config.get<string>(`chicago_availability_domain.value`),
+                nsg_id: config.get<string>(`chicago_nsg_id.value`),
+                subnet_id: config.get<string>(`chicago_subnet_id.value`),
             }
         },
     }
