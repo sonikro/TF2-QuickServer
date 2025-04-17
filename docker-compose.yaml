@@ -51,6 +51,27 @@ services:
       - "pass_stadium_rc3a"
     profiles:
       - passtime
+  tf2-fat-standard-competitive:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-standard-competitive/Dockerfile
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+    profiles:
+      - server
 
 volumes:
   db:
