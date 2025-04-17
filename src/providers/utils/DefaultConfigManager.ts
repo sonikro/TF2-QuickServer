@@ -1,4 +1,4 @@
-import { Variant, VariantConfig, Region, RegionConfig, CdkConfig, getCdkConfig, getVariantConfig, getRegionConfig, DiscordConfig, getDiscordConfig } from "../../core/domain";
+import { DiscordConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 
 export class DefaultConfigManager implements ConfigManager {
@@ -8,11 +8,11 @@ export class DefaultConfigManager implements ConfigManager {
     getRegionConfig(region: Region): RegionConfig {
         return getRegionConfig(region)
     }
-    getCdkConfig(): CdkConfig {
-        return getCdkConfig()
-    }
     getDiscordConfig(): DiscordConfig {
         return getDiscordConfig()
+    }
+    getOracleConfig(): OracleConfig {
+        return getOracleConfig();
     }
 }
 export const defaultConfigManager = new DefaultConfigManager();

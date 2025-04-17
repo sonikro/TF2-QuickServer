@@ -1,14 +1,12 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
+import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
+import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../../core/usecase/DeleteServerForUser";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
-import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
-import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
-import { buyCreditsCommandDefinition } from "./BuyCredits";
-import { createBuyCreditsCommandHandlerFactory } from "./BuyCredits/handler";
-import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
+import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getEnabledRegions, RegionNames } from "../../../core/domain";
+import { getRegions, getRegionDisplayName } from "../../../core/domain";
 
 export const terminateServerCommandDefinition = new SlashCommandBuilder()
     .setName('terminate-server')
@@ -13,8 +13,8 @@ export const terminateServerCommandDefinition = new SlashCommandBuilder()
         option.setName('region')
             .setDescription('Region of the server to terminate')
             .setRequired(true)
-            .setChoices(getEnabledRegions().map(region => ({
-                name: RegionNames[region],
+            .setChoices(getRegions().map(region => ({
+                name: getRegionDisplayName(region),
                 value: region
             })))
     )

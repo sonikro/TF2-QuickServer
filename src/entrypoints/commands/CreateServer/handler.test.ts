@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { Server } from "../../../core/domain/DeployedServer";
-import { Region, RegionNames } from "../../../core/domain/Region";
+import { getRegionDisplayName, Region } from "../../../core/domain/Region";
 import { Variant } from "../../../core/domain/Variant";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createServerCommandHandlerFactory } from "./handler";
@@ -79,14 +79,14 @@ describe("createServerCommandHandler", () => {
             creatorId: interaction.user.id
         })
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: `Creating server in region ${RegionNames[region]} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
+            content: `Creating server in region ${getRegionDisplayName(region)} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
             flags: MessageFlags.Ephemeral
         })
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `🎉 **Server Created Successfully!** 🎉\n\n` +
             `Here are your server details:\n\n` +
             `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-            `🌍 **Region:** \`${RegionNames[deployedServer.region]}\`\n` +
+            `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
             `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
             `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
             `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +

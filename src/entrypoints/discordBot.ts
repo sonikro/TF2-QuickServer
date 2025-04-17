@@ -1,29 +1,28 @@
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
-import { ECSCommandExecutor } from "../providers/services/ECSCommandExecutor";
-import { ECSServerManager } from "../providers/services/ECSServerManager";
+import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
+import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
+import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
+import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
+import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
+import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
+import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
 import { KnexConnectionManager } from "../providers/repository/KnexConnectionManager";
-import { defaultAwsServiceFactory } from "../providers/services/defaultAwsServiceFactory";
+import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
+import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
+import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
+import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
+import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
+import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
+import { OCIServerManager } from "../providers/services/OCIServerManager";
+import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
+import { RCONServerCommander } from "../providers/services/RCONServerCommander";
+import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
 import { createCommands } from "./commands";
-import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
-import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
-import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
-import { scheduleConsumeCreditsRoutine, scheduleServerCleanupRoutine } from "./jobs";
-import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
-import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
-import { RCONServerCommander } from "../providers/services/RCONServerCommander";
-import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
-import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
-import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
-import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
-import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
-import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
-import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
 import { initializeExpress } from "./http/express";
-import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
-import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
-import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
+import { scheduleConsumeCreditsRoutine, scheduleServerCleanupRoutine } from "./jobs";
+import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 
 export async function startDiscordBot() {
 
@@ -54,12 +53,13 @@ export async function startDiscordBot() {
         configManager: defaultConfigManager,
     })
 
-    const ecsServerManager = new ECSServerManager({
+    const ociServerManager = new OCIServerManager({
         serverCommander,
-        awsServiceFactory: defaultAwsServiceFactory,
+        ociClientFactory: defaultOracleServiceFactory,
         configManager: defaultConfigManager,
         passwordGenerator: chancePasswordGenerator
     })
+    
 
     const serverRepository = new SQLiteServerRepository({
         knex: KnexConnectionManager.client,
@@ -90,13 +90,13 @@ export async function startDiscordBot() {
     
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
-            serverManager: ecsServerManager,
+            serverManager: ociServerManager,
             serverRepository,
             userCreditsRepository,
             eventLogger
         }),
         deleteServerForUser: new DeleteServerForUser({
-            serverManager: ecsServerManager,
+            serverManager: ociServerManager,
             serverRepository,
             eventLogger
         }),
@@ -111,7 +111,7 @@ export async function startDiscordBot() {
     // Schedule jobs
     scheduleServerCleanupRoutine({
         terminateEmptyServers: new TerminateEmptyServers({
-            serverManager: ecsServerManager,
+            serverManager: ociServerManager,
             serverRepository,
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander,
@@ -130,7 +130,7 @@ export async function startDiscordBot() {
         terminateServersWithoutCredit: new TerminateServersWithoutCredit({
             serverRepository,
             userCreditsRepository,
-            serverManager: ecsServerManager,
+            serverManager: ociServerManager,
             serverCommander,
             eventLogger
         })
