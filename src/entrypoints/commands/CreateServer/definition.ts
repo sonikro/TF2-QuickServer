@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getEnabledRegions, RegionNames, Variant } from "../../../core/domain";
+import { getRegions, getRegionDisplayName, Variant } from "../../../core/domain";
 
 export const createServerCommandDefinition = new SlashCommandBuilder()
     .setName('create-server')
@@ -7,8 +7,8 @@ export const createServerCommandDefinition = new SlashCommandBuilder()
     .addStringOption(option =>
         option.setName('region')
             .setDescription('Region to deploy the server')
-            .addChoices(getEnabledRegions().map(region => ({
-                name: RegionNames[region],
+            .addChoices(getRegions().map(region => ({
+                name: getRegionDisplayName(region),
                 value: region
             })))
             .setRequired(true)

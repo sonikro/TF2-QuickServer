@@ -1,8 +1,9 @@
-import { CdkConfig, Region, RegionConfig, Variant, VariantConfig, DiscordConfig} from "../domain";
+import { DiscordConfig, Region, RegionConfig, Variant, VariantConfig } from "../domain";
+import { OracleConfig } from "../domain/OracleConfig";
 
 export interface ConfigManager {
     getVariantConfig(variant: Variant): VariantConfig;
     getRegionConfig(region: Region): RegionConfig;
-    getCdkConfig(): CdkConfig;
+    getOracleConfig(): OracleConfig;
     getDiscordConfig(): DiscordConfig;
 }

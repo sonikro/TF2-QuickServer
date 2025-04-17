@@ -1,13 +1,13 @@
+import { Client as DiscordClient, User } from 'discord.js';
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { mock, mockDeep } from 'vitest-mock-extended';
-import { HandleOrderPaid } from '../../core/usecase/HandleOrderPaid';
-import { PaypalPaymentService } from '../../providers/services/PaypalPaymentService';
-import { initializeExpress } from './express';
-import { Client as DiscordClient, User } from 'discord.js';
+import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
 import { EventLogger } from '../../core/services/EventLogger';
+import { HandleOrderPaid } from '../../core/usecase/HandleOrderPaid';
 import { AdyenPaymentService } from '../../providers/services/AdyenPaymentService';
+import { PaypalPaymentService } from '../../providers/services/PaypalPaymentService';
+import { initializeExpress } from './express';
 
 describe("initializeExpress", () => {
     const handleOrderPaid = mock<HandleOrderPaid>();

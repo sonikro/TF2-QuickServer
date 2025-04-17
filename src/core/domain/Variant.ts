@@ -2,17 +2,17 @@ import config from "config";
 
 export enum Variant {
     StandardCompetitive = "standard-competitive",
-    Passtime = "passtime",
 }
 
 export type VariantConfig = {
     image: string;
-    cpu: number;
+    ocpu: number;
     memory: number;
     maxPlayers: number;
     serverName: string;
     map: string;
     svPure: number;
+    shape: string;
     defaultCfgs?: {
         "5cp": string;
         "koth": string;

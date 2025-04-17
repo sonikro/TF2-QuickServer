@@ -1,199 +1,192 @@
-# TF2-QuickServer
+# 🎮 TF2-QuickServer
 
-![TF2-QuickServer](https://img.shields.io/badge/TF2-QuickServer-blue?style=for-the-badge&logo=steam)
+![TF2-QuickServer](https://img.shields.io/badge/TF2-QuickServer-blue?style=for-the-badge&logo=steam)  
 [![Discord](https://img.shields.io/discord/1359667090092458055?label=Join%20Our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/HfDgMj73cW)
 
-## 🎮 Instantly Deploy TF2 Servers via Discord
-
-**TF2-QuickServer** is a powerful **Discord bot** that enables Team Fortress 2 players to instantly spin up game servers in multiple regions with ease. Powered by **AWS ECS Containers**, **Docker**, and **Steam Datagram Relay (SDR)**, this bot ensures a **fast, secure, and seamless gaming experience**.
+> Instantly deploy **Team Fortress 2** servers straight from Discord — powered by Docker, Oracle Cloud, and SDR.
 
 ---
 
-## 🚀 Features
-✅ **One-Click Server Deployment** – Instantly create TF2 servers through simple Discord commands.  
-✅ **Global Coverage** – Deploy servers in various **AWS regions** for low-latency gameplay.  
-✅ **Secure & Optimized Connections** – Utilizes **Steam Datagram Relay (SDR)** to ensure **private, DDoS-protected** connections.  
-✅ **Containerized Infrastructure** – Each server runs in an **isolated Docker container** for reliability and scalability.  
-✅ **Automatic Shutdown** – Servers automatically shut down when inactive, reducing costs.  
+## 🚀 Overview
+
+**TF2-QuickServer** is a Discord bot that lets you spawn TF2 servers instantly in multiple regions using Oracle Container Instances. Whether you're playing competitive or just want to chill with friends, it's never been easier to get a server up and running in a few minutes.
 
 ---
 
-## 🛠️ How It Works
-1. **Invite the Bot** – Add TF2-QuickServer to your Discord server or install it for your personal user.
-2. **Run a Command** – Use `/create-server <region> <variant_name>` to instantly deploy a TF2 server.
-3. **Get Server Details** – The bot provides the **IP address & SDR connection info**.
-4. **Join & Play!** – Connect with friends and enjoy lag-free TF2 matches.
+## ✨ Features
+
+- ✅ **One-Click Server Deployment** – Launch a TF2 server via simple Discord commands  
+- 🌍 **Multi-Region Support** – Deploy in various **Oracle Cloud regions** for minimal latency  
+- 🔐 **DDoS Protection** – All servers use **Steam Datagram Relay (SDR)** for secure connections  
+- 🛆 **Containerized Architecture** – Fully isolated Docker containers per server  
+- ⏱️ **Cost-Efficient** – Idle servers automatically shut down after 10 minutes
 
 ---
 
-## 🛠️ Deployment Stack
-- **AWS CDK** – Used to set up the required infrastructure in each AWS region, including VPCs, ECS clusters, and security groups.
-- **AWS SDK** – Dynamically creates ECS services on demand based on bot commands, ensuring efficient resource utilization.
-- **SQLite** – Lightweight database for storing server and player state, ensuring quick access and persistence.
+## 🧐 How It Works
+
+1. **Join our Discord Channel**
+2. **Run a Command** – Example: `/create-server sa-saopaulo-1 standard-competitive`
+3. **Receive Server Info** – Get your IP address and SDR connection string.
+4. **Play!** – Join with friends and frag away!
 
 ---
 
-## 🖥️ Commands
+## ⚙️ Tech Stack
+
+- 🛠️ **Terraform** – Provisions all necessary Oracle Cloud infrastructure  
+- 🧪 **OCI-SDK (Node.js)** – Dynamically creates container instances  
+- 📂 **SQLite** – Fast, local database to track server and user state  
+- 🐳 **Docker** – All servers are built from containerized images  
+
+---
+
+## 📘 Commands
+
 | Command | Description |
-|---------|-------------|
-| `/create-server <region> <variant_name> <steam_id>` | Deploys a new TF2 server in the selected region with a specific variant |
-| `/terminate-server <server_id> <region>` | Shuts down a specified TF2 server |
-| `/get-balance` | Displays the current balance of available server credits for the user |
-| `/buy-credits` *(in-development)* | Allows users to purchase additional server credits |
+|--------|-------------|
+| `/create-server <region> <variant> <steam_id>` | Launches a server in the selected region |
+| `/terminate-server <server_id> <region>` | Terminates a running TF2 server |
+| `/get-balance` | Shows your available credits |
+| `/buy-credits` | *(Coming soon!)* Purchase credits |
 
-> **ℹ️ Note:** Empty servers are automatically terminated after being idle for 10 minutes. This ensures cost efficiency and optimal resource usage.
-
-### **Available Variants**
-- **standard-competitive** – Competitive server, with logs.tf, demos.tf. Supports 6v6, 9v9 and ultiduo.
-- **passtime** - Ready to play competitive PassTime
----
-
-## 🎯 Supported Regions
-
-**🇺🇸 North America:** us-east-1 (N. Virginia), us-east-2 (Ohio), us-west-1 (N. California) (usw1-az1 & usw1-az3 only), us-west-2 (Oregon)  
-**🇨🇦 Canada:** ca-central-1 (Central), ca-west-1 (Calgary)  
-**🇨🇳 China:** cn-north-1 (Beijing) (cnn1-az1 & cnn1-az2 only), cn-northwest-1 (Ningxia)  
-**🇪🇺 Europe:** eu-central-1 (Frankfurt), eu-central-2 (Zurich), eu-west-1 (Ireland), eu-west-2 (London), eu-west-3 (Paris), eu-south-1 (Milan), eu-south-2 (Spain), eu-north-1 (Stockholm)  
-**🇮🇱 Israel:** il-central-1 (Tel Aviv)  
-**🇦🇪 Middle East:** me-south-1 (Bahrain), me-central-1 (UAE)  
-**🇸🇬 Asia:** ap-east-1 (Hong Kong), ap-south-1 (Mumbai), ap-south-2 (Hyderabad), ap-northeast-1 (Tokyo) (apne1-az1, apne1-az2, & apne1-az4 only), ap-northeast-2 (Seoul), ap-northeast-3 (Osaka), ap-southeast-1 (Singapore), ap-southeast-2 (Sydney), ap-southeast-3 (Jakarta), ap-southeast-4 (Melbourne), ap-southeast-5 (Malaysia)  
-**🇧🇷 South America:** sa-east-1 (São Paulo)  
-**Africa:** af-south-1 (Cape Town)  
+> 💡 *Empty servers are terminated after 10 minutes of inactivity.*
 
 ---
 
-## 🔧 Installation & Self-Hosting
-Want to host your own instance? Follow these steps:
+## 🎮 Server Variants
 
-### **1️⃣ Clone the Repository**
+- **`standard-competitive`** – Competitive config with logs.tf, demos.tf, and support for 6v6, 9v9, ultiduo
+
+---
+
+## 🌎 Supported Regions
+
+Any region that supports **Oracle Container Instances** is fair game.  
+See the full list: [Oracle Cloud Regions](https://www.oracle.com/cloud/public-cloud-regions/)
+
+---
+
+## 🔧 Self-Hosting
+
+Want to run your own version? Follow the steps below:
+
+### 1️⃣ Clone the Repo
+
 ```bash
 git clone https://github.com/sonikro/TF2-QuickServer.git
 cd TF2-QuickServer
 ```
 
-### **2️⃣ Set Up Environment Variables**
-Create a `.env` file and configure:
-```
+### 2️⃣ Configure Environment
+
+Create a `.env` file:
+
+```env
+# Discord Bot
 DISCORD_TOKEN=
 DISCORD_CLIENT_ID=
 
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AWS_ACCOUNT_ID=
+# Oracle Cloud Auth
+OCI_CONFIG_FILE=
 
-# Used by the servers
-
+# Third-party Services
 DEMOS_TF_APIKEY=
 LOGS_TF_APIKEY=
 ```
 
-### **3️⃣ Install Dependencies**
-Install the required dependencies using `npm`:
+### 3️⃣ Install Dependencies
 
 ```bash
 npm install
 ```
 
-This will install all the necessary packages listed in the `package.json` file.
+---
 
-### **4️⃣ Download the Maps**
-Before deploying the bot, ensure that the required server maps are downloaded into the `maps` folder in the root directory. This folder is used by the AWS CDK to automatically upload the maps to the servers created by the bot. 
+## 🗺️ Maps Setup (Fat Images)
 
-- If a map is removed from the `maps` folder, it will also be removed from the servers during the next deployment.
-- To download all maps, run the following command:
+Oracle Container Instances do **not** support NFS or shared file systems like FSS. Instead, this project uses Docker **fat images** that bake in all TF2 maps directly.
+
+### Download maps:
 
 ```bash
 npm run download:maps
 ```
 
-This will create the `maps` folder and download all maps listed in the `maps.json` file.
+This will create the `maps/` folder and download all maps listed in `maps.json`.
 
-### **5️⃣ Deploy the Infrastructure**
-Once the maps are downloaded, you can deploy the infrastructure using AWS CDK. 
-
-### **Configure Deployment Parameters**
-Before proceeding, ensure that all desired parameters are set in the `default.json` file located inside the `config` directory. Below is an example configuration:
-
-```json
-{
-    "aws": {
-        "cdk": {
-            "ecsClusterName": "TF2-QuickServer-Cluster",
-            "vpcName": "TF2-QuickServer-VPC",
-            "sgName": "TF2-QuickServer-SG",
-            "efsName": "TF2-QuickServer-EFS",
-            "ecsTaskExecutionRoleName": "TF2-QuickServer-TaskRole"
-        },
-        "regions": {
-            "sa-east-1": {
-                "enabled": true,
-                "srcdsHostname": "TF2-QuickServer | São Paulo @ Sonikro Solutions",
-                "tvHostname": "TF2-QuickServer TV | São Paulo @ Sonikro Solutions"
-            },
-            "us-east-1": {
-                "enabled": true,
-                "srcdsHostname": "TF2-QuickServer | Virginia @ Sonikro Solutions",
-                "tvHostname": "TF2-QuickServer TV | Virginia @ Sonikro Solutions"
-            }
-        }
-    },
-    "variants": {
-        "standard-competitive": {
-            "image": "ghcr.io/melkortf/tf2-competitive:latest",
-            "cpu": 2048,
-            "memory": 4096,
-            "maxPlayers": 24,
-            "map": "cp_badlands",
-            "svPure": 2
-        }
-    }
-}
-```
-
-### **Key Notes:**
-- The `regions` object defines the AWS regions where servers can be deployed. To add or remove regions, simply modify the `regions` object by adding the desired AWS region key and setting `enabled` to `true`. The CDK will automatically create the necessary infrastructure for all enabled regions.
-- The `variants` object specifies server configurations, such as the Docker image, CPU, memory, maximum players, and default map.
-
-> **Note:** The list of possible regions in the Discord command is dynamically extracted from the enabled regions in the `config/default.json` file.
-
-### **Deploy the Infrastructure**
-Once your configuration is ready, deploy the infrastructure using the following command:
+### Build and push fat image:
 
 ```bash
-npm run cdk:deploy
+npm run build:fat:standard-competitive
+npm run push:fat:standard-competitive
 ```
 
-> ⚠️ **Note:** If this is your first time using AWS CDK in your account, you must initialize the required infrastructure by running:
+> 📝 Maps are gitignored and stored in a local `maps` folder.  
+> The [mapdownloader plugin](https://github.com/spiretf/mapdownloader) is also included and will attempt to fetch missing maps dynamically if needed.
+
+> 🚧 *Currently, there is no CI/CD pipeline building/pushing this image — it's done manually via the above commands.*
+
+---
+
+## ☁️ Deploy Oracle Infrastructure
+
+Make sure you're authenticated with OCI. Then run:
 
 ```bash
-npm run cdk:bootstrap
+npm run oracle:deploy
 ```
 
-For additional details, refer to the [AWS CDK Bootstrap documentation](https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html).
+> This command runs Terraform to create required infra and generates a `config/local.json` file with all outputs.  
+> TF2-QuickServer code reads this file at runtime to determine which OCI resources to use.
 
-### **6️⃣ Run the Bot**
-Start the bot in development mode:
+More info on authentication:  
+📖 [OCI SDK Authentication Docs](https://docs.oracle.com/en-us/iaas/Content/API/Concepts/sdk_authentication_methods.htm)
+
+---
+
+## 🧪 Run the Bot
 
 ```bash
 npm run dev
 ```
 
+## Running with Docker Compose
+
+```yaml
+services:
+  tf2-quickserver:
+    image: sonikro/tf2-quickserver:latest
+    restart: always
+    ports:
+      - 8000:3000
+    env_file:
+      - .env
+    volumes:
+      - ./db:/app/db
+      - ./config:/app/config:ro
+      - ./keys:/app/keys:ro
+```
+
+> Make sure you have your config files in the ./config directory
+
 ---
 
 ## 🤝 Contributing
-Contributions are welcome! Feel free to submit **issues**, **feature requests**, or **pull requests** to improve the project.
+
+Contributions are welcome! Open a PR, suggest improvements, or file an issue if something breaks.
 
 ---
 
 ## 📜 License
-This project is licensed under the **MIT License**.
+
+MIT
 
 ---
 
-## 🌟 Support & Feedback
-Have questions or need support? Open an [issue](https://github.com/sonikro/TF2-QuickServer/issues) on GitHub.
+## 💬 Support
 
-🎩 _Get ready to deploy your TF2 servers in seconds with TF2-QuickServer!_
+Need help? Want to chat with other players or devs?  
+Join the [Discord](https://discord.gg/HfDgMj73cW) or open a GitHub [Issue](https://github.com/sonikro/TF2-QuickServer/issues).
 
-🚀 **Let's game!**
-
+---

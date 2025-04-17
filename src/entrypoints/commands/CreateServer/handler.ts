@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { Region, RegionNames, Variant } from "../../../core/domain";
+import { getRegionDisplayName, Region, Variant } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 
 export function createServerCommandHandlerFactory(dependencies: {
@@ -15,7 +15,7 @@ export function createServerCommandHandlerFactory(dependencies: {
         // Create server
         try {
             await interaction.followUp({
-                content: `Creating server in region ${RegionNames[region]} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
+                content: `Creating server in region ${getRegionDisplayName(region)} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
                 flags: MessageFlags.Ephemeral
             });
 
@@ -30,7 +30,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                 content: `🎉 **Server Created Successfully!** 🎉\n\n` +
                     `Here are your server details:\n\n` +
                     `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-                    `🌍 **Region:** \`${RegionNames[deployedServer.region]}\`\n` +
+                    `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
                     `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
                     `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
                     `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
