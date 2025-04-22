@@ -7,7 +7,7 @@
     "start": "tsx ./src/index.ts",
     "test": "vitest",
     "dev": "nodemon",
-    "oracle:deploy": "terraform -chdir=./oracle-terraform apply -auto-approve && terraform -chdir=./oracle-terraform output -json > ./config/local.json",
+    "oracle:deploy": "terraform -chdir=./oracle-terraform init && terraform -chdir=./oracle-terraform apply -auto-approve && terraform -chdir=./oracle-terraform output -json > ./config/local.json",
     "download:maps": "tsx ./scripts/downloadMaps.ts",
     "migration:run": "knex --knexfile knexfile.ts migrate:latest",
     "migration:create": "knex --knexfile knexfile.ts migrate:make",
