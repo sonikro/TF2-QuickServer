@@ -27,3 +27,14 @@ output "chicago_availability_domain" {
 output "chicago_nsg_id" {
   value = module.network-us-chicago-1.nsg_id
 }
+
+# Bogotá Region
+output "bogota_subnet_id" {
+  value = module.network-sa-bogota-1.subnet_id
+}
+output "bogota_availability_domain" {
+  value = module.network-sa-bogota-1.availability_domain
+}
+output "bogota_nsg_id" {
+  value = module.network-sa-bogota-1.nsg_id
+}
