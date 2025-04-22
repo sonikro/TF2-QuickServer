@@ -95,7 +95,7 @@ export class OCIServerManager implements ServerManager {
                         subnetId: oracleRegionConfig.subnet_id,
                         isPublicIpAssigned: true,
                         nsgIds: [
-                           oracleRegionConfig.nsg_id
+                            oracleRegionConfig.nsg_id
                         ],
                     },
                 ],
@@ -129,6 +129,20 @@ export class OCIServerManager implements ServerManager {
         if (!publicIp) {
             throw new Error("Failed to retrieve public IP");
         }
+
+        // Wait for container to be ACTIVE
+        console.log(`Waiting for container instance to be ACTIVE: ${containerId}`);
+        await waitUntil(async () => {
+            const containerInstance = await containerClient.getContainerInstance({
+                containerInstanceId: containerId
+            });
+            if (containerInstance.containerInstance.lifecycleState === "ACTIVE") {
+                return true;
+            }
+            throw new Error("Container instance is not ACTIVE yet");
+        }, { interval: 5000, timeout: 180000 });
+
+        console.log(`Container instance is ACTIVE: ${containerId}`);
 
         console.log(`Waiting for server ${serverId} to be ready to receive RCON commands...`);
         const { sdrAddress } = await waitUntil<{ sdrAddress: string }>(
