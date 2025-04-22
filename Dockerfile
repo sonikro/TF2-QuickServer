@@ -20,8 +20,6 @@ COPY --from=build /app/package*.json ./
 
 RUN npm install --only=production
 
-COPY config /app/config
-
 VOLUME /app/config
 VOLUME /app/db
 
