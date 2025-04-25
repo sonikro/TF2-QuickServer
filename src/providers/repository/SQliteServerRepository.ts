@@ -1,13 +1,13 @@
 import { Knex } from "knex";
-import { Server } from "../../core/domain";
+import { Server, ServerStatus } from "../../core/domain";
 import { ServerRepository } from "../../core/repository/ServerRepository";
 
 export class SQLiteServerRepository implements ServerRepository {
 
     constructor(private readonly dependencies: { knex: Knex }) {}
 
-    async upsertServer(server: Server): Promise<void> {
-        await this.dependencies.knex<Server>('servers')
+    async upsertServer(server: Server, trx?: Knex.Transaction): Promise<void> {
+        const query = this.dependencies.knex<Server>('servers')
             .insert({
                 serverId: server.serverId,
                 region: server.region,
@@ -21,17 +21,29 @@ export class SQLiteServerRepository implements ServerRepository {
                 rconAddress: server.rconAddress,
                 tvPassword: server.tvPassword,
                 createdAt: server.createdAt ?? new Date(),
-                createdBy: server.createdBy
+                createdBy: server.createdBy,
+                status: server.status,
             } as Server)
             .onConflict('serverId')
             .merge();
+
+        if (trx) {
+            query.transacting(trx);
+        }
+
+        await query;
     }
 
-    async getAllServersByUserId(userId: string): Promise<Server[]> {
-        const servers = await this.dependencies.knex<Server>('servers')
+    async getAllServersByUserId(userId: string, trx?: Knex.Transaction): Promise<Server[]> {
+        const query = this.dependencies.knex<Server>('servers')
             .where({ createdBy: userId })
             .select('*');
 
+        if (trx) {
+            query.transacting(trx);
+        }
+
+        const servers = await query;
         return servers.map(this.deserialize);
     }
 
@@ -49,11 +61,20 @@ export class SQLiteServerRepository implements ServerRepository {
         return server ? this.deserialize(server) : null;
     }
 
-    async getAllServers(): Promise<Server[]> {
-        const servers = await this.dependencies.knex<Server>('servers')
+    async getAllServers(status?: ServerStatus): Promise<Server[]> {
+        const query = this.dependencies.knex<Server>('servers')
             .select('*');
 
+        if (status) {
+            query.where({ status });
+        }
+
+        const servers = await query;
         return servers.map(this.deserialize);
+    }
+
+    async runInTransaction<T>(fn: (trx: Knex.Transaction) => Promise<T>): Promise<T> {
+        return this.dependencies.knex.transaction(fn);
     }
 
     private deserialize(server: any): Server {

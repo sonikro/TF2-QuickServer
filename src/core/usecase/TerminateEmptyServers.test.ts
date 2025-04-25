@@ -50,6 +50,7 @@ function createServer(server: Partial<Server> = {}): Server {
         tvPassword: chance.string(),
         region: chance.pickone(Object.values(Region)),
         variant: chance.pickone(Object.values(Variant)),
+        status: "ready",
         ...server
     }
 }
@@ -108,7 +109,7 @@ describe("TerminateEmptyServers", () => {
         beforeAll(async () => {
 
             when(mocks.serverActivityRepository.getAll).calledWith().thenResolve(serverActivities)
-            when(mocks.serverRepository.getAllServers).calledWith().thenResolve(currentServers)
+            when(mocks.serverRepository.getAllServers).calledWith("ready").thenResolve(currentServers)
 
 
             when(mocks.serverCommander.query).calledWith({

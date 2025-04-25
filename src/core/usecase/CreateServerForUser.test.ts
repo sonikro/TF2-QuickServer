@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { CreateServerForUser } from './CreateServerForUser';
 import { ServerRepository } from '../repository/ServerRepository';
@@ -11,6 +11,11 @@ import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { EventLogger } from '../services/EventLogger';
 import { ConfigManager } from '../utils/ConfigManager';
 
+vi.mock("uuid", () => {
+    return {
+        v4: () => "test-uuid"
+    }
+})
 const chance = new Chance();
 
 const createTestEnvironment = () => {
@@ -19,33 +24,33 @@ const createTestEnvironment = () => {
     const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
+
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
     })
-
 
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(Object.values(Variant));
     const userId = chance.guid();
 
+    const trx = {} as any;
+
     when(serverRepository.getAllServersByUserId)
-        .calledWith(userId)
+        .calledWith(userId, trx)
         .thenResolve([])
 
-    when(serverRepository.upsertServer).calledWith({
-        serverId: expect.any(String),
-        region,
-        variant: variantName,
-        hostIp: expect.any(String),
-        hostPort: expect.any(Number),
-        tvIp: expect.any(String),
-        tvPort: expect.any(Number),
-        rconPassword: expect.any(String),
-        hostPassword: expect.any(String),
-        rconAddress: expect.any(String),
-        tvPassword: expect.any(String),
-        createdBy: userId
-    }).thenResolve();
+    when(serverRepository.runInTransaction).calledWith(expect.any(Function)).thenDo(async (fn) => {
+        return fn(trx);
+    });
+
+    when(serverRepository.upsertServer)
+        .calledWith(expect.objectContaining({
+            serverId: expect.any(String),
+            region,
+            variant: variantName,
+            createdBy: userId
+        }), expect.anything())
+        .thenResolve();
 
     const deployedServer: Server = {
         serverId: chance.guid(),
@@ -74,15 +79,18 @@ const createTestEnvironment = () => {
             serverManager,
             userCreditsRepository,
             configManager,
+            eventLogger,
+            trx
         },
         data: {
             region,
             variantName,
             userId,
-            deployedServer
+            deployedServer,
         }
     }
 }
+
 describe('CreateServerForUser Use Case', () => {
 
     describe("credits enabled", () => {
@@ -95,7 +103,8 @@ describe('CreateServerForUser Use Case', () => {
                 when(mocks.serverManager.deployServer)
                     .calledWith({
                         region: data.region,
-                        variantName: data.variantName
+                        variantName: data.variantName,
+                        serverId: "test-uuid"
                     }).thenResolve(data.deployedServer)
 
                 when(mocks.userCreditsRepository.getCredits)
@@ -112,13 +121,15 @@ describe('CreateServerForUser Use Case', () => {
             it("should call serverManager.deployServer with the correct arguments", async () => {
                 expect(mocks.serverManager.deployServer).toHaveBeenCalledWith({
                     region: data.region,
-                    variantName: data.variantName
+                    variantName: data.variantName,
+                    serverId: "test-uuid"
                 });
             })
 
             it("should call serverRepository.upsertServer with the correct arguments", async () => {
                 expect(mocks.serverRepository.upsertServer).toHaveBeenCalledWith({
                     ...data.deployedServer,
+                    status: "ready",
                     createdBy: data.userId
                 });
             })
@@ -155,7 +166,8 @@ describe('CreateServerForUser Use Case', () => {
             when(mocks.serverManager.deployServer)
                 .calledWith({
                     region: data.region,
-                    variantName: data.variantName
+                    variantName: data.variantName,
+                    serverId: "test-uuid",
                 }).thenResolve(data.deployedServer)
 
             await sut.execute({
@@ -177,7 +189,7 @@ describe('CreateServerForUser Use Case', () => {
         })
 
         when(mocks.serverRepository.getAllServersByUserId)
-        .calledWith(data.userId)
+        .calledWith(data.userId, mocks.trx)
         .thenResolve([data.deployedServer])
 
         const act = () => sut.execute({
@@ -188,4 +200,36 @@ describe('CreateServerForUser Use Case', () => {
 
         await expect(act()).rejects.toThrow(new UserError("You already have a server running. Please terminate it before creating a new one."))
     })
+    
+    it("should add the server to the repository even if the serverManager fails", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+
+        when(mocks.serverManager.deployServer)
+            .calledWith({
+                region: data.region,
+                variantName: data.variantName,
+                serverId: "test-uuid"
+            }).thenReject(new Error("Server manager error"))
+
+        when(mocks.userCreditsRepository.getCredits)
+            .calledWith({ userId: data.userId })
+            .thenResolve(1);
+
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName
+        })
+
+        await expect(act()).rejects.toThrow(new Error("Server manager error"))
+
+        expect(mocks.serverRepository.upsertServer).toHaveBeenCalledWith({
+            serverId: "test-uuid",
+            region: data.region,
+            variant: data.variantName,
+            createdBy: data.userId,
+            status: "pending"
+        } as Server, mocks.trx)
+    })
+
 });

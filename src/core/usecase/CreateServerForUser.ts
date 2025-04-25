@@ -5,6 +5,7 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
 import { ConfigManager } from "../utils/ConfigManager";
+import { v4 as uuid } from "uuid";
 
 export class CreateServerForUser {
 
@@ -36,17 +37,32 @@ export class CreateServerForUser {
                 throw new UserError('You do not have enough credits to start a server.')
             }
         }
+        const serverId = uuid();
 
-        const runningServersForUser = await serverRepository.getAllServersByUserId(args.creatorId)
+        // Use a transaction to ensure atomicity and consistency
+        // Also, if the server creation fails, we want the server ID To be in the database
+        // so we can delete it later
 
-        if(runningServersForUser.length > 0){
-            throw new UserError('You already have a server running. Please terminate it before creating a new one.')
-        }
+        await serverRepository.runInTransaction(async (trx) => {
+            const runningServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);
+            if (runningServers.length > 0) {
+                throw new UserError('You already have a server running. Please terminate it before creating a new one.');
+            }
+        
+            await serverRepository.upsertServer({
+                serverId,
+                region: args.region,
+                variant: args.variantName,
+                createdBy: args.creatorId,
+                status: "pending",
+            } as Server, trx);
+        });
         
         const server = await serverManager.deployServer({
             region: args.region,
             variantName: args.variantName,
             sourcemodAdminSteamId: args.adminSteamId,
+            serverId
         });
         
         await eventLogger.log(({
@@ -57,6 +73,7 @@ export class CreateServerForUser {
         await serverRepository.upsertServer({
             ...server,
             createdBy: args.creatorId,
+            status: "ready"
         });
         return server;
     }
