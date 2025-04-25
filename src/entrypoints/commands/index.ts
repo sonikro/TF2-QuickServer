@@ -7,12 +7,14 @@ import { createServerCommandDefinition, createServerCommandHandlerFactory } from
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
+import { ConfigManager } from "../../core/utils/ConfigManager";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
     deleteServerForUser: DeleteServerForUser;
     userCreditsRepository: UserCreditsRepository;
     createCreditsPurchaseOrder: CreateCreditsPurchaseOrder;
+    configManager: ConfigManager;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -31,13 +33,16 @@ export function createCommands(dependencies: CommandDependencies) {
                 deleteServerForUser: dependencies.deleteServerForUser,
             }),
         },
-        getBalance: {
-            name: "get-balance",
-            definition: getBalanceCommandDefinition,
-            handler: createGetBalanceCommandHandlerFactory({
-                userCreditsRepository: dependencies.userCreditsRepository,
-            })
-        },
+        ...(dependencies.configManager.getCreditsConfig().enabled ? {
+            getBalance: {
+                name: "get-balance",
+                definition: getBalanceCommandDefinition,
+                handler: createGetBalanceCommandHandlerFactory({
+                    userCreditsRepository: dependencies.userCreditsRepository,
+                }),
+            }
+        } : undefined)
+
         // TODO: Uncomment when the Pricing Packages are ready
         // buyCredit: {
         //     name: "buy-credits",
