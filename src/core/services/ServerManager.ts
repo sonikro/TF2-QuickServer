@@ -4,7 +4,7 @@ export interface ServerManager {
     /**
      * Deploys a new TF2 server in the selected region with a specific variant.
      */
-    deployServer(args: {region: Region, variantName: Variant, sourcemodAdminSteamId?: string }): Promise<Server>;
+    deployServer(args: {serverId: string, region: Region, variantName: Variant, sourcemodAdminSteamId?: string }): Promise<Server>;
 
     /**
      * Deletes an existing TF2 server.

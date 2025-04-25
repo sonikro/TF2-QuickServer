@@ -27,7 +27,7 @@ export class TerminateEmptyServers {
         const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger } = this.dependencies;
 
         // Fetch all servers
-        const servers = await serverRepository.getAllServers();
+        const servers = await serverRepository.getAllServers("ready");
         const serverActivities = await serverActivityRepository.getAll();
 
         const mergedServers = servers.map((server) => {

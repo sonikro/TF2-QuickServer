@@ -1,6 +1,7 @@
 import { Region } from "./Region";
 import { Variant } from "./Variant";
 
+export type ServerStatus = "pending" | "ready";
 export interface Server {
     serverId: string;
     region: Region;
@@ -15,4 +16,5 @@ export interface Server {
     tvPassword?: string;
     createdAt?: Date;
     createdBy?: string;
+    status?: ServerStatus;
 }

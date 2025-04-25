@@ -1,4 +1,3 @@
-import { v4 as uuid } from "uuid";
 import { Region, Server, Variant } from "../../core/domain";
 import { ServerStatus } from "../../core/domain/ServerStatus";
 import { ServerCommander } from "../../core/services/ServerCommander";
@@ -19,12 +18,13 @@ export class OCIServerManager implements ServerManager {
     ) { }
 
     async deployServer(args: {
+        serverId: string;
         region: Region;
         variantName: Variant;
         sourcemodAdminSteamId?: string;
     }): Promise<Server> {
         const { serverCommander, configManager, passwordGenerator, ociClientFactory } = this.dependencies;
-        const { region, variantName, sourcemodAdminSteamId } = args;
+        const { region, variantName, sourcemodAdminSteamId, serverId } = args;
 
         const { containerClient, vncClient } = ociClientFactory(region);
         const variantConfig = configManager.getVariantConfig(variantName);
@@ -34,8 +34,6 @@ export class OCIServerManager implements ServerManager {
         if (!oracleRegionConfig) {
             throw new Error(`Region ${region} is not configured in Oracle config`);
         }
-
-        const serverId = uuid();
 
         const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false };
         const serverPassword = passwordGenerator(passwordSettings);

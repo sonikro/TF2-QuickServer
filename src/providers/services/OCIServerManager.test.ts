@@ -7,10 +7,6 @@ import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { OCIServerManager } from "./OCIServerManager";
 
-vi.mock("uuid", () => ({
-  v4: () => "test-server-id"
-}));
-
 const testRegion = "IAD" as Region;
 const testVariant = "vanilla" as Variant;
 
@@ -163,7 +159,8 @@ edicts  : 426 used of 2048 max
       result = await environment.sut.deployServer({
         region: testRegion,
         variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567"
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-id"
       });
 
     });
