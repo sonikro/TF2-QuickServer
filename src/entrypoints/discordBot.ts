@@ -93,7 +93,8 @@ export async function startDiscordBot() {
             serverManager: ociServerManager,
             serverRepository,
             userCreditsRepository,
-            eventLogger
+            eventLogger,
+            configManager: defaultConfigManager
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,
@@ -105,7 +106,8 @@ export async function startDiscordBot() {
             paymentService: adyenPaymentService,
             eventLogger
         }),
-        userCreditsRepository
+        userCreditsRepository,
+        configManager: defaultConfigManager
     })
 
     // Schedule jobs
@@ -122,8 +124,9 @@ export async function startDiscordBot() {
     scheduleConsumeCreditsRoutine({
         consumeCreditsFromRunningServers: new ConsumeCreditsFromRunningServers({
             serverRepository,
-            userCreditsRepository
-        })
+            userCreditsRepository,
+        }),
+        configManager: defaultConfigManager
     })
 
     scheduleTerminateServersWithoutCreditRoutine({
@@ -133,7 +136,8 @@ export async function startDiscordBot() {
             serverManager: ociServerManager,
             serverCommander,
             eventLogger
-        })
+        }),
+        configManager: defaultConfigManager
     })
 
     // Slash commands

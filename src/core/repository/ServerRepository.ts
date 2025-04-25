@@ -5,4 +5,5 @@ export interface ServerRepository {
     deleteServer(serverId: string): Promise<void>;
     findById(serverId: string): Promise<Server | null>;
     getAllServers(): Promise<Server[]>;
+    getAllServersByUserId(userId: string): Promise<Server[]>;
 }

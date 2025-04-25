@@ -4,6 +4,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
+import { ConfigManager } from "../utils/ConfigManager";
 
 export class CreateServerForUser {
 
@@ -11,7 +12,8 @@ export class CreateServerForUser {
         serverManager: ServerManager,
         serverRepository: ServerRepository,
         userCreditsRepository: UserCreditsRepository
-        eventLogger: EventLogger
+        eventLogger: EventLogger,
+        configManager: ConfigManager
     }) { }
 
     public async execute(args: {
@@ -20,18 +22,27 @@ export class CreateServerForUser {
         creatorId: string
         adminSteamId?: string
     }): Promise<Server> {
-        const { serverManager, serverRepository, userCreditsRepository, eventLogger } = this.dependencies;
+        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager } = this.dependencies;
 
-        const userCredits = await userCreditsRepository.getCredits({userId: args.creatorId})
+        const creditsConfig = configManager.getCreditsConfig();
 
-        if(!userCredits || userCredits <= 0){
-            await eventLogger.log({
-                eventMessage: `User tried to create a server but has no credits.`,
-                actorId: args.creatorId
-            });
-            throw new UserError('You do not have enough credits to start a server.')
+        if(creditsConfig.enabled){
+            const userCredits = await userCreditsRepository.getCredits({userId: args.creatorId})
+            if(!userCredits || userCredits <= 0){
+                await eventLogger.log({
+                    eventMessage: `User tried to create a server but has no credits.`,
+                    actorId: args.creatorId
+                });
+                throw new UserError('You do not have enough credits to start a server.')
+            }
         }
 
+        const runningServersForUser = await serverRepository.getAllServersByUserId(args.creatorId)
+
+        if(runningServersForUser.length > 0){
+            throw new UserError('You already have a server running. Please terminate it before creating a new one.')
+        }
+        
         const server = await serverManager.deployServer({
             region: args.region,
             variantName: args.variantName,

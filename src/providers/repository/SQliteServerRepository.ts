@@ -27,6 +27,14 @@ export class SQLiteServerRepository implements ServerRepository {
             .merge();
     }
 
+    async getAllServersByUserId(userId: string): Promise<Server[]> {
+        const servers = await this.dependencies.knex<Server>('servers')
+            .where({ createdBy: userId })
+            .select('*');
+
+        return servers.map(this.deserialize);
+    }
+
     async deleteServer(serverId: string): Promise<void> {
         await this.dependencies.knex<Server>('servers')
             .where({ serverId })

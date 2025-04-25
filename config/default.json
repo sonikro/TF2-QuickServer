@@ -35,5 +35,8 @@
     },
     "discord": {
         "logChannelId": "1360789887208394851"
+    },
+    "credits": {
+        "enabled": false
     }
 }
