@@ -13,6 +13,8 @@
     "migration:create": "knex --knexfile knexfile.ts migrate:make",
     "build:fat:standard-competitive": "docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .",
     "push:fat:standard-competitive": "docker push sonikro/fat-tf2-standard-competitive:latest",
+    "build:fat:passtime": "docker build -t sonikro/fat-tf2-passtime:latest -f ./variants/fat-passtime/Dockerfile .",
+    "push:fat:passtime": "docker push sonikro/fat-tf2-passtime:latest",
     "build": "tsc"
   },
   "repository": {

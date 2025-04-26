@@ -31,6 +31,15 @@
                 "pl": "rgl_HL_stopwatch.cfg",
                 "ultiduo": "rgl_ud_ultiduo.cfg"
             }
+        },
+        "passtime": {
+            "image": "sonikro/fat-tf2-passtime:latest",
+            "shape": "CI.Standard.E4.Flex",
+            "ocpu": 1,
+            "memory": 4,
+            "maxPlayers": 12,
+            "map": "pass_stadium_rc4",
+            "svPure": 2
         }
     },
     "discord": {
