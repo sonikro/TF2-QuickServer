@@ -23,6 +23,8 @@ import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
 import { scheduleConsumeCreditsRoutine, scheduleServerCleanupRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
+import { SetUserData } from "../core/usecase/SetUserData";
+import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 
 export async function startDiscordBot() {
 
@@ -70,6 +72,9 @@ export async function startDiscordBot() {
     const userCreditsRepository = new SQliteUserCreditsRepository({
         knex: KnexConnectionManager.client
     })
+    const userRepository = new SQliteUserRepository({
+        knex: KnexConnectionManager.client
+    })
 
     const paypalPaymentService = new PaypalPaymentService({
         clientId: process.env.PAYPAL_CLIENT_ID!,
@@ -105,6 +110,9 @@ export async function startDiscordBot() {
             creditOrdersRepository,
             paymentService: adyenPaymentService,
             eventLogger
+        }),
+        setUserData: new SetUserData({
+            userRepository
         }),
         userCreditsRepository,
         configManager: defaultConfigManager
