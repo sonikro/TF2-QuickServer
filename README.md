@@ -45,10 +45,11 @@
 
 | Command | Description |
 |--------|-------------|
-| `/create-server <region> <variant> <steam_id>` | Launches a server in the selected region |
+| `/create-server <region> <variant>` | Launches a server in the selected region |
 | `/terminate-server <server_id> <region>` | Terminates a running TF2 server |
-| `/get-balance` | Shows your available credits |
+| `/get-balance` | Shows your available credits (Only enabled if credits are enabled) |
 | `/buy-credits` | *(Coming soon!)* Purchase credits |
+| `/set-user-data <steamId>` | Sets the SteamID of the user, assigning them as the Sourcemod admin for all servers the user creates |
 
 > 💡 *Empty servers are terminated after 10 minutes of inactivity.*
 
@@ -57,6 +58,7 @@
 ## 🎮 Server Variants
 
 - **`standard-competitive`** – Competitive config with logs.tf, demos.tf, and support for 6v6, 9v9, ultiduo
+- **`passtime`** - 12 slots, Passtime enabled server
 
 ---
 

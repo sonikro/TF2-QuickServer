@@ -2,6 +2,7 @@ import { Region, Server, Variant } from "../domain";
 import { UserError } from "../errors/UserError";
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
+import { UserRepository } from "../repository/UserRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
 import { ConfigManager } from "../utils/ConfigManager";
@@ -15,15 +16,20 @@ export class CreateServerForUser {
         userCreditsRepository: UserCreditsRepository
         eventLogger: EventLogger,
         configManager: ConfigManager
+        userRepository: UserRepository
     }) { }
 
     public async execute(args: {
         region: Region,
         variantName: Variant,
         creatorId: string
-        adminSteamId?: string
     }): Promise<Server> {
-        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager } = this.dependencies;
+        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository } = this.dependencies;
+
+        const user = await userRepository.getById(args.creatorId);
+        if (!user || !user.steamIdText) {
+            throw new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.');
+        }
 
         const creditsConfig = configManager.getCreditsConfig();
 
@@ -57,17 +63,19 @@ export class CreateServerForUser {
                 status: "pending",
             } as Server, trx);
         });
+
+
         
         const server = await serverManager.deployServer({
             region: args.region,
             variantName: args.variantName,
-            sourcemodAdminSteamId: args.adminSteamId,
+            sourcemodAdminSteamId: user.steamIdText,
             serverId
         });
         
         await eventLogger.log(({
             actorId: args.creatorId,
-            eventMessage: `User created a server in region ${args.region} with variant ${args.variantName} and AdminSteamID: ${args.adminSteamId}.`
+            eventMessage: `User created a server in region ${args.region} with variant ${args.variantName}`
         }))
 
         await serverRepository.upsertServer({

@@ -10,6 +10,7 @@ import { UserError } from "../errors/UserError"
 import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { EventLogger } from '../services/EventLogger';
 import { ConfigManager } from '../utils/ConfigManager';
+import { UserRepository } from '../repository/UserRepository';
 
 vi.mock("uuid", () => {
     return {
@@ -24,14 +25,23 @@ const createTestEnvironment = () => {
     const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
+    const userRepository = mock<UserRepository>();
 
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
     })
 
+    
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(Object.values(Variant));
     const userId = chance.guid();
+    const steamId = chance.string({ length: 20 });
+    when(userRepository.getById)
+        .calledWith(userId)
+        .thenResolve({
+            id: userId,
+            steamIdText: steamId
+        })
 
     const trx = {} as any;
 
@@ -72,7 +82,8 @@ const createTestEnvironment = () => {
             serverRepository,
             userCreditsRepository,
             eventLogger,
-            configManager
+            configManager,
+            userRepository
         }),
         mocks: {
             serverRepository,
@@ -80,16 +91,19 @@ const createTestEnvironment = () => {
             userCreditsRepository,
             configManager,
             eventLogger,
-            trx
+            userRepository,
+            trx,
         },
         data: {
             region,
             variantName,
             userId,
             deployedServer,
+            steamId
         }
     }
 }
+
 
 describe('CreateServerForUser Use Case', () => {
 
@@ -104,7 +118,8 @@ describe('CreateServerForUser Use Case', () => {
                     .calledWith({
                         region: data.region,
                         variantName: data.variantName,
-                        serverId: "test-uuid"
+                        serverId: "test-uuid",
+                        sourcemodAdminSteamId: data.steamId
                     }).thenResolve(data.deployedServer)
 
                 when(mocks.userCreditsRepository.getCredits)
@@ -122,7 +137,8 @@ describe('CreateServerForUser Use Case', () => {
                 expect(mocks.serverManager.deployServer).toHaveBeenCalledWith({
                     region: data.region,
                     variantName: data.variantName,
-                    serverId: "test-uuid"
+                    serverId: "test-uuid",
+                    sourcemodAdminSteamId: data.steamId
                 });
             })
 
@@ -130,7 +146,7 @@ describe('CreateServerForUser Use Case', () => {
                 expect(mocks.serverRepository.upsertServer).toHaveBeenCalledWith({
                     ...data.deployedServer,
                     status: "ready",
-                    createdBy: data.userId
+                    createdBy: data.userId,
                 });
             })
         })
@@ -208,7 +224,8 @@ describe('CreateServerForUser Use Case', () => {
             .calledWith({
                 region: data.region,
                 variantName: data.variantName,
-                serverId: "test-uuid"
+                serverId: "test-uuid",
+                sourcemodAdminSteamId: data.steamId
             }).thenReject(new Error("Server manager error"))
 
         when(mocks.userCreditsRepository.getCredits)
@@ -231,5 +248,43 @@ describe('CreateServerForUser Use Case', () => {
             status: "pending"
         } as Server, mocks.trx)
     })
+
+    it("should throw UserError if user is not found", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+    
+        // Return null from userRepository.getById
+        when(mocks.userRepository.getById)
+            .calledWith(data.userId)
+            .thenResolve(null);
+    
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName
+        });
+    
+        await expect(act()).rejects.toThrow(new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.'));
+    });
+    
+    it("should throw UserError if user is missing steamIdText", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+    
+        // Return a user object without steamIdText
+        when(mocks.userRepository.getById)
+            .calledWith(data.userId)
+            .thenResolve({
+                id: data.userId,
+                steamIdText: ""
+            });
+    
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName
+        });
+    
+        await expect(act()).rejects.toThrow(new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.'));
+    });
+    
 
 });
