@@ -73,5 +73,25 @@ services:
     profiles:
       - server
 
+  tf2-fat-passtime:
+    build:
+      context: ./variants/fat-passtime
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+    profiles:
+      - server
 volumes:
   db:

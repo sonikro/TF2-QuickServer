@@ -14,7 +14,7 @@
     "build:standard-competitive": "docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile ./variants/standard-competitive",
     "build:fat:standard-competitive": "docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .",
     "push:fat:standard-competitive": "docker push sonikro/fat-tf2-standard-competitive:latest",
-    "build:fat:passtime": "docker build -t sonikro/fat-tf2-passtime:latest -f ./variants/fat-passtime/Dockerfile .",
+    "build:fat:passtime": "docker build -t sonikro/fat-tf2-passtime:latest -f ./variants/fat-passtime/Dockerfile ./variants/fat-passtime",
     "push:fat:passtime": "docker push sonikro/fat-tf2-passtime:latest",
     "build": "tsc"
   },
