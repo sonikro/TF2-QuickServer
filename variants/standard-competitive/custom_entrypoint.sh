@@ -75,7 +75,9 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
     if [[ -n "$default_cfg" ]]; then
         echo "exec $default_cfg" > "$SERVER_DIR/tf/cfg/$map_name.cfg"
     else
-        echo "exec $map_name.cfg" > "$SERVER_DIR/tf/cfg/$map_name.cfg"
+        echo "No default config found for $map_name, creating empty cfg file."
+        # Create an empty cfg file
+        touch "$SERVER_DIR/tf/cfg/$map_name.cfg"
     fi
 done
 
