@@ -8,6 +8,8 @@ import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 import { ConfigManager } from "../../core/utils/ConfigManager";
+import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
+import { SetUserData } from "../../core/usecase/SetUserData";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -15,6 +17,7 @@ export type CommandDependencies = {
     userCreditsRepository: UserCreditsRepository;
     createCreditsPurchaseOrder: CreateCreditsPurchaseOrder;
     configManager: ConfigManager;
+    setUserData: SetUserData;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -32,6 +35,13 @@ export function createCommands(dependencies: CommandDependencies) {
             handler: terminateServerHandlerFactory({
                 deleteServerForUser: dependencies.deleteServerForUser,
             }),
+        },
+        setUserData: {
+            name: "set-user-data",
+            definition: setUserDataDefinition,
+            handler: setUserDataHandlerFactory({
+                setUserData: dependencies.setUserData,
+            })
         },
         ...(dependencies.configManager.getCreditsConfig().enabled ? {
             getBalance: {
