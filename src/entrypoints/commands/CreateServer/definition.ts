@@ -24,8 +24,3 @@ export const createServerCommandDefinition = new SlashCommandBuilder()
             ])
             .setRequired(true)
     )
-    .addStringOption(option =>
-        option.setName('admin_steam_id')
-            .setDescription('Steam ID of the SourceMod Admin to be added to the server. Use the format STEAM_0:1:12345678')
-            .setRequired(false)
-    )

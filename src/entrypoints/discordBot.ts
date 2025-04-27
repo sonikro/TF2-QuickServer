@@ -99,7 +99,8 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
             eventLogger,
-            configManager: defaultConfigManager
+            configManager: defaultConfigManager,
+            userRepository
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,
