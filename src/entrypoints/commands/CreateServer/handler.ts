@@ -28,17 +28,17 @@ export function createServerCommandHandlerFactory(dependencies: {
 
             await interaction.followUp({
                 content: `🎉 **Server Created Successfully!** 🎉\n\n` +
-                    `Here are your server details:\n\n` +
                     `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
                     `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
-                    `🎮 **Variant:** \`${deployedServer.variant}\`\n` +
-                    `🔑 **RCON Password:** \`${deployedServer.rconPassword}\`\n` +
-                    `🌐 **RCON Address:** \`${deployedServer.rconAddress}\`\n\n` +
-                    `**Server Connect:**\n` +
+                    `🎮 **Variant:** \`${deployedServer.variant}\`\n\n` +
+                    `**CONNECT Addresses:**\n` +
+                    `- **SDR Connect:**\n` +
                     `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
-                    `**TV Connect:**\n` +
+                    `- **Direct Connect:**\n` +
+                    `\`\`\`\nconnect ${deployedServer.rconAddress}:27015;${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
+                    `- **TV Connect:**\n` +
                     `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
-                    `⚠️ **Warning:** The RCON Address IP and password should only be shared with people who need to run RCON commands. To use RCON commands, enter the following in the console:\n` +
+                    `⚠️ **Warning:** If you are connecting from the SDR IP, use the following RCON commands in the console:\n` +
                     `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
                 flags: MessageFlags.Ephemeral
             });
