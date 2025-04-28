@@ -107,13 +107,15 @@ if [ -f "$SERVER_DIR/enforced_cvars.cfg" ]; then
             fi
 
             if grep -q "^\s*${cvar_name}\s" "$cfg_file"; then
+                # Update the existing cvar line
                 if sed -i "s|^\s*${cvar_name}\s.*|${cvar_name} ${cvar_value}|" "$cfg_file"; then
                     echo "Updated ${cvar_name} in $cfg_file to ${cvar_value}"
                 else
                     echo "Error: Failed to update ${cvar_name} in $cfg_file"
                 fi
             else
-                if echo "${cvar_name} ${cvar_value}" >> "$cfg_file"; then
+                # Append the cvar to a new line at the end of the file
+                if echo -e "\n${cvar_name} ${cvar_value}" >> "$cfg_file"; then
                     echo "Added ${cvar_name} to $cfg_file with value ${cvar_value}"
                 else
                     echo "Error: Failed to add ${cvar_name} to $cfg_file"
