@@ -81,5 +81,49 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
     fi
 done
 
+# Check if enforced_cvars.cfg exists
+if [ -f "$SERVER_DIR/enforced_cvars.cfg" ]; then
+    if [ ! -s "$SERVER_DIR/enforced_cvars.cfg" ]; then
+        echo "Error: enforced_cvars.cfg is empty"
+        exit 1
+    fi
+
+    echo "Applying enforced cvars from enforced_cvars.cfg..."
+
+    while IFS= read -r enforced_line; do
+        if [[ -z "$enforced_line" || "$enforced_line" =~ ^\s*# ]]; then
+            continue
+        fi
+
+        cvar_name=$(echo "$enforced_line" | awk '{print $1}')
+        cvar_value=$(echo "$enforced_line" | awk '{$1=""; print $0}' | sed 's/^ //')
+
+        echo "Enforcing cvar: $cvar_name with value: $cvar_value"
+
+        find "$SERVER_DIR/tf/cfg" -type f -name "*.cfg" | while read -r cfg_file; do
+            if [ -z "$cfg_file" ]; then
+                echo "Error: No .cfg files found"
+                continue
+            fi
+
+            if grep -q "^\s*${cvar_name}\s" "$cfg_file"; then
+                if sed -i "s|^\s*${cvar_name}\s.*|${cvar_name} ${cvar_value}|" "$cfg_file"; then
+                    echo "Updated ${cvar_name} in $cfg_file to ${cvar_value}"
+                else
+                    echo "Error: Failed to update ${cvar_name} in $cfg_file"
+                fi
+            else
+                if echo "${cvar_name} ${cvar_value}" >> "$cfg_file"; then
+                    echo "Added ${cvar_name} to $cfg_file with value ${cvar_value}"
+                else
+                    echo "Error: Failed to add ${cvar_name} to $cfg_file"
+                fi
+            fi
+        done
+    done < "$SERVER_DIR/enforced_cvars.cfg"
+else
+    echo "Error: enforced_cvars.cfg not found"
+    exit 1
+fi
 # Executes the original entrypoint script
 exec "$SERVER_DIR/entrypoint.sh" "$@"
