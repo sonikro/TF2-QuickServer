@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, Client, GatewayIntentBits, REST, Routes } from "discord.js";
+import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, REST, Routes } from "discord.js";
 import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
 import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
@@ -188,7 +188,8 @@ export async function startDiscordBot() {
         catch (error: Error | any) {
             if (error.name === 'UserError') {
                 await chatInputInteraction.reply({
-                    content: error.message
+                    content: error.message,
+                    flags: MessageFlags.Ephemeral
                 })
             } else {
                 console.error(`Error executing command ${commandName}:`, error);
@@ -196,7 +197,7 @@ export async function startDiscordBot() {
                     eventMessage: `Error executing command ${commandName}: ${error.message}`,
                     actorId: chatInputInteraction.user.id,
                 })
-                await chatInputInteraction.reply({ content: 'There was an error while executing this command!' });
+                await chatInputInteraction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
             }
         }
     });

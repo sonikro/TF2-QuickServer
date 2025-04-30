@@ -147,7 +147,7 @@ describe("startDiscordBot", () => {
                 handler(interaction);
 
                 await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
-                expect(interaction.reply).toHaveBeenCalledWith({ content: error.message });
+                expect(interaction.reply).toHaveBeenCalledWith({ content: error.message, flags: 64 });
             })
 
             it.each(Object.values(discordCommands))("should reply with an error message if the command handler for $name throws an error", async (receivedCommand) => {
@@ -162,7 +162,7 @@ describe("startDiscordBot", () => {
                 handler(interaction);
 
                 await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
-                expect(interaction.reply).toHaveBeenCalledWith({ content: 'There was an error while executing this command!' });
+                expect(interaction.reply).toHaveBeenCalledWith({ content: 'There was an error while executing this command!', flags: 64 });
             })
         })
 
