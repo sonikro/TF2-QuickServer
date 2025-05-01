@@ -57,8 +57,7 @@
 
 ## 🎮 Server Variants
 
-- **`standard-competitive`** – Competitive config with logs.tf, demos.tf, and support for 6v6, 9v9, ultiduo
-- **`passtime`** - 12 slots, Passtime enabled server
+- **`standard-competitive`** – Competitive config with logs.tf, demos.tf, and support for 6v6, 9v9, ultiduo, passtime
 
 ---
 

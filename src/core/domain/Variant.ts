@@ -2,7 +2,6 @@ import config from "config";
 
 export enum Variant {
     StandardCompetitive = "standard-competitive",
-    Passtime = "passtime",
 }
 
 export type VariantConfig = {
