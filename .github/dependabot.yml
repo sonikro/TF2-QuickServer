@@ -3,5 +3,4 @@ updates:
   - package-ecosystem: "docker"
     directory: "./variants/standard-competitive"
     schedule:
-      interval: "cron"
-      cronjob: "0 * * * *"
+      interval: "daily"
