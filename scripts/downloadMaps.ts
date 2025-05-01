@@ -73,4 +73,7 @@ const downloadAllMaps = async (maps: string[]): Promise<void> => {
 // Start the download process
 downloadAllMaps(maps).catch((error) => {
     console.error("Unexpected error during download process:", (error as Error).message);
-});
+}).then(() => {
+    console.log("All downloads attempted.");
+    process.exit(0);
+})
