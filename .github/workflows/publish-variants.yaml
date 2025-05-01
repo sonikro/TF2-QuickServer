@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/publish-images.yaml"
+      - ".github/workflows/publish-variants.yaml"
       - "variants/standard-competitive/**"
       - "variants/passtime/**"
       - "variants/fat-standard-competitive/**"
@@ -14,7 +14,7 @@ on:
     branches:
       - main
     paths:
-      - ".github/workflows/publish-images.yaml"
+      - ".github/workflows/publish-variants.yaml"
       - "variants/standard-competitive/**"
       - "variants/passtime/**"
       - "variants/fat-standard-competitive/**"
