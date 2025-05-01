@@ -83,10 +83,6 @@ done
 
 # Check if enforced_cvars.cfg exists
 if [ -f "$SERVER_DIR/enforced_cvars.cfg" ]; then
-    if [ ! -s "$SERVER_DIR/enforced_cvars.cfg" ]; then
-        echo "Error: enforced_cvars.cfg is empty"
-        exit 1
-    fi
 
     echo "Applying enforced cvars from enforced_cvars.cfg..."
 
@@ -123,9 +119,6 @@ if [ -f "$SERVER_DIR/enforced_cvars.cfg" ]; then
             fi
         done
     done < "$SERVER_DIR/enforced_cvars.cfg"
-else
-    echo "Error: enforced_cvars.cfg not found"
-    exit 1
 fi
 # Executes the original entrypoint script
 exec "$SERVER_DIR/entrypoint.sh" "$@"
