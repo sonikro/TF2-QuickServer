@@ -18,14 +18,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Pull the latest image
-        run: |
-          docker pull ghcr.io/melkortf/tf2-competitive:latest
-
-      - name: Get current image digest
+      - name: Get current image digest for linux platform
         id: digest
         run: |
-          digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/melkortf/tf2-competitive:latest | cut -d'@' -f2)
+          digest=$(docker manifest inspect ghcr.io/melkortf/tf2-competitive:latest | jq -r '.manifests[] | select(.platform.os == "linux") | .digest')
           echo "digest=$digest" >> $GITHUB_OUTPUT
 
       - name: Read stored digest
