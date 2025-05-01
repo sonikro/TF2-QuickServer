@@ -101,7 +101,7 @@ jobs:
         with:
           push: ${{ github.event_name == 'push' }}
           tags: |
-            sonikro/tf2-fat-standard-competitive:latest
-            sonikro/tf2-fat-standard-competitive:${{ github.sha }}
+            sonikro/fat-tf2-standard-competitive:latest
+            sonikro/fat-tf2-standard-competitive:${{ github.sha }}
           context: .
           file: ./variants/fat-standard-competitive/Dockerfile
