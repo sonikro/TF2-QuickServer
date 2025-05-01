@@ -1,0 +1,68 @@
+name: Check TF2 Standard Competitive Image Updates
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    env:
+      FILE_PATH: ./variants/standard-competitive/base-image-version.txt
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Pull the latest image
+        run: |
+          docker pull ghcr.io/melkortf/tf2-competitive:latest
+
+      - name: Get current image digest
+        id: digest
+        run: |
+          digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/melkortf/tf2-competitive:latest | cut -d'@' -f2)
+          echo "digest=$digest" >> $GITHUB_OUTPUT
+
+      - name: Read stored digest
+        id: stored
+        run: |
+          if [ -f "$FILE_PATH" ]; then
+            stored_digest=$(cat "$FILE_PATH")
+          else
+            stored_digest="none"
+          fi
+          echo "stored_digest=$stored_digest" >> $GITHUB_OUTPUT
+
+      - name: Check for digest change
+        id: check
+        run: |
+          if [ "${{ steps.digest.outputs.digest }}" != "${{ steps.stored.outputs.stored_digest }}" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update file and create PR
+        if: steps.check.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch="update-base-image-version-$(date +%s)"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b $branch
+          echo "${{ steps.digest.outputs.digest }}" > "$FILE_PATH"
+          git add "$FILE_PATH"
+          git commit -m "chore: update standard-competitive base image digest"
+          git push origin $branch
+
+          gh pr create --title "chore: update standard-competitive base image digest" \
+            --body "New digest: `${{ steps.digest.outputs.digest }}`" \
+            --head $branch \
+            --base main

@@ -1,4 +1,4 @@
-FROM ghcr.io/melkortf/tf2-competitive:3.5.11
+FROM ghcr.io/melkortf/tf2-competitive:latest
 
 ENV ADMIN_STEAM_ID=""
 ENV DEFAULT_5CP_CFG=""
