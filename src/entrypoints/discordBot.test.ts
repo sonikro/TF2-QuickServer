@@ -35,6 +35,14 @@ vi.mock('discord.js', async (importOriginal) => {
         REST: vi.fn(),
     };
 })
+
+vi.mock("../providers/services/DiscordEventLogger", async (importOriginal) => {
+    return {
+        DiscordEventLogger: vi.fn().mockImplementation(() => ({
+            log: vi.fn().mockResolvedValue(undefined),
+        }))
+    }
+})
 describe("startDiscordBot", () => {
 
     const discordCommands = createCommands(mock())
@@ -101,7 +109,7 @@ describe("startDiscordBot", () => {
         })
 
         describe("interaction handlers", () => {
-            it.each(Object.values(discordCommands))("should setup a event handler for interactions that redirects to the command handler for $name", (receivedCommand) => {
+            it.each(Object.values(discordCommands))("should setup a event handler for interactions that redirects to the command handler for $name", async (receivedCommand) => {
                 client.on.mock.calls[0][0]; // 'interactionCreate'
                 const handler = client.on.mock.calls[0][1]; // the handler function
                 const interaction = mock<CommandInteraction>()
@@ -109,7 +117,7 @@ describe("startDiscordBot", () => {
                 interaction.commandName = receivedCommand.name
 
                 vi.spyOn(receivedCommand, 'handler').mockImplementation(() => Promise.resolve());
-                handler(interaction);
+                await handler(interaction);
 
                 expect(receivedCommand.handler).toHaveBeenCalledWith(interaction);
             })
