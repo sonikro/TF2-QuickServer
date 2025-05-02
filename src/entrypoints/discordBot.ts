@@ -183,6 +183,10 @@ export async function startDiscordBot() {
             return;
         }
         try {
+            await eventLogger.log({
+                eventMessage: `User executed command ${commandName}`,
+                actorId: chatInputInteraction.user.id,
+            })
             await command.handler(chatInputInteraction);
         }
         catch (error: Error | any) {
