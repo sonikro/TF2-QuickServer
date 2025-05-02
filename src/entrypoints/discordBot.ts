@@ -61,7 +61,7 @@ export async function startDiscordBot() {
         configManager: defaultConfigManager,
         passwordGenerator: chancePasswordGenerator
     })
-    
+
 
     const serverRepository = new SQLiteServerRepository({
         knex: KnexConnectionManager.client,
@@ -92,7 +92,7 @@ export async function startDiscordBot() {
     const creditOrdersRepository = new SQliteCreditOrdersRepository({
         knex: KnexConnectionManager.client
     })
-    
+
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ociServerManager,
@@ -216,6 +216,23 @@ export async function startDiscordBot() {
         discordClient: client,
         eventLogger,
         adyenPaymentService
+    })
+
+
+    // Prevent crashes and log global errors
+    process.on('unhandledRejection', (error: Error | any) => {
+        console.error('Unhandled promise rejection:', error);
+        eventLogger.log({
+            eventMessage: `Unhandled promise rejection: ${error.message}`,
+            actorId: 'system',
+        })
+    });
+    process.on('uncaughtException', (error) => {
+        console.error('Uncaught exception:', error);
+        eventLogger.log({
+            eventMessage: `Uncaught exception: ${error.message}`,
+            actorId: 'system',
+        })
     })
 
     return client;
