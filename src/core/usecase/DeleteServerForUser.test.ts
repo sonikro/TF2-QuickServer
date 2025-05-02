@@ -1,79 +1,93 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { DeleteServerForUser } from "./DeleteServerForUser";
-import { mock } from "vitest-mock-extended";
-import { when } from "vitest-when";
-import { ServerRepository } from "../repository/ServerRepository";
-import { ServerManager } from "../services/ServerManager";
-import { Region, Server } from "../domain";
 import { Chance } from "chance";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { mock } from "vitest-mock-extended";
+import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
+import { ServerManager } from "../services/ServerManager";
+import { DeleteServerForUser } from "./DeleteServerForUser";
+import { Server } from "../domain";
 
 const chance = new Chance();
 
 describe("DeleteServerForUser", () => {
     const mockServerRepository = mock<ServerRepository>();
     const mockServerManager = mock<ServerManager>();
-    const eventLogger = mock<EventLogger>();
+    const mockEventLogger = mock<EventLogger>();
 
     const deleteServerForUser = new DeleteServerForUser({
         serverRepository: mockServerRepository,
         serverManager: mockServerManager,
-        eventLogger
+        eventLogger: mockEventLogger,
     });
 
-    const validArgs = {
-        serverId: chance.guid(),
-        userId: chance.guid(),
-        region: chance.pickone(["us-east", "us-west", "eu-central"]) as Region,
-    };
+    const userId = chance.guid();
 
     beforeEach(() => {
         vi.resetAllMocks();
-    })
-
-    it("should throw an error if the server does not exist", async () => {
-        when(mockServerRepository.findById).calledWith(validArgs.serverId).thenResolve(null);
-
-        await expect(deleteServerForUser.execute(validArgs)).rejects.toThrow(
-            `Server with ID ${validArgs.serverId} does not exist or does not belong to the user.`
-        );
-
-        expect(mockServerRepository.findById).toHaveBeenCalledWith(validArgs.serverId);
-        expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
-        expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
     });
 
-    it("should throw an error if the server does not belong to the user", async () => {
-        when(mockServerRepository.findById)
-            .calledWith(validArgs.serverId)
-            .thenResolve({
-                id: validArgs.serverId,
-                createdBy: chance.guid(), // Random user ID
-            } as unknown as Server);
+    it("should throw an error if the user has no servers", async () => {
+        mockServerRepository.getAllServersByUserId.mockResolvedValue([]);
 
-        await expect(deleteServerForUser.execute(validArgs)).rejects.toThrow(
-            `Server with ID ${validArgs.serverId} does not exist or does not belong to the user.`
+        await expect(deleteServerForUser.execute({ userId })).rejects.toThrow(
+            "You don't have any servers to terminate."
         );
 
-        expect(mockServerRepository.findById).toHaveBeenCalledWith(validArgs.serverId);
+        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId);
         expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
         expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
+        expect(mockEventLogger.log).not.toHaveBeenCalled();
     });
 
-    it("should delete the server if it exists and belongs to the user", async () => {
-        when(mockServerRepository.findById)
-            .calledWith(validArgs.serverId)
-            .thenResolve({
-                id: validArgs.serverId,
-                createdBy: validArgs.userId,
-            } as unknown as Server); ;
+    it("should delete all servers and log events if servers exist", async () => {
+        const servers: Server[] = mock([
+            { serverId: chance.guid(), region: "us-east" },
+            { serverId: chance.guid(), region: "eu-central" },
+        ]);
 
-        await deleteServerForUser.execute(validArgs);
+        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
+        mockServerManager.deleteServer.mockResolvedValue();
+        mockServerRepository.deleteServer.mockResolvedValue();
+        mockEventLogger.log.mockResolvedValue();
 
-        expect(mockServerManager.deleteServer).toHaveBeenCalledWith({
-            region: validArgs.region,
-            serverId: validArgs.serverId,
+        await deleteServerForUser.execute({ userId });
+
+        for (const server of servers) {
+            expect(mockServerManager.deleteServer).toHaveBeenCalledWith({
+                serverId: server.serverId,
+                region: server.region,
+            });
+            expect(mockServerRepository.deleteServer).toHaveBeenCalledWith(server.serverId);
+            expect(mockEventLogger.log).toHaveBeenCalledWith({
+                eventMessage: `User deleted server with ID ${server.serverId} in region ${server.region}.`,
+                actorId: userId,
+            });
+        }
+    });
+
+    it("should log and throw an error if any deletion fails", async () => {
+        const servers: Server[] = mock([
+            { serverId: chance.guid(), region: "us-east" },
+            { serverId: chance.guid(), region: "eu-central" },
+        ]);
+
+        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
+
+        // One succeeds, one fails
+        mockServerManager.deleteServer
+            .mockResolvedValueOnce()
+            .mockRejectedValueOnce(new Error("Failed to delete server"));
+
+        mockServerRepository.deleteServer.mockResolvedValue();
+        mockEventLogger.log.mockResolvedValue();
+
+        await expect(deleteServerForUser.execute({ userId })).rejects.toThrow(
+            "Failed to delete some servers, please reach out to support."
+        );
+
+        expect(mockEventLogger.log).toHaveBeenCalledWith({
+            eventMessage: expect.stringContaining("Failed to delete some servers: Failed to delete server"),
+            actorId: userId,
         });
-        expect(mockServerRepository.deleteServer).toHaveBeenCalledWith(validArgs.serverId);
     });
 });

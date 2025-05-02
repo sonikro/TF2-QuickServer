@@ -30,7 +30,7 @@ export function createCommands(dependencies: CommandDependencies) {
             }),
         },
         terminateServer: {
-            name: "terminate-server",
+            name: "terminate-servers",
             definition: terminateServerCommandDefinition,
             handler: terminateServerHandlerFactory({
                 deleteServerForUser: dependencies.deleteServerForUser,
