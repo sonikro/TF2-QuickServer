@@ -46,7 +46,7 @@
 | Command | Description |
 |--------|-------------|
 | `/create-server <region> <variant>` | Launches a server in the selected region |
-| `/terminate-server <server_id> <region>` | Terminates a running TF2 server |
+| `/terminate-servers` | Terminates all servers created by the user |
 | `/get-balance` | Shows your available credits (Only enabled if credits are enabled) |
 | `/buy-credits` | *(Coming soon!)* Purchase credits |
 | `/set-user-data <steamId>` | Sets the SteamID of the user, assigning them as the Sourcemod admin for all servers the user creates |
