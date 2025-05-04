@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
+RUN apt-get update -y && apt-get install -y cmake
 RUN npm install
 
 COPY . .
