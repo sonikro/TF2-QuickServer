@@ -64,5 +64,21 @@
     "pass_stadium_rc4",
     "pass_stonework_rc4",
     "pass_torii_a7",
-    "pass_ufo_a14b"
+    "pass_ufo_a14b",
+    {
+        "name": "tfdb_catland_v1",
+        "url": "https://mirror.shana.sg/tf/maps/tfdb_catland_v1.bsp.bz2"
+    },
+    {
+        "name": "tfdb_inferno_a9",
+        "url": "https://dl.maxdb.net/maps/tfdb_inferno_a9.bsp.bz2"
+    },
+    {
+        "name": "tfdb_muca_idea_b2",
+        "url": "https://mirror.shana.sg/tf/maps/tfdb_muca_idea_b2.bsp.bz2"
+    },
+    {
+        "name": "tfdb_orangebox_b2",
+        "url": "https://mirror.shana.sg/tf/maps/tfdb_orangebox_b2.bsp.bz2"
+    }
 ]

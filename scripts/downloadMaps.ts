@@ -2,6 +2,8 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 
+const bzip2 = require('node-bzip2');
+
 // Base URL for downloads
 const BASE_URL = "https://fastdl.serveme.tf/maps/";
 
@@ -15,56 +17,81 @@ if (!fs.existsSync(mapsDir)) {
 }
 
 // Read the list of maps from the JSON file
-let maps: string[];
+type MapEntry = string | { name: string; url: string };
+let maps: MapEntry[];
 try {
     const mapsData = fs.readFileSync(mapsJsonPath, 'utf-8');
-    maps = JSON.parse(mapsData) as string[];
+    maps = JSON.parse(mapsData) as MapEntry[];
 } catch (error) {
     console.error("Error reading maps.json:", (error as Error).message);
     process.exit(1);
 }
 
-// Function to download a map
-const downloadMap = (map: string): Promise<void> => {
+// Function to download and handle a map
+const downloadMap = (mapEntry: MapEntry): Promise<void> => {
     return new Promise((resolve, reject) => {
-        const filePath = path.join(mapsDir, `${map}.bsp`);
+        const mapName = typeof mapEntry === 'string' ? mapEntry : mapEntry.name;
+        const mapUrl = typeof mapEntry === 'string' ? `${BASE_URL}${mapName}.bsp` : mapEntry.url;
+        const filePath = path.join(mapsDir, `${mapName}.bsp`);
+        const tempFilePath = filePath + (mapUrl.endsWith('.bz2') ? '.bz2' : '');
+
         if (fs.existsSync(filePath)) {
-            console.log(`Map ${map}.bsp already exists. Skipping download.`);
+            console.log(`Map ${mapName}.bsp already exists. Skipping download.`);
             resolve();
             return;
         }
 
-        console.log(`Downloading ${map}.bsp...`);
-        const file = fs.createWriteStream(filePath);
-        https.get(`${BASE_URL}${map}.bsp`, (response) => {
+        console.log(`Downloading ${mapName} from ${mapUrl}...`);
+        const file = fs.createWriteStream(tempFilePath);
+        https.get(mapUrl, (response) => {
             if (response.statusCode === 200) {
                 response.pipe(file);
-                file.on('finish', () => {
-                    file.close(() => {
-                        console.log(`Download completed: ${map}.bsp`);
+                file.on('finish', async () => {
+                    file.close(async () => {
+                        if (mapUrl.endsWith('.bz2')) {
+                            try {
+                                console.log(`Extracting ${mapName}.bz2 to ${mapName}.bsp...`);
+                                await extractBz2(tempFilePath, filePath);
+                                fs.unlinkSync(tempFilePath); // Remove the .bz2 file after extraction
+                                console.log(`Extraction completed: ${mapName}.bsp`);
+                            } catch (err: Error | any) {
+                                console.error(`Error extracting ${mapName}.bz2:`, err.message);
+                                reject(err);
+                                return;
+                            }
+                        }
+                        console.log(`Download completed: ${mapName}.bsp`);
                         resolve();
                     });
                 });
             } else {
-                console.error(`Error downloading ${map}.bsp: HTTP ${response.statusCode}`);
-                fs.unlinkSync(filePath); // Remove incomplete file
-                reject(new Error(`Failed to download ${map}.bsp`));
+                console.error(`Error downloading ${mapName}: HTTP ${response.statusCode}`);
+                fs.unlinkSync(tempFilePath); // Remove incomplete file
+                reject(new Error(`Failed to download ${mapName}`));
             }
         }).on('error', (err) => {
-            console.error(`Error downloading ${map}.bsp:`, err.message);
-            fs.unlinkSync(filePath); // Remove incomplete file
+            console.error(`Error downloading ${mapName}:`, err.message);
+            fs.unlinkSync(tempFilePath); // Remove incomplete file
             reject(err);
         });
     });
 };
 
+// Function to extract .bz2 files
+const extractBz2 = async (source: string, destination: string): Promise<void> => {
+    const sourceBytes = fs.readFileSync(source);
+    const decompressed = bzip2.decompress(sourceBytes)
+    fs.writeFileSync(destination, decompressed);
+    console.log(`Decompressed ${source} to ${destination}`);
+};
+
 // Download all maps
-const downloadAllMaps = async (maps: string[]): Promise<void> => {
+const downloadAllMaps = async (maps: MapEntry[]): Promise<void> => {
     for (const map of maps) {
         try {
             await downloadMap(map);
         } catch (error) {
-            console.error(`Failed to download ${map}:`, (error as Error).message);
+            console.error(`Failed to download ${typeof map === 'string' ? map : map.name}:`, (error as Error).message);
         }
     }
     console.log("Download process completed.");
@@ -76,4 +103,4 @@ downloadAllMaps(maps).catch((error) => {
 }).then(() => {
     console.log("All downloads attempted.");
     process.exit(0);
-})
+});
