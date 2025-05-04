@@ -67,6 +67,8 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
         default_cfg="$DEFAULT_ULTIDUO_CFG"
     elif [[ "$map_name" == pass* ]]; then
         default_cfg="$DEFAULT_PASSTIME_CFG"
+    elif [[ "$map_name" == tfdb_* ]]; then
+        default_cfg="$DEFAULT_TFDB_CFG"
     else
         default_cfg=""
     fi
