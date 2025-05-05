@@ -48,7 +48,16 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          branch="update-base-image-version-$(date +%s)"
+          # Replace invalid characters in the digest
+          sanitized_digest=$(echo "${{ steps.digest.outputs.digest }}" | tr ':' '-')
+          branch="update-base-image-version-${sanitized_digest}"
+          
+          # Check if branch already exists
+          if git ls-remote --exit-code --heads origin $branch; then
+            echo "Branch $branch already exists. Skipping PR creation."
+            exit 0
+          fi
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
