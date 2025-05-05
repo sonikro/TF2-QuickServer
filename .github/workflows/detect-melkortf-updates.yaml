@@ -68,6 +68,6 @@ jobs:
           git push origin $branch
 
           gh pr create --title "chore: update standard-competitive base image digest" \
-            --body "New digest: `${{ steps.digest.outputs.digest }}`" \
+            --body "New version of melkortf/tf2-competitive available. Click here to see new releases: [TF2 Server Releases](https://github.com/melkortf/tf2-servers/releases)" \
             --head $branch \
             --base main
