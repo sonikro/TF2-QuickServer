@@ -64,7 +64,7 @@ export class OCIServerManager implements ServerManager {
             createContainerInstanceDetails: {
                 displayName: serverId,
                 availabilityDomain: oracleRegionConfig.availability_domain,
-                compartmentId: oracleConfig.compartment_id,
+                compartmentId: oracleRegionConfig.compartment_id,
                 shape: variantConfig.shape,
                 shapeConfig: {
                     ocpus: variantConfig.ocpu,
@@ -197,7 +197,7 @@ export class OCIServerManager implements ServerManager {
         }
 
         const containerInstances = await containerClient.listContainerInstances({
-            compartmentId: oracleConfig.compartment_id,
+            compartmentId: oracleRegionConfig.compartment_id,
             displayName: serverId,
         });
 

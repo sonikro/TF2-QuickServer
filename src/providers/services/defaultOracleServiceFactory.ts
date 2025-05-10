@@ -6,8 +6,7 @@ import * as oci from 'oci-sdk'; // Replace with the actual OCI SDK import
  * @returns An instance of the OCI Client configured for the specified region.
  */
 export function defaultOracleServiceFactory(region: string) {
-
-    const provider = new oci.common.ConfigFileAuthenticationDetailsProvider(process.env.OCI_CONFIG_FILE!)
+    const provider = new oci.common.ConfigFileAuthenticationDetailsProvider(process.env.OCI_CONFIG_FILE!, region)
     provider.setRegion(region);
     const containerClient = new oci.containerinstances.ContainerInstanceClient({ authenticationDetailsProvider: provider });
     const vncClient = new oci.core.VirtualNetworkClient({ authenticationDetailsProvider: provider });

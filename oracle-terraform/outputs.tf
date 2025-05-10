@@ -38,3 +38,17 @@ output "bogota_availability_domain" {
 output "bogota_nsg_id" {
   value = module.network-sa-bogota-1.nsg_id
 }
+
+# Santiago Region
+output "santiago_subnet_id" {
+  value = module.network-sa-santiago-1.subnet_id
+}
+output "santiago_availability_domain" {
+  value = module.network-sa-santiago-1.availability_domain
+}
+output "santiago_nsg_id" {
+  value = module.network-sa-santiago-1.nsg_id
+}
+output "santiago_compartment_id" {
+  value = var.santiago_compartment_ocid
+}

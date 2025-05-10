@@ -41,12 +41,12 @@ function createTestEnvironment() {
   };
 
   const oracleConfig: OracleConfig = {
-    compartment_id: "compartment123",
     regions: {
       [testRegion]: {
         availability_domain: "AD-1",
         subnet_id: "subnet123",
-        nsg_id: "nsg123"
+        nsg_id: "nsg123",
+        compartment_id: "compartment123",
       }
     }
   };
