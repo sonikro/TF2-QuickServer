@@ -36,6 +36,21 @@
                 "pl": "rgl_HL_stopwatch.cfg",
                 "ultiduo": "rgl_ud_ultiduo.cfg"
             }
+        },
+        "insertcoin": {
+            "image": "sonikro/fat-tf2-standard-competitive:latest",
+            "shape": "CI.Standard.E4.Flex",
+            "ocpu": 1,
+            "memory": 4,
+            "maxPlayers": 24,
+            "map": "cp_process_f12",
+            "svPure": 2,
+            "defaultCfgs": {
+                "5cp": "insertcoin_5cp.cfg",
+                "koth": "fbtf_6v6_koth.cfg",
+                "pl": "rgl_HL_stopwatch.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
+            }
         }
     },
     "discord": {
