@@ -3,9 +3,18 @@
 # Runs our custom script
 echo "Running custom entrypoint script..."
 
-# Apply envsubsts to the admins_simple.ini file
-envsubst < "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini" > "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini.tmp" && \
-mv "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini.tmp" "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini"
+# Generate the admins_simple.ini file based on the ADMIN_LIST environment variable
+if [ -n "$ADMIN_LIST" ]; then
+    echo "Generating admins_simple.ini from ADMIN_LIST..."
+    echo "" > "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini" # Clear the file
+    IFS=',' read -ra STEAM_IDS <<< "$ADMIN_LIST"
+    for steam_id in "${STEAM_IDS[@]}"; do
+        echo "\"$steam_id\"    \"z\"" >> "$SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini"
+        echo "Added $steam_id to admins_simple.ini"
+    done
+else
+    echo "ADMIN_LIST is empty or not set. Skipping admins_simple.ini generation."
+fi
 
 # Generate the adminmenu_cfgs.txt file
 # Cleanup the adminmenu_cfgs.txt file if it exists

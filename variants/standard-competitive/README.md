@@ -29,7 +29,7 @@ This image is intended to be used as part of the TF2-QuickServer orchestration s
 
 This image supports the following environment variables for customization:
 
-- `ADMIN_STEAM_ID`: Set this to the Steam ID of a player to grant them Sourcemod admin privileges.
+- `ADMIN_LIST`: Comma-separated list of steam ids. Set this to set the Sourcemod admins.
 - `DEFAULT_5CP_CFG`: Specify the configuration file to be executed automatically for 5CP maps.
 - `DEFAULT_PL_CFG`: Specify the configuration file to be executed automatically for Payload (PL) maps.
 - `DEFAULT_KOTH_CFG`: Specify the configuration file to be executed automatically for King of the Hill (KOTH) maps.
