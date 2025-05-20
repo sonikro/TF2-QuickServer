@@ -48,7 +48,8 @@ export class OCIServerManager implements ServerManager {
             }))
             : [];
 
-        const adminList = variantConfig.admins || [];
+        // the admins array is immutable, so we need to create a new array
+        const adminList = variantConfig.admins ? [...variantConfig.admins] : [];
 
         // Makes sure the sourcemodAdminSteamId is in the admin list
         if (sourcemodAdminSteamId) {

@@ -20,7 +20,7 @@ export type VariantConfig = {
         "pl": string;
         "ultiduo": string;
     };
-    admins?: string[];
+    admins?: readonly string[];
 }
 
 export function isValidVariant(variant: string): variant is Variant {

@@ -32,9 +32,9 @@ function createTestEnvironment() {
     maxPlayers: 24,
     map: "ctf_2fort",
     serverName: "Test Server",
-    admins: [
+    admins: Object.freeze([
       "default_admin"
-    ]
+    ])
   };
 
   const regionConfig: RegionConfig = {
