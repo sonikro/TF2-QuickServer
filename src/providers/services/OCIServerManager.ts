@@ -56,7 +56,7 @@ export class OCIServerManager implements ServerManager {
             RCON_PASSWORD: rconPassword,
             STV_NAME: regionConfig.tvHostname,
             STV_PASSWORD: tvPassword,
-            ADMIN_STEAM_ID: sourcemodAdminSteamId || "",
+            ADMIN_LIST: sourcemodAdminSteamId || "",
             ...Object.assign({}, ...defaultCfgsEnvironment),
         };
 

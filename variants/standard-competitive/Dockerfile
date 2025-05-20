@@ -1,6 +1,7 @@
 FROM ghcr.io/melkortf/tf2-competitive:latest
 
-ENV ADMIN_STEAM_ID=""
+# Comma-separated list of Steam IDs for admins
+ENV ADMIN_LIST=""
 ENV DEFAULT_5CP_CFG=""
 ENV DEFAULT_KOTH_CFG=""
 ENV DEFAULT_PL_CFG=""
@@ -9,9 +10,6 @@ ENV DEFAULT_PASSTIME_CFG="pt_global_pug.cfg"
 ENV DEFAULT_TFDB_CFG="dodgeball.cfg"
 
 USER tf2
-
-# Setup admins_simple with variable interpolation
-COPY --chown=tf2:tf2 ./tf/addons/sourcemod/configs/admins_simple.ini $SERVER_DIR/tf/addons/sourcemod/configs/admins_simple.ini
 
 # Installs MapDownloader plugin
 # This plugin allows you to download maps from the server

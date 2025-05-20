@@ -201,7 +201,7 @@ edicts  : 426 used of 2048 max
                 RCON_PASSWORD: "test-password",
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
-                ADMIN_STEAM_ID: "12345678901234567",
+                ADMIN_LIST: "12345678901234567",
               },
             },
           ],
