@@ -32,6 +32,9 @@ function createTestEnvironment() {
     maxPlayers: 24,
     map: "ctf_2fort",
     serverName: "Test Server",
+    admins: [
+      "default_admin"
+    ]
   };
 
   const regionConfig: RegionConfig = {
@@ -201,7 +204,7 @@ edicts  : 426 used of 2048 max
                 RCON_PASSWORD: "test-password",
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
-                ADMIN_LIST: "12345678901234567",
+                ADMIN_LIST: "default_admin,12345678901234567",
               },
             },
           ],

@@ -48,6 +48,14 @@ export class OCIServerManager implements ServerManager {
             }))
             : [];
 
+        const adminList = variantConfig.admins || [];
+
+        // Makes sure the sourcemodAdminSteamId is in the admin list
+        if (sourcemodAdminSteamId) {
+            if (!adminList.includes(sourcemodAdminSteamId)) {
+                adminList.push(sourcemodAdminSteamId);
+            }
+        }
         const environmentVariables: Record<string, string> = {
             SERVER_HOSTNAME: regionConfig.srcdsHostname,
             SERVER_PASSWORD: serverPassword,
@@ -56,7 +64,7 @@ export class OCIServerManager implements ServerManager {
             RCON_PASSWORD: rconPassword,
             STV_NAME: regionConfig.tvHostname,
             STV_PASSWORD: tvPassword,
-            ADMIN_LIST: sourcemodAdminSteamId || "",
+            ADMIN_LIST: adminList.join(","),
             ...Object.assign({}, ...defaultCfgsEnvironment),
         };
 
