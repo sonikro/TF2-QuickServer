@@ -57,8 +57,9 @@ export class OCIServerManager implements ServerManager {
                 adminList.push(sourcemodAdminSteamId);
             }
         }
+        const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", region) : regionConfig.srcdsHostname;
         const environmentVariables: Record<string, string> = {
-            SERVER_HOSTNAME: regionConfig.srcdsHostname,
+            SERVER_HOSTNAME: hostname,
             SERVER_PASSWORD: serverPassword,
             DEMOS_TF_APIKEY: process.env.DEMOS_TF_APIKEY || "",
             LOGS_TF_APIKEY: process.env.LOGS_TF_APIKEY || "",
