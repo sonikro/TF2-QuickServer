@@ -7,7 +7,7 @@ import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { OCIServerManager } from "./OCIServerManager";
 
-const testRegion = "IAD" as Region;
+const testRegion = Region.SA_SAOPAULO_1;
 const testVariant = "vanilla" as Variant;
 
 function createTestEnvironment() {
@@ -253,7 +253,7 @@ describe("OCIServerManager", () => {
     it("should use the variant hostname if provided", async () => {
       const { sut, containerClient, variantConfig } = createTestEnvironment();
 
-      variantConfig.hostname = "custom-hostname-{region} @ TF2-QuickServer";
+      variantConfig.hostname = "custom-hostname | {region} @ TF2-QuickServer";
       // WHen
       const result = await sut.deployServer({
         region: testRegion,
@@ -270,7 +270,7 @@ describe("OCIServerManager", () => {
           containers: [
             expect.objectContaining({
               environmentVariables: expect.objectContaining({
-                SERVER_HOSTNAME: `custom-hostname-${testRegion} @ TF2-QuickServer`,
+                SERVER_HOSTNAME: `custom-hostname | São Paulo (Brazil) @ TF2-QuickServer`,
               }),
             }),
           ],
@@ -298,7 +298,7 @@ describe("OCIServerManager", () => {
 
       await environment.sut.deleteServer({
         serverId: "test-server-id",
-        region: "IAD" as Region,
+        region: testRegion
       });
     });
 

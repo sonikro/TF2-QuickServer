@@ -1,4 +1,4 @@
-import { Region, Server, Variant } from "../../core/domain";
+import { getRegionDisplayName, Region, Server, Variant } from "../../core/domain";
 import { ServerStatus } from "../../core/domain/ServerStatus";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
@@ -57,7 +57,7 @@ export class OCIServerManager implements ServerManager {
                 adminList.push(sourcemodAdminSteamId);
             }
         }
-        const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", region) : regionConfig.srcdsHostname;
+        const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
         const environmentVariables: Record<string, string> = {
             SERVER_HOSTNAME: hostname,
             SERVER_PASSWORD: serverPassword,
