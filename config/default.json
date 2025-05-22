@@ -22,14 +22,16 @@
         }
     },
     "variants": {
-        "standard-competitive": {
-            "image": "sonikro/fat-tf2-standard-competitive:latest",
+        "default": {
             "shape": "CI.Standard.E4.Flex",
             "ocpu": 1,
             "memory": 4,
             "maxPlayers": 24,
             "map": "cp_process_f12",
             "svPure": 2,
+            "image": "sonikro/fat-tf2-standard-competitive:latest"
+        },
+        "standard-competitive": {
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
@@ -39,13 +41,6 @@
         },
         "insertcoin": {
             "hostname": "InsertCoin Mixes | {region} @ Sonikro Solutions",
-            "image": "sonikro/fat-tf2-standard-competitive:latest",
-            "shape": "CI.Standard.E4.Flex",
-            "ocpu": 1,
-            "memory": 4,
-            "maxPlayers": 24,
-            "map": "cp_process_f12",
-            "svPure": 2,
             "defaultCfgs": {
                 "5cp": "insertcoin_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",

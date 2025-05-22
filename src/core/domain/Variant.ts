@@ -29,8 +29,12 @@ export function isValidVariant(variant: string): variant is Variant {
 }
 
 export function getVariantConfig(variant: Variant) {
+    const defaultSettings = config.get<VariantConfig>(`variants.default`);
     const variantConfig = config.get<VariantConfig>(`variants.${variant}`); // This will throw if the variant is not found
-    return variantConfig;
+    return {
+        ...defaultSettings,
+        ...variantConfig,
+    };
 }
 
 export function getVariantConfigs() {
