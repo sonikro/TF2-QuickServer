@@ -15,8 +15,8 @@ describe("createServerCommandHandler", () => {
 
     const createHandler = () => {
         const interaction = mock<ChatInputCommandInteraction>();
-        interaction.options = mock()
-        const createServerForUser = mock<CreateServerForUser>()
+        interaction.options = mock();
+        const createServerForUser = mock<CreateServerForUser>();
 
         const handler = createServerCommandHandlerFactory({
             createServerForUser
@@ -30,13 +30,13 @@ describe("createServerCommandHandler", () => {
     }
 
     it("should create a server with the specified region and variant", async () => {
-        // Given
         const { handler, interaction, createServerForUser } = createHandler();
         interaction.options = mock();
         interaction.user.id = chance.guid();
+        interaction.guildId = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
-        const variantName = chance.pickone(Object.values(Variant));
+        const variantName =  Variant.StandardCompetitive
 
         when(interaction.options.getString)
             .calledWith('region')
@@ -65,18 +65,18 @@ describe("createServerCommandHandler", () => {
         when(createServerForUser.execute).calledWith({
             region,
             variantName,
-            creatorId: interaction.user.id
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!
         }).thenResolve(deployedServer);
 
-        // When
         await handler(interaction);
 
-        // Then
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(createServerForUser.execute).toHaveBeenCalledWith({
             region: interaction.options.getString('region'),
             variantName: interaction.options.getString('variant_name'),
-            creatorId: interaction.user.id
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `🎉 **Server Created Successfully!** 🎉\n\n` +
@@ -96,11 +96,57 @@ describe("createServerCommandHandler", () => {
         });
     });
 
-    it("should reply with an error if the server creation fails", async () => {
-        // Given
+    it("should handle tf2pickup variant differently", async () => {
         const { handler, interaction, createServerForUser } = createHandler();
-        interaction.options = mock()
-        interaction.user.id = chance.guid()
+        interaction.options = mock();
+        interaction.user.id = chance.guid();
+        interaction.guildId = chance.guid();
+
+        const region = chance.pickone(Object.values(Region));
+        const variantName = Variant.Tf2Pickup
+
+        when(interaction.options.getString)
+            .calledWith('region')
+            .thenReturn(region);
+
+        when(interaction.options.getString)
+            .calledWith('variant_name')
+            .thenReturn(variantName);
+
+        const deployedServer = mock<Server>({
+            serverId: chance.guid(),
+            region,
+            variant: variantName,
+            hostIp: chance.ip(),
+            hostPort: chance.integer(),
+            tvIp: chance.ip(),
+            tvPort: chance.integer(),
+            rconPassword: chance.word(),
+            hostPassword: chance.word(),
+            tvPassword: chance.word(),
+            rconAddress: chance.ip(),
+        });
+
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!
+        }).thenResolve(deployedServer);
+
+        await handler(interaction);
+
+        expect(interaction.deferReply).toHaveBeenCalled();
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: expect.stringContaining(`🎉 **Server Created and Registered!** 🎉`),
+            flags: MessageFlags.Ephemeral
+        });
+    });
+
+    it("should reply with an error if the server creation fails", async () => {
+        const { handler, interaction, createServerForUser } = createHandler();
+        interaction.options = mock();
+        interaction.user.id = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
         const variantName = chance.pickone(Object.values(Variant));
@@ -116,25 +162,23 @@ describe("createServerCommandHandler", () => {
         when(createServerForUser.execute).calledWith({
             region,
             variantName,
-            creatorId: interaction.user.id
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!
         }).thenReject(new Error("Server creation failed"));
 
-        // When
         await handler(interaction);
 
-        // Then
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
             flags: MessageFlags.Ephemeral
-        })
-    })
+        });
+    });
 
     it("should reply with user errors", async () => {
-        // Given
         const { handler, interaction, createServerForUser } = createHandler();
-        interaction.options = mock()
-        interaction.user.id = chance.guid()
+        interaction.options = mock();
+        interaction.user.id = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
         const variantName = chance.pickone(Object.values(Variant));
@@ -150,18 +194,17 @@ describe("createServerCommandHandler", () => {
         when(createServerForUser.execute).calledWith({
             region,
             variantName,
-            creatorId: interaction.user.id
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!
         }).thenReject(new UserError("User error occurred"));
 
-        // When
         await handler(interaction);
 
-        // Then
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `User error occurred`,
             flags: MessageFlags.Ephemeral
-        })
-    })
+        });
+    });
 
 });

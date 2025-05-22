@@ -3,7 +3,7 @@ import { getRegionDisplayName, Region, Variant } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 
 export function createServerCommandHandlerFactory(dependencies: {
-    createServerForUser: CreateServerForUser
+    createServerForUser: CreateServerForUser,
 }) {
     return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
         const { createServerForUser } = dependencies;
@@ -22,7 +22,19 @@ export function createServerCommandHandlerFactory(dependencies: {
                 region: region,
                 variantName: variantName!,
                 creatorId: interaction.user.id,
+                guildId: interaction.guildId!
             });
+
+            if (variantName === "tf2pickup") {
+                await interaction.followUp({
+                    content: `🎉 **Server Created and Registered!** 🎉\n\n` +
+                        `💻 This server was created and registered to the **tf2pickup.org** instance associated with this Discord Guild.\n` +
+                        `🔒 You will not receive the credentials or connect information, as using the server is managed by the **tf2pickup** instance.\n` +
+                        `✅ The server is now **available to be used**!`,
+                    flags: MessageFlags.Ephemeral
+                });
+                return;
+            }
 
             await interaction.followUp({
                 content: `🎉 **Server Created Successfully!** 🎉\n\n` +
