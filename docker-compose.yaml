@@ -11,6 +11,23 @@ services:
       - ./config:/app/config
     profiles:
       - bot
+  tf2-pickup-server:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-tf2pickup/Dockerfile
+    container_name: tf2-pickup-server
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+    profiles:
+      - server
   tf2-server:
     build:
       context: ./variants/standard-competitive

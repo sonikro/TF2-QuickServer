@@ -25,7 +25,7 @@ RUN wget -nv "${DODGEBALL_PLUGIN_URL}" -O "${DODGEBALL_PLUGIN_FILE_NAME}" \
     && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" TF2-Dodgeball-Unified-main \
     && mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/TF2DodgeballUnified.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/TF2DodgeballUnified.smx" 
 
-COPY --chown=tf2:tf2 ./tf/cfg/* $SERVER_DIR/tf/cfg/
+COPY --chown=tf2:tf2 ./variants/base/tf/cfg/* $SERVER_DIR/tf/cfg/
+COPY --chown=tf2:tf2 ./variants/base/custom_entrypoint.sh .
 
-COPY --chown=tf2:tf2 custom_entrypoint.sh .
 ENTRYPOINT [ "./custom_entrypoint.sh" ]
