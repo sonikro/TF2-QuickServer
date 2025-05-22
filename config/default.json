@@ -38,6 +38,7 @@
             }
         },
         "insertcoin": {
+            "hostname": "InsertCoin Mixes | {region} @ Sonikro Solutions",
             "image": "sonikro/fat-tf2-standard-competitive:latest",
             "shape": "CI.Standard.E4.Flex",
             "ocpu": 1,

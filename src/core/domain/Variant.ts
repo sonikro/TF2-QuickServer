@@ -7,6 +7,7 @@ export enum Variant {
 
 export type VariantConfig = {
     image: string;
+    hostname?: string;
     ocpu: number;
     memory: number;
     maxPlayers: number;

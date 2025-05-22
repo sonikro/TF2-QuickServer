@@ -61,6 +61,78 @@ function createTestEnvironment() {
   process.env.DEMOS_TF_APIKEY = "test-demo-tf-api-key";
   process.env.LOGS_TF_APIKEY = "test-logs-tf-api-key";
 
+  when(containerClient.createContainerInstance)
+    .calledWith(expect.anything())
+    .thenResolve(mock({
+      containerInstance: { id: "container123" },
+    }));
+
+  // WaitUntil #1: containerClient.getContainerInstance → return VNIC ID
+  let vnicResolved = false;
+  containerClient.getContainerInstance.mockImplementation(async () => {
+    if (!vnicResolved) {
+      vnicResolved = true;
+      throw new Error("VNIC not ready");
+    }
+    return {
+      containerInstance: {
+        vnics: [{ vnicId: "vnic-123" }],
+        lifecycleState: "PROVISIONING"
+      }
+    } as any;
+  });
+
+  // getVnic returns public IP
+  vncClient.getVnic.mockResolvedValue({
+    vnic: {
+      publicIp: "1.2.3.4"
+    }
+  } as any);;
+
+  // WaitUntil #2: container becomes ACTIVE
+  let activeResolved = false;
+  containerClient.getContainerInstance.mockImplementation(async () => {
+    if (!activeResolved) {
+      activeResolved = true;
+      return {
+        containerInstance: {
+          vnics: [{ vnicId: "vnic-123" }],
+          lifecycleState: "PROVISIONING"
+        }
+      } as any;
+    }
+    return {
+      containerInstance: {
+        vnics: [{ vnicId: "vnic-123" }],
+        lifecycleState: "ACTIVE"
+      }
+    } as any;
+  });
+
+  // WaitUntil #3: serverCommander.query resolves with server ready
+  when(serverCommander.query)
+    .calledWith({
+      command: "status",
+      host: "1.2.3.4",
+      password: "test-password",
+      port: 27015,
+      timeout: 5000,
+    })
+    .thenResolve(`hostname: TF2-QuickServer | Virginia @ Sonikro Solutions
+version : 9543365/24 9543365 secure
+udp/ip  : 169.254.173.35:13768  (local: 0.0.0.0:27015)  (public IP from Steam: 44.200.128.3)
+steamid : [A:1:1871475725:44792] (90264374594008077)
+account : not logged in  (No account specified)
+map     : cp_badlands at: 0 x, 0 y, 0 z
+tags    : cp
+sourcetv:  169.254.173.35:13769, delay 30.0s  (local: 0.0.0.0:27020)
+players : 1 humans, 1 bots (25 max)
+edicts  : 426 used of 2048 max
+# userid name                uniqueid            connected ping loss state  adr
+#      2 "TF2-QuickServer TV | Virginia @" BOT                       active
+#      3 "sonikro"           [U:1:29162964]      00:20       60    0 active 169.254.249.16:18930
+`)
+
   const sut = new OCIServerManager({
     serverCommander,
     configManager,
@@ -75,6 +147,7 @@ function createTestEnvironment() {
     passwordGenerator,
     containerClient,
     vncClient,
+    variantConfig
   };
 }
 
@@ -87,77 +160,7 @@ describe("OCIServerManager", () => {
 
     beforeAll(async () => {
       // Initial container creation
-      when(environment.containerClient.createContainerInstance)
-        .calledWith(expect.anything())
-        .thenResolve(mock({
-          containerInstance: { id: "container123" },
-        }));
 
-      // WaitUntil #1: containerClient.getContainerInstance → return VNIC ID
-      let vnicResolved = false;
-      environment.containerClient.getContainerInstance.mockImplementation(async () => {
-        if (!vnicResolved) {
-          vnicResolved = true;
-          throw new Error("VNIC not ready");
-        }
-        return {
-          containerInstance: {
-            vnics: [{ vnicId: "vnic-123" }],
-            lifecycleState: "PROVISIONING"
-          }
-        } as any;
-      });
-
-      // getVnic returns public IP
-      environment.vncClient.getVnic.mockResolvedValue({
-        vnic: {
-          publicIp: "1.2.3.4"
-        }
-      } as any);;
-
-      // WaitUntil #2: container becomes ACTIVE
-      let activeResolved = false;
-      environment.containerClient.getContainerInstance.mockImplementation(async () => {
-        if (!activeResolved) {
-          activeResolved = true;
-          return {
-            containerInstance: {
-              vnics: [{ vnicId: "vnic-123" }],
-              lifecycleState: "PROVISIONING"
-            }
-          } as any;
-        }
-        return {
-          containerInstance: {
-            vnics: [{ vnicId: "vnic-123" }],
-            lifecycleState: "ACTIVE"
-          }
-        } as any;
-      });
-
-      // WaitUntil #3: serverCommander.query resolves with server ready
-      when(environment.serverCommander.query)
-        .calledWith({
-          command: "status",
-          host: "1.2.3.4",
-          password: "test-password",
-          port: 27015,
-          timeout: 5000,
-        })
-        .thenResolve(`hostname: TF2-QuickServer | Virginia @ Sonikro Solutions
-version : 9543365/24 9543365 secure
-udp/ip  : 169.254.173.35:13768  (local: 0.0.0.0:27015)  (public IP from Steam: 44.200.128.3)
-steamid : [A:1:1871475725:44792] (90264374594008077)
-account : not logged in  (No account specified)
-map     : cp_badlands at: 0 x, 0 y, 0 z
-tags    : cp
-sourcetv:  169.254.173.35:13769, delay 30.0s  (local: 0.0.0.0:27020)
-players : 1 humans, 1 bots (25 max)
-edicts  : 426 used of 2048 max
-# userid name                uniqueid            connected ping loss state  adr
-#      2 "TF2-QuickServer TV | Virginia @" BOT                       active
-#      3 "sonikro"           [U:1:29162964]      00:20       60    0 active 169.254.249.16:18930
-`)
 
       result = await environment.sut.deployServer({
         region: testRegion,
@@ -244,6 +247,36 @@ edicts  : 426 used of 2048 max
       expect(result.hostPassword).toBe("test-password");
       expect(result.tvPassword).toBe("test-password");
     });
+  })
+
+  describe("custom variant hostname", () => {
+    it("should use the variant hostname if provided", async () => {
+      const { sut, containerClient, variantConfig } = createTestEnvironment();
+
+      variantConfig.hostname = "custom-hostname-{region} @ TF2-QuickServer";
+      // WHen
+      const result = await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-id"
+      })
+
+      // Then
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+
+      expect(containerInstanceRequest).toEqual(expect.objectContaining({
+        createContainerInstanceDetails: expect.objectContaining({
+          containers: [
+            expect.objectContaining({
+              environmentVariables: expect.objectContaining({
+                SERVER_HOSTNAME: `custom-hostname-${testRegion} @ TF2-QuickServer`,
+              }),
+            }),
+          ],
+        }),
+      }));
+    })
   })
 
   describe("deleteServer", () => {
