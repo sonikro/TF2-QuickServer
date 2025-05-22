@@ -61,6 +61,10 @@
                 "STEAM_0:1:153691324",
                 "STEAM_0:1:569914170"
             ]
+        },
+        "tf2pickup": {
+            "hostname": "tf2pickup.org | {region} @ Sonikro Solutions",
+            "image": "sonikro/fat-tf2pickup:latest"
         }
     },
     "discord": {

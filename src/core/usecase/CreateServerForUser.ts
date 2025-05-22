@@ -1,5 +1,6 @@
 import { Region, Server, Variant } from "../domain";
 import { UserError } from "../errors/UserError";
+import { GuildParametersRepository } from "../repository/GuildParametersRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
@@ -13,7 +14,8 @@ export class CreateServerForUser {
     constructor(private readonly dependencies: {
         serverManager: ServerManager,
         serverRepository: ServerRepository,
-        userCreditsRepository: UserCreditsRepository
+        userCreditsRepository: UserCreditsRepository,
+        guildParametersRepository: GuildParametersRepository,
         eventLogger: EventLogger,
         configManager: ConfigManager
         userRepository: UserRepository
@@ -22,9 +24,10 @@ export class CreateServerForUser {
     public async execute(args: {
         region: Region,
         variantName: Variant,
-        creatorId: string
+        creatorId: string,
+        guildId: string
     }): Promise<Server> {
-        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository } = this.dependencies;
+        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository } = this.dependencies;
 
         const user = await userRepository.getById(args.creatorId);
         if (!user || !user.steamIdText) {
@@ -64,13 +67,14 @@ export class CreateServerForUser {
             } as Server, trx);
         });
 
-
+        const guildParameters = await guildParametersRepository.findById(args.guildId);
         
         const server = await serverManager.deployServer({
             region: args.region,
             variantName: args.variantName,
             sourcemodAdminSteamId: user.steamIdText,
-            serverId
+            serverId,
+            extraEnvs: guildParameters?.environment_variables || {},
         });
         
         await eventLogger.log(({

@@ -279,6 +279,29 @@ describe("OCIServerManager", () => {
     })
   })
 
+  describe("extra vars", () => {
+    it("should include extraEnvs in the container environment variables", async () => {
+      const { sut, containerClient } = createTestEnvironment();
+    
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-extra-env",
+        extraEnvs: {
+          CUSTOM_ENV_VAR: "custom-value",
+          ANOTHER_VAR: "another-value"
+        }
+      });
+    
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const envVars = containerInstanceRequest.createContainerInstanceDetails.containers[0].environmentVariables!;
+    
+      expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
+      expect(envVars.ANOTHER_VAR).toBe("another-value");
+    });
+  })
+
   describe("deleteServer", () => {
     const environment = createTestEnvironment();
 

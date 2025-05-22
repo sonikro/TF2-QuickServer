@@ -25,6 +25,7 @@ import { scheduleConsumeCreditsRoutine, scheduleServerCleanupRoutine } from "./j
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
+import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
 
 export async function startDiscordBot() {
 
@@ -93,6 +94,10 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client
     })
 
+    const guildParametersRepository = new SQliteGuildParametersRepository({
+        knex: KnexConnectionManager.client
+    })
+
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ociServerManager,
@@ -100,7 +105,8 @@ export async function startDiscordBot() {
             userCreditsRepository,
             eventLogger,
             configManager: defaultConfigManager,
-            userRepository
+            userRepository,
+            guildParametersRepository
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,

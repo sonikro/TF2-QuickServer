@@ -22,9 +22,10 @@ export class OCIServerManager implements ServerManager {
         region: Region;
         variantName: Variant;
         sourcemodAdminSteamId?: string;
+        extraEnvs?: Record<string, string>;
     }): Promise<Server> {
         const { serverCommander, configManager, passwordGenerator, ociClientFactory } = this.dependencies;
-        const { region, variantName, sourcemodAdminSteamId, serverId } = args;
+        const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {} } = args;
 
         const { containerClient, vncClient } = ociClientFactory(region);
         const variantConfig = configManager.getVariantConfig(variantName);
@@ -68,6 +69,7 @@ export class OCIServerManager implements ServerManager {
             STV_PASSWORD: tvPassword,
             ADMIN_LIST: adminList.join(","),
             ...Object.assign({}, ...defaultCfgsEnvironment),
+            ...extraEnvs,
         };
 
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {

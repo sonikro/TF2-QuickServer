@@ -2,7 +2,8 @@ import config from "config";
 
 export enum Variant {
     StandardCompetitive = "standard-competitive",
-    InsertCoin = "insertcoin"
+    InsertCoin = "insertcoin",
+    Tf2Pickup = "tf2pickup"
 }
 
 export type VariantConfig = {
