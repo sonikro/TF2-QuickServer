@@ -116,17 +116,8 @@ npm run download:maps
 
 This will create the `maps/` folder and download all maps listed in `maps.json`.
 
-### Build and push fat image:
-
-```bash
-npm run build:fat:standard-competitive
-npm run push:fat:standard-competitive
-```
-
 > 📝 Maps are gitignored and stored in a local `maps` folder.  
 > The [mapdownloader plugin](https://github.com/spiretf/mapdownloader) is also included and will attempt to fetch missing maps dynamically if needed.
-
-> 🚧 *Currently, there is no CI/CD pipeline building/pushing this image — it's done manually via the above commands.*
 
 ---
 
