@@ -69,6 +69,13 @@
             "admins": [
                 "STEAM_0:0:14581482"
             ]
+        },
+        "mix-sa-novatos": {
+            "hostname": "Mix SA Novatos | {region} @ Sonikro Solutions",
+            "defaultCfgs": {
+                "5cp": "novatos_6v6_5cp.cfg",
+                "koth": "novatos_6v6_koth.cfg"
+            }
         }
     },
     "discord": {
