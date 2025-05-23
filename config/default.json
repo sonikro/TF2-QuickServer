@@ -64,7 +64,8 @@
         },
         "tf2pickup": {
             "hostname": "tf2pickup.org | {region} @ Sonikro Solutions",
-            "image": "sonikro/fat-tf2pickup:latest"
+            "image": "sonikro/fat-tf2pickup:latest",
+            "emptyMinutesTerminate": 60
         }
     },
     "discord": {

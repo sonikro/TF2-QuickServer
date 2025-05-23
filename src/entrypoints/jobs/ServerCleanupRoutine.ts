@@ -8,9 +8,7 @@ export const scheduleServerCleanupRoutine = (dependencies: {
     schedule.scheduleJob('* * * * *', async () => {
         try {
             console.log('Running Server Cleanup Routine...');
-            await dependencies.terminateEmptyServers.execute(({
-                minutesEmpty: 10, // Set the threshold for empty servers (in minutes)
-            }))
+            await dependencies.terminateEmptyServers.execute();
             console.log('Server Cleanup Routine completed successfully.');
         } catch (error) {
             console.error('Error during Server Cleanup Routine:', error);

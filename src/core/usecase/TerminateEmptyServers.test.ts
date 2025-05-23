@@ -5,12 +5,15 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { ServerActivity } from "../domain/ServerActivity";
 import { TerminateEmptyServers } from "./TerminateEmptyServers";
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
-import { Region, Server, Variant } from "../domain";
+import { Region, Server, Variant, VariantConfig } from "../domain";
 import { Chance } from "chance";
-import { when } from "vitest-when"
+import { when } from "vitest-when";
 import { ServerCommander } from "../services/ServerCommander";
 import { emptyServerStatus, nonEmptyServerStatus } from "./__tests__/mockStatusStrings";
 import { EventLogger } from "../services/EventLogger";
+import { ConfigManager } from "../utils/ConfigManager";
+
+const chance = new Chance();
 
 function createTestEnvironment() {
     const serverManager = mock<ServerManager>();
@@ -18,14 +21,16 @@ function createTestEnvironment() {
     const serverActivityRepository = mock<ServerActivityRepository>();
     const serverCommander = mock<ServerCommander>();
     const eventLogger = mock<EventLogger>();
+    const configManager = mock<ConfigManager>();
 
     const sut = new TerminateEmptyServers({
         serverManager,
         serverRepository,
         serverActivityRepository,
         serverCommander,
-        eventLogger
-    })
+        eventLogger,
+        configManager
+    });
 
     return {
         sut,
@@ -33,9 +38,11 @@ function createTestEnvironment() {
             serverManager,
             serverRepository,
             serverActivityRepository,
-            serverCommander
+            serverCommander,
+            eventLogger,
+            configManager
         }
-    }
+    };
 }
 
 function createServer(server: Partial<Server> = {}): Server {
@@ -52,15 +59,11 @@ function createServer(server: Partial<Server> = {}): Server {
         variant: chance.pickone(Object.values(Variant)),
         status: "ready",
         ...server
-    }
+    };
 }
 
-const chance = new Chance();
-
 describe("TerminateEmptyServers", () => {
-
-    describe("1 empty server for 10 minutes and 1 server with activity", () => {
-
+    describe("1 empty server for 10 minutes and 4 others in various states", () => {
         const { sut, mocks } = createTestEnvironment();
 
         const emptyServerToBeTerminated = createServer();
@@ -69,34 +72,33 @@ describe("TerminateEmptyServers", () => {
         const serverWithError = createServer();
         const noLongerEmptyServer = createServer();
 
-
         const currentServers: Server[] = [
             emptyServerToBeTerminated,
             serverWithActivity,
             emptyServerStillWaiting,
             serverWithError,
             noLongerEmptyServer
+        ];
 
-        ]
         const serverActivities: ServerActivity[] = [
             {
                 serverId: emptyServerToBeTerminated.serverId,
-                emptySince: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago,
+                emptySince: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
                 lastCheckedAt: new Date(),
             },
             {
                 serverId: serverWithActivity.serverId,
-                emptySince: null, // not empty
+                emptySince: null,
                 lastCheckedAt: new Date(),
             },
             {
                 serverId: emptyServerStillWaiting.serverId,
-                emptySince: null, 
+                emptySince: null,
                 lastCheckedAt: new Date(),
             },
             {
                 serverId: serverWithError.serverId,
-                emptySince: null, 
+                emptySince: null,
                 lastCheckedAt: new Date(),
             },
             {
@@ -104,100 +106,99 @@ describe("TerminateEmptyServers", () => {
                 emptySince: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
                 lastCheckedAt: new Date(),
             }
-        ]
+        ];
+
+        function mockQuery(server: Server, result: string | Error) {
+            const queryParams = {
+                command: "status",
+                host: server.rconAddress,
+                password: server.rconPassword,
+                port: 27015,
+                timeout: 5000,
+            };
+            if (result instanceof Error) {
+                when(mocks.serverCommander.query).calledWith(queryParams).thenReject(result);
+            } else {
+                when(mocks.serverCommander.query).calledWith(queryParams).thenResolve(result);
+            }
+        }
 
         beforeAll(async () => {
+            when(mocks.serverActivityRepository.getAll).calledWith().thenResolve(serverActivities);
+            when(mocks.serverRepository.getAllServers).calledWith("ready").thenResolve(currentServers);
 
-            when(mocks.serverActivityRepository.getAll).calledWith().thenResolve(serverActivities)
-            when(mocks.serverRepository.getAllServers).calledWith("ready").thenResolve(currentServers)
+            // Mock configManager.getVariantConfig
+            for (const server of currentServers) {
+                when(mocks.configManager.getVariantConfig)
+                    .calledWith(server.variant)
+                    .thenReturn({ emptyMinutesTerminate: 10 } as VariantConfig);
+            }
 
+            // Mock RCON query results
+            mockQuery(serverWithActivity, nonEmptyServerStatus);
+            mockQuery(emptyServerStillWaiting, emptyServerStatus);
+            mockQuery(serverWithError, new Error("Server not responding"));
+            mockQuery(noLongerEmptyServer, nonEmptyServerStatus);
 
-            when(mocks.serverCommander.query).calledWith({
-                command: "status",
-                host: serverWithActivity.rconAddress,
-                password: serverWithActivity.rconPassword,
-                port: 27015,
-                timeout: 5000,
-            }).thenResolve(nonEmptyServerStatus)
-
-            when(mocks.serverCommander.query).calledWith({
-                command: "status",
-                host: emptyServerStillWaiting.rconAddress,
-                password: emptyServerStillWaiting.rconPassword,
-                port: 27015,
-                timeout: 5000,
-            }).thenResolve(emptyServerStatus);
-
-            when(mocks.serverCommander.query).calledWith({
-                command: "status",
-                host: serverWithError.rconAddress,
-                password: serverWithError.rconPassword,
-                port: 27015,
-                timeout: 5000,
-            }).thenReject(new Error("Server not responding"));
-
-            when(mocks.serverCommander.query).calledWith({
-                command: "status",
-                host: noLongerEmptyServer.rconAddress,
-                password: noLongerEmptyServer.rconPassword,
-                port: 27015,
-                timeout: 5000,
-            }).thenResolve(nonEmptyServerStatus);
-
-            await sut.execute({
-                minutesEmpty: 10
-            })
-        })
+            await sut.execute();
+        });
 
         it("should terminate the empty server", async () => {
             expect(mocks.serverManager.deleteServer).toHaveBeenCalledWith({
-                region: currentServers[0].region,
-                serverId: currentServers[0].serverId
-            })
-        })
+                region: emptyServerToBeTerminated.region,
+                serverId: emptyServerToBeTerminated.serverId
+            });
+        });
 
-        it("should not terminate the server with activity", async () => {
-            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith(serverWithActivity.serverId)
-            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith(emptyServerStillWaiting.serverId)
-            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith(serverWithError.serverId)
-            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith(noLongerEmptyServer.serverId)
-        })
+        it("should not terminate any of the other servers", async () => {
+            const notTerminated = [
+                serverWithActivity,
+                emptyServerStillWaiting,
+                serverWithError,
+                noLongerEmptyServer
+            ];
+            for (const server of notTerminated) {
+                expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith({
+                    region: server.region,
+                    serverId: server.serverId
+                });
+            }
+        });
 
-        it("should update the server activity repository", async () => {
-            expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(emptyServerToBeTerminated.serverId)
-        })
+        it("should delete the terminated server from the repository", async () => {
+            expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(emptyServerToBeTerminated.serverId);
+        });
 
         it("should keep the server with activity as emptySince = null", async () => {
             expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
                 serverId: serverWithActivity.serverId,
                 emptySince: null,
                 lastCheckedAt: expect.any(Date)
-            })
-        })
+            });
+        });
 
-        it("should set the emptySince to now for the server that is just empty", async () => {
+        it("should set emptySince to now for a server that is just now empty", async () => {
             expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
                 serverId: emptyServerStillWaiting.serverId,
                 emptySince: expect.any(Date),
                 lastCheckedAt: expect.any(Date)
-            })
-        })
+            });
+        });
 
-        it("should set the emptySince for a server that is not responding", async () => {
+        it("should set emptySince for a server that is not responding", async () => {
             expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
                 serverId: serverWithError.serverId,
                 emptySince: expect.any(Date),
                 lastCheckedAt: expect.any(Date)
-            })
-        })
+            });
+        });
 
-        it("should set the emptySince to null for a server that is not empty anymore", async () => {
+        it("should set emptySince to null for a server that is no longer empty", async () => {
             expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
                 serverId: noLongerEmptyServer.serverId,
                 emptySince: null,
                 lastCheckedAt: expect.any(Date)
-            })
-        })
-    })
-
-})
+            });
+        });
+    });
+});
