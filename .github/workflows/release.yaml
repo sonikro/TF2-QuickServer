@@ -60,7 +60,10 @@ jobs:
 
   deploy:
     runs-on: rpi5
+    concurrency: 
+      group: deploy
     needs: build-and-push
+    if: github.event_name == 'push'
     steps:
       - name: Download config/default.json artifact
         uses: actions/download-artifact@v4
