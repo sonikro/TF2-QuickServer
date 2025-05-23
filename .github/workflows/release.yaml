@@ -73,7 +73,6 @@ jobs:
 
       - name: Copy config/default.json to target directory
         run: |
-          cd /home/ubuntu/tf2-quickserver
           cp config/default.json /home/ubuntu/tf2-quickserver/config/default.json
 
       - name: Run update script
