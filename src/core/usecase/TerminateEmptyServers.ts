@@ -4,6 +4,7 @@ import { ServerManager } from "../services/ServerManager";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerStatus } from "../domain/ServerStatus";
 import { EventLogger } from "../services/EventLogger";
+import { ConfigManager } from "../utils/ConfigManager";
 
 export class TerminateEmptyServers {
 
@@ -12,7 +13,8 @@ export class TerminateEmptyServers {
         serverRepository: ServerRepository
         serverActivityRepository: ServerActivityRepository,
         serverCommander: ServerCommander,
-        eventLogger: EventLogger
+        eventLogger: EventLogger,
+        configManager: ConfigManager
     }) { }
 
     /**
@@ -20,11 +22,8 @@ export class TerminateEmptyServers {
      * @param args - The arguments for the command.
      * @param args.minutesEmpty - The duration in minutes after which servers should be terminated.
      */
-    public async execute(args: {
-        minutesEmpty: number,
-    }): Promise<void> {
-        const { minutesEmpty } = args;
-        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger } = this.dependencies;
+    public async execute(): Promise<void> {
+        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager } = this.dependencies;
 
         // Fetch all servers
         const servers = await serverRepository.getAllServers("ready");
@@ -41,6 +40,8 @@ export class TerminateEmptyServers {
         // Delete servers that have been empty for the specified duration
         for (const server of mergedServers) {
             if (server.emptySince) {
+                const variantConfig = configManager.getVariantConfig(server.variant);
+                const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10; // Default to 10 minutes if not specified
                 const emptyDuration = new Date().getTime() - server.emptySince.getTime();
                 if (emptyDuration >= minutesEmpty * 60 * 1000) {
                     console.log(`Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`);

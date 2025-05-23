@@ -23,6 +23,11 @@ export type VariantConfig = {
         "ultiduo": string;
     };
     admins?: readonly string[];
+    /**
+     * The amount of time in minutes before the server is terminated if it is empty.
+     * @default 10
+     */
+    emptyMinutesTerminate?: number;
 }
 
 export function isValidVariant(variant: string): variant is Variant {
