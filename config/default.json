@@ -65,7 +65,10 @@
         "tf2pickup": {
             "hostname": "tf2pickup.org | {region} @ Sonikro Solutions",
             "image": "sonikro/fat-tf2pickup:latest",
-            "emptyMinutesTerminate": 60
+            "emptyMinutesTerminate": 60,
+            "admins": [
+                "STEAM_0:0:14581482"
+            ]
         }
     },
     "discord": {

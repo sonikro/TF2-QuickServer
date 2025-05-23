@@ -207,7 +207,7 @@ describe("OCIServerManager", () => {
                 RCON_PASSWORD: "test-password",
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
-                ADMIN_LIST: "default_admin,12345678901234567",
+                ADMIN_LIST: "default_admin",
               },
             },
           ],
@@ -300,6 +300,35 @@ describe("OCIServerManager", () => {
       expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
       expect(envVars.ANOTHER_VAR).toBe("another-value");
     });
+  })
+
+  describe("no default admins", () => {
+    it("should use the sourcemodAdminSteamId as the only admin", async () => {
+      const { sut, containerClient, variantConfig } = createTestEnvironment();
+
+      variantConfig.admins = undefined;
+
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-id"
+      })
+
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+
+      expect(containerInstanceRequest).toEqual(expect.objectContaining({
+        createContainerInstanceDetails: expect.objectContaining({
+          containers: [
+            expect.objectContaining({
+              environmentVariables: expect.objectContaining({
+                ADMIN_LIST: "12345678901234567",
+              }),
+            }),
+          ],
+        }),
+      }));
+    })
   })
 
   describe("deleteServer", () => {

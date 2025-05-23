@@ -22,6 +22,9 @@ export type VariantConfig = {
         "pl": string;
         "ultiduo": string;
     };
+    /**
+     * This will override the admins list in the server config. If not set, the user that created the server will be added as an admin.
+     */
     admins?: readonly string[];
     /**
      * The amount of time in minutes before the server is terminated if it is empty.
