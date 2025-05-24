@@ -16,7 +16,6 @@
     "pl_vigil_rc10",
     "koth_ashville_final1",
     "koth_lakeside_r2",
-    "koth_proot_b6c_alt2",
     "koth_proot_b5b",
     "pl_upward_f12",
     "cp_steel_f12",
@@ -36,7 +35,6 @@
     "ultiduo_swine_b06",
     "ultiduo_gullywash_b2",
     "ultiduo_furnace_b2",
-    "ultiduo_fira_b2a",
     "ultiduo_noodle",
     "ultiduo_champions_legacy_a7",
     "ultiduo_spytech_rc4",
@@ -65,6 +63,8 @@
     "pass_stonework_rc4",
     "pass_torii_a7",
     "pass_ufo_a14b",
+    "pass_greenhouse_a24",
+    "pass_ruin_a14",
     {
         "name": "tfdb_catland_v1",
         "url": "https://mirror.shana.sg/tf/maps/tfdb_catland_v1.bsp.bz2"
