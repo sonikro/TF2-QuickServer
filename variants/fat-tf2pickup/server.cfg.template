@@ -1,0 +1,38 @@
+log on
+
+rcon_password "${RCON_PASSWORD}"
+
+hostname "${SERVER_HOSTNAME}"
+sv_password "${SERVER_PASSWORD}"
+
+sv_contact ""
+sv_tags ""
+
+sv_downloadurl "${DOWNLOAD_URL}"
+sv_allowdownload 1
+sv_allowupload 1
+
+tv_enable 1
+tv_name "${STV_NAME}"
+tv_title "${STV_TITLE}"
+tv_password "${STV_PASSWORD}"
+
+sv_quota_stringcmdspersecond 400
+
+sv_pausable 0
+
+logstf_apikey "${LOGS_TF_APIKEY}"
+sm_demostf_apikey "${DEMOS_TF_APIKEY}"
+
+recordstv_path "demos"
+
+mp_tournament_readymode 1
+mp_tournament_readymode_countdown 5
+mp_tournament_readymode_min 2
+mp_tournament_readymode_team_size ${TEAM_SIZE}
+
+sm_tf2pickuporg_api_address "${TF2PICKUPORG_API_ADDRESS}"
+sm_tf2pickuporg_secret "${TF2PICKUPORG_SECRET}"
+sm_tf2pickuporg_priority "${TF2PICKUPORG_PRIORITY}"
+sm_tf2pickuporg_override_internal_address "${TF2PICKUPORG_OVERRIDE_INTERNAL_ADDRESS}"
+sm_tf2pickuporg_override_public_address "${TF2PICKUPORG_OVERRIDE_PUBLIC_ADDRESS}"
