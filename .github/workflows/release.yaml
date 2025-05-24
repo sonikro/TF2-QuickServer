@@ -4,6 +4,17 @@ on:
   push:
     branches:
       - main
+    paths: 
+      - Dockerfile
+      - config/**
+      - scripts/**
+      - src/**
+      - package.json
+      - package-lock.json
+      - .nvmrc
+      - .github/workflows/release.yaml
+      - vite.config.ts
+      - tsconfig.json
   pull_request:
     branches:
       - main
