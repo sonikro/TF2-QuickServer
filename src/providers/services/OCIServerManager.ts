@@ -144,7 +144,7 @@ export class OCIServerManager implements ServerManager {
                 return true;
             }
             throw new Error("Container instance is not ACTIVE yet");
-        }, { interval: 5000, timeout: 180000 });
+        }, { interval: 5000, timeout: 300000 });
 
         console.log(`Container instance is ACTIVE: ${containerId}`);
 
@@ -170,7 +170,7 @@ export class OCIServerManager implements ServerManager {
                 };
             },
             {
-                timeout: 180000,
+                timeout: 300000,
                 interval: 5000,
             }
         );

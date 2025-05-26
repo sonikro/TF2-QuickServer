@@ -66,6 +66,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                     flags: MessageFlags.Ephemeral
                 });
             }
+            throw error; // Re-throw the error to be handled by the caller if needed
         }
     }
 }
