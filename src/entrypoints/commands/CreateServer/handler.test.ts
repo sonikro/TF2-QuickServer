@@ -166,8 +166,9 @@ describe("createServerCommandHandler", () => {
             guildId: interaction.guildId!
         }).thenReject(new Error("Server creation failed"));
 
-        await handler(interaction);
+        const act = () => handler(interaction);
 
+        await expect(act).rejects.toThrow("Server creation failed");
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
@@ -198,8 +199,8 @@ describe("createServerCommandHandler", () => {
             guildId: interaction.guildId!
         }).thenReject(new UserError("User error occurred"));
 
-        await handler(interaction);
-
+        const act = () => handler(interaction);
+        await expect(act).rejects.toThrow("User error occurred");
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `User error occurred`,
