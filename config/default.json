@@ -32,6 +32,7 @@
             "image": "sonikro/fat-tf2-standard-competitive:latest"
         },
         "standard-competitive": {
+            "displayName": "Standard Competitive",
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
@@ -40,6 +41,7 @@
             }
         },
         "insertcoin": {
+            "displayName": "InsertCoin Mixes",
             "hostname": "InsertCoin Mixes | {region} @ Sonikro Solutions",
             "defaultCfgs": {
                 "5cp": "insertcoin_5cp.cfg",
@@ -63,6 +65,7 @@
             ]
         },
         "tf2pickup": {
+            "displayName": "br.tf2pickup.org",
             "hostname": "tf2pickup.org | {region} @ Sonikro Solutions",
             "image": "sonikro/fat-tf2pickup:latest",
             "emptyMinutesTerminate": 60,
@@ -76,6 +79,7 @@
             ]
         },
         "mix-sa-novatos": {
+            "displayName": "Mix SA Novatos",
             "hostname": "Mix SA Novatos | {region} @ Sonikro Solutions",
             "defaultCfgs": {
                 "5cp": "novatos_6v6_5cp.cfg",
@@ -89,6 +93,7 @@
             ]
         },
         "TFArena": {
+            "displayName": "TF Arena",
             "hostname": "TFArena | {region} @ Sonikro Solutions",
             "defaultCfgs": {
                 "5cp": "tfarena_6v6_5cp.cfg",

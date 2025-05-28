@@ -17,7 +17,7 @@ const createServerOwnedByUser = (userId: string) => {
         hostPort: chance.integer(),
         serverId: chance.guid(),
         region: chance.pickone(Object.values(Region)),
-        variant: chance.pickone(Object.values(Variant)),
+        variant: chance.pickone(["standard-competitive", "casual"]),
         rconPassword: chance.word(),
         rconAddress: chance.ip(),
         tvIp: chance.ip(),

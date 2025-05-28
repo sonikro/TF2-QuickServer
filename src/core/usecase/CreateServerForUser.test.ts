@@ -35,7 +35,7 @@ const createTestEnvironment = () => {
     });
 
     const region = chance.pickone(Object.values(Region));
-    const variantName = chance.pickone(Object.values(Variant));
+    const variantName = chance.pickone(["standard-competitive", "casual"]);
     const userId = chance.guid();
     const steamId = chance.string({ length: 20 });
     const guildId = chance.guid();

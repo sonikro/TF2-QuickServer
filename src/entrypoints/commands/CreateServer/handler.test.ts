@@ -36,7 +36,7 @@ describe("createServerCommandHandler", () => {
         interaction.guildId = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
-        const variantName =  Variant.StandardCompetitive
+        const variantName =  "standard-competitive";
 
         when(interaction.options.getString)
             .calledWith('region')
@@ -103,7 +103,7 @@ describe("createServerCommandHandler", () => {
         interaction.guildId = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
-        const variantName = Variant.Tf2Pickup
+        const variantName = "tf2pickup";
 
         when(interaction.options.getString)
             .calledWith('region')
@@ -149,7 +149,7 @@ describe("createServerCommandHandler", () => {
         interaction.user.id = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
-        const variantName = chance.pickone(Object.values(Variant));
+        const variantName = chance.pickone(["standard-competitive", "casual"]);
 
         when(interaction.options.getString)
             .calledWith('region')
@@ -182,7 +182,7 @@ describe("createServerCommandHandler", () => {
         interaction.user.id = chance.guid();
 
         const region = chance.pickone(Object.values(Region));
-        const variantName = chance.pickone(Object.values(Variant));
+        const variantName = chance.pickone(["standard-competitive", "casual"]);
 
         when(interaction.options.getString)
             .calledWith('region')
