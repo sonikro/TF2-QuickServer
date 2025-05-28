@@ -30,8 +30,8 @@ services:
       - server
   tf2-server:
     build:
-      context: ./variants/standard-competitive
-      dockerfile: Dockerfile
+      context: ./
+      dockerfile: ./variants/standard-competitive/Dockerfile
     container_name: tf2-server
     ports:
       - 27015:27015
