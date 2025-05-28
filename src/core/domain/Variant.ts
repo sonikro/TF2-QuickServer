@@ -4,7 +4,8 @@ export enum Variant {
     StandardCompetitive = "standard-competitive",
     InsertCoin = "insertcoin",
     Tf2Pickup = "tf2pickup",
-    MixSaNovatos = "mix-sa-novatos"
+    MixSaNovatos = "mix-sa-novatos",
+    TFArena = "TFArena"
 }
 
 export type VariantConfig = {
