@@ -50,7 +50,7 @@ services:
       - "cp_badlands"
     profiles:
       - server
-  tf2-fat-standard-competitive:
+  fat-server:
     build:
       context: ./
       dockerfile: ./variants/fat-standard-competitive/Dockerfile
