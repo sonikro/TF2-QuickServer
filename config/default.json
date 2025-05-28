@@ -93,7 +93,8 @@
             "defaultCfgs": {
                 "5cp": "tfarena_6v6_5cp.cfg",
                 "koth": "tfarena_6v6_koth.cfg",
-                "pl": "tfarena_6v6_stopwatch.cfg"
+                "pl": "tfarena_6v6_stopwatch.cfg",
+                "cp_steel_2024h": "tfarena_6v6_stopwatch.cfg"
             }
         }
     },

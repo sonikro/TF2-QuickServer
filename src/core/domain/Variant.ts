@@ -23,6 +23,7 @@ export type VariantConfig = {
         "koth": string;
         "pl": string;
         "ultiduo": string;
+        [mapName: string]: string;
     };
     /**
      * This will override the admins list in the server config. If not set, the user that created the server will be added as an admin.
