@@ -64,22 +64,29 @@ done
 find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
     # Get the map name without the directory and file extension
     map_name="$(basename "$map_file" .bsp)"
-    
-    # Determine the default CFG based on the map name
-    if [[ "$map_name" == cp_* ]]; then
-        default_cfg="$DEFAULT_5CP_CFG"
-    elif [[ "$map_name" == pl_* ]]; then
-        default_cfg="$DEFAULT_PL_CFG"
-    elif [[ "$map_name" == koth_* ]]; then
-        default_cfg="$DEFAULT_KOTH_CFG"
-    elif [[ "$map_name" == ultiduo* ]]; then
-        default_cfg="$DEFAULT_ULTIDUO_CFG"
-    elif [[ "$map_name" == pass* ]]; then
-        default_cfg="$DEFAULT_PASSTIME_CFG"
-    elif [[ "$map_name" == tfdb_* ]]; then
-        default_cfg="$DEFAULT_TFDB_CFG"
+    # Check if an environment variable with the name of the map exists
+    env_var_name="DEFAULT_${map_name^^}_CFG" # Convert map_name to uppercase
+    env_var_name="${env_var_name//-/_}" # Replace dashes with underscores
+    if [[ -n "${!env_var_name}" ]]; then
+        echo "Using environment variable $env_var_name for default config. Value: ${!env_var_name}"
+        default_cfg="${!env_var_name}"
     else
-        default_cfg=""
+        # Determine the default CFG based on the map name prefix
+        if [[ "$map_name" == cp_* ]]; then
+            default_cfg="$DEFAULT_5CP_CFG"
+        elif [[ "$map_name" == pl_* ]]; then
+            default_cfg="$DEFAULT_PL_CFG"
+        elif [[ "$map_name" == koth_* ]]; then
+            default_cfg="$DEFAULT_KOTH_CFG"
+        elif [[ "$map_name" == ultiduo* ]]; then
+            default_cfg="$DEFAULT_ULTIDUO_CFG"
+        elif [[ "$map_name" == pass* ]]; then
+            default_cfg="$DEFAULT_PASSTIME_CFG"
+        elif [[ "$map_name" == tfdb_* ]]; then
+            default_cfg="$DEFAULT_TFDB_CFG"
+        else
+            default_cfg=""
+        fi
     fi
 
     # Create a cfg file for the map
