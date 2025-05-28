@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeAll } from "vitest";
-import { ConsumeCreditsFromRunningServers } from "./ConsumeCreditsFromRunningServers";
+import { Chance } from "chance";
+import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
+import { when } from "vitest-when";
+import { Region } from "../domain";
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
-import { when } from "vitest-when";
-import { Chance } from "chance";
-import { Region, Server, Variant } from "../domain";
+import { ConsumeCreditsFromRunningServers } from "./ConsumeCreditsFromRunningServers";
 
 const chance = new Chance();
 
@@ -15,7 +15,7 @@ const createServerOwnedByUser = (userId: string) => {
         hostPort: chance.integer(),
         serverId: chance.guid(),
         region: chance.pickone(Object.values(Region)),
-        variant: chance.pickone(Object.values(Variant)),
+        variant: chance.pickone(["standard-competitive", "casual"]),
         rconPassword: chance.word(),
         rconAddress: chance.ip(),
         tvIp: chance.ip(),

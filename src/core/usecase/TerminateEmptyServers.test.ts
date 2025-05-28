@@ -56,7 +56,7 @@ function createServer(server: Partial<Server> = {}): Server {
         tvPort: chance.integer(),
         tvPassword: chance.string(),
         region: chance.pickone(Object.values(Region)),
-        variant: chance.pickone(Object.values(Variant)),
+        variant: chance.pickone(["standard-competitive", "casual"]),
         status: "ready",
         ...server
     };
