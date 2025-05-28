@@ -1,4 +1,5 @@
 [
+    "cp_steel_2024h",
     "cp_reckoner_rc6",
     "cp_process_f12",
     "cp_metalworks_f5",
@@ -11,6 +12,7 @@
     "koth_clearcut_b17",
     "koth_bagel_rc8",
     "koth_bagel_rc10",
+    "koth_bagel_rc11",
     "koth_product_final",
     "cp_badlands",
     "pl_vigil_rc10",
