@@ -6,6 +6,7 @@ import { UserError } from '../core/errors/UserError';
 import { KnexConnectionManager } from '../providers/repository/KnexConnectionManager';
 import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
+import { ShutdownInProgressError } from '../providers/services/DefaultGracefulShutdownManager';
 
 vi.mock("../providers/repository/KnexConnectionManager", async () => {
     const actual = await import("../providers/repository/KnexConnectionManager") as typeof import('../providers/repository/KnexConnectionManager');
@@ -21,7 +22,7 @@ vi.mock("../providers/repository/KnexConnectionManager", async () => {
 vi.mock("./commands", async (importOriginal) => {
     const actual = await importOriginal() as typeof import('./commands');
     // Forces createCommands to always return the same commands so mocks can be used
-    const commands = actual.createCommands(({configManager: {getCreditsConfig: () => false}} as any));
+    const commands = actual.createCommands(({ configManager: { getCreditsConfig: () => false } } as any));
     return {
         createCommands: vi.fn().mockReturnValue(commands),
     }
@@ -157,6 +158,21 @@ describe("startDiscordBot", () => {
                 await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
                 expect(interaction.reply).toHaveBeenCalledWith({ content: error.message, flags: 64 });
             })
+
+            it("should reply with a shutdown message if the command handler throws a ShutdownInProgressError", async () => {
+                const interaction = mock<CommandInteraction>();
+                when(interaction.isCommand).calledWith().thenReturn(true);
+                interaction.commandName = discordCommands.createServer.name;
+                const handler = client.on.mock.calls[0][1];
+                const error = new ShutdownInProgressError('Shutdown in progress');
+
+                vi.spyOn(discordCommands.createServer, 'handler').mockRejectedValue(error);
+
+                handler(interaction);
+
+                await new Promise(resolve => setTimeout(resolve, 0));
+                expect(interaction.reply).toHaveBeenCalledWith({ content: 'The bot is currently not accepting new commands as it is shutting down. Please try again later.', flags: 64 });
+            });
 
             it.each(Object.values(discordCommands))("should reply with an error message if the command handler for $name throws an error", async (receivedCommand) => {
                 const interaction = mock<CommandInteraction>()
