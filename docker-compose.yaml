@@ -7,8 +7,9 @@ services:
     env_file:
       - .env
     volumes:
-      - db:/app/db
-      - ./config:/app/config
+      - ./db:/app/db
+      - ./config:/app/config:ro
+      - ./keys:/app/keys:ro
     profiles:
       - bot
   tf2-pickup-server:
@@ -71,6 +72,3 @@ services:
       - "cp_badlands"
     profiles:
       - server
-
-volumes:
-  db:

@@ -26,6 +26,7 @@ import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateSe
 import { SetUserData } from "../core/usecase/SetUserData";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
+import { defaultGracefulShutdownManager } from "../providers/services/DefaultGracefulShutdownManager";
 
 export async function startDiscordBot() {
 
@@ -194,12 +195,17 @@ export async function startDiscordBot() {
                 eventMessage: `User executed command ${commandName}`,
                 actorId: chatInputInteraction.user.id,
             })
-            await command.handler(chatInputInteraction);
+            await defaultGracefulShutdownManager.run(() => command.handler(chatInputInteraction))
         }
         catch (error: Error | any) {
             if (error.name === 'UserError') {
                 await chatInputInteraction.reply({
                     content: error.message,
+                    flags: MessageFlags.Ephemeral
+                })
+            } else if (error.name === "ShutdownInProgressError") {
+                await chatInputInteraction.reply({
+                    content: 'The bot is currently not accepting new commands as it is shutting down. Please try again later.',
                     flags: MessageFlags.Ephemeral
                 })
             } else {
@@ -245,6 +251,11 @@ export async function startDiscordBot() {
             actorId: 'system',
         })
     })
+
+    process.on("SIGTERM", async () => {
+        await defaultGracefulShutdownManager.onShutdownWait();
+        process.exit(0);
+    });
 
     return client;
 }
