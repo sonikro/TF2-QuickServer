@@ -66,7 +66,7 @@
         },
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
-            "hostname": "tf2pickup.org | {region} @ Sonikro Solutions",
+            "hostname": "br.tf2pickup.org | {region} @ Sonikro Solutions",
             "image": "sonikro/fat-tf2pickup:latest",
             "emptyMinutesTerminate": 60,
             "admins": [
@@ -77,6 +77,19 @@
                 "STEAM_0:1:48369748",
                 "STEAM_0:1:59961573",
                 "STEAM_0:1:109770789"
+            ]
+        },
+        "hlbr-tf2pickup": {
+            "displayName": "hl.br.tf2pickup.org",
+            "hostname": "hl.br.tf2pickup.org | {region} @ Sonikro Solutions",
+            "image": "sonikro/fat-tf2pickup:latest",
+            "emptyMinutesTerminate": 60,
+            "admins": [
+                "STEAM_0:1:433143455",
+                "STEAM_0:1:79008369",
+                "STEAM_0:1:64055278",
+                "STEAM_0:0:44243516",
+                "STEAM_0:1:433143455"
             ]
         },
         "mix-sa-novatos": {

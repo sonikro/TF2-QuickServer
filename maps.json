@@ -31,6 +31,7 @@
     "pl_prowater_b12",
     "koth_lakeside_f5",
     "koth_warmtic_f10",
+    "koth_proside_v1",
     "ultiduo_baloo_v2",
     "ultiduo_champions_b1",
     "ultiduo_ozf_r",
@@ -42,6 +43,7 @@
     "ultiduo_spytech_rc4",
     "koth_ultiduo_r_b7",
     "koth_proot_b6c-alt2",
+    "koth_proot_b6c-alt",
     "pass_aerosol_a13",
     "pass_amperage_a27",
     "pass_amsterdam_a10",
@@ -82,5 +84,9 @@
     {
         "name": "tfdb_orangebox_b2",
         "url": "https://mirror.shana.sg/tf/maps/tfdb_orangebox_b2.bsp.bz2"
+    },
+    {
+        "name": "koth_berryville_b2a",
+        "url": "https://tf2maps.net/downloads/koth_berryville.8442/download"
     }
 ]

@@ -25,7 +25,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                 guildId: interaction.guildId!
             });
 
-            if (variantName === "tf2pickup") {
+            if (variantName.includes("tf2pickup")) {
                 await interaction.followUp({
                     content: `🎉 **Server Created and Registered!** 🎉\n\n` +
                         `💻 This server was created and registered to the **tf2pickup.org** instance associated with this Discord Guild.\n` +
