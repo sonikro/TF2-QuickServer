@@ -5,6 +5,7 @@ import { ServerCommander } from "../services/ServerCommander";
 import { ServerStatus } from "../domain/ServerStatus";
 import { EventLogger } from "../services/EventLogger";
 import { ConfigManager } from "../utils/ConfigManager";
+import {Client as DiscordClient} from "discord.js"
 
 export class TerminateEmptyServers {
 
@@ -14,7 +15,8 @@ export class TerminateEmptyServers {
         serverActivityRepository: ServerActivityRepository,
         serverCommander: ServerCommander,
         eventLogger: EventLogger,
-        configManager: ConfigManager
+        configManager: ConfigManager,
+        discordBot: DiscordClient
     }) { }
 
     /**
@@ -23,7 +25,7 @@ export class TerminateEmptyServers {
      * @param args.minutesEmpty - The duration in minutes after which servers should be terminated.
      */
     public async execute(): Promise<void> {
-        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager } = this.dependencies;
+        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, discordBot } = this.dependencies;
 
         // Fetch all servers
         const servers = await serverRepository.getAllServers("ready");
@@ -65,6 +67,15 @@ export class TerminateEmptyServers {
                             eventMessage: `Server ${server.serverId} terminated due to inactivity for ${minutesEmpty} minutes.`,
                             actorId: server.createdBy!,
                         });
+
+                        try {
+                            const user = await discordBot.users.fetch(server.createdBy!)
+                            if (user) {
+                                await user.send(`Your server ${server.serverId} has been terminated due to inactivity for ${minutesEmpty} minutes.`);
+                            }
+                        } catch (error) {
+                            // Ignore errors when sending the message, since users can block DMs
+                        }
                     } catch (error) {
                         console.error(`Failed to terminate server ${server.serverId}:`, error);
                     }

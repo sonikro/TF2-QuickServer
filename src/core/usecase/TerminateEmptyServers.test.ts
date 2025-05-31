@@ -12,6 +12,8 @@ import { ServerCommander } from "../services/ServerCommander";
 import { emptyServerStatus, nonEmptyServerStatus } from "./__tests__/mockStatusStrings";
 import { EventLogger } from "../services/EventLogger";
 import { ConfigManager } from "../utils/ConfigManager";
+import { Client as DiscordClient, User } from "discord.js";
+
 
 const chance = new Chance();
 
@@ -22,6 +24,9 @@ function createTestEnvironment() {
     const serverCommander = mock<ServerCommander>();
     const eventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
+    const discordBot = mock<DiscordClient>({
+        users: mock()
+    });
 
     const sut = new TerminateEmptyServers({
         serverManager,
@@ -29,7 +34,8 @@ function createTestEnvironment() {
         serverActivityRepository,
         serverCommander,
         eventLogger,
-        configManager
+        configManager,
+        discordBot
     });
 
     return {
@@ -40,7 +46,8 @@ function createTestEnvironment() {
             serverActivityRepository,
             serverCommander,
             eventLogger,
-            configManager
+            configManager,
+            discordBot
         }
     };
 }
@@ -58,6 +65,7 @@ function createServer(server: Partial<Server> = {}): Server {
         region: chance.pickone(Object.values(Region)),
         variant: chance.pickone(["standard-competitive", "casual"]),
         status: "ready",
+        createdBy: chance.guid(),
         ...server
     };
 }
@@ -71,6 +79,11 @@ describe("TerminateEmptyServers", () => {
         const emptyServerStillWaiting = createServer();
         const serverWithError = createServer();
         const noLongerEmptyServer = createServer();
+
+        const user = mock<User>();
+        when(mocks.discordBot.users.fetch)
+        .calledWith(emptyServerToBeTerminated.createdBy!)
+        .thenResolve(user)
 
         const currentServers: Server[] = [
             emptyServerToBeTerminated,
@@ -200,5 +213,11 @@ describe("TerminateEmptyServers", () => {
                 lastCheckedAt: expect.any(Date)
             });
         });
+
+        it("should message the user about the termination", async () => {
+            expect(user.send).toHaveBeenCalledWith(
+                `Your server ${emptyServerToBeTerminated.serverId} has been terminated due to inactivity for 10 minutes.`
+            );
+        })
     });
 });

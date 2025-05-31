@@ -134,7 +134,8 @@ export async function startDiscordBot() {
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander,
             eventLogger,
-            configManager: defaultConfigManager
+            configManager: defaultConfigManager,
+            discordBot: client
         })
     })
 
