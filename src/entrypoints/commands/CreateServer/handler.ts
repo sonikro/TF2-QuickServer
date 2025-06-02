@@ -35,8 +35,17 @@ export function createServerCommandHandlerFactory(dependencies: {
                 )
             ));
         }
+        // Step 1: Show variant descriptions above the buttons
+        let variantDescriptions = variants.map(variant => {
+            const cfgs = variant.config.defaultCfgs
+                ? Object.entries(variant.config.defaultCfgs).map(([type, cfg]) => `${type}: ${cfg}`).join("\n")
+                : "";
+            return `**${variant.config.displayName || variant.name}**${cfgs ? `\nDefault CFGs:\n${cfgs}` : ""}`;
+        }).join("\n\n");
+
         await interaction.reply({
             content: `Select a server variant to deploy in region **${getRegionDisplayName(region)}**:` +
+                `\n\n${variantDescriptions}` +
                 `\n\n⚠️ *This command shows you different options based on the Discord Guild it is executed in. If you are not seeing an option you are looking for, you are probably in the wrong Discord guild.*`,
             components: rows,
             flags: MessageFlags.Ephemeral
