@@ -26,9 +26,10 @@
 ## 🧐 How It Works
 
 1. **Join our Discord Channel**
-2. **Run a Command** – Example: `/create-server sa-saopaulo-1 standard-competitive`
-3. **Receive Server Info** – Get your IP address and SDR connection string.
-4. **Play!** – Join with friends and frag away!
+2. **Run a Command** – Example: `/create-server sa-saopaulo-1`
+3. **Select a Variant** – Use the buttons shown in Discord to pick your server type (e.g., `standard-competitive`).
+4. **Receive Server Info** – Get detailed connection info for your server, including SDR, direct, and TV connect addresses.
+5. **Play!** – Join with friends and frag away!
 
 ---
 
@@ -45,19 +46,13 @@
 
 | Command | Description |
 |--------|-------------|
-| `/create-server <region> <variant>` | Launches a server in the selected region |
+| `/create-server <region>` | Launches a server in the selected region (you'll be prompted to select a variant) |
 | `/terminate-servers` | Terminates all servers created by the user |
 | `/get-balance` | Shows your available credits (Only enabled if credits are enabled) |
 | `/buy-credits` | *(Coming soon!)* Purchase credits |
 | `/set-user-data <steamId>` | Sets the SteamID of the user, assigning them as the Sourcemod admin for all servers the user creates |
 
 > 💡 *Empty servers are terminated after 10 minutes of inactivity.*
-
----
-
-## 🎮 Server Variants
-
-- **`standard-competitive`** – Competitive config with logs.tf, demos.tf, and support for 6v6, 9v9, ultiduo, passtime
 
 ---
 
