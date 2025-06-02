@@ -63,6 +63,10 @@ export function createServerCommandHandlerFactory(dependencies: {
         if (!collector) return;
         collector.on('collect', async (buttonInteraction: MessageComponentInteraction) => {
             const variantName = buttonInteraction.customId.split(':')[1];
+            await interaction.editReply({
+                content: `You selected the variant **${variantName}**.`,
+                components: []
+            })
             await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
             try {
                 await buttonInteraction.followUp({
