@@ -19,7 +19,11 @@ export function createServerCommandHandlerFactory(dependencies: {
         const region = interaction.options.getString('region') as Region;
 
         // Step 1: Show variant buttons
-        const variants = getVariantConfigs();
+        const variants = getVariantConfigs().filter(variant => {
+            if (!variant.config.guildId) return true;
+            return variant.config.guildId === interaction.guildId;
+        });
+
         const rows = [];
         for (let i = 0; i < variants.length; i += 5) {
             rows.push(new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -32,7 +36,8 @@ export function createServerCommandHandlerFactory(dependencies: {
             ));
         }
         await interaction.reply({
-            content: `Select a server variant to deploy in region **${getRegionDisplayName(region)}**:`,
+            content: `Select a server variant to deploy in region **${getRegionDisplayName(region)}**:` +
+                `\n\n⚠️ *This command shows you different options based on the Discord Guild it is executed in. If you are not seeing an option you are looking for, you are probably in the wrong Discord guild.*`,
             components: rows,
             flags: MessageFlags.Ephemeral
         });
@@ -43,7 +48,7 @@ export function createServerCommandHandlerFactory(dependencies: {
         const collector = interaction.channel?.createMessageComponentCollector({
             filter,
             componentType: ComponentType.Button,
-            time: 60_000,
+            time: 30_000,
             max: 1
         });
         if (!collector) return;

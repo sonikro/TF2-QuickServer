@@ -62,7 +62,8 @@
                 "STEAM_0:1:66778305",
                 "STEAM_0:1:153691324",
                 "STEAM_0:1:569914170"
-            ]
+            ],
+            "guildId": "1323509685264842752"
         },
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
@@ -77,7 +78,8 @@
                 "STEAM_0:1:48369748",
                 "STEAM_0:1:59961573",
                 "STEAM_0:1:109770789"
-            ]
+            ],
+            "guildId": "1151219992432492677"
         },
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
@@ -90,7 +92,8 @@
                 "STEAM_0:1:64055278",
                 "STEAM_0:0:44243516",
                 "STEAM_0:1:433143455"
-            ]
+            ],
+            "guildId": "929204770969907280"
         },
         "mix-sa-novatos": {
             "displayName": "Mix SA Novatos",
@@ -104,7 +107,8 @@
                 "STEAM_0:0:185104239",
                 "STEAM_0:0:208429922",
                 "STEAM_0:0:453571126"
-            ]
+            ],
+            "guildId": "1143342782396780584"
         },
         "TFArena": {
             "displayName": "TF Arena",
@@ -114,7 +118,8 @@
                 "koth": "tfarena_6v6_koth.cfg",
                 "pl": "tfarena_6v6_stopwatch.cfg",
                 "cp_steel_2024h": "tfarena_6v6_stopwatch.cfg"
-            }
+            },
+            "guildId": "803785792052527114"
         }
     },
     "discord": {
