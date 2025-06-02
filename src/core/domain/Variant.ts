@@ -29,6 +29,13 @@ export type VariantConfig = {
      * @default 10
      */
     emptyMinutesTerminate?: number;
+
+    /**
+     * Optional guild ID to associate the server with.
+     * This is used for variants that are registered with a specific guild, like tf2pickup.
+     * If set, the variant will only be available in that guild.
+     */
+    guildId?: string;
 }
 
 export function getVariantConfig(variant: Variant) {

@@ -8,6 +8,7 @@ import { Region } from "../../../core/domain/Region";
 import { UserError } from "../../../core/errors/UserError";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createServerCommandHandlerFactory } from "./handler";
+import { getVariantConfigs } from "../../../core/domain";
 
 describe("createServerCommandHandler", () => {
     const chance = new Chance();
@@ -232,5 +233,35 @@ describe("createServerCommandHandler", () => {
             content: `User error occurred`,
             flags: MessageFlags.Ephemeral,
         });
+    });
+
+    it("should only show variants with matching guildId or no guildId", async () => {
+        const { handler, interaction } = createHandler();
+        const region = chance.pickone(Object.values(Region));
+        const guildId = interaction.guildId;
+
+        const variants = getVariantConfigs();
+
+        const variantsWithGuildId = variants.filter(v => v.config.guildId === guildId);
+        const variantsWithoutGuildId = variants.filter(v => !v.config.guildId);
+        const expectedVariants = [ ...variantsWithoutGuildId].map(v => v.config.displayName || v.name);
+        const expectedHiddenVariants = variantsWithGuildId.map(v => v.config.displayName || v.name);
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue({ on: vi.fn() });
+
+        // Call the command handler
+        await handler(interaction);
+        // Check that only the correct variants are shown
+        const replyCall = (interaction.reply as any).mock.calls[0][0];
+        expect(replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label))).toEqual(
+            expect.arrayContaining(expectedVariants)
+        );
+        expect(replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label))).not.toContain(
+            expectedHiddenVariants
+        );
     });
 });
