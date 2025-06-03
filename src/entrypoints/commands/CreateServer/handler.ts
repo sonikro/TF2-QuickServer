@@ -107,16 +107,25 @@ export function createServerCommandHandlerFactory(dependencies: {
                 });
             } catch (error: Error | any) {
                 console.error('Error creating server:', error);
-                if (error.name === 'UserError') {
-                    await buttonInteraction.followUp({
-                        content: error.message,
-                        flags: MessageFlags.Ephemeral
-                    });
-                } else {
-                    await buttonInteraction.followUp({
-                        content: `There was an error creating the server. Please reach out to the App Administrator.`,
-                        flags: MessageFlags.Ephemeral
-                    });
+                switch (error.name) {
+                    case 'UserError':
+                        await buttonInteraction.followUp({
+                            content: error.message,
+                            flags: MessageFlags.Ephemeral
+                        });
+                        break;
+                    case 'AbortError':
+                        await buttonInteraction.followUp({
+                            content: `Server creation was aborted by the user.`,
+                            flags: MessageFlags.Ephemeral
+                        });
+                        break;
+                    default:
+                        await buttonInteraction.followUp({
+                            content: `There was an error creating the server. Please reach out to the App Administrator.`,
+                            flags: MessageFlags.Ephemeral
+                        });
+                        break;
                 }
             }
         });

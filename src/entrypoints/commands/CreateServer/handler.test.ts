@@ -264,4 +264,43 @@ describe("createServerCommandHandler", () => {
             expectedHiddenVariants
         );
     });
+
+    it("should reply with abort message if server creation is aborted by the user", async () => {
+        const { handler, interaction, createServerForUser } = createHandler();
+        const region = chance.pickone(Object.values(Region));
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        const collectorMock = {
+            on: vi.fn(),
+        };
+        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
+
+        const abortError = new Error("Aborted by user");
+        abortError.name = "AbortError";
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+        }).thenReject(abortError);
+
+        await handler(interaction);
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        if (!collectCall) throw new Error("Collect callback not found");
+        const collectCallback = collectCall[1];
+        await collectCallback(buttonInteraction);
+
+        expect(buttonInteraction.followUp).toHaveBeenCalledWith({
+            content: `Server creation was aborted by the user.`,
+            flags: MessageFlags.Ephemeral,
+        });
+    });
 });

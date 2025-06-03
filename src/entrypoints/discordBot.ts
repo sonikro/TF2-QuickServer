@@ -27,6 +27,7 @@ import { SetUserData } from "../core/usecase/SetUserData";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
 import { defaultGracefulShutdownManager } from "../providers/services/DefaultGracefulShutdownManager";
+import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 
 export async function startDiscordBot() {
 
@@ -57,13 +58,15 @@ export async function startDiscordBot() {
         configManager: defaultConfigManager,
     })
 
+    const serverAbortManager = new DefaultServerAbortManager();
+
     const ociServerManager = new OCIServerManager({
         serverCommander,
         ociClientFactory: defaultOracleServiceFactory,
         configManager: defaultConfigManager,
-        passwordGenerator: chancePasswordGenerator
+        passwordGenerator: chancePasswordGenerator,
+        serverAbortManager
     })
-
 
     const serverRepository = new SQLiteServerRepository({
         knex: KnexConnectionManager.client,
@@ -112,7 +115,8 @@ export async function startDiscordBot() {
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,
             serverRepository,
-            eventLogger
+            eventLogger,
+            serverAbortManager
         }),
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
@@ -199,23 +203,32 @@ export async function startDiscordBot() {
             await defaultGracefulShutdownManager.run(() => command.handler(chatInputInteraction))
         }
         catch (error: Error | any) {
-            if (error.name === 'UserError') {
-                await chatInputInteraction.reply({
-                    content: error.message,
-                    flags: MessageFlags.Ephemeral
-                })
-            } else if (error.name === "ShutdownInProgressError") {
-                await chatInputInteraction.reply({
-                    content: 'The bot is currently not accepting new commands as it is shutting down. Please try again later.',
-                    flags: MessageFlags.Ephemeral
-                })
-            } else {
-                console.error(`Error executing command ${commandName}:`, error);
-                await eventLogger.log({
-                    eventMessage: `Error executing command ${commandName}: ${error.message}`,
-                    actorId: chatInputInteraction.user.id,
-                })
-                await chatInputInteraction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+            switch (error.name) {
+                case 'UserError':
+                    await chatInputInteraction.reply({
+                        content: error.message,
+                        flags: MessageFlags.Ephemeral
+                    });
+                    break;
+                case 'ShutdownInProgressError':
+                    await chatInputInteraction.reply({
+                        content: 'The bot is currently not accepting new commands as it is shutting down. Please try again later.',
+                        flags: MessageFlags.Ephemeral
+                    });
+                    break;
+                case 'AbortError':
+                    await chatInputInteraction.reply({
+                        content: 'The command was aborted due to a user cancellation. ',
+                        flags: MessageFlags.Ephemeral
+                    });
+                    break;
+                default:
+                    console.error(`Error executing command ${commandName}:`, error);
+                    await eventLogger.log({
+                        eventMessage: `Error executing command ${commandName}: ${error.message}`,
+                        actorId: chatInputInteraction.user.id,
+                    });
+                    await chatInputInteraction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
             }
         }
     });
