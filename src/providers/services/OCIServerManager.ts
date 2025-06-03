@@ -50,7 +50,7 @@ export class OCIServerManager implements ServerManager {
             : [];
 
         // the admins array is immutable, so we need to create a new array
-        const adminList = variantConfig.admins ? [...variantConfig.admins] : [sourcemodAdminSteamId];
+        const adminList = variantConfig.admins ? [...variantConfig.admins, sourcemodAdminSteamId] : [sourcemodAdminSteamId];
 
         const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
         const environmentVariables: Record<string, string> = {

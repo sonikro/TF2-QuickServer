@@ -207,7 +207,7 @@ describe("OCIServerManager", () => {
                 RCON_PASSWORD: "test-password",
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
-                ADMIN_LIST: "default_admin",
+                ADMIN_LIST: "default_admin,12345678901234567",
               },
             },
           ],
