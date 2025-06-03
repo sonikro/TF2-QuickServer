@@ -1,11 +1,12 @@
+import { containerinstances, core } from "oci-sdk";
 import { getRegionDisplayName, Region, Server, Variant } from "../../core/domain";
 import { ServerStatus } from "../../core/domain/ServerStatus";
+import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { waitUntil } from "../utils/waitUntil";
-import { containerinstances, core } from "oci-sdk"
 
 export class OCIServerManager implements ServerManager {
     constructor(
@@ -14,6 +15,7 @@ export class OCIServerManager implements ServerManager {
             configManager: ConfigManager;
             passwordGenerator: PasswordGenerator;
             ociClientFactory: (region: Region) => { containerClient: containerinstances.ContainerInstanceClient, vncClient: core.VirtualNetworkClient }
+            serverAbortManager: ServerAbortManager
         }
     ) { }
 
@@ -24,7 +26,7 @@ export class OCIServerManager implements ServerManager {
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
     }): Promise<Server> {
-        const { serverCommander, configManager, passwordGenerator, ociClientFactory } = this.dependencies;
+        const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
         const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {} } = args;
 
         const { containerClient, vncClient } = ociClientFactory(region);
@@ -106,6 +108,7 @@ export class OCIServerManager implements ServerManager {
             }
         };
 
+        const abortController = serverAbortManager.getOrCreate(serverId); 
         console.log(`Creating container instance for server ID: ${serverId}`);
         const response = await containerClient.createContainerInstance(containerRequest);
         const containerId = response.containerInstance?.id;
@@ -124,7 +127,7 @@ export class OCIServerManager implements ServerManager {
                 return containerInstance.containerInstance.vnics[0].vnicId;
             };
             throw new Error("VNIC ID not available yet");
-        })
+        }, { signal: abortController.signal });
 
         // Fetch the VNIC details to get the public IP
         const vnicDetails = await vncClient.getVnic({ vnicId });
@@ -133,6 +136,7 @@ export class OCIServerManager implements ServerManager {
         if (!publicIp) {
             throw new Error("Failed to retrieve public IP");
         }
+
 
         // Wait for container to be ACTIVE
         console.log(`Waiting for container instance to be ACTIVE: ${containerId}`);
@@ -144,7 +148,7 @@ export class OCIServerManager implements ServerManager {
                 return true;
             }
             throw new Error("Container instance is not ACTIVE yet");
-        }, { interval: 5000, timeout: 300000 });
+        }, { interval: 5000, timeout: 300000, signal: abortController.signal });
 
         console.log(`Container instance is ACTIVE: ${containerId}`);
 
@@ -172,8 +176,11 @@ export class OCIServerManager implements ServerManager {
             {
                 timeout: 300000,
                 interval: 5000,
+                signal: abortController.signal,
             }
         );
+
+        serverAbortManager.delete(serverId); // Clean up the abort controller after successful deployment
 
         const [sdrIp, sdrPort] = sdrAddress.split(":");
 
@@ -218,4 +225,5 @@ export class OCIServerManager implements ServerManager {
         });
 
     }
+
 }

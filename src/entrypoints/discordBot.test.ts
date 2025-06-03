@@ -7,6 +7,7 @@ import { KnexConnectionManager } from '../providers/repository/KnexConnectionMan
 import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
 import { ShutdownInProgressError } from '../providers/services/DefaultGracefulShutdownManager';
+import { AbortError } from '../core/services/ServerAbortManager';
 
 vi.mock("../providers/repository/KnexConnectionManager", async () => {
     const actual = await import("../providers/repository/KnexConnectionManager") as typeof import('../providers/repository/KnexConnectionManager');
@@ -188,6 +189,22 @@ describe("startDiscordBot", () => {
                 await new Promise(resolve => setTimeout(resolve, 0)); // wait for the promise to resolve
                 expect(interaction.reply).toHaveBeenCalledWith({ content: 'There was an error while executing this command!', flags: 64 });
             })
+
+            it("should reply with an abort message if the command handler throws an AbortError", async () => {
+                const interaction = mock<CommandInteraction>()
+                when(interaction.isCommand).calledWith().thenReturn(true);
+                interaction.commandName = discordCommands.createServer.name;
+                const handler = client.on.mock.calls[0][1];
+                const error = new AbortError('Aborted!');
+                error.name = 'AbortError';
+
+                vi.spyOn(discordCommands.createServer, 'handler').mockRejectedValue(error);
+
+                handler(interaction);
+
+                await new Promise(resolve => setTimeout(resolve, 0));
+                expect(interaction.reply).toHaveBeenCalledWith({ content: 'The command was aborted due to a user cancellation. ', flags: 64 });
+            });
         })
 
     })

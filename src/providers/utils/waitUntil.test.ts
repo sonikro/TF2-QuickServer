@@ -39,4 +39,15 @@ describe("waitUntil", () => {
         expect(result).toBe("Success");
         expect(condition).toHaveBeenCalledTimes(2);
     });
+
+    it("should reject with AbortError if the operation is aborted", async () => {
+        const controller = new AbortController();
+        const condition = vi.fn().mockRejectedValue(new Error("Not ready"));
+
+        setTimeout(() => controller.abort(), 100); // Abort after 100ms
+
+        await expect(waitUntil(condition, { signal: controller.signal, interval: 100, timeout: 500 }))
+            .rejects.toThrow("Operation aborted");
+        expect(condition).toHaveBeenCalled();
+    })
 });

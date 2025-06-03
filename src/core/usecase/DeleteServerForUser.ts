@@ -1,6 +1,7 @@
 import { UserError } from "../errors/UserError";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
+import { ServerAbortManager } from "../services/ServerAbortManager";
 import { ServerManager } from "../services/ServerManager";
 
 export class DeleteServerForUser {
@@ -9,13 +10,14 @@ export class DeleteServerForUser {
             serverRepository: ServerRepository;
             serverManager: ServerManager;
             eventLogger: EventLogger;
+            serverAbortManager: ServerAbortManager
         }
     ) { }
 
     async execute(args: {
         userId: string;
     }): Promise<void> {
-        const { serverRepository, serverManager, eventLogger } = this.dependencies;
+        const { serverRepository, serverManager, eventLogger, serverAbortManager } = this.dependencies;
         const { userId } = args;
         const server = await serverRepository.getAllServersByUserId(userId);
         if (!server || server.length === 0) {
@@ -31,6 +33,11 @@ export class DeleteServerForUser {
             });
             // Delete the server
             await serverRepository.deleteServer(serverId);
+            const abortController = serverAbortManager.getOrCreate(serverId);
+            // Abort any ongoing operations for this server
+            abortController.abort();
+            // Remove the abort controller from the manager
+            serverAbortManager.delete(serverId);
             await eventLogger.log({
                 eventMessage: `User deleted server with ID ${serverId} in region ${region}.`,
                 actorId: userId,

@@ -3,8 +3,10 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
+import { AbortError } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
+import { DefaultServerAbortManager } from "./DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
 
 const testRegion = Region.SA_SAOPAULO_1;
@@ -133,11 +135,14 @@ edicts  : 426 used of 2048 max
 #      3 "sonikro"           [U:1:29162964]      00:20       60    0 active 169.254.249.16:18930
 `)
 
+  const serverAbortManager = new DefaultServerAbortManager();
+
   const sut = new OCIServerManager({
     serverCommander,
     configManager,
     passwordGenerator,
     ociClientFactory,
+    serverAbortManager
   });
 
   return {
@@ -147,7 +152,8 @@ edicts  : 426 used of 2048 max
     passwordGenerator,
     containerClient,
     vncClient,
-    variantConfig
+    variantConfig,
+    serverAbortManager
   };
 }
 
@@ -166,7 +172,7 @@ describe("OCIServerManager", () => {
         region: testRegion,
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-id"
+        serverId: "test-server-id",
       });
 
     });
@@ -282,7 +288,7 @@ describe("OCIServerManager", () => {
   describe("extra vars", () => {
     it("should include extraEnvs in the container environment variables", async () => {
       const { sut, containerClient } = createTestEnvironment();
-    
+
       await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
@@ -293,10 +299,10 @@ describe("OCIServerManager", () => {
           ANOTHER_VAR: "another-value"
         }
       });
-    
+
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const envVars = containerInstanceRequest.createContainerInstanceDetails.containers[0].environmentVariables!;
-    
+
       expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
       expect(envVars.ANOTHER_VAR).toBe("another-value");
     });
@@ -312,7 +318,7 @@ describe("OCIServerManager", () => {
         region: testRegion,
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-id"
+        serverId: "test-server-id",
       })
 
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
@@ -360,5 +366,19 @@ describe("OCIServerManager", () => {
       });
     });
   });
+
+  describe("abort server deployment", () => {
+    it("should throw an AbortError if the deployment is aborted", async () => {
+      const { sut, serverAbortManager } = createTestEnvironment();
+
+      serverAbortManager.getOrCreate("test-server-id").abort();
+      await expect(sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-id",
+      })).rejects.toThrow(new AbortError("Operation aborted"));
+    });
+  })
 
 });
