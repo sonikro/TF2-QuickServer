@@ -11,6 +11,19 @@ ENV DEFAULT_TFDB_CFG="dodgeball.cfg"
 
 USER tf2
 
+# Update Sourcemod
+ARG SOURCEMOD_VERSION_MAJOR=1
+ARG SOURCEMOD_VERSION_MINOR=12
+ARG SOURCEMOD_VERSION_PATCH=0
+ARG SOURCEMOD_VERSION_BUILD=7207
+ARG SOURCEMOD_VERSION=${SOURCEMOD_VERSION_MAJOR}.${SOURCEMOD_VERSION_MINOR}.${SOURCEMOD_VERSION_PATCH}-git${SOURCEMOD_VERSION_BUILD}
+ARG SOURCEMOD_TARBALL_FILE_NAME=sourcemod-${SOURCEMOD_VERSION}-linux.tar.gz
+ARG SOURCEMOD_TARBALL_URL=https://sm.alliedmods.net/smdrop/${SOURCEMOD_VERSION_MAJOR}.${SOURCEMOD_VERSION_MINOR}/${SOURCEMOD_TARBALL_FILE_NAME}
+
+RUN wget -nv "${SOURCEMOD_TARBALL_URL}" \
+  && tar xf "${SOURCEMOD_TARBALL_FILE_NAME}" -C "${SERVER_DIR}/tf" \
+  && rm "${SOURCEMOD_TARBALL_FILE_NAME}"
+
 # Installs MapDownloader plugin
 # This plugin allows you to download maps from the server
 RUN wget -O /home/tf2/server/tf/addons/sourcemod/plugins/mapdownloader.smx https://github.com/spiretf/mapdownloader/raw/refs/heads/master/plugin/mapdownloader.smx
