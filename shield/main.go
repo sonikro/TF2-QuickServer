@@ -6,9 +6,11 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gorcon/rcon"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/config"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/radar"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/shield"
+	"github.com/sonikro/tf2-quickserver-shield/pkg/srcds"
 )
 
 func main() {
@@ -22,7 +24,10 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	shield := shield.Shield{}
+	shield := shield.Shield{
+		RconDial:      rcon.Dial,
+		SrcdsSettings: *srcds.NewSrcdsSettingsFromEnv(),
+	}
 
 	attackRadar := radar.NewAttackRadar(
 		iface,
