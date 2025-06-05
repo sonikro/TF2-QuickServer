@@ -1,5 +1,5 @@
-name: Test and Build Shield
-
+name: Shield CI/CD
+description: CI/CD pipeline for the TF2 Quickserver Shield service.
 on:
   push:
     paths:
@@ -33,6 +33,7 @@ jobs:
       - name: Build
         run: make build
   publish:
+    needs: test-and-build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
