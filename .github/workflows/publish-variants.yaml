@@ -82,7 +82,7 @@ jobs:
           file: ./variants/fat-standard-competitive/Dockerfile
 
       - name: Build and push TF2 Pickup Server
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v6 
         with:
           push: ${{ github.event_name == 'push' }}
           tags: |

@@ -94,6 +94,13 @@ export class OCIServerManager implements ServerManager {
                         ],
                         environmentVariables,
                     },
+                    {
+                        displayName: "shield",
+                        imageUrl: "sonikro/tf2-quickserver-shield:latest",
+                        environmentVariables: {
+                            MAXBYTES: "2000000"
+                        }
+                    }
                 ],
                 vnics: [
                     {

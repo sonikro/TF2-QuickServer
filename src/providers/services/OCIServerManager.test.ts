@@ -216,6 +216,13 @@ describe("OCIServerManager", () => {
                 ADMIN_LIST: "default_admin,12345678901234567",
               },
             },
+            {
+              displayName: "shield",
+              imageUrl: "sonikro/tf2-quickserver-shield:latest",
+              environmentVariables: {
+                MAXBYTES: "2000000"
+              }
+            }
           ],
           vnics: [
             {
@@ -279,6 +286,7 @@ describe("OCIServerManager", () => {
                 SERVER_HOSTNAME: `custom-hostname | São Paulo (Brazil) @ TF2-QuickServer`,
               }),
             }),
+            expect.anything(),
           ],
         }),
       }));
@@ -331,6 +339,7 @@ describe("OCIServerManager", () => {
                 ADMIN_LIST: "12345678901234567",
               }),
             }),
+            expect.anything(),
           ],
         }),
       }));

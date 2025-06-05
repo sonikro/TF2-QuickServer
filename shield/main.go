@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net"
 	"os/signal"
 	"syscall"
 
@@ -11,7 +12,10 @@ import (
 )
 
 func main() {
-	iface := config.GetIface()
+	iface, err := config.GetIface(net.Interfaces)
+	if err != nil {
+		panic(err)
+	}
 	maxBytes := config.GetMaxBytes()
 
 	// Create a context that listens for OS signals to gracefully shut down
@@ -24,7 +28,9 @@ func main() {
 		iface,
 		radar.DefaultProcFSFactory,
 		maxBytes,
+		radar.DefaultTresholdTime,
 		shield.OnAttackDetected,
+		radar.DefaulPollInterval,
 	)
 
 	attackRadar.StartMonitoring(ctx)
