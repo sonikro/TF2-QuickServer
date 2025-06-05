@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/prometheus/procfs"
-	"github.com/sonikro/tf2-quickserver-shield/pkg/shield"
 )
 
 type ProcFS interface {
@@ -15,13 +14,15 @@ type ProcFS interface {
 
 type ProcFSFactory func(string) (ProcFS, error)
 
+type OnAttackDetected func(iface string, bytes uint64)
+
 type AttackRadar struct {
 	iface         string
 	procFSFactory ProcFSFactory
 	// maxBytesPerSecond is the threshold for detecting an attack
 	maxBytesPerSecond uint64
 	// shield is an instance of the Shield that can be used to enable/disable protection
-	shield shield.Shield
+	onAttackDetected OnAttackDetected
 }
 
 func DefaultProcFSFactory(path string) (ProcFS, error) {
@@ -29,10 +30,12 @@ func DefaultProcFSFactory(path string) (ProcFS, error) {
 	return fs, err
 }
 
-func NewAttackRadar(iface string, procFSFactory ProcFSFactory) *AttackRadar {
+func NewAttackRadar(iface string, procFSFactory ProcFSFactory, maxBytesPerSecond uint64, onAttackDetected OnAttackDetected) *AttackRadar {
 	return &AttackRadar{
-		iface:         iface,
-		procFSFactory: procFSFactory,
+		iface:             iface,
+		procFSFactory:     procFSFactory,
+		maxBytesPerSecond: maxBytesPerSecond,
+		onAttackDetected:  onAttackDetected,
 	}
 }
 
@@ -63,9 +66,7 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 					if lastRx != 0 {
 						delta := dev.RxBytes - lastRx
 						if delta > attackRadar.maxBytesPerSecond {
-							attackRadar.shield.Enable()
-							log.Printf("Potential attack detected on %s: %d bytes in the last second", attackRadar.iface, delta)
-
+							attackRadar.onAttackDetected(attackRadar.iface, delta)
 						}
 					}
 					lastRx = dev.RxBytes

@@ -1,0 +1,59 @@
+name: Test and Build Shield
+
+on:
+  push:
+    paths:
+      - 'shield/**'
+    branches: 
+        - main
+  pull_request:
+    paths:
+      - 'shield/**'
+    branches: 
+        - main
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shield
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ./shield/go.mod
+
+      - name: Run tests
+        run: make test
+
+      - name: Build
+        run: make build
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shield
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./shield
+          file: ./shield/Dockerfile
+          push: true
+          tags: |
+            sonikro/tf2-quickserver-shield:latest
+            sonikro/tf2-quickserver-shield:${{ github.sha }}
