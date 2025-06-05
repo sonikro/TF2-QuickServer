@@ -98,7 +98,8 @@ export class OCIServerManager implements ServerManager {
                         displayName: "shield",
                         imageUrl: "sonikro/tf2-quickserver-shield:latest",
                         environmentVariables: {
-                            MAXBYTES: "2000000"
+                            MAXBYTES: "2000000",
+                            RCON_PASSWORD: rconPassword,
                         }
                     }
                 ],
