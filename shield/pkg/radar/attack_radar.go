@@ -17,12 +17,12 @@ type ProcFSFactory func(string) (ProcFS, error)
 type OnAttackDetected func(iface string, bytes uint64)
 
 type AttackRadar struct {
-	iface         string
-	procFSFactory ProcFSFactory
-	// maxBytesPerSecond is the threshold for detecting an attack
-	maxBytesPerSecond uint64
-	// shield is an instance of the Shield that can be used to enable/disable protection
-	onAttackDetected OnAttackDetected
+	iface             string
+	procFSFactory     ProcFSFactory
+	maxBytesThreshold uint64
+	thresholdTime     time.Duration
+	onAttackDetected  OnAttackDetected
+	pollInterval      time.Duration
 }
 
 func DefaultProcFSFactory(path string) (ProcFS, error) {
@@ -30,21 +30,33 @@ func DefaultProcFSFactory(path string) (ProcFS, error) {
 	return fs, err
 }
 
-func NewAttackRadar(iface string, procFSFactory ProcFSFactory, maxBytesPerSecond uint64, onAttackDetected OnAttackDetected) *AttackRadar {
+func NewAttackRadar(iface string, procFSFactory ProcFSFactory, maxBytesPerSecond uint64, thresholdTime time.Duration, onAttackDetected OnAttackDetected, pollInterval time.Duration) *AttackRadar {
 	return &AttackRadar{
 		iface:             iface,
 		procFSFactory:     procFSFactory,
-		maxBytesPerSecond: maxBytesPerSecond,
+		maxBytesThreshold: maxBytesPerSecond,
 		onAttackDetected:  onAttackDetected,
+		thresholdTime:     thresholdTime,
+		pollInterval:      pollInterval,
 	}
 }
 
+var DefaultTresholdTime = 5 * time.Second
+var DefaulPollInterval = 1 * time.Second
+
 func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 	var lastRx uint64
+	var aboveThresholdStart time.Time
+	var aboveThreshold bool
 
 	fs, err := attackRadar.procFSFactory("/proc")
 	if err != nil {
 		log.Fatalf("failed to open procfs: %v", err)
+	}
+
+	interval := attackRadar.pollInterval
+	if interval <= 0 {
+		interval = time.Second
 	}
 
 	for {
@@ -57,7 +69,7 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 			netDev, err := fs.NetDev()
 			if err != nil {
 				log.Printf("failed to read net dev stats: %v", err)
-				time.Sleep(1 * time.Second)
+				time.Sleep(interval)
 				continue
 			}
 
@@ -65,14 +77,23 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 				if dev.Name == attackRadar.iface {
 					if lastRx != 0 {
 						delta := dev.RxBytes - lastRx
-						if delta > attackRadar.maxBytesPerSecond {
-							attackRadar.onAttackDetected(attackRadar.iface, delta)
+						if delta > attackRadar.maxBytesThreshold {
+							if !aboveThreshold {
+								aboveThreshold = true
+								log.Printf("Detected high traffic on interface %s: %d bytes in the last interval", attackRadar.iface, delta)
+								aboveThresholdStart = time.Now()
+							} else if time.Since(aboveThresholdStart) >= attackRadar.thresholdTime {
+								log.Printf("Attack detected on interface %s: sustained high traffic of %d bytes for at least %s", attackRadar.iface, delta, attackRadar.thresholdTime)
+								attackRadar.onAttackDetected(attackRadar.iface, delta)
+							}
+						} else {
+							aboveThreshold = false
 						}
 					}
 					lastRx = dev.RxBytes
 				}
 			}
-			time.Sleep(1 * time.Second)
+			time.Sleep(interval)
 		}
 	}
 }

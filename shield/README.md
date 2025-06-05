@@ -18,8 +18,9 @@ TF2 QuickServer Shield is a lightweight binary that monitors network traffic on 
    ```sh
    ./bin/shield
    ```
-   - `IFACE`: Network interface (default: `eth0`)
-   - `MAXBYTES`: Max bytes/sec before triggering protection (default: `100000000`)
+   - `IFACE`: Network interface (if not set, defaults to the first non-loopback interface)
+   - `MAXBYTES`: Max bytes/sec before triggering protection (default: `100000000`).
+     - Note: Traffic must exceed this value for more than 3 seconds to be considered an attack.
 
    Example:
    ```sh
@@ -28,5 +29,5 @@ TF2 QuickServer Shield is a lightweight binary that monitors network traffic on 
 
 ## How it works
 - Polls the network interface for received bytes.
-- If traffic exceeds the threshold, triggers the handler.
+- If traffic exceeds the threshold for more than 3 seconds, triggers the handler.
 - The handler updates Oracle NSG rules to block new connections, allowing only current players.

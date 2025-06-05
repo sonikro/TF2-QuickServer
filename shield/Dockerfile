@@ -12,7 +12,7 @@ WORKDIR /
 COPY --from=builder /app/shield ./shield
 
 # Environment variables (can be overridden at runtime)
-ENV IFACE=eth0
-ENV MAXBYTES=100000000
+ENV IFACE=
+ENV MAXBYTES=
 
 ENTRYPOINT ["/shield"]

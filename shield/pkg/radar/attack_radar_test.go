@@ -21,37 +21,53 @@ func (m *mockProcFs) NetDev() (procfs.NetDev, error) {
 // --- TEST ---
 func TestAttackRadar_StartMonitoring(t *testing.T) {
 	tests := []struct {
-		name         string
-		mockStats    []procfs.NetDevLine
-		maxBytes     uint64
-		expectAttack bool
+		name          string
+		mockStats     []procfs.NetDevLine
+		maxBytes      uint64
+		thresholdTime time.Duration
+		pollInterval  time.Duration
+		expectAttack  bool
+		attackDelay   time.Duration // How long to stay above threshold before expecting attack
 	}{
 		{
-			name: "attack detected (delta > maxBytes)",
+			name: "attack detected after thresholdTime",
 			mockStats: []procfs.NetDevLine{
-				{Name: "eth0", RxBytes: 50},
-				{Name: "eth0", RxBytes: 200}, // delta = 150
+				{Name: "eth0", RxBytes: 0},
+				{Name: "eth0", RxBytes: 200}, // delta = 200
+				{Name: "eth0", RxBytes: 400}, // delta = 200
+				{Name: "eth0", RxBytes: 600}, // delta = 200
 			},
-			maxBytes:     100,
-			expectAttack: true,
+			maxBytes:      100,
+			pollInterval:  10 * time.Millisecond,
+			thresholdTime: 20 * time.Millisecond,
+			expectAttack:  true,
+			attackDelay:   1 * time.Second,
 		},
 		{
-			name: "no attack (delta < maxBytes)",
+			name: "no attack if not above threshold long enough",
 			mockStats: []procfs.NetDevLine{
-				{Name: "eth0", RxBytes: 50},
-				{Name: "eth0", RxBytes: 120}, // delta = 70
+				{Name: "eth0", RxBytes: 0},
+				{Name: "eth0", RxBytes: 200}, // delta = 200
+				{Name: "eth0", RxBytes: 250}, // delta = 50 (drops below)
 			},
-			maxBytes:     100,
-			expectAttack: false,
+			maxBytes:      100,
+			thresholdTime: 20 * time.Millisecond,
+			expectAttack:  false,
+			pollInterval:  10 * time.Millisecond,
+			attackDelay:   20 * time.Millisecond,
 		},
 		{
-			name: "attack detected exactly at threshold",
+			name: "attack not detected if always below threshold",
 			mockStats: []procfs.NetDevLine{
+				{Name: "eth0", RxBytes: 0},
 				{Name: "eth0", RxBytes: 50},
-				{Name: "eth0", RxBytes: 150}, // delta = 100
+				{Name: "eth0", RxBytes: 100},
 			},
-			maxBytes:     100,
-			expectAttack: false,
+			maxBytes:      100,
+			thresholdTime: 20 * time.Millisecond,
+			expectAttack:  false,
+			pollInterval:  10 * time.Millisecond,
+			attackDelay:   20 * time.Millisecond,
 		},
 	}
 
@@ -63,10 +79,11 @@ func TestAttackRadar_StartMonitoring(t *testing.T) {
 			procFS := &mockProcFs{
 				NetDevFunc: func() (procfs.NetDev, error) {
 					defer func() { timesCalled++ }()
-					if timesCalled >= len(tt.mockStats) {
-						return procfs.NetDev{"eth0": tt.mockStats[len(tt.mockStats)-1]}, nil
+					if timesCalled < len(tt.mockStats) {
+						return procfs.NetDev{"eth0": tt.mockStats[timesCalled]}, nil
 					}
-					return procfs.NetDev{"eth0": tt.mockStats[timesCalled]}, nil
+					// Instead of returning the last stat forever, return a constant high value to keep delta high
+					return procfs.NetDev{"eth0": {Name: "eth0", RxBytes: tt.mockStats[len(tt.mockStats)-1].RxBytes + 1000}}, nil
 				},
 			}
 			procFSFactory := func(_ string) (radar.ProcFS, error) {
@@ -78,23 +95,24 @@ func TestAttackRadar_StartMonitoring(t *testing.T) {
 				attackChannel <- struct{}{}
 			}
 
-			radar := radar.NewAttackRadar(iface, procFSFactory, tt.maxBytes, onAttack)
+			// Use a very short poll interval for tests
+			rad := radar.NewAttackRadar(iface, procFSFactory, tt.maxBytes, tt.thresholdTime, onAttack, tt.pollInterval)
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			go radar.StartMonitoring(ctx)
+			go rad.StartMonitoring(ctx)
 
 			if tt.expectAttack {
 				select {
 				case <-attackChannel:
 					t.Logf("Attack detected as expected")
-				case <-time.After(2 * time.Second):
+				case <-time.After(tt.thresholdTime + tt.attackDelay):
 					t.Fatal("Timeout waiting for attack detection")
 				}
 			} else {
 				select {
 				case <-attackChannel:
 					t.Fatal("Attack detected unexpectedly")
-				case <-time.After(500 * time.Millisecond):
+				case <-time.After(tt.thresholdTime + tt.attackDelay):
 					t.Logf("No attack detected as expected")
 				}
 			}
