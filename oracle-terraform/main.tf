@@ -59,3 +59,23 @@ module "network-sa-santiago-1" {
     oci = oci.sa-santiago-1
   }
 }
+
+# Create IAM Policies for each Root Region
+
+module "iam-us-chicago-1" {
+  source           = "./modules/iam"
+  compartment_ocid = var.compartment_ocid
+
+  providers = {
+    oci = oci.us-chicago-1
+  }
+}
+
+module "iam-sa-santiago-1" {
+  source           = "./modules/iam"
+  compartment_ocid = var.santiago_compartment_ocid
+
+  providers = {
+    oci = oci.sa-santiago-1
+  }
+}
