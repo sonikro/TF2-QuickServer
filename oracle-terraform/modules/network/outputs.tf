@@ -17,3 +17,7 @@ output "nsg_id" {
 output "availability_domain" {
   value = data.oci_identity_availability_domains.ads.availability_domains[0].name
 }
+
+output "vnc_id" {
+  value = oci_core_virtual_network.vcn.id
+}
