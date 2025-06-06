@@ -7,7 +7,10 @@ import (
 	"syscall"
 
 	"github.com/gorcon/rcon"
+	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/core"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/config"
+	"github.com/sonikro/tf2-quickserver-shield/pkg/oracle"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/radar"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/shield"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/srcds"
@@ -24,9 +27,24 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
+	// Setup Dependencies
+	ociConfigProvider := common.DefaultConfigProvider()
+	nsgClient, err := core.NewVirtualNetworkClientWithConfigurationProvider(ociConfigProvider)
+	if err != nil {
+		panic(err)
+	}
+
 	shield := shield.Shield{
-		RconDial:      rcon.Dial,
+		RconDial: func(address, password string, options ...rcon.Option) (srcds.RconConnection, error) {
+			return rcon.Dial(address, password, options...)
+		},
 		SrcdsSettings: *srcds.NewSrcdsSettingsFromEnv(),
+		EnableFirewallRestriction: func(playerIps []string) error {
+			return oracle.EnableFirewallRestriction(ctx, nsgClient, config.GetNSGID(), playerIps)
+		},
+		DisableFirewallRestriction: func() error {
+			return oracle.DisableFirewallRestriction(ctx, nsgClient, config.GetNSGID())
+		},
 	}
 
 	attackRadar := radar.NewAttackRadar(
