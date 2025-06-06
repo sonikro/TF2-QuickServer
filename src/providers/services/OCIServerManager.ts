@@ -100,6 +100,7 @@ export class OCIServerManager implements ServerManager {
                         environmentVariables: {
                             MAXBYTES: "2000000",
                             RCON_PASSWORD: rconPassword,
+                            NSG_ID: serverId
                         }
                     }
                 ],
