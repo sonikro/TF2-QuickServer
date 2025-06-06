@@ -65,7 +65,7 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 			log.Println("Stopping AttackRadar monitoring due to context cancellation")
 			return
 		default:
-			// Continue monitoring
+			log.Printf("Polling network stats for interface %s", attackRadar.iface)
 			netDev, err := fs.NetDev()
 			if err != nil {
 				log.Printf("failed to read net dev stats: %v", err)
@@ -73,10 +73,14 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 				continue
 			}
 
+			log.Printf("Found %d network devices", len(netDev))
 			for _, dev := range netDev {
+				log.Printf("Device: %s, RxBytes: %d", dev.Name, dev.RxBytes)
 				if dev.Name == attackRadar.iface {
+					log.Printf("Monitoring interface %s", dev.Name)
 					if lastRx != 0 {
 						delta := dev.RxBytes - lastRx
+						log.Printf("Delta bytes for %s: %d (lastRx: %d, currentRx: %d)", dev.Name, delta, lastRx, dev.RxBytes)
 						if delta > attackRadar.maxBytesThreshold {
 							if !aboveThreshold {
 								aboveThreshold = true
@@ -87,6 +91,9 @@ func (attackRadar *AttackRadar) StartMonitoring(ctx context.Context) {
 								attackRadar.onAttackDetected(attackRadar.iface, delta)
 							}
 						} else {
+							if aboveThreshold {
+								log.Printf("Traffic dropped below threshold on interface %s", attackRadar.iface)
+							}
 							aboveThreshold = false
 						}
 					}

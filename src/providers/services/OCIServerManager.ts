@@ -19,6 +19,44 @@ export class OCIServerManager implements ServerManager {
         }
     ) { }
 
+    private async createNetworkSecurityGroup(args: { serverId: string; region: Region; vncClient: core.VirtualNetworkClient; vcnId: string; compartmentId: string; }): Promise<string> {
+        const { serverId, vncClient, vcnId, compartmentId } = args;
+        // Create NSG
+        const nsgResponse = await vncClient.createNetworkSecurityGroup({
+            createNetworkSecurityGroupDetails: {
+                compartmentId: compartmentId,
+                vcnId: vcnId,
+                displayName: serverId,
+            }
+        });
+        const nsgId = nsgResponse.networkSecurityGroup?.id;
+        if (!nsgId) throw new Error("Failed to create NSG");
+        // Add ingress rules for TCP and UDP 27015-27020 from all sources
+        for (const protocol of ["6", "17"]) { // 6=TCP, 17=UDP
+            await vncClient.addNetworkSecurityGroupSecurityRules({
+                networkSecurityGroupId: nsgId,
+                addNetworkSecurityGroupSecurityRulesDetails: {
+                    securityRules: [
+                        {
+                            direction: "INGRESS" as any,
+                            protocol,
+                            source: "0.0.0.0/0",
+                            sourceType: "CIDR_BLOCK" as any,
+                            tcpOptions: protocol === "6" ? { destinationPortRange: { min: 27015, max: 27020 } } : undefined,
+                            udpOptions: protocol === "17" ? { destinationPortRange: { min: 27015, max: 27020 } } : undefined,
+                        }
+                    ]
+                }
+            });
+        }
+        return nsgId;
+    }
+
+    private async deleteNetworkSecurityGroup(args: { nsgId: string; vncClient: core.VirtualNetworkClient }) {
+        const { nsgId, vncClient } = args;
+        await vncClient.deleteNetworkSecurityGroup({ networkSecurityGroupId: nsgId });
+    }
+
     async deployServer(args: {
         serverId: string;
         region: Region;
@@ -68,6 +106,9 @@ export class OCIServerManager implements ServerManager {
             ...extraEnvs,
         };
 
+        // Create NSG for this server
+        const nsgId = await this.createNetworkSecurityGroup({ serverId, region, vncClient, vcnId: oracleRegionConfig.vnc_id, compartmentId: oracleRegionConfig.compartment_id });
+
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {
             createContainerInstanceDetails: {
                 displayName: serverId,
@@ -96,11 +137,11 @@ export class OCIServerManager implements ServerManager {
                     },
                     {
                         displayName: "shield",
-                        imageUrl: "sonikro/tf2-quickserver-shield:latest",
+                        imageUrl: "sonikro/tf2-quickserver-shield:development",
                         environmentVariables: {
                             MAXBYTES: "2000000",
                             RCON_PASSWORD: rconPassword,
-                            NSG_ID: serverId
+                            NSG_NAME: serverId
                         }
                     }
                 ],
@@ -110,7 +151,7 @@ export class OCIServerManager implements ServerManager {
                         subnetId: oracleRegionConfig.subnet_id,
                         isPublicIpAssigned: true,
                         nsgIds: [
-                            oracleRegionConfig.nsg_id
+                            nsgId
                         ],
                     },
                 ],
@@ -211,7 +252,7 @@ export class OCIServerManager implements ServerManager {
     async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
         const { ociClientFactory } = this.dependencies;
         const { region, serverId } = args;
-        const { containerClient } = ociClientFactory(region);
+        const { containerClient, vncClient } = ociClientFactory(region);
         const oracleConfig = this.dependencies.configManager.getOracleConfig();
         const oracleRegionConfig = oracleConfig.regions[region];
         if (!oracleRegionConfig) {
@@ -228,11 +269,34 @@ export class OCIServerManager implements ServerManager {
         }
 
         const containerInstanceId = containerInstances.containerInstanceCollection.items[0].id;
-
+        // Get NSG ID by name (serverId)
+        // NOTE: vcn_id must be present in your OracleRegionSettings config
+        const vcnId = oracleRegionConfig.vnc_id
+        const nsgs = await vncClient.listNetworkSecurityGroups({
+            compartmentId: oracleRegionConfig.compartment_id,
+            displayName: serverId,
+            vcnId: vcnId,
+        });
+        let nsgId: string | undefined = undefined;
+        if (nsgs.items && nsgs.items.length > 0) {
+            nsgId = nsgs.items[0].id;
+        }
         await containerClient.deleteContainerInstance({
             containerInstanceId,
         });
-
+        // Wait for the NSG to have no VNICs associated before deleting it
+        if (nsgId) {
+            const abortController = this.dependencies.serverAbortManager.getOrCreate(serverId);
+            await waitUntil(async () => {
+                const vnicsResp = await vncClient.listNetworkSecurityGroupVnics({ networkSecurityGroupId: nsgId });
+                if (!vnicsResp.items || vnicsResp.items.length === 0) {
+                    return true;
+                }
+                throw new Error("NSG still has associated VNICs");
+            }, { interval: 5000, timeout: 300000, signal: abortController.signal });
+            await this.deleteNetworkSecurityGroup({ nsgId, vncClient });
+            this.dependencies.serverAbortManager.delete(serverId);
+        }
     }
 
 }

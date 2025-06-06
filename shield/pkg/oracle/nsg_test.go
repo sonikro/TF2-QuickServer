@@ -16,6 +16,15 @@ type mockVirtualNetworkClient struct {
 	ListErr         error
 }
 
+// Add mock for ListNetworkSecurityGroups
+func (m *mockVirtualNetworkClient) ListNetworkSecurityGroups(ctx context.Context, req core.ListNetworkSecurityGroupsRequest) (core.ListNetworkSecurityGroupsResponse, error) {
+	return core.ListNetworkSecurityGroupsResponse{
+		Items: []core.NetworkSecurityGroup{{
+			Id: strPtr("nsgid"),
+		}},
+	}, nil
+}
+
 func (m *mockVirtualNetworkClient) AddNetworkSecurityGroupSecurityRules(ctx context.Context, req core.AddNetworkSecurityGroupSecurityRulesRequest) (core.AddNetworkSecurityGroupSecurityRulesResponse, error) {
 	m.AddRulesReqs = append(m.AddRulesReqs, req)
 	return core.AddNetworkSecurityGroupSecurityRulesResponse{}, m.AddErr

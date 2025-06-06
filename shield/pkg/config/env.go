@@ -42,7 +42,7 @@ func GetMaxBytes() uint64 {
 	return maxBytes
 }
 
-// GetNSGID returns the NSG ID from the NSG_ID environment variable, or an empty string if not set.
-func GetNSGID() string {
-	return os.Getenv("NSG_ID")
+// GetNSGName returns the NSG name from the NSG_NAME environment variable, or an empty string if not set.
+func GetNSGName() string {
+	return os.Getenv("NSG_NAME")
 }
