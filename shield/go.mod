@@ -4,7 +4,6 @@ go 1.24.3
 
 require (
 	github.com/gorcon/rcon v1.4.0
-	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/oracle/oci-go-sdk/v65 v65.93.0
 	github.com/prometheus/procfs v0.16.1
 )

@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"github.com/gorcon/rcon"
-	"github.com/oracle/oci-go-sdk/v65/common"
+	"github.com/oracle/oci-go-sdk/v65/common/auth"
 	"github.com/oracle/oci-go-sdk/v65/core"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/config"
 	"github.com/sonikro/tf2-quickserver-shield/pkg/oracle"
@@ -28,7 +28,10 @@ func main() {
 	defer stop()
 
 	// Setup Dependencies
-	ociConfigProvider := common.DefaultConfigProvider()
+	ociConfigProvider, err := auth.InstancePrincipalConfigurationProvider()
+	if err != nil {
+		panic(err)
+	}
 	nsgClient, err := core.NewVirtualNetworkClientWithConfigurationProvider(ociConfigProvider)
 	if err != nil {
 		panic(err)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/oracle/oci-go-sdk/v49/core"
+	"github.com/oracle/oci-go-sdk/v65/core"
 )
 
 type mockVirtualNetworkClient struct {
