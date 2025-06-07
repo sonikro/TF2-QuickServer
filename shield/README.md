@@ -37,6 +37,8 @@ The following environment variables are required for Shield to connect to the So
 - `OCI_CONFIG_FILE_CONTENT`: The base64-encoded content of your Oracle Cloud Infrastructure (OCI) config file. Required for automatic firewall management.
 - `OCI_PRIVATE_KEY_FILE_CONTENT`: The base64-encoded content of your OCI private key file. Required for automatic firewall management.
 - `NSG_NAME`: The name of the Oracle Network Security Group (NSG) to update. Required for automatic firewall management.
+- `COMPARTMENT_ID`: The OCID of the Oracle Cloud Infrastructure compartment. Required for automatic firewall management.
+- `VCN_ID`: The OCID of the Oracle Cloud Infrastructure Virtual Cloud Network (VCN). Required for automatic firewall management.
 
 If any of these variables are missing (except for IP, port, IFACE, and MAXBYTES, which have defaults), Shield will not start.
 
