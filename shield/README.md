@@ -34,6 +34,8 @@ The following environment variables are required for Shield to connect to the So
 - `SRCDS_PASSWORD`: The RCON password for the SRCDS server. **This must be set.**
 - `IFACE`: Network interface to monitor (if not set, defaults to the first non-loopback interface).
 - `MAXBYTES`: Max bytes/sec before triggering protection (default: `100000000`). Traffic must exceed this value for more than 3 seconds to be considered an attack.
+- `OCI_CONFIG_FILE_CONTENT`: The base64-encoded content of your Oracle Cloud Infrastructure (OCI) config file. Required for automatic firewall management.
+- `OCI_PRIVATE_KEY_FILE_CONTENT`: The base64-encoded content of your OCI private key file. Required for automatic firewall management.
 - `NSG_NAME`: The name of the Oracle Network Security Group (NSG) to update. Required for automatic firewall management.
 
 If any of these variables are missing (except for IP, port, IFACE, and MAXBYTES, which have defaults), Shield will not start.

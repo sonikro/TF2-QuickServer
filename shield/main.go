@@ -33,6 +33,7 @@ func main() {
 	defer stop()
 	// Setup Dependencies
 	fmt.Println("[Main] Initializing OCI config provider...")
+	oracle.SetupOciCredentials(oracle.OSFileSystem{})
 	ociConfigProvider := common.DefaultConfigProvider()
 	fmt.Println("[Main] Creating NSG client...")
 	nsgClient, err := core.NewVirtualNetworkClientWithConfigurationProvider(ociConfigProvider)
