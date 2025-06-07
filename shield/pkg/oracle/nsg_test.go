@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/sonikro/tf2-quickserver-shield/pkg/config"
 )
 
 type mockVirtualNetworkClient struct {
@@ -46,6 +47,7 @@ func TestEnableFirewallRestriction(t *testing.T) {
 		existingRules []core.SecurityRule
 		wantAdd       []core.AddSecurityRuleDetails
 		wantRemove    []string
+		oracleParams  config.OracleParameters
 	}{
 		{
 			name: "it should add new rules for a single IP, and remove old ingress rules",
@@ -61,6 +63,11 @@ func TestEnableFirewallRestriction(t *testing.T) {
 				Protocol:   strPtr("all"),
 			}},
 			wantRemove: []string{"old-ingress"},
+			oracleParams: config.OracleParameters{
+				NsgName:       "nsgid",
+				CompartmentId: "compartmentid",
+				VcnId:         "vcnid",
+			},
 		},
 		{
 			name:          "it should add multiple ips and not remove any old rules if there are any",
@@ -81,6 +88,11 @@ func TestEnableFirewallRestriction(t *testing.T) {
 				},
 			},
 			wantRemove: nil,
+			oracleParams: config.OracleParameters{
+				NsgName:       "nsgid",
+				CompartmentId: "compartmentid",
+				VcnId:         "vcnid",
+			},
 		},
 	}
 
@@ -91,7 +103,7 @@ func TestEnableFirewallRestriction(t *testing.T) {
 					Items: tt.existingRules,
 				},
 			}
-			err := EnableFirewallRestriction(context.Background(), mock, "nsgid", tt.ips)
+			err := EnableFirewallRestriction(context.Background(), mock, tt.oracleParams, tt.ips)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
@@ -128,10 +140,11 @@ func TestEnableFirewallRestriction(t *testing.T) {
 
 func TestDisableFirewallRestriction(t *testing.T) {
 	tests := []struct {
-		name       string
-		listItems  []core.SecurityRule
-		wantAdd    []core.AddSecurityRuleDetails
-		wantRemove []string
+		name         string
+		listItems    []core.SecurityRule
+		wantAdd      []core.AddSecurityRuleDetails
+		wantRemove   []string
+		oracleParams config.OracleParameters
 	}{
 		{
 			name: "adds new rules and removes old ingress rules",
@@ -154,6 +167,11 @@ func TestDisableFirewallRestriction(t *testing.T) {
 				},
 			},
 			wantRemove: []string{"old-ingress"},
+			oracleParams: config.OracleParameters{
+				NsgName:       "nsgid",
+				CompartmentId: "compartmentid",
+				VcnId:         "vcnid",
+			},
 		},
 		{
 			name:      "no old ingress rules",
@@ -173,6 +191,11 @@ func TestDisableFirewallRestriction(t *testing.T) {
 				},
 			},
 			wantRemove: nil,
+			oracleParams: config.OracleParameters{
+				NsgName:       "nsgid",
+				CompartmentId: "compartmentid",
+				VcnId:         "vcnid",
+			},
 		},
 	}
 
@@ -183,7 +206,7 @@ func TestDisableFirewallRestriction(t *testing.T) {
 					Items: tt.listItems,
 				},
 			}
-			err := DisableFirewallRestriction(context.Background(), mock, "nsgid")
+			err := DisableFirewallRestriction(context.Background(), mock, tt.oracleParams)
 			if err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/oracle/oci-go-sdk/v65/common"
 	"github.com/oracle/oci-go-sdk/v65/core"
+	"github.com/sonikro/tf2-quickserver-shield/pkg/config"
 )
 
 // VirtualNetwork interface abstracts the methods needed for NSG operations.
@@ -18,8 +19,8 @@ type VirtualNetwork interface {
 }
 
 // EnableFirewallRestriction updates the NSG to only allow inbound traffic from the given IPs, all ports, dropping all others.
-func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, nsgName string, ips []string) error {
-	fmt.Printf("[NSG] Enabling firewall restriction for NSG '%s' with allowed IPs: %v\n", nsgName, ips)
+func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, oracleParameters config.OracleParameters, ips []string) error {
+	fmt.Printf("[NSG] Enabling firewall restriction for NSG '%s' with allowed IPs: %v\n", oracleParameters, ips)
 	var rules []core.AddSecurityRuleDetails
 	for _, ip := range ips {
 		cidr := ip
@@ -36,12 +37,12 @@ func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, nsgNa
 		})
 	}
 
-	nsgID, err := getNsgByName(ctx, client, nsgName)
+	nsgID, err := getNsgByName(ctx, client, oracleParameters)
 	if err != nil {
-		fmt.Printf("[NSG] Failed to get NSG by name '%s': %v\n", nsgName, err)
+		fmt.Printf("[NSG] Failed to get NSG by name '%s': %v\n", oracleParameters, err)
 		return err
 	}
-	fmt.Printf("[NSG] NSG ID for '%s' is %s\n", nsgName, nsgID)
+	fmt.Printf("[NSG] NSG ID for '%s' is %s\n", oracleParameters, nsgID)
 
 	// List current ingress rules before adding new ones
 	fmt.Println("[NSG] Listing current ingress rules before adding new ones...")
@@ -100,14 +101,14 @@ func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, nsgNa
 }
 
 // DisableFirewallRestriction resets the NSG to allow all inbound traffic from all IPs to ports 27015-27020 TCP and UDP, removing all other ingress rules.
-func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, nsgName string) error {
-	fmt.Printf("[NSG] Disabling firewall restriction for NSG '%s' (allowing all on 27015-27020 TCP/UDP)\n", nsgName)
-	nsgID, err := getNsgByName(ctx, client, nsgName)
+func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, oracleParameters config.OracleParameters) error {
+	fmt.Printf("[NSG] Disabling firewall restriction for NSG '%s' (allowing all on 27015-27020 TCP/UDP)\n", oracleParameters)
+	nsgID, err := getNsgByName(ctx, client, oracleParameters)
 	if err != nil {
-		fmt.Printf("[NSG] Failed to get NSG by name '%s': %v\n", nsgName, err)
+		fmt.Printf("[NSG] Failed to get NSG by name '%s': %v\n", oracleParameters, err)
 		return err
 	}
-	fmt.Printf("[NSG] NSG ID for '%s' is %s\n", nsgName, nsgID)
+	fmt.Printf("[NSG] NSG ID for '%s' is %s\n", oracleParameters, nsgID)
 	// List current ingress rules before adding new ones
 	fmt.Println("[NSG] Listing current ingress rules before resetting...")
 	listReq := core.ListNetworkSecurityGroupSecurityRulesRequest{
@@ -195,15 +196,17 @@ func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, nsgN
 }
 
 // getNsgByName returns the ID of the NSG with the given name, or an error if not found.
-func getNsgByName(ctx context.Context, client VirtualNetwork, nsgName string) (string, error) {
+func getNsgByName(ctx context.Context, client VirtualNetwork, oracleParameters config.OracleParameters) (string, error) {
 	nsgs, err := client.ListNetworkSecurityGroups(ctx, core.ListNetworkSecurityGroupsRequest{
-		DisplayName: &nsgName,
+		DisplayName:   &oracleParameters.NsgName,
+		CompartmentId: &oracleParameters.CompartmentId,
+		VcnId:         &oracleParameters.VcnId,
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to list NSGs: %w", err)
 	}
 	if len(nsgs.Items) == 0 {
-		return "", fmt.Errorf("no NSG found with name %s", nsgName)
+		return "", fmt.Errorf("no NSG found with name %s", oracleParameters)
 	}
 	return *nsgs.Items[0].Id, nil
 }

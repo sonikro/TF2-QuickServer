@@ -7,8 +7,9 @@ COPY ./ ./
 RUN go build -o shield ./main.go
 
 # --- Final stage ---
-FROM scratch
+FROM alpine:3.20
 WORKDIR /
+RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/shield ./shield
 
 # Environment variables (can be overridden at runtime)

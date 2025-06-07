@@ -7,6 +7,7 @@ import { ServerManager } from "../../core/services/ServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { waitUntil } from "../utils/waitUntil";
+import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 
 export class OCIServerManager implements ServerManager {
     constructor(
@@ -15,7 +16,8 @@ export class OCIServerManager implements ServerManager {
             configManager: ConfigManager;
             passwordGenerator: PasswordGenerator;
             ociClientFactory: (region: Region) => { containerClient: containerinstances.ContainerInstanceClient, vncClient: core.VirtualNetworkClient }
-            serverAbortManager: ServerAbortManager
+            serverAbortManager: ServerAbortManager,
+            ociCredentialsFactory: OCICredentialsFactory
         }
     ) { }
 
@@ -109,6 +111,7 @@ export class OCIServerManager implements ServerManager {
         // Create NSG for this server
         const nsgId = await this.createNetworkSecurityGroup({ serverId, region, vncClient, vcnId: oracleRegionConfig.vnc_id, compartmentId: oracleRegionConfig.compartment_id });
 
+        const ociCredentials = this.dependencies.ociCredentialsFactory(region);
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {
             createContainerInstanceDetails: {
                 displayName: serverId,
@@ -137,11 +140,15 @@ export class OCIServerManager implements ServerManager {
                     },
                     {
                         displayName: "shield",
-                        imageUrl: "sonikro/tf2-quickserver-shield:development",
+                        imageUrl: "sonikro/tf2-quickserver-shield:latest",
                         environmentVariables: {
                             MAXBYTES: "2000000",
-                            RCON_PASSWORD: rconPassword,
-                            NSG_NAME: serverId
+                            SRCDS_PASSWORD: rconPassword,
+                            NSG_NAME: serverId,
+                            COMPARTMENT_ID: oracleRegionConfig.compartment_id,
+                            VCN_ID: oracleRegionConfig.vnc_id,
+                            OCI_CONFIG_FILE_CONTENT: Buffer.from(ociCredentials.configFileContent).toString("base64"),
+                            OCI_PRIVATE_KEY_FILE_CONTENT: Buffer.from(ociCredentials.privateKeyFileContent).toString("base64"),
                         }
                     }
                 ],

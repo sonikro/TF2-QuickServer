@@ -31,15 +31,18 @@ describe("terminateServerCommandHandler", () => {
         interaction.user = { id: userId } as any;
 
         deleteServerForUser.execute.mockResolvedValue();
+        interaction.deferReply.mockResolvedValue({} as any);
+        interaction.followUp.mockResolvedValue({} as any);
 
         // When
         await handler(interaction);
 
         // Then
+        expect(interaction.deferReply).toHaveBeenCalled();
         expect(deleteServerForUser.execute).toHaveBeenCalledWith({
             userId,
         });
-        expect(interaction.reply).toHaveBeenCalledWith({
+        expect(interaction.followUp).toHaveBeenCalledWith({
             content: `All servers created by you have been terminated.`,
             flags: MessageFlags.Ephemeral,
         });

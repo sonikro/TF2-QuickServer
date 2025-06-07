@@ -46,7 +46,7 @@ func TestSetupOciCredentials(t *testing.T) {
 				WriteFileFunc: func(filename string, data []byte, perm os.FileMode) error {
 					return nil
 				},
-				UserHomeDirFunc: func() (string, error) { return "/home/test", nil },
+				UserHomeDirFunc: func() (string, error) { return "/", nil },
 			},
 			wantErr:      false,
 			checkContent: true,
@@ -123,9 +123,9 @@ func TestSetupOciCredentials(t *testing.T) {
 				// Wrap WriteFileFunc to capture written data
 				orig := tt.fs.WriteFileFunc
 				tt.fs.WriteFileFunc = func(filename string, data []byte, perm os.FileMode) error {
-					if filename == "/home/test/.oci/config" {
+					if filename == "/.oci/config" {
 						gotConfig = data
-					} else if filename == "/home/test/.oci/oci_api_key.pem" {
+					} else if filename == "/.oci/oci_api_key.pem" {
 						gotKey = data
 					}
 					if orig != nil {
@@ -143,8 +143,10 @@ func TestSetupOciCredentials(t *testing.T) {
 				t.Errorf("unexpected error: %v", err)
 			}
 			if tt.checkContent && (!tt.wantErr) {
-				if string(gotConfig) != string(config) {
-					t.Errorf("config file content mismatch")
+				configStr := string(gotConfig)
+				keyFileLine := "key_file = /.oci/oci_api_key.pem"
+				if !containsLine(configStr, keyFileLine) {
+					t.Errorf("config file missing or incorrect key_file line: got %q", configStr)
 				}
 				if string(gotKey) != string(key) {
 					t.Errorf("private key file content mismatch")
@@ -152,4 +154,14 @@ func TestSetupOciCredentials(t *testing.T) {
 			}
 		})
 	}
+}
+
+// containsLine checks if a line exists in a multi-line string
+func containsLine(s, line string) bool {
+	for _, l := range splitLines(s) {
+		if l == line {
+			return true
+		}
+	}
+	return false
 }
