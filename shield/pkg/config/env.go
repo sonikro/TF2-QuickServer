@@ -42,7 +42,31 @@ func GetMaxBytes() uint64 {
 	return maxBytes
 }
 
-// GetNSGName returns the NSG name from the NSG_NAME environment variable, or an empty string if not set.
-func GetNSGName() string {
-	return os.Getenv("NSG_NAME")
+type OracleParameters struct {
+	NsgName       string
+	CompartmentId string
+	VcnId         string
+}
+
+func GetOracleParameters() (OracleParameters, error) {
+	nsgName := os.Getenv("NSG_NAME")
+	if nsgName == "" {
+		return OracleParameters{}, errors.New("NSG_NAME environment variable is not set")
+	}
+
+	compartmentId := os.Getenv("COMPARTMENT_ID")
+	if compartmentId == "" {
+		return OracleParameters{}, errors.New("COMPARTMENT_ID environment variable is not set")
+	}
+
+	vcnId := os.Getenv("VCN_ID")
+	if vcnId == "" {
+		return OracleParameters{}, errors.New("VCN_ID environment variable is not set")
+	}
+
+	return OracleParameters{
+		NsgName:       nsgName,
+		CompartmentId: compartmentId,
+		VcnId:         vcnId,
+	}, nil
 }

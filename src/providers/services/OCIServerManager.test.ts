@@ -8,6 +8,7 @@ import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { DefaultServerAbortManager } from "./DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
+import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 
 const testRegion = Region.SA_SAOPAULO_1;
 const testVariant = "vanilla" as Variant;
@@ -52,6 +53,7 @@ function createTestEnvironment() {
         subnet_id: "subnet123",
         nsg_id: "nsg123",
         compartment_id: "compartment123",
+        vnc_id: "vnc123",
       }
     }
   };
@@ -136,14 +138,79 @@ edicts  : 426 used of 2048 max
 `)
 
   const serverAbortManager = new DefaultServerAbortManager();
+  const ociCredentialsFactory: OCICredentialsFactory = vi.fn().mockReturnValue({
+    configFileContent: "test-config-content",
+    privateKeyFileContent: "test-private-key-content"
+  });
 
   const sut = new OCIServerManager({
     serverCommander,
     configManager,
     passwordGenerator,
     ociClientFactory,
-    serverAbortManager
+    serverAbortManager,
+    ociCredentialsFactory
   });
+
+  // Mock NSG creation and related methods using when().calledWith().thenResolve with explicit arguments
+  when(vncClient.createNetworkSecurityGroup)
+    .calledWith({
+      createNetworkSecurityGroupDetails: {
+        compartmentId: "compartment123",
+        vcnId: "vnc123",
+        displayName: expect.any(String), // serverId is dynamic per test
+      }
+    })
+    .thenResolve({
+      networkSecurityGroup: { id: "nsg123" }
+    } as any);
+  when(vncClient.addNetworkSecurityGroupSecurityRules)
+    .calledWith({
+      networkSecurityGroupId: "nsg123",
+      addNetworkSecurityGroupSecurityRulesDetails: {
+        securityRules: [
+          expect.objectContaining({
+            direction: "INGRESS",
+            protocol: "6",
+            source: "0.0.0.0/0",
+            sourceType: "CIDR_BLOCK",
+            tcpOptions: { destinationPortRange: { min: 27015, max: 27020 } },
+            udpOptions: undefined,
+          }),
+          expect.objectContaining({
+            direction: "INGRESS",
+            protocol: "17",
+            source: "0.0.0.0/0",
+            sourceType: "CIDR_BLOCK",
+            tcpOptions: undefined,
+            udpOptions: { destinationPortRange: { min: 27015, max: 27020 } },
+          })
+        ]
+      }
+    })
+    .thenResolve({
+      opcRequestId: "req-123",
+      addedNetworkSecurityGroupSecurityRules: []
+    } as any);
+  when(vncClient.deleteNetworkSecurityGroup)
+    .calledWith({ networkSecurityGroupId: "nsg123" })
+    .thenResolve({
+      opcRequestId: "req-456"
+    } as any);
+  when(vncClient.listNetworkSecurityGroups)
+    .calledWith({
+      compartmentId: "compartment123",
+      displayName: expect.any(String), // serverId is dynamic per test
+      vcnId: "vnc123",
+    })
+    .thenResolve({
+      items: [{ id: "nsg123" }]
+    } as any);
+  when(vncClient.listNetworkSecurityGroupVnics)
+    .calledWith({ networkSecurityGroupId: "nsg123" })
+    .thenResolve({
+      items: []
+    } as any);
 
   return {
     sut,
@@ -220,7 +287,13 @@ describe("OCIServerManager", () => {
               displayName: "shield",
               imageUrl: "sonikro/tf2-quickserver-shield:latest",
               environmentVariables: {
-                MAXBYTES: "2000000"
+                MAXBYTES: "2000000",
+                SRCDS_PASSWORD: "test-password",
+                NSG_NAME: "test-server-id",
+                COMPARTMENT_ID: "compartment123",
+                VCN_ID: "vnc123",
+                OCI_CONFIG_FILE_CONTENT: Buffer.from("test-config-content").toString("base64"),
+                OCI_PRIVATE_KEY_FILE_CONTENT: Buffer.from("test-private-key-content").toString("base64"),
               }
             }
           ],

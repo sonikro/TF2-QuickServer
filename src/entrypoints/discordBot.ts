@@ -28,6 +28,7 @@ import { SQliteUserRepository } from "../providers/repository/SQliteUserReposito
 import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
 import { defaultGracefulShutdownManager } from "../providers/services/DefaultGracefulShutdownManager";
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
+import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 
 export async function startDiscordBot() {
 
@@ -65,7 +66,8 @@ export async function startDiscordBot() {
         ociClientFactory: defaultOracleServiceFactory,
         configManager: defaultConfigManager,
         passwordGenerator: chancePasswordGenerator,
-        serverAbortManager
+        serverAbortManager,
+        ociCredentialsFactory: FileSystemOCICredentialsFactory
     })
 
     const serverRepository = new SQLiteServerRepository({

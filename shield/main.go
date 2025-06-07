@@ -6,6 +6,7 @@ import (
 	"net"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gorcon/rcon"
 	"github.com/oracle/oci-go-sdk/v65/common"
@@ -43,6 +44,12 @@ func main() {
 	}
 	fmt.Println("[Main] NSG client created.")
 
+	oracleParameters, err := config.GetOracleParameters()
+	if err != nil {
+		fmt.Printf("[Main] Failed to get Oracle parameters: %v\n", err)
+		panic(err)
+	}
+	fmt.Printf("[Main] Oracle parameters: %+v\n", oracleParameters)
 	shield := shield.Shield{
 		RconDial: func(address, password string, options ...rcon.Option) (srcds.RconConnection, error) {
 			fmt.Printf("[Main] Dialing RCON at %s...\n", address)
@@ -51,12 +58,13 @@ func main() {
 		SrcdsSettings: *srcds.NewSrcdsSettingsFromEnv(),
 		EnableFirewallRestriction: func(playerIps []string) error {
 			fmt.Printf("[Main] Enabling firewall restriction for player IPs: %v\n", playerIps)
-			return oracle.EnableFirewallRestriction(ctx, nsgClient, config.GetNSGName(), playerIps)
+			return oracle.EnableFirewallRestriction(ctx, nsgClient, oracleParameters, playerIps)
 		},
 		DisableFirewallRestriction: func() error {
 			fmt.Println("[Main] Disabling firewall restriction...")
-			return oracle.DisableFirewallRestriction(ctx, nsgClient, config.GetNSGName())
+			return oracle.DisableFirewallRestriction(ctx, nsgClient, oracleParameters)
 		},
+		ShieldDuration: time.Minute * 3, // Duration for which the shield is active
 	}
 
 	fmt.Println("[Main] Initializing AttackRadar...")
