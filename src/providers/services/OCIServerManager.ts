@@ -293,16 +293,14 @@ export class OCIServerManager implements ServerManager {
         });
         // Wait for the NSG to have no VNICs associated before deleting it
         if (nsgId) {
-            const abortController = this.dependencies.serverAbortManager.getOrCreate(serverId);
             await waitUntil(async () => {
                 const vnicsResp = await vncClient.listNetworkSecurityGroupVnics({ networkSecurityGroupId: nsgId });
                 if (!vnicsResp.items || vnicsResp.items.length === 0) {
                     return true;
                 }
                 throw new Error("NSG still has associated VNICs");
-            }, { interval: 5000, timeout: 300000, signal: abortController.signal });
+            }, { interval: 5000, timeout: 300000 });
             await this.deleteNetworkSecurityGroup({ nsgId, vncClient });
-            this.dependencies.serverAbortManager.delete(serverId);
         }
     }
 
