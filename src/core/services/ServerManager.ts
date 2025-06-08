@@ -1,4 +1,5 @@
 import { Variant, Server, Region } from "../domain";
+import { StatusUpdater } from "./StatusUpdater";
 
 export interface ServerManager {
     /**
@@ -8,6 +9,7 @@ export interface ServerManager {
         serverId: string,
         region: Region,
         variantName: Variant,
+        statusUpdater: StatusUpdater,
         sourcemodAdminSteamId?: string,
         extraEnvs?: Record<string, string>,
     }): Promise<Server>;

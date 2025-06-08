@@ -8,6 +8,7 @@ import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { waitUntil } from "../utils/waitUntil";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
+import { StatusUpdater } from "../../core/services/StatusUpdater";
 
 export class OCIServerManager implements ServerManager {
     constructor(
@@ -63,11 +64,12 @@ export class OCIServerManager implements ServerManager {
         serverId: string;
         region: Region;
         variantName: Variant;
+        statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
     }): Promise<Server> {
         const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
-        const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {} } = args;
+        const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
 
         const { containerClient, vncClient } = ociClientFactory(region);
         const variantConfig = configManager.getVariantConfig(variantName);
@@ -108,9 +110,13 @@ export class OCIServerManager implements ServerManager {
             ...extraEnvs,
         };
 
+        // Notify user: Creating security group
+        await statusUpdater(`🛡️ [1/5] Creating SHIELD Firewall...`);
         // Create NSG for this server
         const nsgId = await this.createNetworkSecurityGroup({ serverId, region, vncClient, vcnId: oracleRegionConfig.vnc_id, compartmentId: oracleRegionConfig.compartment_id });
 
+        // Notify user: Creating container instance
+        await statusUpdater(`📦 [2/5] Creating server instance...`);
         const ociCredentials = this.dependencies.ociCredentialsFactory(region);
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {
             createContainerInstanceDetails: {
@@ -174,8 +180,9 @@ export class OCIServerManager implements ServerManager {
             throw new Error("Failed to create container instance");
         }
 
+        // Notify user: Waiting for VNIC ID
+        await statusUpdater(`🌐 [3/5] Waiting for Server Network Interfaces to be ready...`);
         // Retrieve the VNIC ID from the container instance
-        console.log(`Waiting for VNIC ID for container instance: ${containerId}`);
         const vnicId = await waitUntil(async () => {
             const containerInstance = await containerClient.getContainerInstance({
                 containerInstanceId: containerId
@@ -194,9 +201,9 @@ export class OCIServerManager implements ServerManager {
             throw new Error("Failed to retrieve public IP");
         }
 
-
+        // Notify user: Waiting for container to be ACTIVE
+        await statusUpdater(`⏳ [4/5] Waiting for server instance to be **ACTIVE**...`);
         // Wait for container to be ACTIVE
-        console.log(`Waiting for container instance to be ACTIVE: ${containerId}`);
         await waitUntil(async () => {
             const containerInstance = await containerClient.getContainerInstance({
                 containerInstanceId: containerId
@@ -207,8 +214,8 @@ export class OCIServerManager implements ServerManager {
             throw new Error("Container instance is not ACTIVE yet");
         }, { interval: 5000, timeout: 300000, signal: abortController.signal });
 
-        console.log(`Container instance is ACTIVE: ${containerId}`);
-
+        // Notify user: Waiting for server to be ready for RCON
+        await statusUpdater(`🔄 [5/5] Waiting for server to be ready to receive RCON commands...`);
         console.log(`Waiting for server ${serverId} to be ready to receive RCON commands...`);
         const { sdrAddress } = await waitUntil<{ sdrAddress: string }>(
             async () => {

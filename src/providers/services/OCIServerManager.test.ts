@@ -220,30 +220,36 @@ edicts  : 426 used of 2048 max
     containerClient,
     vncClient,
     variantConfig,
-    serverAbortManager
+    serverAbortManager,
+    statusUpdater: vi.fn(),
   };
 }
 
 describe("OCIServerManager", () => {
 
   describe("deployServer", () => {
-
     const environment = createTestEnvironment();
     let result: Awaited<ReturnType<typeof environment.sut.deployServer>>;
 
     beforeAll(async () => {
       // Initial container creation
-
-
       result = await environment.sut.deployServer({
         region: testRegion,
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
         serverId: "test-server-id",
+        statusUpdater: environment.statusUpdater,
       });
-
     });
 
+    it("should call statusUpdater 5 times with correct messages", () => {
+      expect(environment.statusUpdater).toHaveBeenCalledTimes(5);
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(1, "🛡️ [1/5] Creating SHIELD Firewall...");
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(2, "📦 [2/5] Creating server instance...");
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(3, "🌐 [3/5] Waiting for Server Network Interfaces to be ready...");
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(4, "⏳ [4/5] Waiting for server instance to be **ACTIVE**...");
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(5, "🔄 [5/5] Waiting for server to be ready to receive RCON commands...");
+    });
 
     it("should create the correct container instance", () => {
       const containerInstanceRequest = environment.containerClient.createContainerInstance.mock.calls[0][0];
@@ -338,19 +344,18 @@ describe("OCIServerManager", () => {
   describe("custom variant hostname", () => {
     it("should use the variant hostname if provided", async () => {
       const { sut, containerClient, variantConfig } = createTestEnvironment();
-
+      const statusUpdater = vi.fn();
       variantConfig.hostname = "custom-hostname | {region} @ TF2-QuickServer";
-      // WHen
+      // When
       const result = await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-id"
-      })
-
+        serverId: "test-server-id",
+        statusUpdater,
+      });
       // Then
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-
       expect(containerInstanceRequest).toEqual(expect.objectContaining({
         createContainerInstanceDetails: expect.objectContaining({
           containers: [
@@ -363,13 +368,13 @@ describe("OCIServerManager", () => {
           ],
         }),
       }));
-    })
-  })
+    });
+  });
 
   describe("extra vars", () => {
     it("should include extraEnvs in the container environment variables", async () => {
       const { sut, containerClient } = createTestEnvironment();
-
+      const statusUpdater = vi.fn();
       await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
@@ -378,32 +383,29 @@ describe("OCIServerManager", () => {
         extraEnvs: {
           CUSTOM_ENV_VAR: "custom-value",
           ANOTHER_VAR: "another-value"
-        }
+        },
+        statusUpdater,
       });
-
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const envVars = containerInstanceRequest.createContainerInstanceDetails.containers[0].environmentVariables!;
-
       expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
       expect(envVars.ANOTHER_VAR).toBe("another-value");
     });
-  })
+  });
 
   describe("no default admins", () => {
     it("should use the sourcemodAdminSteamId as the only admin", async () => {
       const { sut, containerClient, variantConfig } = createTestEnvironment();
-
+      const statusUpdater = vi.fn();
       variantConfig.admins = undefined;
-
       await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
         serverId: "test-server-id",
-      })
-
+        statusUpdater,
+      });
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-
       expect(containerInstanceRequest).toEqual(expect.objectContaining({
         createContainerInstanceDetails: expect.objectContaining({
           containers: [
@@ -416,8 +418,8 @@ describe("OCIServerManager", () => {
           ],
         }),
       }));
-    })
-  })
+    });
+  });
 
   describe("deleteServer", () => {
     const environment = createTestEnvironment();
@@ -451,7 +453,7 @@ describe("OCIServerManager", () => {
 
   describe("abort server deployment", () => {
     it("should throw an AbortError if the deployment is aborted", async () => {
-      const { sut, serverAbortManager } = createTestEnvironment();
+      const { sut, serverAbortManager, statusUpdater } = createTestEnvironment();
 
       serverAbortManager.getOrCreate("test-server-id").abort();
       await expect(sut.deployServer({
@@ -459,6 +461,7 @@ describe("OCIServerManager", () => {
         variantName: testVariant,
         sourcemodAdminSteamId: "12345678901234567",
         serverId: "test-server-id",
+        statusUpdater: statusUpdater,
       })).rejects.toThrow(new AbortError("Operation aborted"));
     });
   })

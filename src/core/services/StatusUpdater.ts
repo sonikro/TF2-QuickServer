@@ -1,0 +1,1 @@
+export type StatusUpdater = (message: string) => Promise<void>;
