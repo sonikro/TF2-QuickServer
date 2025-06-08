@@ -112,7 +112,8 @@ export async function startDiscordBot() {
             eventLogger,
             configManager: defaultConfigManager,
             userRepository,
-            guildParametersRepository
+            guildParametersRepository,
+            
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,

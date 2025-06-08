@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import { getRegionDisplayName, getVariantConfigs, Region } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
+import { createInteractionStatusUpdater } from "../../../providers/services/DiscordInteractionStatusUpdater";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
@@ -77,7 +78,8 @@ export function createServerCommandHandlerFactory(dependencies: {
                     region: region,
                     variantName: variantName,
                     creatorId: buttonInteraction.user.id,
-                    guildId: buttonInteraction.guildId!
+                    guildId: buttonInteraction.guildId!,
+                    statusUpdater: createInteractionStatusUpdater(buttonInteraction)
                 });
                 if (variantName.includes("tf2pickup")) {
                     await buttonInteraction.followUp({

@@ -1,17 +1,17 @@
-import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import { mock } from 'vitest-mock-extended';
-import { CreateServerForUser } from './CreateServerForUser';
-import { ServerRepository } from '../repository/ServerRepository';
 import Chance from 'chance';
-import { Region, Server, Variant } from '../domain';
-import { ServerManager } from '../services/ServerManager';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { UserError } from "../errors/UserError"
-import { UserCreditsRepository } from '../repository/UserCreditsRepository';
-import { EventLogger } from '../services/EventLogger';
-import { ConfigManager } from '../utils/ConfigManager';
-import { UserRepository } from '../repository/UserRepository';
+import { Region, Server } from '../domain';
+import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from '../repository/GuildParametersRepository';
+import { ServerRepository } from '../repository/ServerRepository';
+import { UserCreditsRepository } from '../repository/UserCreditsRepository';
+import { UserRepository } from '../repository/UserRepository';
+import { EventLogger } from '../services/EventLogger';
+import { ServerManager } from '../services/ServerManager';
+import { ConfigManager } from '../utils/ConfigManager';
+import { CreateServerForUser } from './CreateServerForUser';
 
 vi.mock("uuid", () => {
     return {
@@ -80,6 +80,8 @@ const createTestEnvironment = () => {
         tvPassword: chance.word(),
     }
 
+    const statusUpdater = vi.fn();
+
     return {
         sut: new CreateServerForUser({
             serverManager,
@@ -88,7 +90,7 @@ const createTestEnvironment = () => {
             eventLogger,
             configManager,
             userRepository,
-            guildParametersRepository
+            guildParametersRepository,
         }),
         mocks: {
             serverRepository,
@@ -99,6 +101,7 @@ const createTestEnvironment = () => {
             userRepository,
             guildParametersRepository,
             trx,
+            statusUpdater
         },
         data: {
             region,
@@ -140,7 +143,8 @@ describe('CreateServerForUser Use Case', () => {
                     creatorId: data.userId,
                     region: data.region,
                     variantName: data.variantName,
-                    guildId: data.guildId
+                    guildId: data.guildId,
+                    statusUpdater: mocks.statusUpdater
                 });
             });
 
@@ -179,7 +183,9 @@ describe('CreateServerForUser Use Case', () => {
                     creatorId: data.userId,
                     region: data.region,
                     variantName: data.variantName,
-                    guildId: data.guildId
+                    guildId: data.guildId,
+                    statusUpdater: mocks.statusUpdater
+
                 });
 
                 await expect(act()).rejects.toThrow(new UserError("You do not have enough credits to start a server."));
@@ -211,7 +217,8 @@ describe('CreateServerForUser Use Case', () => {
                 creatorId: data.userId,
                 region: data.region,
                 variantName: data.variantName,
-                guildId: data.guildId
+                guildId: data.guildId,
+                statusUpdater: mocks.statusUpdater
             });
 
             expect(mocks.userCreditsRepository.getCredits).not.toHaveBeenCalled();
@@ -233,7 +240,8 @@ describe('CreateServerForUser Use Case', () => {
             creatorId: data.userId,
             region: data.region,
             variantName: data.variantName,
-            guildId: data.guildId
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
         });
 
         await expect(act()).rejects.toThrow(new UserError("You already have a server running. Please terminate it before creating a new one."));
@@ -263,7 +271,8 @@ describe('CreateServerForUser Use Case', () => {
             creatorId: data.userId,
             region: data.region,
             variantName: data.variantName,
-            guildId: data.guildId
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
         });
 
         await expect(act()).rejects.toThrow(new Error("Server manager error"));
@@ -310,7 +319,9 @@ describe('CreateServerForUser Use Case', () => {
             creatorId: data.userId,
             region: data.region,
             variantName: data.variantName,
-            guildId: data.guildId
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+
         });
 
         expect(mocks.serverManager.deployServer).toHaveBeenCalledWith(expect.objectContaining({
@@ -329,7 +340,9 @@ describe('CreateServerForUser Use Case', () => {
             creatorId: data.userId,
             region: data.region,
             variantName: data.variantName,
-            guildId: data.guildId
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+
         });
 
         await expect(act()).rejects.toThrow(new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.'));
@@ -349,7 +362,8 @@ describe('CreateServerForUser Use Case', () => {
             creatorId: data.userId,
             region: data.region,
             variantName: data.variantName,
-            guildId: data.guildId
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
         });
 
         await expect(act()).rejects.toThrow(new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.'));

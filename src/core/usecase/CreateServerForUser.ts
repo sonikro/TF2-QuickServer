@@ -6,6 +6,7 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
+import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";
 
@@ -18,17 +19,18 @@ export class CreateServerForUser {
         guildParametersRepository: GuildParametersRepository,
         eventLogger: EventLogger,
         configManager: ConfigManager
-        userRepository: UserRepository
+        userRepository: UserRepository,
     }) { }
 
     public async execute(args: {
         region: Region,
         variantName: Variant,
         creatorId: string,
-        guildId: string
+        guildId: string,
+        statusUpdater: StatusUpdater
     }): Promise<Server> {
         const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository } = this.dependencies;
-
+        const statusUpdater = args.statusUpdater;
         const user = await userRepository.getById(args.creatorId);
         if (!user || !user.steamIdText) {
             throw new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.');
@@ -75,6 +77,7 @@ export class CreateServerForUser {
             sourcemodAdminSteamId: user.steamIdText,
             serverId,
             extraEnvs: guildParameters?.environment_variables || {},
+            statusUpdater
         });
         
         await eventLogger.log(({

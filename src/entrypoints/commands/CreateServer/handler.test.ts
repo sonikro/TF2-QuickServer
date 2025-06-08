@@ -83,6 +83,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         }).thenResolve(deployedServer);
 
         // Call the command handler
@@ -102,6 +103,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         });
         expect(buttonInteraction.deferReply).toHaveBeenCalled();
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
@@ -145,6 +147,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         }).thenResolve(deployedServer);
 
         await handler(interaction);
@@ -182,6 +185,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         }).thenReject(new Error("Server creation failed"));
 
         await handler(interaction);
@@ -219,6 +223,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         }).thenReject(new UserError("User error occurred"));
 
         await handler(interaction);
@@ -288,6 +293,7 @@ describe("createServerCommandHandler", () => {
             variantName,
             creatorId: interaction.user.id,
             guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
         }).thenReject(abortError);
 
         await handler(interaction);
