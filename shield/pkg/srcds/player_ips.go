@@ -25,6 +25,24 @@ func GetPlayerIPs(executeCommand func(command string) (string, error)) ([]string
 		}
 	}
 
+	// Also capture TV client IPs
+	tvResponse, err := executeCommand("tv_clients")
+	if err == nil && len(tvResponse) > 0 {
+		tvLines := splitLines(tvResponse)
+		for _, tvLine := range tvLines {
+			if strings.HasPrefix(tvLine, "ID") && strings.Count(tvLine, ",") >= 3 {
+				lineSegments := strings.Split(tvLine, ",")
+				if len(lineSegments) > 3 {
+					ipLine := strings.TrimSpace(lineSegments[3])
+					if idx := strings.Index(ipLine, ":"); idx > 0 {
+						ip := ipLine[:idx]
+						ips = append(ips, ip)
+					}
+				}
+			}
+		}
+	}
+
 	return ips, nil
 }
 
