@@ -67,7 +67,10 @@ jobs:
             sonikro/tf2-quickserver:${{ github.sha }}
           platforms: |
             linux/arm64
+            linux/amd64
           context: .
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     runs-on: rpi5
