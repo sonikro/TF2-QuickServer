@@ -118,4 +118,20 @@ describe("DeleteServerForUser", () => {
             expect(mockAbortManager.delete).toHaveBeenCalledWith(server.serverId);
         })
     });
+
+    it("should throw an error if the user has a pending server", async () => {
+        const servers: Server[] = [
+            { serverId: chance.guid(), region: "us-east", status: "pending" } as any
+        ];
+        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
+
+        await expect(deleteServerForUser.execute({ userId })).rejects.toThrow(
+            "You have a server that is still being created. Please wait until it is ready before deleting."
+        );
+
+        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId);
+        expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
+        expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
+        expect(mockEventLogger.log).not.toHaveBeenCalled();
+    });
 });

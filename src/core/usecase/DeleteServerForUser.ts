@@ -20,6 +20,11 @@ export class DeleteServerForUser {
         const { serverRepository, serverManager, eventLogger, serverAbortManager } = this.dependencies;
         const { userId } = args;
         const server = await serverRepository.getAllServersByUserId(userId);
+        const pendingServers = server.filter(s => s.status === "pending");
+        if (pendingServers.length > 0) {
+            throw new UserError("You have a server that is still being created. Please wait until it is ready before deleting.");
+        }
+
         if (!server || server.length === 0) {
             throw new UserError("You don't have any servers to terminate.");
         }
