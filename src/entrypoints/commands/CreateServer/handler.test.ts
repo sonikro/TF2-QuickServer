@@ -86,11 +86,14 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         }).thenResolve(deployedServer);
 
+        // Add editReply mock
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
         // Call the command handler
         await handler(interaction);
 
         // Simulate the collector's "collect" event firing
-        const buttonInteraction = mockButtonInteraction(interaction, variantName);
         const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
@@ -106,6 +109,9 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         });
         expect(buttonInteraction.deferReply).toHaveBeenCalled();
+        expect(buttonInteraction.editReply).toHaveBeenCalledWith({
+            content: expect.stringContaining(`Creating server in region`),
+        });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
             content: expect.stringContaining("Server Created Successfully"),
             flags: MessageFlags.Ephemeral,
@@ -150,14 +156,19 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         }).thenResolve(deployedServer);
 
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
         await handler(interaction);
 
-        const buttonInteraction = mockButtonInteraction(interaction, variantName);
         const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
 
+        expect(buttonInteraction.editReply).toHaveBeenCalledWith({
+            content: expect.stringContaining(`Creating server in region`),
+        });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
             content: expect.stringContaining("Server Created and Registered"),
             flags: MessageFlags.Ephemeral,
@@ -188,14 +199,19 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         }).thenReject(new Error("Server creation failed"));
 
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
         await handler(interaction);
 
-        const buttonInteraction = mockButtonInteraction(interaction, variantName);
         const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
 
+        expect(buttonInteraction.editReply).toHaveBeenCalledWith({
+            content: expect.stringContaining(`Creating server in region`),
+        });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
             content: `There was an error creating the server. Please reach out to the App Administrator.`,
             flags: MessageFlags.Ephemeral,
@@ -226,14 +242,19 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         }).thenReject(new UserError("User error occurred"));
 
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
         await handler(interaction);
 
-        const buttonInteraction = mockButtonInteraction(interaction, variantName);
         const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
 
+        expect(buttonInteraction.editReply).toHaveBeenCalledWith({
+            content: expect.stringContaining(`Creating server in region`),
+        });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
             content: `User error occurred`,
             flags: MessageFlags.Ephemeral,
@@ -296,14 +317,19 @@ describe("createServerCommandHandler", () => {
             statusUpdater: expect.any(Function),
         }).thenReject(abortError);
 
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
         await handler(interaction);
 
-        const buttonInteraction = mockButtonInteraction(interaction, variantName);
         const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
 
+        expect(buttonInteraction.editReply).toHaveBeenCalledWith({
+            content: expect.stringContaining(`Creating server in region`),
+        });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
             content: `Server creation was aborted by the user.`,
             flags: MessageFlags.Ephemeral,

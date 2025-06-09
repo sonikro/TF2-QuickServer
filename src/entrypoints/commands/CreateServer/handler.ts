@@ -64,15 +64,10 @@ export function createServerCommandHandlerFactory(dependencies: {
         if (!collector) return;
         collector.on('collect', async (buttonInteraction: MessageComponentInteraction) => {
             const variantName = buttonInteraction.customId.split(':')[1];
-            await interaction.editReply({
-                content: `You selected the variant **${variantName}**.`,
-                components: []
-            })
             await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
             try {
-                await buttonInteraction.followUp({
+                await buttonInteraction.editReply({
                     content: `Creating server in region ${getRegionDisplayName(region)} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
-                    flags: MessageFlags.Ephemeral
                 });
                 const deployedServer = await createServerForUser.execute({
                     region: region,
