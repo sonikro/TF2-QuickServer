@@ -63,6 +63,16 @@ export function createServerCommandHandlerFactory(dependencies: {
         });
         if (!collector) return;
         collector.on('collect', async (buttonInteraction: MessageComponentInteraction) => {
+            try {
+                await interaction.editReply({
+                    content: `You selected the variant: ${buttonInteraction.customId.split(':')[1]}. Processing your request...`,
+                    components: []
+                })
+            } catch (error) {
+                // If the edit fails, we can log the error but continue with the button interaction
+                // This is not critical, as the button interaction will still proceed
+                console.error('Error editing reply:', error);
+            }
             const variantName = buttonInteraction.customId.split(':')[1];
             await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
             try {
