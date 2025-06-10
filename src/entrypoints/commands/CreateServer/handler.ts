@@ -11,6 +11,7 @@ import {
 import { getRegionDisplayName, getVariantConfigs, Region } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createInteractionStatusUpdater } from "../../../providers/services/DiscordInteractionStatusUpdater";
+import { commandErrorHandler } from "../commandErrorHandler";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
@@ -114,27 +115,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                     flags: MessageFlags.Ephemeral
                 });
             } catch (error: Error | any) {
-                console.error('Error creating server:', error);
-                switch (error.name) {
-                    case 'UserError':
-                        await buttonInteraction.followUp({
-                            content: error.message,
-                            flags: MessageFlags.Ephemeral
-                        });
-                        break;
-                    case 'AbortError':
-                        await buttonInteraction.followUp({
-                            content: `Server creation was aborted by the user.`,
-                            flags: MessageFlags.Ephemeral
-                        });
-                        break;
-                    default:
-                        await buttonInteraction.followUp({
-                            content: `There was an error creating the server. Please reach out to the App Administrator.`,
-                            flags: MessageFlags.Ephemeral
-                        });
-                        break;
-                }
+                await commandErrorHandler(buttonInteraction, error);
             }
         });
         collector.on('end', (collected: Collection<string, MessageComponentInteraction>) => {

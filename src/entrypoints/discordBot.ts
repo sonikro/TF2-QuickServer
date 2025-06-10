@@ -113,7 +113,7 @@ export async function startDiscordBot() {
             configManager: defaultConfigManager,
             userRepository,
             guildParametersRepository,
-            
+
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,
@@ -206,33 +206,11 @@ export async function startDiscordBot() {
             await defaultGracefulShutdownManager.run(() => command.handler(chatInputInteraction))
         }
         catch (error: Error | any) {
-            switch (error.name) {
-                case 'UserError':
-                    await chatInputInteraction.reply({
-                        content: error.message,
-                        flags: MessageFlags.Ephemeral
-                    });
-                    break;
-                case 'ShutdownInProgressError':
-                    await chatInputInteraction.reply({
-                        content: 'The bot is currently not accepting new commands as it is shutting down. Please try again later.',
-                        flags: MessageFlags.Ephemeral
-                    });
-                    break;
-                case 'AbortError':
-                    await chatInputInteraction.reply({
-                        content: 'The command was aborted due to a user cancellation. ',
-                        flags: MessageFlags.Ephemeral
-                    });
-                    break;
-                default:
-                    console.error(`Error executing command ${commandName}:`, error);
-                    await eventLogger.log({
-                        eventMessage: `Error executing command ${commandName}: ${error.message}`,
-                        actorId: chatInputInteraction.user.id,
-                    });
-                    await chatInputInteraction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
-            }
+            console.error(`Error executing command ${commandName}:`, error);
+            await eventLogger.log({
+                eventMessage: `Error executing command ${commandName}: ${error.message}`,
+                actorId: chatInputInteraction.user.id,
+            });
         }
     });
 

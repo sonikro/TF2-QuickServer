@@ -213,7 +213,7 @@ describe("createServerCommandHandler", () => {
             content: expect.stringContaining(`Creating server in region`),
         });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
-            content: `There was an error creating the server. Please reach out to the App Administrator.`,
+            content: `There was an unexpected error running the command. Please reach out to the App Administrator.`,
             flags: MessageFlags.Ephemeral,
         });
     });
@@ -327,7 +327,7 @@ describe("createServerCommandHandler", () => {
             content: expect.stringContaining(`Creating server in region`),
         });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
-            content: `Server creation was aborted by the user.`,
+            content: `Operation was aborted by the user.`,
             flags: MessageFlags.Ephemeral,
         });
     });

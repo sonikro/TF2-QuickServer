@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { SetUserData } from "../../../core/usecase/SetUserData";
+import { commandErrorHandler } from "../commandErrorHandler";
 
 export function setUserDataHandlerFactory(dependencies: {
     setUserData: SetUserData
@@ -8,17 +9,25 @@ export function setUserDataHandlerFactory(dependencies: {
         const { setUserData } = dependencies;
         const steamId = interaction.options.getString('steam_id_text');
 
-        await setUserData.execute({
-            user: {
-                id: interaction.user.id,
-                steamIdText: steamId!
-            }
-        })
-
-        await interaction.reply({
-            content: `Your user data has been set successfully!`,
+        await interaction.deferReply({
             flags: MessageFlags.Ephemeral
         });
+
+        try {
+            await setUserData.execute({
+                user: {
+                    id: interaction.user.id,
+                    steamIdText: steamId!
+                }
+            })
+            await interaction.followUp({
+                content: `Your user data has been set successfully!`,
+                flags: MessageFlags.Ephemeral
+            });
+
+        } catch (error: Error | any) {
+            await commandErrorHandler(interaction, error);
+        }
 
     }
 }

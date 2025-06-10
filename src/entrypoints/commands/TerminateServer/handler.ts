@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { DeleteServerForUser } from "../../../core/usecase/DeleteServerForUser";
+import { commandErrorHandler } from "../commandErrorHandler";
 
 export function terminateServerHandlerFactory(dependencies: {
     deleteServerForUser: DeleteServerForUser
@@ -21,19 +22,7 @@ export function terminateServerHandlerFactory(dependencies: {
                 flags: MessageFlags.Ephemeral
             });
         } catch (error: Error | any) {
-            if (error.name == "UserError") {
-                await interaction.followUp({
-                    content: error.message,
-                    flags: MessageFlags.Ephemeral
-                });
-            }
-            else {
-                console.error("Error terminating server:", error);
-                await interaction.followUp({
-                    content: "An error occurred while trying to terminate your servers. Please try again later.",
-                    flags: MessageFlags.Ephemeral
-                });
-            }
+            await commandErrorHandler(interaction, error);
         }
 
     }

@@ -78,18 +78,13 @@ describe("terminateServerCommandHandler", () => {
         interaction.deferReply.mockResolvedValue({} as any);
         interaction.followUp.mockResolvedValue({} as any);
 
-        // Mock console.error to suppress output in test
-        const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-
         await handler(interaction);
 
         expect(interaction.deferReply).toHaveBeenCalled();
-        expect(consoleErrorSpy).toHaveBeenCalledWith("Error terminating server:", genericError);
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: "An error occurred while trying to terminate your servers. Please try again later.",
+            content: "There was an unexpected error running the command. Please reach out to the App Administrator.",
             flags: MessageFlags.Ephemeral,
         });
 
-        consoleErrorSpy.mockRestore();
     });
 });
