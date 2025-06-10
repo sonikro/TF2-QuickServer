@@ -55,7 +55,8 @@ export function createServerCommandHandlerFactory(dependencies: {
         // Step 2: Wait for button interaction
         const filter = (i: MessageComponentInteraction) =>
             i.user.id === interaction.user.id && i.customId.startsWith('create-server-variant:');
-        const collector = interaction.channel?.createMessageComponentCollector({
+        const replyMessage = await interaction.fetchReply();
+        const collector = replyMessage.createMessageComponentCollector({
             filter,
             componentType: ComponentType.Button,
             time: 30_000,

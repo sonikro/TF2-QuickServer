@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
+import { ButtonInteraction, CacheType, ChatInputCommandInteraction, InteractionCollector, Message, MessageComponentInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -24,6 +24,12 @@ describe("createServerCommandHandler", () => {
             writable: false,
         });
 
+        const message = mock<Message<boolean>>()
+        when(interaction.fetchReply).calledWith().thenResolve(message)
+        const collector = mock<InteractionCollector<any>>(); 
+        when(message.createMessageComponentCollector).calledWith(expect.anything()).thenReturn(collector);
+
+
         const createServerForUser = mock<CreateServerForUser>();
         const handler = createServerCommandHandlerFactory({
             createServerForUser,
@@ -33,6 +39,8 @@ describe("createServerCommandHandler", () => {
             createServerForUser,
             interaction,
             handler,
+            message,
+            collector,
         };
     };
 
@@ -49,7 +57,7 @@ describe("createServerCommandHandler", () => {
     };
 
     it("should create a server with the specified region and variant via button interaction", async () => {
-        const { handler, interaction, createServerForUser } = createHandler();
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const variantName = "standard-competitive";
 
@@ -58,11 +66,6 @@ describe("createServerCommandHandler", () => {
             .thenReturn(region);
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
-
-        const collectorMock = {
-            on: vi.fn(),
-        };
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
 
         const deployedServer = mock<Server>({
             serverId: chance.guid(),
@@ -94,11 +97,11 @@ describe("createServerCommandHandler", () => {
         await handler(interaction);
 
         // Simulate the collector's "collect" event firing
-        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
-
+ 
         // Assertions
         expect(interaction.reply).toHaveBeenCalled();
         expect(createServerForUser.execute).toHaveBeenCalledWith({
@@ -119,7 +122,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should handle tf2pickup variant differently", async () => {
-        const { handler, interaction, createServerForUser } = createHandler();
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const variantName = "tf2pickup";
 
@@ -129,10 +132,8 @@ describe("createServerCommandHandler", () => {
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
 
-        const collectorMock = {
-            on: vi.fn(),
-        };
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
+        // Use the message and collector from createHandler
+        // No need to mock createMessageComponentCollector or fetchReply here
 
         const deployedServer = mock<Server>({
             serverId: chance.guid(),
@@ -161,7 +162,8 @@ describe("createServerCommandHandler", () => {
 
         await handler(interaction);
 
-        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
@@ -176,7 +178,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should reply with an error if the server creation fails", async () => {
-        const { handler, interaction, createServerForUser } = createHandler();
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const variantName = "standard-competitive";
 
@@ -186,10 +188,7 @@ describe("createServerCommandHandler", () => {
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
 
-        const collectorMock = {
-            on: vi.fn(),
-        };
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
+        // Use the message and collector from createHandler
 
         when(createServerForUser.execute).calledWith({
             region,
@@ -204,7 +203,8 @@ describe("createServerCommandHandler", () => {
 
         await handler(interaction);
 
-        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
@@ -219,7 +219,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should reply with user errors", async () => {
-        const { handler, interaction, createServerForUser } = createHandler();
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const variantName = "casual";
 
@@ -229,10 +229,7 @@ describe("createServerCommandHandler", () => {
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
 
-        const collectorMock = {
-            on: vi.fn(),
-        };
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
+        // Use the message and collector from createHandler
 
         when(createServerForUser.execute).calledWith({
             region,
@@ -247,7 +244,8 @@ describe("createServerCommandHandler", () => {
 
         await handler(interaction);
 
-        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
@@ -262,7 +260,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should only show variants with matching guildId or no guildId", async () => {
-        const { handler, interaction } = createHandler();
+        const { handler, interaction, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const guildId = interaction.guildId;
 
@@ -277,7 +275,7 @@ describe("createServerCommandHandler", () => {
             .thenReturn(region);
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue({ on: vi.fn() });
+        // Use the message and collector from createHandler
 
         // Call the command handler
         await handler(interaction);
@@ -292,7 +290,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should reply with abort message if server creation is aborted by the user", async () => {
-        const { handler, interaction, createServerForUser } = createHandler();
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = chance.pickone(Object.values(Region));
         const variantName = "standard-competitive";
 
@@ -302,10 +300,7 @@ describe("createServerCommandHandler", () => {
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
 
-        const collectorMock = {
-            on: vi.fn(),
-        };
-        (interaction.channel as any).createMessageComponentCollector = vi.fn().mockReturnValue(collectorMock);
+        // Use the message and collector from createHandler
 
         const abortError = new Error("Aborted by user");
         abortError.name = "AbortError";
@@ -322,7 +317,8 @@ describe("createServerCommandHandler", () => {
 
         await handler(interaction);
 
-        const collectCall = collectorMock.on.mock.calls.find(call => call[0] === "collect");
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
