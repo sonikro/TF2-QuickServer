@@ -23,6 +23,12 @@ provider "oci" {
   config_file_profile = "sa-santiago-1"
 }
 
+provider "oci" {
+  alias  = "eu-frankfurt-1"
+  region = "eu-frankfurt-1"
+  config_file_profile = "eu-frankfurt-1"
+}
+
 # Create modules for each region
 module "network-sa-saopaulo-1" {
   source           = "./modules/network"
@@ -57,6 +63,15 @@ module "network-sa-santiago-1" {
 
   providers = {
     oci = oci.sa-santiago-1
+  }
+}
+
+module "network-eu-frankfurt-1" {
+  source           = "./modules/network"
+  compartment_ocid = var.santiago_compartment_ocid
+
+  providers = {
+    oci = oci.eu-frankfurt-1
   }
 }
 

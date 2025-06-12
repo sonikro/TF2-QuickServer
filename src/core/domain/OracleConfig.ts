@@ -41,6 +41,13 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`santiago_subnet_id.value`),
                 compartment_id: config.get<string>(`santiago_compartment_id.value`),
                 vnc_id: config.get<string>(`santiago_vnc_id.value`),
+            },
+            "eu-frankfurt-1": {
+                availability_domain: config.get<string>(`frankfurt_availability_domain.value`),
+                nsg_id: config.get<string>(`frankfurt_nsg_id.value`),
+                subnet_id: config.get<string>(`frankfurt_subnet_id.value`),
+                compartment_id: config.get<string>(`santiago_compartment_id.value`),
+                vnc_id: config.get<string>(`frankfurt_vnc_id.value`),
             }
         },
     }

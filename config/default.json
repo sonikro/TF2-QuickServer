@@ -19,6 +19,11 @@
             "displayName": "Chicago (USA)",
             "srcdsHostname": "TF2-QuickServer | Chicago @ Sonikro Solutions",
             "tvHostname": "TF2-QuickServer TV | Chicago @ Sonikro Solutions"
+        },
+        "eu-frankfurt-1": {
+            "displayName": "Frankfurt (Germany)",
+            "srcdsHostname": "TF2-QuickServer | Frankfurt @ Sonikro Solutions",
+            "tvHostname": "TF2-QuickServer TV | Frankfurt @ Sonikro Solutions"
         }
     },
     "variants": {

@@ -4,7 +4,8 @@ export enum Region {
     SA_SAOPAULO_1 = "sa-saopaulo-1",
     SA_BOGOTA_1 = "sa-bogota-1",
     US_CHICAGO_1 = "us-chicago-1",
-    SA_SANTIAGO_1 = "sa-santiago-1"
+    SA_SANTIAGO_1 = "sa-santiago-1",
+    EU_FRANKFURT_1 = "eu-frankfurt-1",
 }
 
 export type RegionConfig = {

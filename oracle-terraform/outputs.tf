@@ -66,3 +66,20 @@ output "santiago_compartment_id" {
 output "santiago_vnc_id" {
   value = module.network-sa-santiago-1.vnc_id
 }
+
+# Frankfurt Region
+output "frankfurt_compartment_id" {
+  value = var.santiago_compartment_ocid
+}
+output "frankfurt_subnet_id" {
+  value = module.network-eu-frankfurt-1.subnet_id
+}
+output "frankfurt_availability_domain" {
+  value = module.network-eu-frankfurt-1.availability_domain
+}
+output "frankfurt_nsg_id" {
+  value = module.network-eu-frankfurt-1.nsg_id
+}
+output "frankfurt_vnc_id" {
+  value = module.network-eu-frankfurt-1.vnc_id
+}
