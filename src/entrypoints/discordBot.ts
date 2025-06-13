@@ -21,7 +21,7 @@ import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
@@ -30,6 +30,7 @@ import { defaultGracefulShutdownManager } from "../providers/services/DefaultGra
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
+import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
 
 export async function startDiscordBot() {
 
@@ -173,6 +174,15 @@ export async function startDiscordBot() {
             eventLogger,
             discordBot: client
         })
+    })
+
+    scheduleTerminateLongRunningServerRoutine({
+        terminateLongRunningServers: new TerminateLongRunningServers({
+            serverRepository,
+            serverManager: ociServerManager,
+            serverCommander,
+            eventLogger
+        }),
     })
 
     // Slash commands
