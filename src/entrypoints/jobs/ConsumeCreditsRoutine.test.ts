@@ -4,6 +4,7 @@ import { mock } from "vitest-mock-extended";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { scheduleConsumeCreditsRoutine } from ".";
 import schedule from "node-schedule";
+import { EventLogger } from "../../core/services/EventLogger";
 
 
 vi.mock("node-schedule")
@@ -15,11 +16,13 @@ describe("scheduleConsumeCreditsRoutine", () => {
     const createTestEnvironment = () => {
         const consumeCreditsFromRunningServers = mock<ConsumeCreditsFromRunningServers>();
         const configManager = mock<ConfigManager>();
+        const eventLogger = mock<EventLogger>();
 
         return {
             dependencies: {
                 consumeCreditsFromRunningServers,
-                configManager
+                configManager,
+                eventLogger
             }
         }
 

@@ -4,6 +4,7 @@ import { ConfigManager } from "../../core/utils/ConfigManager";
 import schedule from "node-schedule";
 import { TerminateServersWithoutCredit } from "../../core/usecase/TerminateServersWithoutCredit";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./TerminateServersWithoutCreditRoutine";
+import { EventLogger } from "../../core/services/EventLogger";
 
 vi.mock("node-schedule");
 
@@ -15,11 +16,14 @@ describe("scheduleTerminateServersWithoutCreditRoutine", () => {
     const createTestEnvironment = () => {
         const terminateServersWithoutCredit = mock<TerminateServersWithoutCredit>();
         const configManager = mock<ConfigManager>();
+        const eventLogger = mock<EventLogger>();
+
 
         return {
             dependencies: {
                 terminateServersWithoutCredit,
-                configManager
+                configManager,
+                eventLogger
             }
         };
     };

@@ -145,7 +145,8 @@ export async function startDiscordBot() {
             eventLogger,
             configManager: defaultConfigManager,
             discordBot: client
-        })
+        }),
+        eventLogger
     })
 
     scheduleConsumeCreditsRoutine({
@@ -153,7 +154,8 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
         }),
-        configManager: defaultConfigManager
+        configManager: defaultConfigManager,
+        eventLogger
     })
 
     scheduleTerminateServersWithoutCreditRoutine({
@@ -164,7 +166,8 @@ export async function startDiscordBot() {
             serverCommander,
             eventLogger
         }),
-        configManager: defaultConfigManager
+        configManager: defaultConfigManager,
+        eventLogger
     })
 
     schedulePendingServerCleanupRoutine({
@@ -173,7 +176,8 @@ export async function startDiscordBot() {
             serverRepository,
             eventLogger,
             discordBot: client
-        })
+        }),
+        eventLogger
     })
 
     scheduleTerminateLongRunningServerRoutine({
@@ -183,6 +187,7 @@ export async function startDiscordBot() {
             serverCommander,
             eventLogger
         }),
+        eventLogger
     })
 
     // Slash commands
