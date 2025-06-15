@@ -25,7 +25,7 @@
 
 ## ✨ Features
 
-- ✅ **Instant Server Deployment** – Spin up a TF2 server in seconds with a simple Discord command—no technical knowledge required
+- ✅ **Quick Server Deployment** – Spin up a TF2 server from scratch in 3 minutes with a simple Discord command—no technical knowledge required
 - 🌍 **Global Multi-Region Support** – Deploy servers in your preferred Oracle Cloud region for the lowest possible latency
 - 🛡️ **Advanced DDoS Protection** – Every server is protected by the custom-built **TF2-QuickServer-Shield**, an intelligent agent that actively monitors and blocks DDoS attacks in real time, with in-game notifications for your peace of mind
 - 🛆 **Isolated Containerized Architecture** – Each server runs in its own secure Docker container, ensuring full isolation and reliability
