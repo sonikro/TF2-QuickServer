@@ -20,7 +20,7 @@ export class TerminatePendingServers {
         // Fetch all servers with status 'pending'
         const servers = await serverRepository.getAllServers("pending");
         const now = new Date();
-        for (const server of servers) {
+        const terminationPromises = servers.map(async (server) => {
             if (server.createdAt && server.status === "pending") {
                 const pendingDuration = now.getTime() - server.createdAt.getTime();
                 if (pendingDuration >= 10 * 60 * 1000) { // 10 minutes
@@ -45,10 +45,27 @@ export class TerminatePendingServers {
                             // Ignore DM errors
                         }
                     } catch (error) {
-                        console.error(`Failed to terminate pending server ${server.serverId}:`, error);
+                        if (error instanceof Error && error.message.includes("No container instance found")) {
+                            // If the server was never created, just delete the record
+                            await serverRepository.deleteServer(server.serverId);
+                            await eventLogger.log({
+                                eventMessage: `Server ${server.serverId} record deleted after being stuck in pending for over 10 minutes.`,
+                                actorId: server.createdBy || "system",
+                            });
+                        } else {
+                            throw error;
+                        }
                     }
                 }
             }
+        });
+        const results = await Promise.allSettled(terminationPromises);
+        const rejected = results.filter(r => r.status === "rejected");
+        if (rejected.length > 0) {
+            // Use a local AggregateError polyfill (for Node <15)
+            const error = new Error(`One or more server terminations failed: ${rejected.map(it => it.reason).join(",")}`);
+            (error as any).errors = rejected.map(r => r.reason);
+            throw error;
         }
     }
 }

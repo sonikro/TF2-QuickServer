@@ -90,13 +90,40 @@ describe("TerminatePendingServers", () => {
         expect(eventLogger.log).not.toHaveBeenCalled();
     });
 
-    it("handles errors gracefully and continues processing", async () => {
+    it("deletes server record and logs event if error is 'No container instance found'", async () => {
+        const pendingServer = createServer();
+        serverRepository.getAllServers.mockResolvedValue([pendingServer]);
+        const error = new Error("No container instance found");
+        serverManager.deleteServer.mockRejectedValue(error);
+
+        await sut.execute();
+
+        expect(serverRepository.deleteServer).toHaveBeenCalledWith(pendingServer.serverId);
+        expect(eventLogger.log).toHaveBeenCalledWith({
+            eventMessage: expect.stringContaining(pendingServer.serverId),
+            actorId: pendingServer.createdBy,
+        });
+    });
+
+    it("throws if any server termination fails with an unhandled error", async () => {
         const pendingServer = createServer();
         serverRepository.getAllServers.mockResolvedValue([pendingServer]);
         serverManager.deleteServer.mockRejectedValue(new Error("fail"));
 
-        await expect(sut.execute()).resolves.not.toThrow();
+        await expect(sut.execute()).rejects.toThrow("One or more server terminations failed: Error: fail");
         expect(serverManager.deleteServer).toHaveBeenCalled();
-        // Should still attempt to delete and log, even if one fails
+    });
+
+    it("throws if one of multiple server terminations fails", async () => {
+        const server1 = createServer({ serverId: "server-1" });
+        const server2 = createServer({ serverId: "server-2" });
+        serverRepository.getAllServers.mockResolvedValue([server1, server2]);
+        serverManager.deleteServer.mockImplementation(async ({ serverId }) => {
+            if (serverId === "server-2") throw new Error("fail-2");
+        });
+        (discordBot.users as any).fetch.mockResolvedValue(user);
+
+        await expect(sut.execute()).rejects.toThrow("One or more server terminations failed: Error: fail-2");
+        expect(serverManager.deleteServer).toHaveBeenCalledTimes(2);
     });
 });
