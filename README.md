@@ -25,17 +25,17 @@
 
 ## ✨ Features
 
-- ✅ **One-Click Server Deployment** – Launch a TF2 server via simple Discord commands  
-- 🌍 **Multi-Region Support** – Deploy in various **Oracle Cloud regions** for minimal latency  
-- 🔐 **DDoS Protection** – All servers use **Steam Datagram Relay (SDR)** for secure connections  
-- 🛆 **Containerized Architecture** – Fully isolated Docker containers per server  
-- ⏱️ **Cost-Efficient** – Idle servers automatically shut down after 10 minutes
+- ✅ **Instant Server Deployment** – Spin up a TF2 server in seconds with a simple Discord command—no technical knowledge required
+- 🌍 **Global Multi-Region Support** – Deploy servers in your preferred Oracle Cloud region for the lowest possible latency
+- 🛡️ **Advanced DDoS Protection** – Every server is protected by the custom-built **TF2-QuickServer-Shield**, an intelligent agent that actively monitors and blocks DDoS attacks in real time, with in-game notifications for your peace of mind
+- 🛆 **Isolated Containerized Architecture** – Each server runs in its own secure Docker container, ensuring full isolation and reliability
+- ⏱️ **Automatic Cost Savings** – Idle servers are automatically terminated after 10 minutes to save resources and keep costs low
 
 ---
 
 ## 🧐 How It Works
 
-1. **Join our Discord Channel**
+1. **Join our Discord Channel** or use the Bot in any of our Partnered Guilds
 2. **Run a Command** – Example: `/create-server sa-saopaulo-1`
 3. **Select a Variant** – Use the buttons shown in Discord to pick your server type (e.g., `standard-competitive`).
 4. **Receive Server Info** – Get detailed connection info for your server, including SDR, direct, and TV connect addresses.
@@ -49,6 +49,7 @@
 - 🧪 **OCI-SDK (Node.js)** – Dynamically creates container instances  
 - 📂 **SQLite** – Fast, local database to track server and user state  
 - 🐳 **Docker** – All servers are built from containerized images  
+- 🦫 **GoLang** – Powers the custom TF2-QuickServer-Shield for advanced DDoS protection and network monitoring
 
 ---
 
@@ -58,17 +59,21 @@
 |--------|-------------|
 | `/create-server <region>` | Launches a server in the selected region (you'll be prompted to select a variant) |
 | `/terminate-servers` | Terminates all servers created by the user |
-| `/get-balance` | Shows your available credits (Only enabled if credits are enabled) |
-| `/buy-credits` | *(Coming soon!)* Purchase credits |
 | `/set-user-data <steamId>` | Sets the SteamID of the user, assigning them as the Sourcemod admin for all servers the user creates |
-
-> 💡 *Empty servers are terminated after 10 minutes of inactivity.*
 
 ---
 
 ## 🌎 Supported Regions
 
-Any region that supports **Oracle Container Instances** is fair game.  
+The main TF2-QuickServer app currently supports the following regions for instant server deployment:
+
+- 🇨🇱 Santiago
+- 🇧🇷 São Paulo
+- 🇨🇴 Bogotá
+- 🇺🇸 Chicago
+- 🇩🇪 Frankfurt
+
+If you are self-hosting, you can use **any** region that supports Oracle Container Instances.  
 See the full list: [Oracle Cloud Regions](https://www.oracle.com/cloud/public-cloud-regions/)
 
 ---
