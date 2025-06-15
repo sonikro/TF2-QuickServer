@@ -5,7 +5,7 @@
 
 <!-- Logo -->
 <p align="center">
-  <img src="assets/logo.png" alt="TF2-QuickServer Logo" width="220" style="border-radius: 50%;" />
+  <img src="assets/logo.png" alt="TF2-QuickServer Logo" width="220" />
   <br/>
   <sub>Logo by <a href="https://www.instagram.com/thecleandesign/">kcaugolden</a></sub>
 </p>
