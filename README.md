@@ -3,7 +3,17 @@
 ![TF2-QuickServer](https://img.shields.io/badge/TF2-QuickServer-blue?style=for-the-badge&logo=steam)  
 [![Discord](https://img.shields.io/discord/1359667090092458055?label=Join%20Our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/HfDgMj73cW)
 
+<!-- Logo -->
+<p align="center">
+  <img src="assets/logo.png" alt="TF2-QuickServer Logo" width="220" />
+  <br/>
+  <sub>Logo by <a href="https://www.instagram.com/thecleandesign/">kcaugolden</a></sub>
+</p>
+
+
 > Instantly deploy **Team Fortress 2** servers straight from Discord — powered by Docker, Oracle Cloud, and SDR.
+
+
 
 ---
 
