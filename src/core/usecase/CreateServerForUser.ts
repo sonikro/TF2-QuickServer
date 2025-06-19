@@ -4,6 +4,7 @@ import { GuildParametersRepository } from "../repository/GuildParametersReposito
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
+import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
 import { StatusUpdater } from "../services/StatusUpdater";
@@ -18,8 +19,9 @@ export class CreateServerForUser {
         userCreditsRepository: UserCreditsRepository,
         guildParametersRepository: GuildParametersRepository,
         eventLogger: EventLogger,
-        configManager: ConfigManager
+        configManager: ConfigManager,
         userRepository: UserRepository,
+        userBanRepository: UserBanRepository,
     }) { }
 
     public async execute(args: {
@@ -29,11 +31,17 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository } = this.dependencies;
+        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         const user = await userRepository.getById(args.creatorId);
         if (!user || !user.steamIdText) {
             throw new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.');
+        }
+
+        // Check if user is banned
+        const isBanned = await userBanRepository.isUserBanned(user.steamIdText, args.creatorId);
+        if (isBanned) {
+            throw new UserError('You are banned and cannot create servers.');
         }
 
         const creditsConfig = configManager.getCreditsConfig();
