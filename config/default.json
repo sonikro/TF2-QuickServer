@@ -45,6 +45,34 @@
                 "ultiduo": "rgl_ud_ultiduo.cfg"
             }
         },
+        "fbtf-6v6-standard": {
+            "displayName": "FBTF 6v6 Standard",
+            "defaultCfgs": {
+                "5cp": "fbtf_6v6_5cp.cfg",
+                "koth": "fbtf_6v6_koth.cfg"
+            },
+            "hostname": "FBTF 6v6 Standard | {region} @ Sonikro Solutions",
+            "guildId": "144450745662570496"
+        },
+        "fbtf-6v6-pro": {
+            "displayName": "FBTF 6v6 Pro",
+            "defaultCfgs": {
+                "5cp": "fbtf_6v6_5cp_pro.cfg",
+                "koth": "fbtf_6v6_koth.cfg"
+            },
+            "hostname": "FBTF 6v6 Pro | {region} @ Sonikro Solutions",
+            "guildId": "144450745662570496"
+        },
+        "fbtf-9v9": {
+            "displayName": "FBTF 9v9",
+            "defaultCfgs": {
+                "pl": "rgl_HL_stopwatch.cfg",
+                "koth": "rgl_HL_koth.cfg",
+                "cp_steel_f12": "rgl_HL_stopwatch.cfg"
+            },
+            "hostname": "FBTF 9v9 | {region} @ Sonikro Solutions",
+            "guildId": "144450745662570496"
+        },
         "insertcoin": {
             "displayName": "InsertCoin Mixes",
             "hostname": "InsertCoin Mixes | {region} @ Sonikro Solutions",
