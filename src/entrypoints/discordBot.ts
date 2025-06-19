@@ -31,6 +31,7 @@ import { DefaultServerAbortManager } from "../providers/services/DefaultServerAb
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
+import { SQliteUserBanRepository } from "../providers/repository/SQliteUserBanRepository";
 
 export async function startDiscordBot() {
 
@@ -106,6 +107,10 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client
     })
 
+    const userBanRepository = new SQliteUserBanRepository({
+        knex: KnexConnectionManager.client
+    })
+
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManager: ociServerManager,
@@ -115,7 +120,7 @@ export async function startDiscordBot() {
             configManager: defaultConfigManager,
             userRepository,
             guildParametersRepository,
-
+            userBanRepository
         }),
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,

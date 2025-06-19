@@ -12,6 +12,7 @@ import { EventLogger } from '../services/EventLogger';
 import { ServerManager } from '../services/ServerManager';
 import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
+import { UserBanRepository } from '../repository/UserBanRepository';
 
 vi.mock("uuid", () => {
     return {
@@ -29,6 +30,7 @@ const createTestEnvironment = () => {
     const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
+    const userBanRepository = mock<UserBanRepository>();
 
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
@@ -91,6 +93,7 @@ const createTestEnvironment = () => {
             configManager,
             userRepository,
             guildParametersRepository,
+            userBanRepository,
         }),
         mocks: {
             serverRepository,
@@ -100,6 +103,7 @@ const createTestEnvironment = () => {
             eventLogger,
             userRepository,
             guildParametersRepository,
+            userBanRepository,
             trx,
             statusUpdater
         },
@@ -367,5 +371,23 @@ describe('CreateServerForUser Use Case', () => {
         });
 
         await expect(act()).rejects.toThrow(new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.'));
+    });
+
+    it("should throw UserError if user is banned", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+        when(mocks.userBanRepository.isUserBanned)
+            .calledWith(data.steamId, data.userId)
+            .thenResolve(true);
+        when(mocks.userRepository.getById)
+            .calledWith(data.userId)
+            .thenResolve({ id: data.userId, steamIdText: data.steamId });
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName,
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+        });
+        await expect(act()).rejects.toThrow(new UserError('You are banned and cannot create servers.'));
     });
 });
