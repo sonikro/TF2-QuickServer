@@ -51,51 +51,29 @@ jobs:
       - name: Run container and check health (fat-tf2-pickup)
         run: bash ./scripts/test_image.sh sonikro/fat-tf2-pickup:latest
 
-  push-images:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: build-and-test-variant-images
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install CMake
-        run: sudo apt-get update -y && sudo apt-get install -y cmake
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Download maps
-        run: npm run download:maps
-
-      - name: Build tf2-standard-competitive image
-        run: docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile .
-
-      - name: Build fat-tf2-standard-competitive image
-        run: docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .
-
-      - name: Build fat-tf2-pickup image
-        run: docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .
-
       - name: Login to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push tf2-standard-competitive image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker push sonikro/tf2-standard-competitive:latest
           docker tag sonikro/tf2-standard-competitive:latest sonikro/tf2-standard-competitive:${{ github.sha }}
           docker push sonikro/tf2-standard-competitive:${{ github.sha }}
 
       - name: Push fat-tf2-standard-competitive image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker push sonikro/fat-tf2-standard-competitive:latest
           docker tag sonikro/fat-tf2-standard-competitive:latest sonikro/fat-tf2-standard-competitive:${{ github.sha }}
           docker push sonikro/fat-tf2-standard-competitive:${{ github.sha }}
 
       - name: Push fat-tf2-pickup image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           docker push sonikro/fat-tf2-pickup:latest
           docker tag sonikro/fat-tf2-pickup:latest sonikro/fat-tf2-pickup:${{ github.sha }}
