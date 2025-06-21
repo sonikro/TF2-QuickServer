@@ -88,11 +88,7 @@ const extractBz2 = async (source: string, destination: string): Promise<void> =>
 // Download all maps
 const downloadAllMaps = async (maps: MapEntry[]): Promise<void> => {
     for (const map of maps) {
-        try {
-            await downloadMap(map);
-        } catch (error) {
-            console.error(`Failed to download ${typeof map === 'string' ? map : map.name}:`, (error as Error).message);
-        }
+        await downloadMap(map);
     }
     console.log("Download process completed.");
 };
@@ -100,6 +96,7 @@ const downloadAllMaps = async (maps: MapEntry[]): Promise<void> => {
 // Start the download process
 downloadAllMaps(maps).catch((error) => {
     console.error("Unexpected error during download process:", (error as Error).message);
+    process.exit(1);
 }).then(() => {
     console.log("All downloads attempted.");
     process.exit(0);
