@@ -212,7 +212,7 @@ export class OCIServerManager implements ServerManager {
                 return true;
             }
             throw new Error("Container instance is not ACTIVE yet");
-        }, { interval: 5000, timeout: 300000, signal: abortController.signal });
+        }, { interval: 5000, timeout: 360000, signal: abortController.signal });
 
         // Notify user: Waiting for server to be ready for RCON
         await statusUpdater(`🔄 [5/5] Waiting for server to be ready to receive RCON commands...`);
@@ -238,7 +238,7 @@ export class OCIServerManager implements ServerManager {
                 };
             },
             {
-                timeout: 300000,
+                timeout: 360000,
                 interval: 5000,
                 signal: abortController.signal,
             }
