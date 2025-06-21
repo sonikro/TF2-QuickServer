@@ -1,0 +1,28 @@
+log on
+
+rcon_password "${RCON_PASSWORD}"
+
+hostname "${SERVER_HOSTNAME}"
+sv_password "${SERVER_PASSWORD}"
+
+sv_contact ""
+sv_tags ""
+
+sv_downloadurl "${DOWNLOAD_URL}"
+sv_allowdownload 1
+sv_allowupload 1
+
+tv_enable 1
+tv_name "${STV_NAME}"
+tv_title "${STV_TITLE}"
+tv_password "${STV_PASSWORD}"
+tv_maxrate 0
+
+sv_quota_stringcmdspersecond 400
+
+logstf_apikey "${LOGS_TF_APIKEY}"
+sm_demostf_apikey "${DEMOS_TF_APIKEY}"
+
+recordstv_path "demos"
+
+exec banned_user.cfg
