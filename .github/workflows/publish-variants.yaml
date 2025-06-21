@@ -18,38 +18,10 @@ on:
       - "maps.json"
       - "maps/**"
 
-
 jobs:
-  build-and-push-standard-competitive:
+  build-and-test-variant-images:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Login to Docker Hub
-        if: github.event_name == 'push'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            sonikro/tf2-standard-competitive:latest
-            sonikro/tf2-standard-competitive:${{ github.sha }}
-          context: .
-          file: ./variants/standard-competitive/Dockerfile
-
-  build-and-push-fat-standard-competitive:
-    runs-on: ubuntu-latest
-    needs: build-and-push-standard-competitive
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,34 +36,67 @@ jobs:
       - name: Download maps
         run: npm run download:maps
 
+      - name: Build tf2-standard-competitive image
+        run: docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile .
+
+      - name: Build fat-tf2-standard-competitive image
+        run: docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .
+
+      - name: Build fat-tf2-pickup image
+        run: docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .
+
+      - name: Run container and check health (fat-tf2-standard-competitive)
+        run: bash ./scripts/test_image.sh sonikro/fat-tf2-standard-competitive:latest
+
+      - name: Run container and check health (fat-tf2-pickup)
+        run: bash ./scripts/test_image.sh sonikro/fat-tf2-pickup:latest
+
+  push-images:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-and-test-variant-images
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install CMake
+        run: sudo apt-get update -y && sudo apt-get install -y cmake
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download maps
+        run: npm run download:maps
+
+      - name: Build tf2-standard-competitive image
+        run: docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile .
+
+      - name: Build fat-tf2-standard-competitive image
+        run: docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .
+
+      - name: Build fat-tf2-pickup image
+        run: docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .
+
       - name: Login to Docker Hub
-        if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Push tf2-standard-competitive image
+        run: |
+          docker push sonikro/tf2-standard-competitive:latest
+          docker tag sonikro/tf2-standard-competitive:latest sonikro/tf2-standard-competitive:${{ github.sha }}
+          docker push sonikro/tf2-standard-competitive:${{ github.sha }}
 
-      - name: Build and push Standard Competitive
-        uses: docker/build-push-action@v6
-        with:
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            sonikro/fat-tf2-standard-competitive:latest
-            sonikro/fat-tf2-standard-competitive:${{ github.sha }}
-          context: .
-          file: ./variants/fat-standard-competitive/Dockerfile
+      - name: Push fat-tf2-standard-competitive image
+        run: |
+          docker push sonikro/fat-tf2-standard-competitive:latest
+          docker tag sonikro/fat-tf2-standard-competitive:latest sonikro/fat-tf2-standard-competitive:${{ github.sha }}
+          docker push sonikro/fat-tf2-standard-competitive:${{ github.sha }}
 
-      - name: Build and push TF2 Pickup Server
-        uses: docker/build-push-action@v6 
-        with:
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            sonikro/fat-tf2pickup:latest
-            sonikro/fat-tf2pickup:${{ github.sha }}
-          context: .
-          file: ./variants/fat-tf2pickup/Dockerfile
-
-
+      - name: Push fat-tf2-pickup image
+        run: |
+          docker push sonikro/fat-tf2-pickup:latest
+          docker tag sonikro/fat-tf2-pickup:latest sonikro/fat-tf2-pickup:${{ github.sha }}
+          docker push sonikro/fat-tf2-pickup:${{ github.sha }}
