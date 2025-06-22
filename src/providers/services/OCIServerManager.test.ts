@@ -64,7 +64,7 @@ function createTestEnvironment() {
 
   process.env.DEMOS_TF_APIKEY = "test-demo-tf-api-key";
   process.env.LOGS_TF_APIKEY = "test-logs-tf-api-key";
-
+  process.env.SRCDS_LOG_ADDRESS = "logaddress:port"
   when(containerClient.createContainerInstance)
     .calledWith(expect.anything())
     .thenResolve(mock({
@@ -277,6 +277,12 @@ describe("OCIServerManager", () => {
                 "24",
                 "+map",
                 "ctf_2fort",
+                "+log",
+                "on",
+                "+logaddress_add",
+                "logaddress:port",
+                "+sv_logsecret",
+                "test-server-id"
               ],
               environmentVariables: {
                 SERVER_HOSTNAME: "Test Server",
