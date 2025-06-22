@@ -39,9 +39,9 @@ export class CreateServerForUser {
         }
 
         // Check if user is banned
-        const isBanned = await userBanRepository.isUserBanned(user.steamIdText, args.creatorId);
-        if (isBanned) {
-            throw new UserError('You are banned and cannot create servers.');
+        const banResult = await userBanRepository.isUserBanned(user.steamIdText, args.creatorId);
+        if (banResult.isBanned) {
+            throw new UserError(`You are banned and cannot create servers. Reason: ${banResult.reason || 'No reason provided'}`);
         }
 
         const creditsConfig = configManager.getCreditsConfig();
