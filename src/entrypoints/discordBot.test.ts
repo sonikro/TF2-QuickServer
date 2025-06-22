@@ -7,7 +7,7 @@ import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
 
 vi.mock("../providers/repository/KnexConnectionManager", async () => {
-    const actual = await import("../providers/repository/KnexConnectionManager") as typeof import('../providers/repository/KnexConnectionManager');
+    const actual = await import("../providers/repository/KnexConnectionManager.js") as typeof import('../providers/repository/KnexConnectionManager');
     return {
         ...actual,
         KnexConnectionManager: {
