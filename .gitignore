@@ -246,5 +246,4 @@ shield/bin
 # End of https://www.toptal.com/developers/gitignore/api/go
 
 # Local Mpas
-!maps/koth_berry_b2.bsp
-!maps/koth_berry_b3_3.bsp
+!maps/koth_berry_b3a.bsp
