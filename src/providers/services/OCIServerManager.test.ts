@@ -293,6 +293,7 @@ describe("OCIServerManager", () => {
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
                 ADMIN_LIST: "default_admin,12345678901234567",
+                SV_LOGSECRET: "test-server-id",
               },
             },
             {
