@@ -141,6 +141,12 @@ export class OCIServerManager implements ServerManager {
                             variantConfig.maxPlayers.toString(),
                             "+map",
                             variantConfig.map,
+                            "+log",
+                            "on",
+                            "+logaddress_add",
+                            process.env.SRCDS_LOG_ADDRESS || "",
+                            "+sv_logsecret",
+                            serverId
                         ],
                         environmentVariables,
                     },
