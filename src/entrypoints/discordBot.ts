@@ -32,6 +32,7 @@ import { FileSystemOCICredentialsFactory } from "../providers/services/FileSyste
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
 import { SQliteUserBanRepository } from "../providers/repository/SQliteUserBanRepository";
+import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
 export async function startDiscordBot() {
 
@@ -247,18 +248,12 @@ export async function startDiscordBot() {
     // Login to Discord
     client.login(token);
 
-    // Initialize HTTP Server
-    initializeExpress({
-        handleOrderPaid: new HandleOrderPaid({
-            creditOrdersRepository,
-            userCreditsRepository,
-            eventLogger
-        }),
-        paypalService: paypalPaymentService,
-        discordClient: client,
-        eventLogger,
-        adyenPaymentService
-    })
+    // Start UDP log listener with dependency injection
+    startSrcdsCommandListener({
+        serverCommander,
+        userBanRepository,
+        serverRepository,
+    });
 
 
     // Prevent crashes and log global errors
