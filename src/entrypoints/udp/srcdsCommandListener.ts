@@ -5,7 +5,7 @@ import { LogReceiver } from "@c43721/srcds-log-receiver";
 export async function startSrcdsCommandListener(dependencies: UDPCommandsServices) {
     const receiver = new LogReceiver({
         address: "0.0.0.0",
-        port: 27100,
+        port: process.env.SRCDS_COMMAND_LISTENER_PORT ? Number(process.env.SRCDS_COMMAND_LISTENER_PORT) : 27100,
     });
 
     console.log("SRCDS Log receiver running.. ");

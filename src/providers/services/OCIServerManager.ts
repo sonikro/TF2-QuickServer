@@ -106,6 +106,7 @@ export class OCIServerManager implements ServerManager {
             STV_NAME: regionConfig.tvHostname,
             STV_PASSWORD: tvPassword,
             ADMIN_LIST: adminList.join(","),
+            SV_LOGSECRET: serverId,
             ...Object.assign({}, ...defaultCfgsEnvironment),
             ...extraEnvs,
         };

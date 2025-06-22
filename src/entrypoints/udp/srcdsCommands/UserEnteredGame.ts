@@ -9,7 +9,6 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
             args: { userId: match[1], steamId3: match[2] },
             type: "userEnteredGame",
             handler: async ({ args, password: serverId, services }) => {
-                // Placeholder for the actual handler logic
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 

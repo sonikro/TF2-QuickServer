@@ -22,7 +22,8 @@
 		}
 	},
 	"appPort": [
-		"27100:27100/udp"
+		"27100:27100/udp",
+		"27101:27101/udp"
 	]
 
 	// Features to add to the dev container. More info: https://containers.dev/features.

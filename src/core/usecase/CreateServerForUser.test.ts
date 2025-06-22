@@ -30,7 +30,9 @@ const createTestEnvironment = () => {
     const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
-    const userBanRepository = mock<UserBanRepository>();
+    const userBanRepository = mock<UserBanRepository>({
+        isUserBanned: vi.fn().mockResolvedValue({ isBanned: false, reason: '' })
+    });
 
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
@@ -83,6 +85,7 @@ const createTestEnvironment = () => {
     }
 
     const statusUpdater = vi.fn();
+
 
     return {
         sut: new CreateServerForUser({
