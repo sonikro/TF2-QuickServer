@@ -377,7 +377,7 @@ describe('CreateServerForUser Use Case', () => {
         const { data, mocks, sut } = createTestEnvironment();
         when(mocks.userBanRepository.isUserBanned)
             .calledWith(data.steamId, data.userId)
-            .thenResolve(true);
+            .thenResolve({ isBanned: true, reason: 'Test ban reason' });
         when(mocks.userRepository.getById)
             .calledWith(data.userId)
             .thenResolve({ id: data.userId, steamIdText: data.steamId });
@@ -388,6 +388,6 @@ describe('CreateServerForUser Use Case', () => {
             guildId: data.guildId,
             statusUpdater: mocks.statusUpdater
         });
-        await expect(act()).rejects.toThrow(new UserError('You are banned and cannot create servers.'));
+        await expect(act()).rejects.toThrow(new UserError('You are banned and cannot create servers. Reason: Test ban reason'));
     });
 });
