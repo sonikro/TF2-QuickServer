@@ -9,7 +9,8 @@
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
 		"ghcr.io/jckimble/devcontainer-features/ngrok:3": {},
 		"ghcr.io/devcontainers/features/terraform:1": {},
-		"ghcr.io/devcontainers/features/go:1": {}
+		"ghcr.io/devcontainers/features/go:1": {},
+		"ghcr.io/devcontainers-extra/features/cmake:1": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -19,7 +20,10 @@
 				"yy0931.vscode-sqlite3-editor"
 			]
 		}
-	}
+	},
+	"appPort": [
+		"27100:27100/udp"
+	]
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
