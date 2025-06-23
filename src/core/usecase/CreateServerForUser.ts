@@ -10,7 +10,7 @@ import { ServerManager } from "../services/ServerManager";
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";
-
+import SteamID from "steamid"
 export class CreateServerForUser {
 
     constructor(private readonly dependencies: {
@@ -39,7 +39,9 @@ export class CreateServerForUser {
         }
 
         // Check if user is banned
-        const banResult = await userBanRepository.isUserBanned(user.steamIdText, args.creatorId);
+        const steamId = new SteamID(user.steamIdText);
+        const steamID3 = steamId.steam3().replace("[", "").replace("]", "");
+        const banResult = await userBanRepository.isUserBanned(steamID3, args.creatorId);
         if (banResult.isBanned) {
             throw new UserError(`You are banned and cannot create servers. Reason: ${banResult.reason || 'No reason provided'}`);
         }

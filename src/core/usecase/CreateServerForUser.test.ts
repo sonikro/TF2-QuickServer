@@ -41,7 +41,7 @@ const createTestEnvironment = () => {
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(["standard-competitive", "casual"]);
     const userId = chance.guid();
-    const steamId = chance.string({ length: 20 });
+    const steamId = "STEAM_0:0:14581482";
     const guildId = chance.guid();
 
     when(userRepository.getById)
@@ -379,7 +379,7 @@ describe('CreateServerForUser Use Case', () => {
     it("should throw UserError if user is banned", async () => {
         const { data, mocks, sut } = createTestEnvironment();
         when(mocks.userBanRepository.isUserBanned)
-            .calledWith(data.steamId, data.userId)
+            .calledWith("U:1:29162964", data.userId)
             .thenResolve({ isBanned: true, reason: 'Test ban reason' });
         when(mocks.userRepository.getById)
             .calledWith(data.userId)
