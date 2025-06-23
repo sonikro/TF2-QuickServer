@@ -104,6 +104,9 @@ if [ -f "$SERVER_DIR/enforced_cvars.cfg" ]; then
 
     echo "Applying enforced cvars from enforced_cvars.cfg..."
 
+    # Use envsubst to expand environment variables in enforced_cvars.cfg and overwrite the file
+    envsubst < "$SERVER_DIR/enforced_cvars.cfg" > "$SERVER_DIR/enforced_cvars.cfg.tmp" && mv "$SERVER_DIR/enforced_cvars.cfg.tmp" "$SERVER_DIR/enforced_cvars.cfg"
+
     while IFS= read -r enforced_line; do
         if [[ -z "$enforced_line" || "$enforced_line" =~ ^\s*# ]]; then
             continue
