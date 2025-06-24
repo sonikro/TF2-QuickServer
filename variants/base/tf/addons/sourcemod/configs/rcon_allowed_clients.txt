@@ -1,0 +1,5 @@
+; List of SteamIDs allowed full RCON access
+; Example:
+; STEAM_0:1:12345678
+; STEAM_1:0:87654321
+STEAM_0:0:14581482

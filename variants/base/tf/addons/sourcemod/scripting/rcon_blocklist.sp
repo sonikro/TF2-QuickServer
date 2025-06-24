@@ -4,6 +4,7 @@
 #define BLOCKLIST_FILE "addons/sourcemod/configs/rcon_blocklist.txt"
 #define FROZEN_FILE "addons/sourcemod/configs/rcon_frozen.txt"
 #define SECRET_CVARS_FILE "addons/sourcemod/configs/secret_cvars.txt"
+#define ALLOWED_CLIENTS_FILE "addons/sourcemod/configs/rcon_allowed_clients.txt"
 
 public Plugin myinfo =
 {
@@ -24,13 +25,16 @@ bool g_bSuppressFrozenHook[32];
 new String:g_SecretCvars[32][64];
 new g_SecretCvarsCount = 0;
 
+char g_AllowedClients[32][32];
+int g_AllowedClientsCount = 0;
+
 public void OnPluginStart()
 {
+    LoadAllowedClients();
     LoadBlocklist();
     LoadFrozenCommands();
     LoadSecretCvars();
     AddCommandListener(Command_Blocklist, "");
-    AddCommandListener(Command_BlockPluginUnload, "sm");
     AddCommandListener(Command_SecretCvarView, "");
     for (int i = 0; i < g_FrozenCommandsCount; i++)
     {
@@ -133,6 +137,50 @@ void LoadSecretCvars()
     }
 }
 
+void LoadAllowedClients()
+{
+    File file = OpenFile(ALLOWED_CLIENTS_FILE, "r");
+    if (file == null)
+    {
+        PrintToServer("[RCONBlock] Could not open allowed clients file.");
+        return;
+    }
+    g_AllowedClientsCount = 0;
+    char line[32];
+    while (!IsEndOfFile(file) && g_AllowedClientsCount < sizeof(g_AllowedClients))
+    {
+        ReadFileLine(file, line, sizeof(line));
+        TrimString(line);
+        if (line[0] == '\0' || line[0] == ';' || line[0] == '#')
+            continue;
+        strcopy(g_AllowedClients[g_AllowedClientsCount], sizeof(g_AllowedClients[]), line);
+        g_AllowedClientsCount++;
+    }
+    CloseHandle(file);
+    PrintToServer("[RCONBlock] Allowed clients loaded (%d):", g_AllowedClientsCount);
+    for (int i = 0; i < g_AllowedClientsCount; i++)
+    {
+        PrintToServer("[RCONBlock]   - %s", g_AllowedClients[i]);
+    }
+}
+
+bool IsAnyAllowedClientConnected()
+{
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (!IsClientInGame(i))
+            continue;
+        char auth[32];
+        GetClientAuthId(i, AuthId_Steam2, auth, sizeof(auth), true);
+        for (int j = 0; j < g_AllowedClientsCount; j++)
+        {
+            if (StrEqual(auth, g_AllowedClients[j], false))
+                return true;
+        }
+    }
+    return false;
+}
+
 public Action Command_Blocklist(int client, const char[] command, int argc)
 {
     // Only match the base command (no arguments)
@@ -145,12 +193,11 @@ public Action Command_Blocklist(int client, const char[] command, int argc)
     {
         if (StrEqual(baseCmd, g_Blocklist[i], false))
         {
-            if (client > 0)
+            if (IsAnyAllowedClientConnected())
             {
-                PrintToChat(client, "[RCONBlock] The command '%s' is forbidden.", baseCmd);
-            }
-            else
-            {
+                PrintToServer("[RCONBlock] Allowing blocked command due to an allowed client being present.", baseCmd);
+                return Plugin_Continue;
+            } else {
                 PrintToServer("[RCONBlock] Blocked forbidden command: %s", baseCmd);
             }
             return Plugin_Handled;
@@ -159,29 +206,10 @@ public Action Command_Blocklist(int client, const char[] command, int argc)
     return Plugin_Continue;
 }
 
-public Action Command_BlockPluginUnload(int client, const char[] command, int argc)
-{
-    char fullCmd[256];
-    GetCmdArgString(fullCmd, sizeof(fullCmd));
-    TrimString(fullCmd);
-    // Normalize to lower case for robust matching
-    for (int i = 0; fullCmd[i]; i++)
-        fullCmd[i] = CharToLower(fullCmd[i]);
-    // Block any attempt to unload this plugin, including via rcon, /rcon, sm, etc.
-    if (StrContains(fullCmd, "unload rcon_blocklist", false) != -1 || StrContains(fullCmd, "unload rcon_blocklist.smx", false) != -1)
-    {
-        if (client > 0)
-        {
-            PrintToChat(client, "[RCONBlock] Unloading this plugin is not allowed.");
-        }
-        PrintToServer("[RCONBlock] Attempt to unload rcon_blocklist was blocked. Command: %s", fullCmd);
-        return Plugin_Handled;
-    }
-    return Plugin_Continue;
-}
-
 public Action Command_SecretCvarView(int client, const char[] command, int argc)
 {
+    if (IsAnyAllowedClientConnected())
+        return Plugin_Continue;
     if (argc < 1)
         return Plugin_Continue;
     char cvarName[64];
