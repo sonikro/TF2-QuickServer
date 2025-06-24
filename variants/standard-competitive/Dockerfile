@@ -42,6 +42,12 @@ RUN wget -nv "${DODGEBALL_PLUGIN_URL}" -O "${DODGEBALL_PLUGIN_FILE_NAME}" \
 RUN wget -O "${SERVER_DIR}/tf/addons/sourcemod/plugins/whitelisttf.smx" https://github.com/spiretf/sm_whitelist/raw/master/plugin/whitelisttf.smx
 
 COPY --chown=tf2:tf2 ./variants/base/tf/cfg/* $SERVER_DIR/tf/cfg/
+
+# Copy custom sourcemod configs and plugins
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/configs/* $SERVER_DIR/tf/addons/sourcemod/configs/
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/plugins/* $SERVER_DIR/tf/addons/sourcemod/plugins/
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/scripting/* $SERVER_DIR/tf/addons/sourcemod/scripting/
+
 COPY --chown=tf2:tf2 ./variants/base/custom_entrypoint.sh .
 
 ENTRYPOINT [ "./custom_entrypoint.sh" ]
