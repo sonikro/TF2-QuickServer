@@ -12,6 +12,8 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 
+                console.log(`User entered game: ${userId} (${steamId3}) on server ${serverId}`);
+
                 // Check if user is banned
                 const banResult = await userBanRepository.isUserBanned(steamId3);
                 if (!banResult.isBanned) return;
