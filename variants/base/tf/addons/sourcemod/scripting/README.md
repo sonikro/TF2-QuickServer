@@ -1,6 +1,6 @@
 # RCON Command Blocker SourceMod Plugin
 
-This plugin is designed to restrict RCON access, block dangerous commands, freeze sensitive cvars, and hide secret values from users. It is ideal server managers that want to give RCON Access to users, but want users to stay away from some settings.
+This plugin is designed to restrict RCON access, block dangerous commands, freeze sensitive cvars, and hide secret values from users. It is ideal for server managers that want to give RCON Access to users, but want users to stay away from some settings.
 
 ## Features
 - **Blocklist:** Prevents execution of specific commands via RCON or console.
@@ -33,6 +33,16 @@ A list of cvars whose values should not be visible to users. Attempts to view th
 logstf_apikey
 rcon_password
 ```
+
+### 4. `rcon_allowed_clients.txt`
+A list of SteamIDs (one per line) who are considered fully trusted. Example:
+
+```
+STEAM_0:1:12345678
+STEAM_1:0:87654321
+```
+
+If any of these SteamIDs are currently connected to the server, all blocklist and secret cvar restrictions are bypassed for everyone—including RCON and console commands. This is necessary because SourceMod does not provide a way to detect the origin SteamID for RCON/console commands (the `client` parameter is always 0 for RCON). As long as at least one allowed client is present, all commands are permitted. If no allowed client is connected, restrictions apply to everyone.
 
 ## Installation
 1. Compile `rcon_blocklist.sp` with the SourceMod compiler.
