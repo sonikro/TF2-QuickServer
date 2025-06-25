@@ -30,7 +30,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
                                 host: server.rconAddress,
                                 port: 27015,
                                 password: server.rconPassword,
-                                command: "say [TF2-QuickServer] Server is being terminated",
+                                command: "say [TF2-QuickServer] Server is being terminated, please wait up to 15 seconds.",
                                 timeout: 5000
                             })
 
