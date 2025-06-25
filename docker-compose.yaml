@@ -52,7 +52,7 @@ services:
       - +log
       - on
       - +logaddress_add
-      - "host.docker.internal:27100"
+      - "host.docker.internal:27101"
       - +sv_logsecret
       - "9fbb53da-2964-4113-9575-3391837872b0"
     profiles:

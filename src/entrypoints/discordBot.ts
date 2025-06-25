@@ -253,6 +253,8 @@ export async function startDiscordBot() {
         serverCommander,
         userBanRepository,
         serverRepository,
+        serverManager: ociServerManager,
+        userRepository
     });
 
 
