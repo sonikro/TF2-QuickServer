@@ -9,6 +9,9 @@ import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { waitUntil } from "../utils/waitUntil";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 import { StatusUpdater } from "../../core/services/StatusUpdater";
+import { Chance } from "chance";
+
+const chance = new Chance();
 
 export class OCIServerManager implements ServerManager {
     constructor(
@@ -118,6 +121,8 @@ export class OCIServerManager implements ServerManager {
 
         // Notify user: Creating container instance
         await statusUpdater(`📦 [2/5] Creating server instance...`);
+
+        const logSecret = chance.integer({ min: 1, max: 999999 })
         const ociCredentials = this.dependencies.ociCredentialsFactory(region);
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {
             createContainerInstanceDetails: {
@@ -147,7 +152,7 @@ export class OCIServerManager implements ServerManager {
                             "+logaddress_add",
                             process.env.SRCDS_LOG_ADDRESS || "",
                             "+sv_logsecret",
-                            serverId
+                            logSecret.toString(),
                         ],
                         environmentVariables,
                     },
@@ -178,7 +183,7 @@ export class OCIServerManager implements ServerManager {
             }
         };
 
-        const abortController = serverAbortManager.getOrCreate(serverId); 
+        const abortController = serverAbortManager.getOrCreate(serverId);
         console.log(`Creating container instance for server ID: ${serverId}`);
         const response = await containerClient.createContainerInstance(containerRequest);
         const containerId = response.containerInstance?.id;
@@ -267,6 +272,7 @@ export class OCIServerManager implements ServerManager {
             tvIp: publicIp,
             tvPort: 27020,
             tvPassword,
+            logSecret
         };
     }
 

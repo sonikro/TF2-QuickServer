@@ -1,6 +1,7 @@
 import { LogReceiver } from "@c43721/srcds-log-receiver";
 import { UDPCommandsServices } from "./srcdsCommands/UDPCommandServices";
 import { parseSRCDSCommand } from "./srcdsCommands";
+import { defaultGracefulShutdownManager } from "../../providers/services/DefaultGracefulShutdownManager";
 
 type ResilientLogReceiverOptions = {
     address: string;
@@ -30,7 +31,7 @@ export class ResilientLogReceiver {
             const command = parseSRCDSCommand(message);
             if (command) {
                 try {
-                    await command.handler({ args: command.args, password, services });
+                    await defaultGracefulShutdownManager.run(() => command.handler({ args: command.args, password, services }))
                 } catch (error: Error | any) {
                     await services.eventLogger.log({
                         eventMessage: `Error handling SRCDS command: ${command.raw} - ${error.message}`,

@@ -33,8 +33,8 @@ describe("userEnteredGame command parser", () => {
             when(services.userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: true, reason: "Cheating" });
-            when(services.serverRepository.findById)
-                .calledWith(serverId)
+            when(services.serverRepository.findByLogsecret)
+                .calledWith(Number(serverId))
                 .thenResolve(fakeServer as any);
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
@@ -56,6 +56,9 @@ describe("userEnteredGame command parser", () => {
             when(services.userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: false });
+            when(services.serverRepository.findByLogsecret)
+                .calledWith(Number(serverId))
+                .thenResolve(null);
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,

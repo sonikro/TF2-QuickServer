@@ -23,6 +23,7 @@ export class SQLiteServerRepository implements ServerRepository {
                 createdAt: server.createdAt ?? new Date(),
                 createdBy: server.createdBy,
                 status: server.status,
+                sv_logsecret: server.logSecret
             } as Server)
             .onConflict('serverId')
             .merge();
@@ -81,7 +82,15 @@ export class SQLiteServerRepository implements ServerRepository {
         return {
             ...server,
             createdAt: toDate(server.createdAt),
+            logSecret: server.sv_logsecret
         };
+    }
+
+    async findByLogsecret(logsecret: number): Promise<Server | null> {
+        const server = await this.dependencies.knex('servers')
+            .where('sv_logsecret', logsecret)
+            .first();
+        return server ? this.deserialize(server) : null;
     }
 }
 

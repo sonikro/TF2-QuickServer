@@ -9,14 +9,14 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
             raw: rawString,
             args: { userId: Number(match[1]), steamId3: match[2], message: match[3] },
             type: "say",
-            handler: async ({ args, password: serverId, services }) => {
+            handler: async ({ args, password: logSecret, services }) => {
                 const { serverRepository, userRepository, serverCommander, serverManager, eventLogger } = services;
                 const { userId, steamId3, message } = args;
 
                 switch (message) {
                     case "!terminate":
-                        console.log(`User ${userId} (${steamId3}) requested termination on server ${serverId}`);
-                        const server = await serverRepository.findById(serverId);
+                        console.log(`User ${userId} (${steamId3}) requested termination on server with logSecret ${logSecret}`);
+                        const server = await serverRepository.findByLogsecret(Number(logSecret));
                         if (!server)
                             return
                         const steamId = new SteamID(`[${steamId3}]`);
@@ -42,7 +42,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
                             await serverRepository.deleteServer(server.serverId);
 
                             await eventLogger.log({
-                                eventMessage: `User <@${userId}> terminated server ${serverId} from inside the game.`,
+                                eventMessage: `User <@${userId}> terminated server ${server.serverId} from inside the game.`,
                                 actorId: user.id,
                             })
                         }

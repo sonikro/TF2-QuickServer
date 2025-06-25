@@ -8,22 +8,22 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
             raw: rawString,
             args: { userId: match[1], steamId3: match[2] },
             type: "userEnteredGame",
-            handler: async ({ args, password: serverId, services }) => {
+            handler: async ({ args, password: logSecret, services }) => {
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 
-                console.log(`User entered game: ${userId} (${steamId3}) on server ${serverId}`);
+                console.log(`User entered game: ${userId} (${steamId3}) on server with logSecret ${logSecret}`);
 
                 // Check if user is banned
                 const banResult = await userBanRepository.isUserBanned(steamId3);
                 if (!banResult.isBanned) return;
 
-                // Find server by ID
-                const server = await serverRepository.findById(serverId);
+                // Find server by logSecret
+                const server = await serverRepository.findByLogsecret(Number(logSecret));
                 if (!server) return;
 
                 // Ban the user using RCON
-                console.log(`Banning user ${userId} (${steamId3}) on server ${serverId}`);
+                console.log(`Banning user ${userId} (${steamId3}) on server ${server.serverId}`);
                 await serverCommander.query({
                     host: server.rconAddress,
                     port: 27015,

@@ -282,7 +282,7 @@ describe("OCIServerManager", () => {
                 "+logaddress_add",
                 "logaddress:port",
                 "+sv_logsecret",
-                "test-server-id"
+                expect.any(String), // This will be set later
               ],
               environmentVariables: {
                 SERVER_HOSTNAME: "Test Server",

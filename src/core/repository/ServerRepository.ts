@@ -8,4 +8,5 @@ export interface ServerRepository {
     findById(serverId: string): Promise<Server | null>;
     getAllServers(status?: ServerStatus): Promise<Server[]>;
     runInTransaction<T>(fn: (trx: Knex.Transaction) => Promise<T>): Promise<T>;
+    findByLogsecret(logsecret: number): Promise<Server | null>;
 }

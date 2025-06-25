@@ -17,4 +17,5 @@ export interface Server {
     createdAt?: Date;
     createdBy?: string;
     status?: ServerStatus;
+    logSecret?: number;
 }

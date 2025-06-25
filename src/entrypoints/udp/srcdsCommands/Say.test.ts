@@ -47,7 +47,7 @@ describe("say command parser", () => {
 
         it("should terminate the server if user is creator and says !terminate", async () => {
             const { services, command, handler } = createTestEnvironment();
-            services.serverRepository.findById.mockResolvedValue(fakeServer);
+            services.serverRepository.findByLogsecret.mockResolvedValue(fakeServer);
             services.userRepository.findBySteamId.mockResolvedValue(fakeUser);
             services.serverCommander.query.mockResolvedValue("");
             services.serverManager.deleteServer.mockResolvedValue();
@@ -56,7 +56,7 @@ describe("say command parser", () => {
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
-                password: serverId,
+                password: String(fakeServer.logSecret),
                 services
             });
             expect(services.serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
@@ -75,12 +75,12 @@ describe("say command parser", () => {
 
         it("should not terminate if user is not creator", async () => {
             const { services, command, handler } = createTestEnvironment();
-            services.serverRepository.findById.mockResolvedValue(fakeServer);
+            services.serverRepository.findByLogsecret.mockResolvedValue(fakeServer);
             services.userRepository.findBySteamId.mockResolvedValue({ id: "99", steamIdText: "U:1:999999" });
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
-                password: serverId,
+                password: String(fakeServer.logSecret),
                 services
             });
             expect(services.serverCommander.query).not.toHaveBeenCalled();
