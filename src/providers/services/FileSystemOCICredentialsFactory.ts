@@ -22,7 +22,7 @@ export const FileSystemOCICredentialsFactory: OCICredentialsFactory = (region) =
     }
     // Read private key file
      const privateKeyFileContent = readFileSync(keyFilePath, "utf-8");
-
+    
      const defaultConfigfile = `[DEFAULT]
 ${Object.entries(regionSection)
     .map(([key, value]) => `${key}=${value}`)

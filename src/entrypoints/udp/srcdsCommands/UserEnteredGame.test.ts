@@ -5,6 +5,8 @@ import { ServerRepository } from "../../../core/repository/ServerRepository";
 import { ServerCommander } from "../../../core/services/ServerCommander";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
+import { ServerManager } from "../../../core/services/ServerManager";
+import { UserRepository } from "../../../core/repository/UserRepository";
 
 describe("userEnteredGame command parser", () => {
     it("should create a userEnteredGame command if rawString matches", () => {
@@ -27,13 +29,15 @@ describe("userEnteredGame command parser", () => {
             const userBanRepository = mock<UserBanRepository>();
             const serverRepository = mock<ServerRepository>();
             const serverCommander = mock<ServerCommander>();
+            const serverManager = mock<ServerManager>();
+            const userRepository = mock<UserRepository>();
             const command = userEnteredGame(rawString);
             const handler = command?.handler;
-            return { userBanRepository, serverRepository, serverCommander, command, handler };
+            return { userBanRepository, serverRepository, serverCommander, command, handler, serverManager, userRepository };
         }
 
         it("should ban the user if user is banned", async () => {
-            const { userBanRepository, serverRepository, serverCommander, command, handler } = createTestEnvironment();
+            const { userBanRepository, serverRepository, serverCommander, serverManager, command, handler, userRepository } = createTestEnvironment();
             when(userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: true, reason: "Cheating" });
@@ -47,7 +51,9 @@ describe("userEnteredGame command parser", () => {
                 services: {
                     userBanRepository,
                     serverRepository,
-                    serverCommander
+                    serverCommander,
+                    serverManager,
+                    userRepository
                 }
             });
             expect(serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
@@ -60,7 +66,7 @@ describe("userEnteredGame command parser", () => {
         });
 
         it("should not ban user if user is not banned", async () => {
-            const { userBanRepository, serverRepository, serverCommander, command, handler } = createTestEnvironment();
+            const { userBanRepository, serverRepository, serverCommander, command, handler, userRepository, serverManager } = createTestEnvironment();
             when(userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: false });
@@ -71,7 +77,9 @@ describe("userEnteredGame command parser", () => {
                 services: {
                     userBanRepository,
                     serverRepository,
-                    serverCommander
+                    serverCommander,
+                    userRepository,
+                    serverManager
                 }
             });
             expect(serverCommander.query).not.toHaveBeenCalled();

@@ -24,4 +24,16 @@ export class SQliteUserRepository implements UserRepository {
         const { knex } = this.dependencies;
         await knex("user").insert(user).onConflict("id").merge();
     }
+
+    async findBySteamId(steamId2: string): Promise<User | null> {
+        const { knex } = this.dependencies;
+        const user = await knex("user").where({ steamIdText: steamId2 }).first();
+        if (!user) {
+            return null;
+        }
+        return {
+            id: user.id,
+            steamIdText: user.steamIdText
+        };
+    }
 }
