@@ -1,6 +1,7 @@
 import { ServerRepository } from "../../../core/repository/ServerRepository";
 import { UserBanRepository } from "../../../core/repository/UserBanRepository";
 import { UserRepository } from "../../../core/repository/UserRepository";
+import { EventLogger } from "../../../core/services/EventLogger";
 import { ServerCommander } from "../../../core/services/ServerCommander";
 import { ServerManager } from "../../../core/services/ServerManager";
 
@@ -13,4 +14,5 @@ export type UDPCommandsServices = {
     serverRepository: ServerRepository;
     serverManager: ServerManager;
     userRepository: UserRepository
+    eventLogger: EventLogger;
 }

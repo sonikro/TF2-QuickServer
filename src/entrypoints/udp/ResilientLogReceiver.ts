@@ -31,7 +31,11 @@ export class ResilientLogReceiver {
             if (command) {
                 try {
                     await command.handler({ args: command.args, password, services });
-                } catch (error) {
+                } catch (error: Error | any) {
+                    await services.eventLogger.log({
+                        eventMessage: `Error handling SRCDS command: ${command.raw} - ${error.message}`,
+                        actorId: "system",
+                    })
                     console.error(`[SRCDS Command Handler Error] ${error}`);
                 }
             }

@@ -1,13 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
-import { say } from "./Say";
-import { mock } from "vitest-mock-extended";
-import { ServerRepository } from "../../../core/repository/ServerRepository";
-import { UserRepository } from "../../../core/repository/UserRepository";
-import { ServerCommander } from "../../../core/services/ServerCommander";
-import { ServerManager } from "../../../core/services/ServerManager";
-import { UserBanRepository } from "../../../core/repository/UserBanRepository";
-import { User } from "../../../core/domain/User";
+import { describe, expect, it } from "vitest";
+import { mockDeep } from "vitest-mock-extended";
 import { Server } from "../../../core/domain/DeployedServer";
+import { User } from "../../../core/domain/User";
+import { say } from "./Say";
+import { UDPCommandsServices } from "./UDPCommandServices";
 
 describe("say command parser", () => {
     it("should parse a valid say command", () => {
@@ -43,69 +39,53 @@ describe("say command parser", () => {
         const fakeUser: User = { id: "42", steamIdText: "U:1:29162964" };
 
         function createTestEnvironment() {
-            const serverRepository = mock<ServerRepository>();
-            const userRepository = mock<UserRepository>();
-            const serverCommander = mock<ServerCommander>();
-            const serverManager = mock<ServerManager>();
-            const userBanRepository = mock<UserBanRepository>();
+            const services = mockDeep<UDPCommandsServices>();
             const command = say(rawString);
             const handler = command?.handler;
-            return { serverRepository, userRepository, serverCommander, serverManager, userBanRepository, command, handler };
+            return { services, command, handler };
         }
 
         it("should terminate the server if user is creator and says !terminate", async () => {
-            const { serverRepository, userRepository, serverCommander, serverManager, userBanRepository, command, handler } = createTestEnvironment();
-            serverRepository.findById.mockResolvedValue(fakeServer);
-            userRepository.findBySteamId.mockResolvedValue(fakeUser);
-            serverCommander.query.mockResolvedValue("");
-            serverManager.deleteServer.mockResolvedValue();
-            serverRepository.deleteServer.mockResolvedValue();
+            const { services, command, handler } = createTestEnvironment();
+            services.serverRepository.findById.mockResolvedValue(fakeServer);
+            services.userRepository.findBySteamId.mockResolvedValue(fakeUser);
+            services.serverCommander.query.mockResolvedValue("");
+            services.serverManager.deleteServer.mockResolvedValue();
+            services.serverRepository.deleteServer.mockResolvedValue();
 
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
                 password: serverId,
-                services: {
-                    serverRepository,
-                    userRepository,
-                    serverCommander,
-                    serverManager,
-                    userBanRepository
-                }
+                services
             });
-            expect(serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
+            expect(services.serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
                 host: fakeServer.rconAddress,
                 port: 27015,
                 password: fakeServer.rconPassword,
                 command: expect.stringContaining("Server is being terminated"),
                 timeout: 5000
             }));
-            expect(serverManager.deleteServer).toHaveBeenCalledWith(expect.objectContaining({
+            expect(services.serverManager.deleteServer).toHaveBeenCalledWith(expect.objectContaining({
                 region: fakeServer.region,
                 serverId: fakeServer.serverId
             }));
-            expect(serverRepository.deleteServer).toHaveBeenCalledWith(fakeServer.serverId);
+            expect(services.serverRepository.deleteServer).toHaveBeenCalledWith(fakeServer.serverId);
         });
 
         it("should not terminate if user is not creator", async () => {
-            const { serverRepository, userRepository, serverCommander, serverManager, userBanRepository, command, handler } = createTestEnvironment();
-            serverRepository.findById.mockResolvedValue(fakeServer);
-            userRepository.findBySteamId.mockResolvedValue({ id: "99", steamIdText: "U:1:999999" });
+            const { services, command, handler } = createTestEnvironment();
+            services.serverRepository.findById.mockResolvedValue(fakeServer);
+            services.userRepository.findBySteamId.mockResolvedValue({ id: "99", steamIdText: "U:1:999999" });
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
                 password: serverId,
-                services: {
-                    serverRepository,
-                    userRepository,
-                    serverCommander,
-                    serverManager,
-                    userBanRepository
-                }
+                services
             });
-            expect(serverCommander.query).not.toHaveBeenCalled();
-            expect(serverManager.deleteServer).not.toHaveBeenCalled();
-            expect(serverRepository.deleteServer).not.toHaveBeenCalled();
+            expect(services.serverCommander.query).not.toHaveBeenCalled();
+            expect(services.serverManager.deleteServer).not.toHaveBeenCalled();
+            expect(services.serverRepository.deleteServer).not.toHaveBeenCalled();
         });
     });
 });

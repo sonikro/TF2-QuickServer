@@ -1,12 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { userEnteredGame } from "./UserEnteredGame";
-import { UserBanRepository } from "../../../core/repository/UserBanRepository";
-import { ServerRepository } from "../../../core/repository/ServerRepository";
-import { ServerCommander } from "../../../core/services/ServerCommander";
-import { mock } from "vitest-mock-extended";
+import { describe, expect, it } from "vitest";
+import { mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ServerManager } from "../../../core/services/ServerManager";
-import { UserRepository } from "../../../core/repository/UserRepository";
+import { UDPCommandsServices } from "./UDPCommandServices";
+import { userEnteredGame } from "./UserEnteredGame";
 
 describe("userEnteredGame command parser", () => {
     it("should create a userEnteredGame command if rawString matches", () => {
@@ -26,37 +22,27 @@ describe("userEnteredGame command parser", () => {
         };
 
         function createTestEnvironment() {
-            const userBanRepository = mock<UserBanRepository>();
-            const serverRepository = mock<ServerRepository>();
-            const serverCommander = mock<ServerCommander>();
-            const serverManager = mock<ServerManager>();
-            const userRepository = mock<UserRepository>();
+            const services = mockDeep<UDPCommandsServices>();
             const command = userEnteredGame(rawString);
             const handler = command?.handler;
-            return { userBanRepository, serverRepository, serverCommander, command, handler, serverManager, userRepository };
+            return { services, command, handler };
         }
 
         it("should ban the user if user is banned", async () => {
-            const { userBanRepository, serverRepository, serverCommander, serverManager, command, handler, userRepository } = createTestEnvironment();
-            when(userBanRepository.isUserBanned)
+            const { services, command, handler } = createTestEnvironment();
+            when(services.userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: true, reason: "Cheating" });
-            when(serverRepository.findById)
+            when(services.serverRepository.findById)
                 .calledWith(serverId)
                 .thenResolve(fakeServer as any);
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
                 password: serverId,
-                services: {
-                    userBanRepository,
-                    serverRepository,
-                    serverCommander,
-                    serverManager,
-                    userRepository
-                }
+                services
             });
-            expect(serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
+            expect(services.serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
                 host: fakeServer.rconAddress,
                 port: 27015,
                 password: fakeServer.rconPassword,
@@ -66,23 +52,17 @@ describe("userEnteredGame command parser", () => {
         });
 
         it("should not ban user if user is not banned", async () => {
-            const { userBanRepository, serverRepository, serverCommander, command, handler, userRepository, serverManager } = createTestEnvironment();
-            when(userBanRepository.isUserBanned)
+            const { services, command, handler } = createTestEnvironment();
+            when(services.userBanRepository.isUserBanned)
                 .calledWith("U:1:29162964")
                 .thenResolve({ isBanned: false });
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
                 args: command.args,
                 password: serverId,
-                services: {
-                    userBanRepository,
-                    serverRepository,
-                    serverCommander,
-                    userRepository,
-                    serverManager
-                }
+                services
             });
-            expect(serverCommander.query).not.toHaveBeenCalled();
+            expect(services.serverCommander.query).not.toHaveBeenCalled();
         });
     });
 });

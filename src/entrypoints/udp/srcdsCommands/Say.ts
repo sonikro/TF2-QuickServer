@@ -10,7 +10,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
             args: { userId: Number(match[1]), steamId3: match[2], message: match[3] },
             type: "say",
             handler: async ({ args, password: serverId, services }) => {
-                const { serverRepository, userRepository, serverCommander, serverManager } = services;
+                const { serverRepository, userRepository, serverCommander, serverManager, eventLogger } = services;
                 const { userId, steamId3, message } = args;
 
                 switch (message) {
@@ -40,6 +40,11 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
                             })
 
                             await serverRepository.deleteServer(server.serverId);
+
+                            await eventLogger.log({
+                                eventMessage: `User <@${userId}> terminated server ${serverId} from inside the game.`,
+                                actorId: user.id,
+                            })
                         }
                         break;
                     default:
