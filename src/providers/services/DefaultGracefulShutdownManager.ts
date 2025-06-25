@@ -40,7 +40,7 @@ export class DefaultGracefulShutdownManager implements GracefulShutdownManager {
             console.log("[GracefulShutdownManager] Cannot run action, the application is already shutting down.");
             throw new ShutdownInProgressError();
         }
-        console.log("[GracefulShutdownManager] Running new action...");
+        console.log(`[GracefulShutdownManager] Running new action, current actions: ${this.shutdownPromises.size + 1}`);
         const promise = action();
         this.shutdownPromises.add(promise);
         // Remove the promise from the set once it settles

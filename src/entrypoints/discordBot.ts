@@ -26,7 +26,7 @@ import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateSe
 import { SetUserData } from "../core/usecase/SetUserData";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
-import { defaultGracefulShutdownManager } from "../providers/services/DefaultGracefulShutdownManager";
+import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
@@ -238,6 +238,13 @@ export async function startDiscordBot() {
         }
         catch (error: Error | any) {
             console.error(`Error executing command ${commandName}:`, error);
+            // If error is a ShutdownInProgressError, reply to the user
+            if (error instanceof ShutdownInProgressError) {
+                await chatInputInteraction.reply({
+                    content: 'The server is currently in maintenance mode. Please try again later in a few minutes.',
+                    flags: MessageFlags.Ephemeral
+                });
+            }
             await eventLogger.log({
                 eventMessage: `Error executing command ${commandName}: ${error.message}`,
                 actorId: chatInputInteraction.user.id,
@@ -279,6 +286,11 @@ export async function startDiscordBot() {
         await defaultGracefulShutdownManager.onShutdownWait();
         process.exit(0);
     });
+
+    process.on("SIGINT", async () => {
+        await defaultGracefulShutdownManager.onShutdownWait();
+        process.exit(0);
+    })
 
     return client;
 }

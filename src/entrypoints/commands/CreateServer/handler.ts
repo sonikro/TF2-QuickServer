@@ -12,6 +12,7 @@ import { getRegionDisplayName, getVariantConfigs, Region } from "../../../core/d
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createInteractionStatusUpdater } from "../../../providers/services/DiscordInteractionStatusUpdater";
 import { commandErrorHandler } from "../commandErrorHandler";
+import { defaultGracefulShutdownManager } from "../../../providers/services/DefaultGracefulShutdownManager";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
@@ -65,58 +66,60 @@ export function createServerCommandHandlerFactory(dependencies: {
         });
         if (!collector) return;
         collector.on('collect', async (buttonInteraction: MessageComponentInteraction) => {
-            try {
-                await interaction.editReply({
-                    content: `You selected the variant: ${buttonInteraction.customId.split(':')[1]}. Processing your request...`,
-                    components: []
-                })
-            } catch (error) {
-                // If the edit fails, we can log the error but continue with the button interaction
-                // This is not critical, as the button interaction will still proceed
-                console.error('Error editing reply:', error);
-            }
-            const variantName = buttonInteraction.customId.split(':')[1];
-            await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
-            try {
-                await buttonInteraction.editReply({
-                    content: `Creating server in region ${getRegionDisplayName(region)} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
-                });
-                const deployedServer = await createServerForUser.execute({
-                    region: region,
-                    variantName: variantName,
-                    creatorId: buttonInteraction.user.id,
-                    guildId: buttonInteraction.guildId!,
-                    statusUpdater: createInteractionStatusUpdater(buttonInteraction)
-                });
-                if (variantName.includes("tf2pickup")) {
+            await defaultGracefulShutdownManager.run(async () => {
+                try {
+                    await interaction.editReply({
+                        content: `You selected the variant: ${buttonInteraction.customId.split(':')[1]}. Processing your request...`,
+                        components: []
+                    })
+                } catch (error) {
+                    // If the edit fails, we can log the error but continue with the button interaction
+                    // This is not critical, as the button interaction will still proceed
+                    console.error('Error editing reply:', error);
+                }
+                const variantName = buttonInteraction.customId.split(':')[1];
+                await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
+                try {
+                    await buttonInteraction.editReply({
+                        content: `Creating server in region ${getRegionDisplayName(region)} with the variant ${variantName}. You will receive the server details shortly. This can take up to 4 minutes.`,
+                    });
+                    const deployedServer = await createServerForUser.execute({
+                        region: region,
+                        variantName: variantName,
+                        creatorId: buttonInteraction.user.id,
+                        guildId: buttonInteraction.guildId!,
+                        statusUpdater: createInteractionStatusUpdater(buttonInteraction)
+                    });
+                    if (variantName.includes("tf2pickup")) {
+                        await buttonInteraction.followUp({
+                            content: `🎉 **Server Created and Registered!** 🎉\n\n` +
+                                `💻 This server was created and registered to the **tf2pickup.org** instance associated with this Discord Guild.\n` +
+                                `🔒 You will not receive the credentials or connect information, as using the server is managed by the **tf2pickup** instance.\n` +
+                                `✅ The server is now **available to be used**!`,
+                            flags: MessageFlags.Ephemeral
+                        });
+                        return;
+                    }
                     await buttonInteraction.followUp({
-                        content: `🎉 **Server Created and Registered!** 🎉\n\n` +
-                            `💻 This server was created and registered to the **tf2pickup.org** instance associated with this Discord Guild.\n` +
-                            `🔒 You will not receive the credentials or connect information, as using the server is managed by the **tf2pickup** instance.\n` +
-                            `✅ The server is now **available to be used**!`,
+                        content: `🎉 **Server Created Successfully!** 🎉\n\n` +
+                            `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
+                            `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
+                            `🎮 **Variant:** \`${deployedServer.variant}\`\n\n` +
+                            `**CONNECT Addresses:**\n` +
+                            `- **SDR Connect:**\n` +
+                            `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
+                            `- **Direct Connect:**\n` +
+                            `\`\`\`\nconnect ${deployedServer.rconAddress}:27015;${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
+                            `- **TV Connect:**\n` +
+                            `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
+                            `⚠️ **Warning:** If you are connecting from the SDR IP, use the following RCON commands in the console:\n` +
+                            `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
                         flags: MessageFlags.Ephemeral
                     });
-                    return;
+                } catch (error: Error | any) {
+                    await commandErrorHandler(buttonInteraction, error);
                 }
-                await buttonInteraction.followUp({
-                    content: `🎉 **Server Created Successfully!** 🎉\n\n` +
-                        `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-                        `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
-                        `🎮 **Variant:** \`${deployedServer.variant}\`\n\n` +
-                        `**CONNECT Addresses:**\n` +
-                        `- **SDR Connect:**\n` +
-                        `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
-                        `- **Direct Connect:**\n` +
-                        `\`\`\`\nconnect ${deployedServer.rconAddress}:27015;${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
-                        `- **TV Connect:**\n` +
-                        `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
-                        `⚠️ **Warning:** If you are connecting from the SDR IP, use the following RCON commands in the console:\n` +
-                        `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
-                    flags: MessageFlags.Ephemeral
-                });
-            } catch (error: Error | any) {
-                await commandErrorHandler(buttonInteraction, error);
-            }
+            });
         });
         collector.on('end', (collected: Collection<string, MessageComponentInteraction>) => {
             if (collected.size === 0) {
