@@ -89,6 +89,7 @@ export class OCIServerManager implements ServerManager {
         const tvPassword = passwordGenerator(passwordSettings);
 
         const containerImage = variantConfig.image;
+        const logSecret = chance.integer({ min: 1, max: 999999 })
 
         const defaultCfgsEnvironment = variantConfig.defaultCfgs
             ? Object.entries(variantConfig.defaultCfgs).map(([key, value]) => ({
@@ -109,7 +110,7 @@ export class OCIServerManager implements ServerManager {
             STV_NAME: regionConfig.tvHostname,
             STV_PASSWORD: tvPassword,
             ADMIN_LIST: adminList.join(","),
-            SV_LOGSECRET: serverId,
+            SV_LOGSECRET: logSecret.toString(),
             ...Object.assign({}, ...defaultCfgsEnvironment),
             ...extraEnvs,
         };
@@ -122,7 +123,6 @@ export class OCIServerManager implements ServerManager {
         // Notify user: Creating container instance
         await statusUpdater(`📦 [2/5] Creating server instance...`);
 
-        const logSecret = chance.integer({ min: 1, max: 999999 })
         const ociCredentials = this.dependencies.ociCredentialsFactory(region);
         const containerRequest: containerinstances.requests.CreateContainerInstanceRequest = {
             createContainerInstanceDetails: {
