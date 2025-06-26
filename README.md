@@ -1,3 +1,5 @@
+[![Read the Wiki – How to Use TF2-QuickServer](https://img.shields.io/badge/Wiki-How%20to%20Use%20TF2--QuickServer-blueviolet?style=for-the-badge&logo=github)](https://github.com/sonikro/TF2-QuickServer/wiki)
+
 # 🎮 TF2-QuickServer
 
 ![TF2-QuickServer](https://img.shields.io/badge/TF2-QuickServer-blue?style=for-the-badge&logo=steam)  
