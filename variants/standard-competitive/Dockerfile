@@ -33,15 +33,21 @@ ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Unified-main.zip
 ARG DODGEBALL_PLUGIN_URL=https://github.com/Mikah31/TF2-Dodgeball-Unified/archive/refs/heads/main.zip
 
 RUN wget -nv "${DODGEBALL_PLUGIN_URL}" -O "${DODGEBALL_PLUGIN_FILE_NAME}" \
-    && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" \
-    && cp -r TF2-Dodgeball-Unified-main/TF2DodgeballUnified/* "${SERVER_DIR}/tf/" \
-    && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" TF2-Dodgeball-Unified-main \
-    && mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/TF2DodgeballUnified.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/TF2DodgeballUnified.smx" 
+  && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" \
+  && cp -r TF2-Dodgeball-Unified-main/TF2DodgeballUnified/* "${SERVER_DIR}/tf/" \
+  && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" TF2-Dodgeball-Unified-main \
+  && mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/TF2DodgeballUnified.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/TF2DodgeballUnified.smx" 
 
 # Add Sourcemod Whitelist Downloader
 RUN wget -O "${SERVER_DIR}/tf/addons/sourcemod/plugins/whitelisttf.smx" https://github.com/spiretf/sm_whitelist/raw/master/plugin/whitelisttf.smx
 
 COPY --chown=tf2:tf2 ./variants/base/tf/cfg/* $SERVER_DIR/tf/cfg/
+
+# Temporary fix FBTF CFG
+RUN wget -nv https://fbtf.tf/uploads/cfgs/fbtf_cfg_s23.zip -O /tmp/fbtf_cfg_s23.zip \
+  && unzip -q /tmp/fbtf_cfg_s23.zip -d /tmp \
+  && mv /tmp/fbtf_cfg/* "${SERVER_DIR}/tf/cfg/" \
+  && rm -rf /tmp/fbtf_cfg /tmp/fbtf_cfg_s23.zip
 
 # Copy custom sourcemod configs and plugins
 COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/configs/* $SERVER_DIR/tf/addons/sourcemod/configs/
