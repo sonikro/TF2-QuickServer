@@ -9,6 +9,7 @@ on:
       - config/**
       - scripts/**
       - src/**
+      - db/**
       - package.json
       - package-lock.json
       - .nvmrc
@@ -88,6 +89,10 @@ jobs:
       - name: Copy config/default.json to target directory
         run: |
           cp config/default.json /home/ubuntu/tf2-quickserver/config/default.json
+      
+      - name: Copy Ban List
+        run: |
+          cp db/bans.csv /home/ubuntu/tf2-quickserver/db/bans.csv
 
       - name: Run update script
         run: |

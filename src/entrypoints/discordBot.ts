@@ -3,16 +3,24 @@ import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCredits
 import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
-import { HandleOrderPaid } from "../core/usecase/HandleOrderPaid";
+import { SetUserData } from "../core/usecase/SetUserData";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
+import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
+import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
+import { CsvUserBanRepository } from "../providers/repository/CsvUserBanRepository";
 import { KnexConnectionManager } from "../providers/repository/KnexConnectionManager";
 import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
+import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
 import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
 import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
+import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
+import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
+import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
+import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 import { OCIServerManager } from "../providers/services/OCIServerManager";
 import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
@@ -20,18 +28,8 @@ import { defaultOracleServiceFactory } from "../providers/services/defaultOracle
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
 import { createCommands } from "./commands";
-import { initializeExpress } from "./http/express";
 import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
-import { SetUserData } from "../core/usecase/SetUserData";
-import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
-import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
-import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
-import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
-import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
-import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
-import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
-import { SQliteUserBanRepository } from "../providers/repository/SQliteUserBanRepository";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
 export async function startDiscordBot() {
@@ -108,9 +106,7 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client
     })
 
-    const userBanRepository = new SQliteUserBanRepository({
-        knex: KnexConnectionManager.client
-    })
+    const userBanRepository = new CsvUserBanRepository()
 
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
