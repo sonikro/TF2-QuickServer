@@ -89,5 +89,9 @@
     {
         "name": "koth_berryville_b2a",
         "url": "https://tf2maps.net/downloads/koth_berryville.8442/download"
+    },
+    {
+        "name": "koth_berry_b3a",
+        "url": "https://tf2maps.net/downloads/borgville.19389/download"
     }
 ]
