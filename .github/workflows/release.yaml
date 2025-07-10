@@ -48,6 +48,12 @@ jobs:
         with:
           name: config-file
           path: config/default.json
+      
+      - name: Save Ban List as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ban-list
+          path: db/bans.csv
 
       - name: Login to Docker Hub
         if: github.event_name == 'push'
@@ -85,6 +91,12 @@ jobs:
         with:
           name: config-file
           path: config
+      
+      - name: Download Ban List artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ban-list
+          path: db
 
       - name: Copy config/default.json to target directory
         run: |
