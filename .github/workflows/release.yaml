@@ -80,7 +80,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy:
-    runs-on: rpi5
+    runs-on: quickserver
     concurrency: 
       group: deploy
     needs: build-and-push
@@ -100,14 +100,13 @@ jobs:
 
       - name: Copy config/default.json to target directory
         run: |
-          cp config/default.json /home/ubuntu/tf2-quickserver/config/default.json
+          cp config/default.json /home/quickserver/tf2-quickserver/config/default.json
       
       - name: Copy Ban List
         run: |
-          cp db/bans.csv /home/ubuntu/tf2-quickserver/db/bans.csv
+          cp db/bans.csv /home/quickserver/tf2-quickserver/db/bans.csv
 
       - name: Run update script
         run: |
-          cd /home/ubuntu/tf2-quickserver
+          cd /home/quickserver/tf2-quickserver
           ./update.sh
-
