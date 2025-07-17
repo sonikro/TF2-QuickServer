@@ -179,9 +179,12 @@ services:
 
 ## 📈 Observability & OpenTelemetry
 
+
 **TF2-QuickServer** is instrumented for full observability using [OpenTelemetry](https://opentelemetry.io/). This enables you to collect **traces**, **metrics**, and **logs** from the bot and supporting services, making it easy to monitor performance, troubleshoot issues, and gain insights into server operations.
 
-To enable OpenTelemetry data export, set the following environment variables in your `.env` file or deployment configuration:
+If the environment variable `NEW_RELIC_LICENSE_KEY` is set, a New Relic agent (`newrelic-infra` sidecar container) will automatically run on each Oracle server instance for enhanced infrastructure monitoring and reporting to New Relic.
+
+To enable OpenTelemetry data export from the Discord App, set the following environment variables in your `.env` file or deployment configuration:
 
 ```env
 # OpenTelemetry Exporter Configuration
@@ -193,9 +196,7 @@ OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=
 OTEL_EXPORTER_OTLP_COMPRESSION=gzip
 OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
 OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
-
 ```
-
 
 ## 🤝 Contributing
 

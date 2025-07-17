@@ -399,6 +399,25 @@ describe("OCIServerManager", () => {
       expect(envVars.ANOTHER_VAR).toBe("another-value");
     });
   });
+  describe("newrelic-infra sidecar", () => {
+    it("should add newrelic-infra container when NEW_RELIC_LICENSE_KEY is set", async () => {
+      const { sut, containerClient } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+      process.env.NEW_RELIC_LICENSE_KEY = "test-newrelic-key";
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-newrelic",
+        statusUpdater,
+      });
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const containers = containerInstanceRequest.createContainerInstanceDetails.containers;
+      const newRelicContainer = containers.find((c: any) => c.displayName === "newrelic-infra");
+      expect(newRelicContainer).toBeDefined();
+      expect(newRelicContainer?.environmentVariables?.NRIA_LICENSE_KEY).toBe("test-newrelic-key");
+    });
+  });
 
   describe("no default admins", () => {
     it("should use the sourcemodAdminSteamId as the only admin", async () => {
@@ -413,18 +432,9 @@ describe("OCIServerManager", () => {
         statusUpdater,
       });
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      expect(containerInstanceRequest).toEqual(expect.objectContaining({
-        createContainerInstanceDetails: expect.objectContaining({
-          containers: [
-            expect.objectContaining({
-              environmentVariables: expect.objectContaining({
-                ADMIN_LIST: "12345678901234567",
-              }),
-            }),
-            expect.anything(),
-          ],
-        }),
-      }));
+      const containers = containerInstanceRequest.createContainerInstanceDetails.containers;
+      const tf2Container = containers.find((c: any) => c.displayName === "test-server-id");
+      expect(tf2Container?.environmentVariables?.ADMIN_LIST).toBe("12345678901234567");
     });
   });
 

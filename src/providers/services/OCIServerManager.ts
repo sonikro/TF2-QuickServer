@@ -169,7 +169,19 @@ export class OCIServerManager implements ServerManager {
                             OCI_CONFIG_FILE_CONTENT: Buffer.from(ociCredentials.configFileContent).toString("base64"),
                             OCI_PRIVATE_KEY_FILE_CONTENT: Buffer.from(ociCredentials.privateKeyFileContent).toString("base64"),
                         }
-                    }
+                    },
+                    // Conditionally add New Relic sidecar container
+                    ...((process.env.NEW_RELIC_LICENSE_KEY && process.env.NEW_RELIC_LICENSE_KEY !== "") ? [
+                        {
+                            displayName: "newrelic-infra",
+                            imageUrl: "newrelic/infrastructure:latest",
+                            environmentVariables: {
+                                NRIA_LICENSE_KEY: process.env.NEW_RELIC_LICENSE_KEY,
+                                NRIA_DISPLAY_NAME: `TF2-Server-${region}-${serverId}`,
+                                NRIA_CUSTOM_ATTRIBUTES: JSON.stringify({ region, variant: variantName, serverId }),
+                            },
+                        }
+                    ] : [])
                 ],
                 vnics: [
                     {
