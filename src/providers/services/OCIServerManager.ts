@@ -178,7 +178,9 @@ export class OCIServerManager implements ServerManager {
                             environmentVariables: {
                                 NRIA_LICENSE_KEY: process.env.NEW_RELIC_LICENSE_KEY,
                                 NRIA_DISPLAY_NAME: `TF2-Server-${region}-${serverId}`,
-                                NRIA_CUSTOM_ATTRIBUTES: JSON.stringify({ region, variant: variantName, serverId }),
+                                NRIA_OVERRIDE_HOSTNAME: `tf2-server-${region}-${serverId}`,
+                                // This format is invalid, but for some mysterious reason, the agent can only capture metrics if I send invalid custom attributes (O_O)
+                                NRIA_CUSTOM_ATTRIBUTES: `region=${region},serverId=${serverId},variant=${variantName}`,
                             },
                         }
                     ] : [])
