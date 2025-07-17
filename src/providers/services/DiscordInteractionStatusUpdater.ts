@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { MessageComponentInteraction } from "discord.js";
 import { StatusUpdater } from "../../core/services/StatusUpdater";
 
@@ -9,7 +10,7 @@ export const createInteractionStatusUpdater = (interaction: MessageComponentInte
             });
         } catch (error) {
             // Fail silently
-            console.error("Failed to update interaction status:", error);
+            logger.emit({ severityText: 'ERROR', body: 'Failed to update interaction status', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
         }
     }
 }

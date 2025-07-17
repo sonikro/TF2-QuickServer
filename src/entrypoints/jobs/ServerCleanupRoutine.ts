@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import schedule from 'node-schedule';
 import { TerminateEmptyServers } from '../../core/usecase/TerminateEmptyServers';
 import { EventLogger } from '../../core/services/EventLogger';
@@ -9,11 +10,11 @@ export const scheduleServerCleanupRoutine = (dependencies: {
 }) => {
     schedule.scheduleJob('* * * * *', async () => {
         try {
-            console.log('Running Server Cleanup Routine...');
+            logger.emit({ severityText: 'INFO', body: 'Running Server Cleanup Routine...' });
             await dependencies.terminateEmptyServers.execute();
-            console.log('Server Cleanup Routine completed successfully.');
+            logger.emit({ severityText: 'INFO', body: 'Server Cleanup Routine completed successfully.' });
         } catch (error) {
-            console.error('Error during Server Cleanup Routine:', error);
+            logger.emit({ severityText: 'ERROR', body: 'Error during Server Cleanup Routine', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             await dependencies.eventLogger.log({
                 eventMessage: `Error during Server Cleanup Routine: ${error instanceof Error ? error.message : String(error)}`,
                 actorId: 'system',

@@ -31,6 +31,7 @@ import { createCommands } from "./commands";
 import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
+import { logger } from "../telemetry/otel";
 
 export async function startDiscordBot() {
 
@@ -198,18 +199,28 @@ export async function startDiscordBot() {
     // Register commands with Discord API
     const rest = new REST({ version: '10' }).setToken(token);
 
-    console.log('Started refreshing application (/) commands.');
+
+    logger.emit({
+        severityText: 'INFO',
+        body: 'Started refreshing application (/) commands.'
+    });
 
     // Register commands globally (this applies to all guilds)
     await rest.put(Routes.applicationCommands(clientId), {
         body: commands.map(command => command.toJSON()), // Convert CommandBuilder to JSON
     });
 
-    console.log('Successfully reloaded application (/) commands.');
+    logger.emit({
+        severityText: 'INFO',
+        body: 'Successfully reloaded application (/) commands.'
+    });
 
     // Bot login
     client.once('ready', () => {
-        console.log(`Logged in as ${client.user?.tag}`);
+        logger.emit({
+            severityText: 'INFO',
+            body: `Logged in as ${client.user?.tag}`
+        });
     });
 
     // Handling commands
@@ -233,7 +244,13 @@ export async function startDiscordBot() {
             await defaultGracefulShutdownManager.run(() => command.handler(chatInputInteraction))
         }
         catch (error: Error | any) {
-            console.error(`Error executing command ${commandName}:`, error);
+            logger.emit({
+                severityText: 'ERROR',
+                body: `Error executing command ${commandName}: ${error instanceof Error ? error.message : String(error)}`,
+                attributes: {
+                    error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+                }
+            });
             // If error is a ShutdownInProgressError, reply to the user
             if (error instanceof ShutdownInProgressError) {
                 await chatInputInteraction.reply({
@@ -264,14 +281,26 @@ export async function startDiscordBot() {
 
     // Prevent crashes and log global errors
     process.on('unhandledRejection', (error: Error | any) => {
-        console.error('Unhandled promise rejection:', error);
+        logger.emit({
+            severityText: 'ERROR',
+            body: `Unhandled promise rejection: ${error instanceof Error ? error.message : String(error)}`,
+            attributes: {
+                error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+            }
+        });
         eventLogger.log({
             eventMessage: `Unhandled promise rejection: ${error.message}`,
             actorId: 'system',
         })
     });
     process.on('uncaughtException', (error) => {
-        console.error('Uncaught exception:', error);
+        logger.emit({
+            severityText: 'ERROR',
+            body: `Uncaught exception: ${error instanceof Error ? error.message : String(error)}`,
+            attributes: {
+                error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+            }
+        });
         eventLogger.log({
             eventMessage: `Uncaught exception: ${error.message}`,
             actorId: 'system',
@@ -279,11 +308,19 @@ export async function startDiscordBot() {
     })
 
     process.on("SIGTERM", async () => {
+        logger.emit({
+            severityText: 'INFO',
+            body: 'Received SIGTERM signal, shutting down gracefully...'
+        })
         await defaultGracefulShutdownManager.onShutdownWait();
         process.exit(0);
     });
 
     process.on("SIGINT", async () => {
+        logger.emit({
+            severityText: 'INFO',
+            body: 'Received SIGINT signal, shutting down gracefully...'
+        })
         await defaultGracefulShutdownManager.onShutdownWait();
         process.exit(0);
     })

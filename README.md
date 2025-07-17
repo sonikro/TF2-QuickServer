@@ -176,6 +176,27 @@ services:
 
 ---
 
+
+## 📈 Observability & OpenTelemetry
+
+**TF2-QuickServer** is instrumented for full observability using [OpenTelemetry](https://opentelemetry.io/). This enables you to collect **traces**, **metrics**, and **logs** from the bot and supporting services, making it easy to monitor performance, troubleshoot issues, and gain insights into server operations.
+
+To enable OpenTelemetry data export, set the following environment variables in your `.env` file or deployment configuration:
+
+```env
+# OpenTelemetry Exporter Configuration
+OTEL_SERVICE_NAME=tf2-quickserver
+OTEL_RESOURCE_ATTRIBUTES=service.environment=localhost
+OTEL_EXPORTER_OTLP_ENDPOINT=
+OTEL_EXPORTER_OTLP_HEADERS=api-key=
+OTEL_ATTRIBUTE_VALUE_LENGTH_LIMIT=
+OTEL_EXPORTER_OTLP_COMPRESSION=gzip
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=delta
+
+```
+
+
 ## 🤝 Contributing
 
 Contributions are welcome! Open a PR, suggest improvements, or file an issue if something breaks.

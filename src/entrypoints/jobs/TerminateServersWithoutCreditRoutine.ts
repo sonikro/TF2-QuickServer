@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import schedule from 'node-schedule';
 import { TerminateServersWithoutCredit } from '../../core/usecase/TerminateServersWithoutCredit';
 import { ConfigManager } from '../../core/utils/ConfigManager';
@@ -11,16 +12,16 @@ export const scheduleTerminateServersWithoutCreditRoutine = (dependencies: {
 }) => {
     const creditsConfig = dependencies.configManager.getCreditsConfig();
     if (!creditsConfig.enabled) {
-        console.log('Terminate Servers without credit Routine is disabled in the configuration.');
+        logger.emit({ severityText: 'INFO', body: 'Terminate Servers without credit Routine is disabled in the configuration.' });
         return;
     }
     schedule.scheduleJob('* * * * *', async () => {
         try {
-            console.log('Running Terminate Servers without credit routine...');
+            logger.emit({ severityText: 'INFO', body: 'Running Terminate Servers without credit routine...' });
             await dependencies.terminateServersWithoutCredit.execute()
-            console.log('Terminate Servers without credit routine completed successfully.');
+            logger.emit({ severityText: 'INFO', body: 'Terminate Servers without credit routine completed successfully.' });
         } catch (error) {
-            console.error('Error during Terminate Servers without credit routine:', error);
+            logger.emit({ severityText: 'ERROR', body: 'Error during Terminate Servers without credit routine', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             await dependencies.eventLogger.log({
                 eventMessage: `Error during Terminate Servers without credit routine: ${error instanceof Error ? error.message : String(error)}`,
                 actorId: 'system',

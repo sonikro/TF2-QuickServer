@@ -3,6 +3,7 @@ import { PayPalOrderApprovedWebhookPayload } from './PayPalOrderApprovedWebhookP
 import { HandleOrderPaid } from '../../../core/usecase/HandleOrderPaid';
 import { PaypalPaymentService } from '../../../providers/services/PaypalPaymentService';
 import { Client as DiscordClient } from 'discord.js';
+import { logger } from '../../../telemetry/otel';
 
 export function registerPaypalMiddleware(args: {
     app: Express,
@@ -11,7 +12,7 @@ export function registerPaypalMiddleware(args: {
     discordClient: DiscordClient
 }) {
     const { app, handleOrderPaid, paypalService, discordClient } = args;
-    console.log('🔔 Registering PayPal Webhook Middleware');
+    logger.emit({ severityText: 'INFO', body: '🔔 Registering PayPal Webhook Middleware' });
     app.post('/paypal-webhook', async (req: Request, res: Response) => {
         const event = req.body;
 
@@ -30,23 +31,23 @@ export function registerPaypalMiddleware(args: {
             }
         });
         if (!isValid) {
-            console.error('❌ Invalid PayPal Webhook Event');
+            logger.emit({ severityText: 'ERROR', body: '❌ Invalid PayPal Webhook Event' });
             res.status(400).send('Invalid Webhook Event');
             return;
         }
 
-        console.log('🔔 Webhook Event:', event);
+        logger.emit({ severityText: 'INFO', body: `🔔 Webhook Event: ${JSON.stringify(event)}` });
 
         if (event.event_type === 'CHECKOUT.ORDER.APPROVED') {
             const payload = event as PayPalOrderApprovedWebhookPayload;
-            console.log('🔔 Order Approved:', payload.resource.id);
+            logger.emit({ severityText: 'INFO', body: `🔔 Order Approved: ${payload.resource.id}` });
             const { newCredits, order } = await handleOrderPaid.execute({ orderId: payload.resource.id });
             // Send a DM to the user
             try {
                 const user = await discordClient.users.fetch(order.userId);
                 await user.send(`✅ Your order has been paid! You now have **${newCredits}** credits.`);
             } catch (err) {
-                console.error(`❌ Failed to send DM to user ${order?.userId}:`, err);
+                logger.emit({ severityText: 'ERROR', body: `❌ Failed to send DM to user ${order?.userId}`, attributes: { error: JSON.stringify(err, Object.getOwnPropertyNames(err)) } });
             }
         }
 

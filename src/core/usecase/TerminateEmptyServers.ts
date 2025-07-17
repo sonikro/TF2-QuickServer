@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { ServerManager } from "../services/ServerManager";
@@ -46,7 +47,7 @@ export class TerminateEmptyServers {
                 const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10; // Default to 10 minutes if not specified
                 const emptyDuration = new Date().getTime() - server.emptySince.getTime();
                 if (emptyDuration >= minutesEmpty * 60 * 1000) {
-                    console.log(`Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`);
+                    logger.emit({ severityText: 'INFO', body: `Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`, attributes: { serverId: server.serverId } });
                     // Terminate the server
                     try {
                         await serverManager.deleteServer({
@@ -77,7 +78,7 @@ export class TerminateEmptyServers {
                             // Ignore errors when sending the message, since users can block DMs
                         }
                     } catch (error) {
-                        console.error(`Failed to terminate server ${server.serverId}:`, error);
+                        logger.emit({ severityText: 'ERROR', body: `Failed to terminate server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
                     }
                 }
             }
@@ -96,17 +97,17 @@ export class TerminateEmptyServers {
                 })
                 const serverStatus = new ServerStatus(statusOutput);
                 if (serverStatus.numberOfPlayers === 0 && server.emptySince === null) {
-                    console.log(`Server ${server.serverId} is empty.`);
+                    logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} is empty.`, attributes: { serverId: server.serverId } });
                     server.emptySince = new Date();
                 }
                 
                 if ((serverStatus.numberOfPlayers ?? 0) > 0) {
-                    console.log(`Server ${server.serverId} is not empty.`);
+                    logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} is not empty.`, attributes: { serverId: server.serverId } });
                     server.emptySince = null;
                 }
             } catch (error) {
                 // If error happens, assume server is empty to avoid servers running forever
-                console.error(`Error fetching status for server ${server.serverId}:`, error);
+                logger.emit({ severityText: 'ERROR', body: `Error fetching status for server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
                 server.emptySince = new Date();
             }
 

@@ -1,3 +1,4 @@
+import { logger } from '../../../telemetry/otel';
 import { SRCDSCommandParser } from "./SRCDSCommand";
 
 export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: string }> = (rawString) => {
@@ -12,7 +13,7 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 
-                console.log(`User entered game: ${userId} (${steamId3}) on server with logSecret ${logSecret}`);
+                logger.emit({ severityText: 'INFO', body: `User entered game: ${userId} (${steamId3}) on server with logSecret ${logSecret}` });
 
                 // Check if user is banned
                 const banResult = await userBanRepository.isUserBanned(steamId3);
@@ -23,7 +24,7 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 if (!server) return;
 
                 // Ban the user using RCON
-                console.log(`Banning user ${userId} (${steamId3}) on server ${server.serverId}`);
+                logger.emit({ severityText: 'INFO', body: `Banning user ${userId} (${steamId3}) on server ${server.serverId}` });
                 await serverCommander.query({
                     host: server.rconAddress,
                     port: 27015,

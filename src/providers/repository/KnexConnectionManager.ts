@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import knex, {Knex} from "knex";
 import dbConfig from "../../../knexfile";
 
@@ -8,9 +9,9 @@ export class KnexConnectionManager  {
     public static async initialize(): Promise<void> {
         try {
             await this.client.migrate.latest();
-            console.log("Database migrations ran successfully.");
+            logger.emit({ severityText: 'INFO', body: 'Database migrations ran successfully.' });
         } catch (error) {
-            console.error("Error running database migrations:", error);
+            logger.emit({ severityText: 'ERROR', body: 'Error running database migrations', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             throw error;
         }
     }

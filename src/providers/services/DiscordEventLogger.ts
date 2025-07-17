@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { Client, TextChannel } from "discord.js";
 import { EventLogger } from "../../core/services/EventLogger";
 import { ConfigManager } from "../../core/utils/ConfigManager";
@@ -20,7 +21,7 @@ export class DiscordEventLogger implements EventLogger {
             const textChannel = channel as TextChannel;
             await textChannel.send(`**Event:** ${eventMessage}\n**Actor:** <@${actorId}>`);
         } else {
-            console.error(`Failed to log event: Log channel with ID ${this.logChannelId} is not text-based or does not exist.`);
+            logger.emit({ severityText: 'ERROR', body: `Failed to log event: Log channel with ID ${this.logChannelId} is not text-based or does not exist.` });
         }
     }
 
