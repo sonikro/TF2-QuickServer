@@ -103,7 +103,7 @@
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
             "hostname": "br.tf2pickup.org | {region} @ Sonikro Solutions",
-            "image": "sonikro/fat-tf2pickup:latest",
+            "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "admins": [
                 "STEAM_0:0:14581482",
@@ -120,7 +120,7 @@
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
             "hostname": "hl.br.tf2pickup.org | {region} @ Sonikro Solutions",
-            "image": "sonikro/fat-tf2pickup:latest",
+            "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "admins": [
                 "STEAM_0:1:433143455",
