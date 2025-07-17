@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { GracefulShutdownManager } from "../../core/services/GracefulShutdownManager";
 
 // Define a custom error type for shutdown exceptions
@@ -37,26 +38,26 @@ export class DefaultGracefulShutdownManager implements GracefulShutdownManager {
 
     run<T>(action: () => Promise<T>): Promise<T> {
         if (this.shuttingDown) {
-            console.log("[GracefulShutdownManager] Cannot run action, the application is already shutting down.");
+            logger.emit({ severityText: 'INFO', body: '[GracefulShutdownManager] Cannot run action, the application is already shutting down.' });
             throw new ShutdownInProgressError();
         }
-        console.log(`[GracefulShutdownManager] Running new action, current actions: ${this.shutdownPromises.size + 1}`);
+        logger.emit({ severityText: 'INFO', body: `[GracefulShutdownManager] Running new action, current actions: ${this.shutdownPromises.size + 1}` });
         const promise = action();
         this.shutdownPromises.add(promise);
         // Remove the promise from the set once it settles
         promise.finally(() => {
             this.shutdownPromises.delete(promise);
-            console.log("[GracefulShutdownManager] Action settled. Remaining:", this.shutdownPromises.size);
+            logger.emit({ severityText: 'INFO', body: `[GracefulShutdownManager] Action settled. Remaining: ${this.shutdownPromises.size}` });
         });
         return promise;
     }
 
     async onShutdownWait(): Promise<void> {
         this.shuttingDown = true;
-        console.log("[GracefulShutdownManager] Shutdown initiated. Waiting for", this.shutdownPromises.size, "actions to complete...");
+        logger.emit({ severityText: 'INFO', body: `[GracefulShutdownManager] Shutdown initiated. Waiting for ${this.shutdownPromises.size} actions to complete...` });
         await Promise.allSettled(Array.from(this.shutdownPromises));
         this.shutdownPromises.clear(); // Clear the set after resolving
-        console.log("[GracefulShutdownManager] All actions settled. Shutdown complete.");
+        logger.emit({ severityText: 'INFO', body: '[GracefulShutdownManager] All actions settled. Shutdown complete.' });
     }
 
 }

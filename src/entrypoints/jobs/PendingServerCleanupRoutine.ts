@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import schedule from 'node-schedule';
 import { TerminatePendingServers } from '../../core/usecase/TerminatePendingServers';
 import { EventLogger } from '../../core/services/EventLogger';
@@ -9,11 +10,11 @@ export const schedulePendingServerCleanupRoutine = (dependencies: {
 }) => {
     schedule.scheduleJob('*/10 * * * *', async () => {
         try {
-            console.log('Running Pending Server Cleanup Routine...');
+            logger.emit({ severityText: 'INFO', body: 'Running Pending Server Cleanup Routine...' });
             await dependencies.terminatePendingServers.execute();
-            console.log('Pending Server Cleanup Routine completed successfully.');
+            logger.emit({ severityText: 'INFO', body: 'Pending Server Cleanup Routine completed successfully.' });
         } catch (error) {
-            console.error('Error during Pending Server Cleanup Routine:', error);
+            logger.emit({ severityText: 'ERROR', body: 'Error during Pending Server Cleanup Routine', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             await dependencies.eventLogger.log({
                 eventMessage: `Error during Pending Server Cleanup Routine: ${error instanceof Error ? error.message : String(error)}`,
                 actorId: 'system',

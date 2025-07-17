@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import express, { Express } from 'express';
 import { registerPaypalMiddleware } from './middlewares/paypalMiddleware';
 import { HandleOrderPaid } from '../../core/usecase/HandleOrderPaid';
@@ -41,7 +42,7 @@ export function initializeExpress(dependencies: {
     })
     if (process.env.NODE_ENV !== 'test') {
         app.listen(PORT, () => {
-            console.log(`🚀 TF2-QuickServer listening at http://localhost:${PORT}/`);
+            logger.emit({ severityText: 'INFO', body: `🚀 TF2-QuickServer listening at http://localhost:${PORT}/` });
         });
     }
 

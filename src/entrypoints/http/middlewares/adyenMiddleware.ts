@@ -1,3 +1,4 @@
+import { logger } from '../../../telemetry/otel';
 import { Client as DiscordClient } from 'discord.js';
 import { Express, Request, Response } from 'express';
 import { EventLogger } from '../../../core/services/EventLogger';
@@ -22,13 +23,13 @@ export function registerAdyenMiddleware(args: {
     adyenPaymentService: AdyenPaymentService
 }) {
     const { app, handleOrderPaid, discordClient, eventLogger, adyenPaymentService } = args;
-    console.log('🔔 Registering Adyen Webhook Middleware');
+    logger.emit({ severityText: 'INFO', body: '🔔 Registering Adyen Webhook Middleware' });
     app.post('/adyen-webhook', async (req: Request, res: Response) => {
         const event = req.body as AdyenAuthorizationWebhookRequest
 
         const notificationItem = event.notificationItems?.[0];
         if (!notificationItem || !notificationItem.NotificationRequestItem) {
-            console.error('❌ Invalid Adyen Webhook Event: Missing NotificationRequestItem');
+            logger.emit({ severityText: 'ERROR', body: '❌ Invalid Adyen Webhook Event: Missing NotificationRequestItem' });
             res.status(400).send('Invalid Webhook Event');
             return;
         }
@@ -39,12 +40,12 @@ export function registerAdyenMiddleware(args: {
         })
 
         if (!isValid) {
-            console.error('❌ Invalid Adyen Webhook Event');
+            logger.emit({ severityText: 'ERROR', body: '❌ Invalid Adyen Webhook Event' });
             res.status(400).send('Invalid Webhook Event');
             return;
         }
 
-        console.log('🔔 Webhook Event:', event);
+        logger.emit({ severityText: 'INFO', body: `🔔 Webhook Event: ${JSON.stringify(event)}` });
 
         if (notificationItem.NotificationRequestItem.eventCode === NotificationRequestItem.EventCodeEnum.Authorisation) {
 
@@ -64,7 +65,7 @@ export function registerAdyenMiddleware(args: {
                 const user = await discordClient.users.fetch(order.userId);
                 await user.send(`✅ Your payment has been authorised! You now have **${newCredits}** credits.`);
             } catch (err) {
-                console.error(`❌ Failed to send DM to user ${order?.userId}:`, err);
+                logger.emit({ severityText: 'ERROR', body: `❌ Failed to send DM to user ${order?.userId}`, attributes: { error: JSON.stringify(err, Object.getOwnPropertyNames(err)) } });
             }
         }
 

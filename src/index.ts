@@ -1,14 +1,14 @@
-import { config } from 'dotenv';
+import { logger } from './telemetry/otel';
+import "./telemetry/otel"
 import { startDiscordBot } from "./entrypoints/discordBot";
 
-// Load environment variables from .env file
-config();
+// Initialize OpenTelemetry
 
 // Initialize the Discord bot
 startDiscordBot()
     .then(() => {
-        console.log('Discord bot started successfully.');
+        logger.emit({ severityText: 'INFO', body: 'Discord bot started successfully.' });
     })
     .catch((error) => {
-        console.error('Error starting Discord bot:', error);
+        logger.emit({ severityText: 'ERROR', body: 'Error starting Discord bot', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
     });

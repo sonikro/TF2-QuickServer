@@ -1,7 +1,8 @@
+import { logger } from '../../telemetry/otel';
 import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
 
 export async function commandErrorHandler(interaction: ChatInputCommandInteraction | MessageComponentInteraction, error: Error) {
-    console.error('Error creating server:', error);
+    logger.emit({ severityText: 'ERROR', body: 'Error creating server', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
     switch (error.name) {
         case 'UserError':
             await interaction.followUp({

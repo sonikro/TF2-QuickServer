@@ -1,3 +1,4 @@
+import { logger } from '../../../telemetry/otel';
 import SteamID from "steamid";
 import { SRCDSCommandParser } from "./SRCDSCommand";
 
@@ -15,7 +16,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
 
                 switch (message) {
                     case "!terminate":
-                        console.log(`User ${userId} (${steamId3}) requested termination on server with logSecret ${logSecret}`);
+                        logger.emit({ severityText: 'INFO', body: `User ${userId} (${steamId3}) requested termination on server with logSecret ${logSecret}` });
                         const server = await serverRepository.findByLogsecret(Number(logSecret));
                         if (!server)
                             return

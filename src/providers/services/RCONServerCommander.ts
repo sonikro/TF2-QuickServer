@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { Rcon } from "rcon-client";
 import { ServerCommander } from "../../core/services/ServerCommander";
 
@@ -10,7 +11,7 @@ export class RCONServerCommander implements ServerCommander {
         });
         try {
             rcon.on("error", (error) => {
-                console.error(`RCON connection error: ${error}`);
+                logger.emit({ severityText: 'ERROR', body: `RCON connection error`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             })
             await rcon.connect();
             const response = await rcon.send(command);

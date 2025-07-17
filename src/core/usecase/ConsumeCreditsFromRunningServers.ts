@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 
@@ -30,7 +31,7 @@ export class ConsumeCreditsFromRunningServers {
                 credits: value,
                 userId: key
             })
-            console.log(`Subtracted ${value} credits from user ${key}`);
+            logger.emit({ severityText: 'INFO', body: `Subtracted ${value} credits from user ${key}` });
         })
 
         return creditsConsumed

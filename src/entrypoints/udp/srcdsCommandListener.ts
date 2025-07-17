@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { ResilientLogReceiver } from "./ResilientLogReceiver";
 import { UDPCommandsServices } from "./srcdsCommands/UDPCommandServices";
 
@@ -7,5 +8,5 @@ export async function startSrcdsCommandListener(dependencies: UDPCommandsService
         port: process.env.SRCDS_COMMAND_LISTENER_PORT ? Number(process.env.SRCDS_COMMAND_LISTENER_PORT) : 27100,
         services: dependencies,
     });
-    console.log("[SRCDS Command Listener] Started listening for commands.");
+    logger.emit({ severityText: 'INFO', body: '[SRCDS Command Listener] Started listening for commands.' });
 }

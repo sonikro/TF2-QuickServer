@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { LogReceiver } from "@c43721/srcds-log-receiver";
 import { UDPCommandsServices } from "./srcdsCommands/UDPCommandServices";
 import { parseSRCDSCommand } from "./srcdsCommands";
@@ -23,7 +24,7 @@ export class ResilientLogReceiver {
     #startReceiver() {
         const { address, port, services } = this.#options;
 
-        console.log(`[SRCDS Log Receiver] Starting on ${address}:${port}`);
+        logger.emit({ severityText: 'INFO', body: `[SRCDS Log Receiver] Starting on ${address}:${port}` });
 
         const receiver = new LogReceiver({ address, port });
 
@@ -31,19 +32,20 @@ export class ResilientLogReceiver {
             const command = parseSRCDSCommand(message);
             if (command) {
                 try {
+                    logger.emit({ severityText: 'INFO', body: `[SRCDS Command Received] ${command.raw}`, attributes: { command: command.raw, args: command.args } });
                     await defaultGracefulShutdownManager.run(() => command.handler({ args: command.args, password, services }))
                 } catch (error: Error | any) {
                     await services.eventLogger.log({
                         eventMessage: `Error handling SRCDS command: ${command.raw} - ${error.message}`,
                         actorId: "system",
                     })
-                    console.error(`[SRCDS Command Handler Error] ${error}`);
+                    logger.emit({ severityText: 'ERROR', body: `[SRCDS Command Handler Error]`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
                 }
             }
         });
 
         receiver.on("error", (err) => {
-            console.error(`[SRCDS Log Receiver Error] ${err}`);
+            logger.emit({ severityText: 'ERROR', body: `[SRCDS Log Receiver Error]`, attributes: { error: JSON.stringify(err, Object.getOwnPropertyNames(err)) } });
             this.#scheduleRestart();
         });
 
@@ -53,11 +55,11 @@ export class ResilientLogReceiver {
         });
 
         receiver.on("listening", () => {
-            console.log(`[SRCDS Log Receiver] Listening on ${address}:${port}`);
+            logger.emit({ severityText: 'INFO', body: `[SRCDS Log Receiver] Listening on ${address}:${port}` });
         });
 
         receiver.on("connect", () => {
-            console.log("[SRCDS Log Receiver] Connected");
+            logger.emit({ severityText: 'INFO', body: '[SRCDS Log Receiver] Connected' });
         });
 
         this.#receiver = receiver;
@@ -68,7 +70,7 @@ export class ResilientLogReceiver {
 
         const delay = this.#options.restartDelayMs ?? 5000;
 
-        console.log(`[SRCDS Log Receiver] Restarting in ${delay}ms...`);
+        logger.emit({ severityText: 'INFO', body: `[SRCDS Log Receiver] Restarting in ${delay}ms...` });
 
         this.#restartTimeout = setTimeout(() => {
             this.#restartTimeout = null;

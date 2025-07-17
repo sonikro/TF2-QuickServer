@@ -1,3 +1,4 @@
+import { logger } from '../../telemetry/otel';
 import { containerinstances, core } from "oci-sdk";
 import { getRegionDisplayName, Region, Server, Variant } from "../../core/domain";
 import { ServerStatus } from "../../core/domain/ServerStatus";
@@ -184,7 +185,7 @@ export class OCIServerManager implements ServerManager {
         };
 
         const abortController = serverAbortManager.getOrCreate(serverId);
-        console.log(`Creating container instance for server ID: ${serverId}`);
+        logger.emit({ severityText: 'INFO', body: `Creating container instance for server ID: ${serverId}`, attributes: { serverId } });
         const response = await containerClient.createContainerInstance(containerRequest);
         const containerId = response.containerInstance?.id;
 
@@ -228,7 +229,7 @@ export class OCIServerManager implements ServerManager {
 
         // Notify user: Waiting for server to be ready for RCON
         await statusUpdater(`🔄 [5/5] Waiting for server to be ready to receive RCON commands...`);
-        console.log(`Waiting for server ${serverId} to be ready to receive RCON commands...`);
+        logger.emit({ severityText: 'INFO', body: `Waiting for server ${serverId} to be ready to receive RCON commands...`, attributes: { serverId } });
         const { sdrAddress } = await waitUntil<{ sdrAddress: string }>(
             async () => {
                 const result = await serverCommander.query({

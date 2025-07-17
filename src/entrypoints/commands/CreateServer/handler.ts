@@ -1,3 +1,4 @@
+import { logger } from '../../../telemetry/otel';
 import {
     ChatInputCommandInteraction,
     MessageFlags,
@@ -75,7 +76,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                 } catch (error) {
                     // If the edit fails, we can log the error but continue with the button interaction
                     // This is not critical, as the button interaction will still proceed
-                    console.error('Error editing reply:', error);
+                    logger.emit({ severityText: 'ERROR', body: 'Error editing reply', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
                 }
                 const variantName = buttonInteraction.customId.split(':')[1];
                 await buttonInteraction.deferReply({ flags: MessageFlags.Ephemeral });
