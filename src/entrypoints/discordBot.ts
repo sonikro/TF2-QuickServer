@@ -32,6 +32,7 @@ import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, sch
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 import { logger } from "../telemetry/otel";
+import { initializeExpress } from "./http/express";
 
 export async function startDiscordBot() {
 
@@ -278,6 +279,7 @@ export async function startDiscordBot() {
         eventLogger
     });
 
+    initializeExpress({})
 
     // Prevent crashes and log global errors
     process.on('unhandledRejection', (error: Error | any) => {
