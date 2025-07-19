@@ -2,7 +2,6 @@ import { logger } from '../../telemetry/otel';
 import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
 
 export async function commandErrorHandler(interaction: ChatInputCommandInteraction | MessageComponentInteraction, error: Error) {
-    logger.emit({ severityText: 'ERROR', body: 'Error creating server', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
     switch (error.name) {
         case 'UserError':
             await interaction.followUp({
@@ -17,6 +16,7 @@ export async function commandErrorHandler(interaction: ChatInputCommandInteracti
             });
             break;
         default:
+            logger.emit({ severityText: 'ERROR', body: 'Error creating server', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
             await interaction.followUp({
                 content: `There was an unexpected error running the command. Please reach out to the App Administrator.`,
                 flags: MessageFlags.Ephemeral
