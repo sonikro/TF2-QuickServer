@@ -1,3 +1,2 @@
 logaddress_list
-logaddress_del
 logaddress_delall
