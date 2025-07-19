@@ -26,4 +26,3 @@ sm_demostf_apikey "${DEMOS_TF_APIKEY}"
 recordstv_path "demos"
 
 log on
-sv_logsecret "${SV_LOGSECRET}"
