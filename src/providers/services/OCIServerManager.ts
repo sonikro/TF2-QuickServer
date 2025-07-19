@@ -102,6 +102,8 @@ export class OCIServerManager implements ServerManager {
         const adminList = variantConfig.admins ? [...variantConfig.admins, sourcemodAdminSteamId] : [sourcemodAdminSteamId];
 
         const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
+        // Determine if this is a pickup variant
+        const isPickupVariant = variantName.toLowerCase().includes("pickup");
         const environmentVariables: Record<string, string> = {
             SERVER_HOSTNAME: hostname,
             SERVER_PASSWORD: serverPassword,
@@ -111,7 +113,6 @@ export class OCIServerManager implements ServerManager {
             STV_NAME: regionConfig.tvHostname,
             STV_PASSWORD: tvPassword,
             ADMIN_LIST: adminList.join(","),
-            SV_LOGSECRET: logSecret.toString(),
             ...Object.assign({}, ...defaultCfgsEnvironment),
             ...extraEnvs,
         };
@@ -152,8 +153,7 @@ export class OCIServerManager implements ServerManager {
                             "on",
                             "+logaddress_add",
                             process.env.SRCDS_LOG_ADDRESS || "",
-                            "+sv_logsecret",
-                            logSecret.toString(),
+                            ...(!isPickupVariant ? ["+sv_logsecret", logSecret.toString()] : []),
                         ],
                         environmentVariables,
                     },

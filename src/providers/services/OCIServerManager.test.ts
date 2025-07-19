@@ -228,6 +228,28 @@ edicts  : 426 used of 2048 max
 describe("OCIServerManager", () => {
 
   describe("deployServer", () => {
+    it("should not include sv_logsecret in arguments or environment for pickup variants", async () => {
+      const env = createTestEnvironment();
+      const statusUpdater = vi.fn();
+      // Use a variant name containing 'pickup'
+      const pickupVariant = "pickup6s" as Variant;
+      env.configManager.getVariantConfig.mockReturnValue({
+        ...env.variantConfig,
+        map: "cp_badlands",
+      });
+      await env.sut.deployServer({
+        region: testRegion,
+        variantName: pickupVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-pickup",
+        statusUpdater,
+      });
+      const containerInstanceRequest = env.containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === "test-server-pickup");
+      expect(tf2Container).toBeDefined();
+      // Arguments should not include +sv_logsecret
+      expect(tf2Container!.arguments).not.toContain("+sv_logsecret");
+    });
     const environment = createTestEnvironment();
     let result: Awaited<ReturnType<typeof environment.sut.deployServer>>;
 
@@ -293,7 +315,6 @@ describe("OCIServerManager", () => {
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
                 ADMIN_LIST: "default_admin,12345678901234567",
-                SV_LOGSECRET: expect.any(String), // This will be set later
               },
             },
             {
