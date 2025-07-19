@@ -153,7 +153,7 @@ export class OCIServerManager implements ServerManager {
                             "on",
                             "+logaddress_add",
                             process.env.SRCDS_LOG_ADDRESS || "",
-                            ...(!isPickupVariant ? ["+sv_logsecret", logSecret.toString()] : []),
+                            // sv_logsecret removed from CLI, will be set via RCON after server is ready
                         ],
                         environmentVariables,
                     },
@@ -270,6 +270,17 @@ export class OCIServerManager implements ServerManager {
                 signal: abortController.signal,
             }
         );
+
+        // Set sv_logsecret via RCON after server is ready (if not pickup variant)
+        if (!isPickupVariant) {
+            await serverCommander.query({
+                command: `sv_logsecret ${logSecret}`,
+                host: publicIp!,
+                password: rconPassword,
+                port: 27015,
+                timeout: 5000,
+            });
+        }
 
         serverAbortManager.delete(serverId); // Clean up the abort controller after successful deployment
 
