@@ -248,7 +248,9 @@ describe("OCIServerManager", () => {
       const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === "test-server-pickup");
       expect(tf2Container).toBeDefined();
       // Arguments should not include +sv_logsecret
-      expect(tf2Container!.arguments).not.toContain("+sv_logsecret");
+      expect(env.serverCommander.query).not.toHaveBeenCalledWith(expect.objectContaining({
+        command: expect.stringMatching(/^sv_logsecret \d+$/),
+      }));
     });
     const environment = createTestEnvironment();
     let result: Awaited<ReturnType<typeof environment.sut.deployServer>>;
@@ -303,8 +305,6 @@ describe("OCIServerManager", () => {
                 "on",
                 "+logaddress_add",
                 "logaddress:port",
-                "+sv_logsecret",
-                expect.any(String), // This will be set later
               ],
               environmentVariables: {
                 SERVER_HOSTNAME: "Test Server",
@@ -341,6 +341,17 @@ describe("OCIServerManager", () => {
           ],
         },
       });
+      });
+
+    it("should set sv_logsecret via RCON after server is ready", () => {
+      // Should be called with sv_logsecret after status query
+      expect(environment.serverCommander.query).toHaveBeenCalledWith(expect.objectContaining({
+        command: expect.stringMatching(/^sv_logsecret \d+$/),
+        host: "1.2.3.4",
+        password: "test-password",
+        port: 27015,
+        timeout: 5000,
+      }));
     });
 
     it("returns a server object with correct serverId", () => {
