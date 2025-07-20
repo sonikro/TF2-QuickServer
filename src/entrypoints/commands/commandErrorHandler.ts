@@ -16,7 +16,14 @@ export async function commandErrorHandler(interaction: ChatInputCommandInteracti
             });
             break;
         default:
-            logger.emit({ severityText: 'ERROR', body: 'Error creating server', attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)) } });
+            logger.emit({
+                severityText: 'ERROR',
+                body: 'Error creating server',
+                attributes: {
+                    from: 'commandErrorHandler',
+                    error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+                }
+            });
             await interaction.followUp({
                 content: `There was an unexpected error running the command. Please reach out to the App Administrator.`,
                 flags: MessageFlags.Ephemeral
