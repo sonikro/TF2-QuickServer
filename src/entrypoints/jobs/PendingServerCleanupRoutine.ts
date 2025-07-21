@@ -8,7 +8,7 @@ export const schedulePendingServerCleanupRoutine = (dependencies: {
     terminatePendingServers: TerminatePendingServers,
     eventLogger: EventLogger
 }) => {
-    schedule.scheduleJob('*/10 * * * *', async () => {
+    schedule.scheduleJob('*/15 * * * *', async () => {
         try {
             logger.emit({ severityText: 'INFO', body: 'Running Pending Server Cleanup Routine...' });
             await dependencies.terminatePendingServers.execute();

@@ -23,7 +23,7 @@ export class TerminatePendingServers {
         const terminationPromises = servers.map(async (server) => {
             if (server.createdAt && server.status === "pending") {
                 const pendingDuration = now.getTime() - server.createdAt.getTime();
-                if (pendingDuration >= 10 * 60 * 1000) { // 10 minutes
+                if (pendingDuration >= 15 * 60 * 1000) { // 15 minutes
                     try {
                         await serverManager.deleteServer({
                             region: server.region,

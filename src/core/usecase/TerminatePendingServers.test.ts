@@ -18,7 +18,7 @@ function createServer(overrides: Partial<Server> = {}): Server {
         tvPort: 27020,
         rconPassword: "rconpass",
         rconAddress: "127.0.0.1",
-        createdAt: new Date(Date.now() - 11 * 60 * 1000), // 11 minutes ago
+        createdAt: new Date(Date.now() - 16 * 60 * 1000), // 16 minutes ago
         createdBy: "user-id-1",
         status: "pending",
         ...overrides
