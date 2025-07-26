@@ -72,9 +72,10 @@ jobs:
             --head $branch \
             --base main
 
+
           # Get the PR number of the newly created PR
-          pr_url=$(gh pr view --json url --head $branch -q .url)
-          pr_number=$(gh pr view --json number --head $branch -q .number)
+          pr_url=$(gh pr view $branch --json url -q .url)
+          pr_number=$(gh pr view $branch --json number -q .number)
 
           # Enable automerge for the PR
           gh pr merge $pr_number --auto --merge
