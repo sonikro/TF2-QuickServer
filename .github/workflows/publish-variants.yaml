@@ -34,7 +34,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Cache maps directory
+        id: cache-maps
+        uses: actions/cache@v4
+        with:
+          path: maps/
+          key: maps-${{ hashFiles('maps.json') }}
+          restore-keys: |
+            maps-
+
       - name: Download maps
+        if: steps.cache-maps.outputs.cache-hit != 'true'
         run: npm run download:maps
 
       - name: Build tf2-standard-competitive image
