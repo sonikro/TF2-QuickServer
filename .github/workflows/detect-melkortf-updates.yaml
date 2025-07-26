@@ -46,12 +46,12 @@ jobs:
       - name: Update file and create PR
         if: steps.check.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Replace invalid characters in the digest
           sanitized_digest=$(echo "${{ steps.digest.outputs.digest }}" | tr ':' '-')
           branch="update-base-image-version-${sanitized_digest}"
-          
+
           # Check if branch already exists
           if git ls-remote --exit-code --heads origin $branch; then
             echo "Branch $branch already exists. Skipping PR creation."
@@ -71,3 +71,13 @@ jobs:
             --body "New version of melkortf/tf2-competitive available. Click here to see new releases: [TF2 Server Releases](https://github.com/melkortf/tf2-servers/releases)" \
             --head $branch \
             --base main
+
+          # Get the PR number of the newly created PR
+          pr_url=$(gh pr view --json url --head $branch -q .url)
+          pr_number=$(gh pr view --json number --head $branch -q .number)
+
+          # Enable automerge for the PR
+          gh pr merge $pr_number --auto --merge
+
+          # Approve the PR
+          gh pr review $pr_number --approve
