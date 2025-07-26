@@ -79,6 +79,3 @@ jobs:
 
           # Enable automerge for the PR
           gh pr merge $pr_number --auto --merge
-
-          # Approve the PR
-          gh pr review $pr_number --approve
