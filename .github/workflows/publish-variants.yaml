@@ -25,14 +25,6 @@ jobs:
       - name: Install CMake
         run: sudo apt-get update -y && sudo apt-get install -y cmake
 
-      - name: Use Node.js from .nvmrc
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Cache maps directory
         id: cache-maps
@@ -42,6 +34,17 @@ jobs:
           key: maps-${{ hashFiles('maps.json') }}
           restore-keys: |
             maps-
+
+      - name: Use Node.js from .nvmrc
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        run: npm ci
 
       - name: Download maps
         if: steps.cache-maps.outputs.cache-hit != 'true'
