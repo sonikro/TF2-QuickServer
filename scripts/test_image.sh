@@ -17,7 +17,7 @@ docker run -d --name "$CONTAINER_NAME" \
   -e ADMIN_LIST=STEAM_0:0:14581482 \
   -e RCON_PASSWORD=test \
   -e SRCDS_PASSWORD=test \
-  -e SERVER_HOSTNAME="Test @ Sonikro Solutions" \
+  -e SERVER_HOSTNAME="Test" \
   -e SERVER_PASSWORD=mix \
   -e STV_PASSWORD=tv \
   "$IMAGE_NAME" \
