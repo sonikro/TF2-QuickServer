@@ -43,6 +43,11 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Validate config/default.json is valid JSON
+        run: |
+          cat config/default.json | jq empty
+        shell: bash
+
       - name: Save config/default.json as artifact
         uses: actions/upload-artifact@v4
         with:
