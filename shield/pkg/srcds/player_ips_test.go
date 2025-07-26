@@ -13,7 +13,7 @@ func (f *fakeRconConn) Execute(cmd string) (string, error) {
 }
 
 func TestGetPlayerIPs(t *testing.T) {
-	exampleStatus := `hostname: TF2-QuickServer | Virginia @ Sonikro Solutions
+	exampleStatus := `hostname: TF2-QuickServer | Virginia
 version : 9543365/24 9543365 secure
 udp/ip  : 169.254.173.35:13768  (local: 0.0.0.0:27015)  (public IP from Steam: 44.200.128.3)
 steamid : [A:1:1871475725:44792] (90264374594008077)

@@ -2,28 +2,28 @@
     "regions": {
         "sa-saopaulo-1": {
             "displayName": "São Paulo (Brazil)",
-            "srcdsHostname": "TF2-QuickServer | São Paulo @ Sonikro Solutions",
-            "tvHostname": "TF2-QuickServer TV | São Paulo @ Sonikro Solutions"
+            "srcdsHostname": "TF2-QuickServer | São Paulo",
+            "tvHostname": "TF2-QuickServer TV | São Paulo"
         },
         "sa-santiago-1": {
             "displayName": "Santiago (Chile)",
-            "srcdsHostname": "TF2-QuickServer | Santiago @ Sonikro Solutions",
-            "tvHostname": "TF2-QuickServer TV | Santiago @ Sonikro Solutions"
+            "srcdsHostname": "TF2-QuickServer | Santiago",
+            "tvHostname": "TF2-QuickServer TV | Santiago"
         },
         "sa-bogota-1": {
             "displayName": "Bogotá (Colombia)",
-            "srcdsHostname": "TF2-QuickServer | Bogotá @ Sonikro Solutions",
-            "tvHostname": "TF2-QuickServer TV | Bogotá @ Sonikro Solutions"
+            "srcdsHostname": "TF2-QuickServer | Bogotá",
+            "tvHostname": "TF2-QuickServer TV | Bogotá"
         },
         "us-chicago-1": {
             "displayName": "Chicago (USA)",
-            "srcdsHostname": "TF2-QuickServer | Chicago @ Sonikro Solutions",
-            "tvHostname": "TF2-QuickServer TV | Chicago @ Sonikro Solutions"
+            "srcdsHostname": "TF2-QuickServer | Chicago",
+            "tvHostname": "TF2-QuickServer TV | Chicago"
         },
         "eu-frankfurt-1": {
             "displayName": "Frankfurt (Germany)",
-            "srcdsHostname": "TF2-QuickServer | Frankfurt @ Sonikro Solutions",
-            "tvHostname": "TF2-QuickServer TV | Frankfurt @ Sonikro Solutions"
+            "srcdsHostname": "TF2-QuickServer | Frankfurt",
+            "tvHostname": "TF2-QuickServer TV | Frankfurt"
         }
     },
     "variants": {
@@ -51,7 +51,7 @@
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg"
             },
-            "hostname": "FBTF 6v6 Standard | {region} @ Sonikro Solutions",
+            "hostname": "FBTF 6v6 Standard | {region} @ TF2-QuickServer",
             "guildId": "144450745662570496"
         },
         "fbtf-6v6-pro": {
@@ -60,7 +60,7 @@
                 "5cp": "fbtf_6v6_5cp_pro.cfg",
                 "koth": "fbtf_6v6_koth.cfg"
             },
-            "hostname": "FBTF 6v6 Pro | {region} @ Sonikro Solutions",
+            "hostname": "FBTF 6v6 Pro | {region} @ TF2-QuickServer",
             "guildId": "144450745662570496"
         },
         "fbtf-9v9": {
@@ -70,12 +70,12 @@
                 "koth": "rgl_HL_koth.cfg",
                 "cp_steel_f12": "rgl_HL_stopwatch.cfg"
             },
-            "hostname": "FBTF 9v9 | {region} @ Sonikro Solutions",
+            "hostname": "FBTF 9v9 | {region} @ TF2-QuickServer",
             "guildId": "144450745662570496"
         },
         "insertcoin": {
             "displayName": "InsertCoin Mixes",
-            "hostname": "InsertCoin Mixes | {region} @ Sonikro Solutions",
+            "hostname": "InsertCoin Mixes | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "insertcoin_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
@@ -102,7 +102,7 @@
         },
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
-            "hostname": "br.tf2pickup.org | {region} @ Sonikro Solutions",
+            "hostname": "br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "admins": [
@@ -119,7 +119,7 @@
         },
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
-            "hostname": "hl.br.tf2pickup.org | {region} @ Sonikro Solutions",
+            "hostname": "hl.br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "admins": [
@@ -133,7 +133,7 @@
         },
         "mix-sa-novatos": {
             "displayName": "Mix SA Novatos",
-            "hostname": "Mix SA Novatos | {region} @ Sonikro Solutions",
+            "hostname": "Mix SA Novatos | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "novatos_6v6_5cp.cfg",
                 "koth": "novatos_6v6_koth.cfg"
@@ -150,7 +150,7 @@
         },
         "TFArena": {
             "displayName": "TF Arena",
-            "hostname": "TFArena | {region} @ Sonikro Solutions",
+            "hostname": "TFArena | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "tfarena_6v6_5cp.cfg",
                 "koth": "tfarena_6v6_koth.cfg",

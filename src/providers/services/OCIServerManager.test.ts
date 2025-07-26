@@ -122,7 +122,7 @@ function createTestEnvironment() {
       port: 27015,
       timeout: 5000,
     })
-    .thenResolve(`hostname: TF2-QuickServer | Virginia @ Sonikro Solutions
+    .thenResolve(`hostname: TF2-QuickServer | Virginia
 version : 9543365/24 9543365 secure
 udp/ip  : 169.254.173.35:13768  (local: 0.0.0.0:27015)  (public IP from Steam: 44.200.128.3)
 steamid : [A:1:1871475725:44792] (90264374594008077)
