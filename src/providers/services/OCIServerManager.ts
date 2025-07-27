@@ -229,7 +229,7 @@ export class OCIServerManager implements ServerManager {
         }
 
         // Notify user: Waiting for container to be ACTIVE
-        await statusUpdater(`⏳ [4/5] Waiting for server instance to be **ACTIVE**...`);
+        await statusUpdater(`⏳ [4/5] Waiting for server instance to be **ACTIVE**... This usually takes 2-3 minutes.`);
         // Wait for container to be ACTIVE
         await waitUntil(async () => {
             const containerInstance = await containerClient.getContainerInstance({
