@@ -28,9 +28,12 @@ export class TerminateEmptyServers {
     public async execute(): Promise<void> {
         const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, discordBot } = this.dependencies;
 
-        // Fetch all servers
-        const servers = await serverRepository.getAllServers("ready");
-        const serverActivities = await serverActivityRepository.getAll();
+        // Use transaction to ensure consistency for fetching data
+        const { servers, serverActivities } = await serverRepository.runInTransaction(async (trx) => {
+            const servers = await serverRepository.getAllServers("ready", trx);
+            const serverActivities = await serverActivityRepository.getAll(trx);
+            return { servers, serverActivities };
+        });
 
         const mergedServers = servers.map((server) => {
             const serverActivity = serverActivities.find((activity) => activity.serverId === server.serverId);
@@ -51,12 +54,24 @@ export class TerminateEmptyServers {
                         logger.emit({ severityText: 'INFO', body: `Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`, attributes: { serverId: server.serverId } });
                         // Terminate the server
                         try {
-                            await serverManager.deleteServer({
-                                region: server.region,
-                                serverId: server.serverId,
+                            // Use transaction to ensure atomicity of deletion
+                            await serverRepository.runInTransaction(async (trx) => {
+                                // Check if server still exists before deleting
+                                const existingServer = await serverRepository.findById(server.serverId, trx);
+                                if (!existingServer) {
+                                    logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} was already deleted, skipping.`, attributes: { serverId: server.serverId } });
+                                    return;
+                                }
+
+                                await serverManager.deleteServer({
+                                    region: server.region,
+                                    serverId: server.serverId,
+                                });
+                                // Delete the server from the repository
+                                await serverRepository.deleteServer(server.serverId, trx);
+                                // Delete server activity to prevent orphaned records
+                                await serverActivityRepository.deleteById(server.serverId, trx);
                             });
-                            // Delete the server from the repository
-                            await serverRepository.deleteServer(server.serverId);
 
                             // Remove the server from the mergedServers array
                             const index = mergedServers.findIndex((s) => s.serverId === server.serverId);
@@ -115,12 +130,27 @@ export class TerminateEmptyServers {
 
                 server.lastCheckedAt = new Date();
 
-                // Update the server activity repository
-                await serverActivityRepository.upsert({
-                    serverId: server.serverId,
-                    emptySince: server.emptySince!,
-                    lastCheckedAt: server.lastCheckedAt!,
-                });
+                // Use transaction to ensure consistency when upserting activity
+                try {
+                    await serverRepository.runInTransaction(async (trx) => {
+                        // Check if server still exists before upserting activity
+                        const existingServer = await serverRepository.findById(server.serverId, trx);
+                        if (!existingServer) {
+                            logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} no longer exists, skipping activity update.`, attributes: { serverId: server.serverId } });
+                            return;
+                        }
+
+                        // Update the server activity repository
+                        await serverActivityRepository.upsert({
+                            serverId: server.serverId,
+                            emptySince: server.emptySince!,
+                            lastCheckedAt: server.lastCheckedAt!,
+                        }, trx);
+                    });
+                } catch (error) {
+                    logger.emit({ severityText: 'ERROR', body: `Failed to update activity for server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
+                    // Don't rethrow this error since it's not critical
+                }
             })
         );
         const statusErrors = statusResults.filter(r => r.status === 'rejected');

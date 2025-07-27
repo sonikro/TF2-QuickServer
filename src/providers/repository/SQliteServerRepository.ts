@@ -48,26 +48,41 @@ export class SQLiteServerRepository implements ServerRepository {
         return servers.map(this.deserialize);
     }
 
-    async deleteServer(serverId: string): Promise<void> {
-        await this.dependencies.knex<Server>('servers')
+    async deleteServer(serverId: string, trx?: Knex.Transaction): Promise<void> {
+        const query = this.dependencies.knex<Server>('servers')
             .where({ serverId })
             .del();
+
+        if (trx) {
+            query.transacting(trx);
+        }
+
+        await query;
     }
 
-    async findById(serverId: string): Promise<Server | null> {
-        const server = await this.dependencies.knex<Server>('servers')
+    async findById(serverId: string, trx?: Knex.Transaction): Promise<Server | null> {
+        const query = this.dependencies.knex<Server>('servers')
             .where({ serverId })
             .first();
 
+        if (trx) {
+            query.transacting(trx);
+        }
+
+        const server = await query;
         return server ? this.deserialize(server) : null;
     }
 
-    async getAllServers(status?: ServerStatus): Promise<Server[]> {
+    async getAllServers(status?: ServerStatus, trx?: Knex.Transaction): Promise<Server[]> {
         const query = this.dependencies.knex<Server>('servers')
             .select('*');
 
         if (status) {
             query.where({ status });
+        }
+
+        if (trx) {
+            query.transacting(trx);
         }
 
         const servers = await query;

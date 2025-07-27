@@ -2,22 +2,29 @@ import { Chance } from "chance";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { Server } from "../domain";
+import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerAbortManager } from "../services/ServerAbortManager";
 import { ServerManager } from "../services/ServerManager";
 import { DeleteServerForUser } from "./DeleteServerForUser";
+import { Knex } from "knex";
 
 const chance = new Chance();
 
 describe("DeleteServerForUser", () => {
     const mockServerRepository = mock<ServerRepository>();
+    const mockServerActivityRepository = mock<ServerActivityRepository>();
     const mockServerManager = mock<ServerManager>();
     const mockEventLogger = mock<EventLogger>();
     const mockAbortManager = mock<ServerAbortManager>();
 
+    // Create a mock transaction object to use consistently
+    const mockTransaction = mock<Knex.Transaction>()
+
     const deleteServerForUser = new DeleteServerForUser({
         serverRepository: mockServerRepository,
+        serverActivityRepository: mockServerActivityRepository,
         serverManager: mockServerManager,
         eventLogger: mockEventLogger,
         serverAbortManager: mockAbortManager,
@@ -27,6 +34,10 @@ describe("DeleteServerForUser", () => {
 
     beforeEach(() => {
         vi.resetAllMocks();
+        // Mock runInTransaction to execute the callback function
+        mockServerRepository.runInTransaction.mockImplementation(async (callback) => {
+            return await callback(mockTransaction);
+        });
     });
 
     it("should throw an error if the user has no servers", async () => {
@@ -36,7 +47,7 @@ describe("DeleteServerForUser", () => {
             "You don't have any servers to terminate."
         );
 
-        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId);
+        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId, mockTransaction);
         expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
         expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
         expect(mockEventLogger.log).not.toHaveBeenCalled();
@@ -51,6 +62,7 @@ describe("DeleteServerForUser", () => {
         mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
         mockServerManager.deleteServer.mockResolvedValue();
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
         mockAbortManager.getOrCreate.mockReturnValue({ abort: vi.fn(), signal: {} } as any);
 
@@ -61,7 +73,8 @@ describe("DeleteServerForUser", () => {
                 serverId: server.serverId,
                 region: server.region,
             });
-            expect(mockServerRepository.deleteServer).toHaveBeenCalledWith(server.serverId);
+            expect(mockServerRepository.deleteServer).toHaveBeenCalledWith(server.serverId, mockTransaction);
+            expect(mockServerActivityRepository.deleteById).toHaveBeenCalledWith(server.serverId, mockTransaction);
             expect(mockEventLogger.log).toHaveBeenCalledWith({
                 eventMessage: `User deleted server with ID ${server.serverId} in region ${server.region}.`,
                 actorId: userId,
@@ -83,6 +96,7 @@ describe("DeleteServerForUser", () => {
             .mockRejectedValueOnce(new Error("Failed to delete server"));
 
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
         mockAbortManager.getOrCreate.mockReturnValue({ abort: vi.fn(), signal: {} } as any);
 
@@ -109,6 +123,7 @@ describe("DeleteServerForUser", () => {
             .mockImplementationOnce(() => abortControllers[1] as any as AbortController);
         mockServerManager.deleteServer.mockResolvedValue();
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
 
         await deleteServerForUser.execute({ userId });
@@ -129,7 +144,7 @@ describe("DeleteServerForUser", () => {
             "You have a server that is still being created. Please wait until it is ready before deleting."
         );
 
-        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId);
+        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId, mockTransaction);
         expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
         expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
         expect(mockEventLogger.log).not.toHaveBeenCalled();

@@ -124,6 +124,7 @@ export async function startDiscordBot() {
         deleteServerForUser: new DeleteServerForUser({
             serverManager: ociServerManager,
             serverRepository,
+            serverActivityRepository,
             eventLogger,
             serverAbortManager
         }),
