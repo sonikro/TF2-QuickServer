@@ -271,7 +271,7 @@ describe("OCIServerManager", () => {
       expect(environment.statusUpdater).toHaveBeenNthCalledWith(1, "🛡️ [1/5] Creating SHIELD Firewall...");
       expect(environment.statusUpdater).toHaveBeenNthCalledWith(2, "📦 [2/5] Creating server instance...");
       expect(environment.statusUpdater).toHaveBeenNthCalledWith(3, "🌐 [3/5] Waiting for Server Network Interfaces to be ready...");
-      expect(environment.statusUpdater).toHaveBeenNthCalledWith(4, "⏳ [4/5] Waiting for server instance to be **ACTIVE**...");
+      expect(environment.statusUpdater).toHaveBeenNthCalledWith(4, "⏳ [4/5] Waiting for server instance to be **ACTIVE**... This usually takes 2-3 minutes.");
       expect(environment.statusUpdater).toHaveBeenNthCalledWith(5, "🔄 [5/5] Waiting for server to be ready to receive RCON commands...");
     });
 
