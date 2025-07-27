@@ -13,6 +13,7 @@ import { emptyServerStatus, nonEmptyServerStatus } from "./__tests__/mockStatusS
 import { EventLogger } from "../services/EventLogger";
 import { ConfigManager } from "../utils/ConfigManager";
 import { Client as DiscordClient, User } from "discord.js";
+import { Knex } from "knex";
 
 
 const chance = new Chance();
@@ -73,6 +74,9 @@ function createServer(server: Partial<Server> = {}): Server {
 describe("TerminateEmptyServers", () => {
     describe("1 empty server for 10 minutes and 4 others in various states", () => {
         const { sut, mocks } = createTestEnvironment();
+
+        // Create a mock transaction object to use consistently
+        const mockTransaction =  mock<Knex.Transaction>()
 
         const emptyServerToBeTerminated = createServer();
         const serverWithActivity = createServer();
@@ -137,8 +141,16 @@ describe("TerminateEmptyServers", () => {
         }
 
         beforeAll(async () => {
-            when(mocks.serverActivityRepository.getAll).calledWith().thenResolve(serverActivities);
-            when(mocks.serverRepository.getAllServers).calledWith("ready").thenResolve(currentServers);
+            // Mock runInTransaction to execute the callback function for all calls
+            mocks.serverRepository.runInTransaction.mockImplementation(async (callback: any) => {
+                return await callback(mockTransaction);
+            });
+
+            // Mock findById to return existing server for all transaction checks
+            mocks.serverRepository.findById.mockResolvedValue(emptyServerToBeTerminated);
+
+            when(mocks.serverActivityRepository.getAll).calledWith(mockTransaction).thenResolve(serverActivities);
+            when(mocks.serverRepository.getAllServers).calledWith("ready", mockTransaction).thenResolve(currentServers);
 
             // Mock configManager.getVariantConfig
             for (const server of currentServers) {
@@ -179,7 +191,7 @@ describe("TerminateEmptyServers", () => {
         });
 
         it("should delete the terminated server from the repository", async () => {
-            expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(emptyServerToBeTerminated.serverId);
+            expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(emptyServerToBeTerminated.serverId, mockTransaction);
         });
 
         it("should keep the server with activity as emptySince = null", async () => {
@@ -187,7 +199,7 @@ describe("TerminateEmptyServers", () => {
                 serverId: serverWithActivity.serverId,
                 emptySince: null,
                 lastCheckedAt: expect.any(Date)
-            });
+            }, mockTransaction);
         });
 
         it("should set emptySince to now for a server that is just now empty", async () => {
@@ -195,7 +207,7 @@ describe("TerminateEmptyServers", () => {
                 serverId: emptyServerStillWaiting.serverId,
                 emptySince: expect.any(Date),
                 lastCheckedAt: expect.any(Date)
-            });
+            }, mockTransaction);
         });
 
         it("should set emptySince for a server that is not responding", async () => {
@@ -203,7 +215,7 @@ describe("TerminateEmptyServers", () => {
                 serverId: serverWithError.serverId,
                 emptySince: expect.any(Date),
                 lastCheckedAt: expect.any(Date)
-            });
+            }, mockTransaction);
         });
 
         it("should set emptySince to null for a server that is no longer empty", async () => {
@@ -211,7 +223,7 @@ describe("TerminateEmptyServers", () => {
                 serverId: noLongerEmptyServer.serverId,
                 emptySince: null,
                 lastCheckedAt: expect.any(Date)
-            });
+            }, mockTransaction);
         });
 
         it("should message the user about the termination", async () => {
