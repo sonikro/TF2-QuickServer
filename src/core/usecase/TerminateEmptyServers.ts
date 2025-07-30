@@ -124,8 +124,11 @@ export class TerminateEmptyServers {
                     }
                 } catch (error) {
                     // If error happens, assume server is empty to avoid servers running forever
+                    // Only set emptySince if it wasn't already set to preserve the original timestamp
                     logger.emit({ severityText: 'ERROR', body: `Error fetching status for server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
-                    server.emptySince = new Date();
+                    if (server.emptySince === null) {
+                        server.emptySince = new Date();
+                    }
                 }
 
                 server.lastCheckedAt = new Date();
