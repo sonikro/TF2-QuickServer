@@ -73,6 +73,7 @@
     "node-schedule": "^2.1.1",
     "oci-sdk": "^2.107.0",
     "p-limit": "^6.2.0",
+    "public-ip": "^7.0.1",
     "rcon-client": "^4.2.5",
     "sqlite3": "^5.1.7",
     "steamid": "^2.1.0",
