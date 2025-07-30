@@ -232,4 +232,124 @@ describe("TerminateEmptyServers", () => {
             );
         })
     });
+
+    describe("Server with repeated status query failures should preserve emptySince timestamp", () => {
+        const { sut, mocks } = createTestEnvironment();
+        const mockTransaction = mock<Knex.Transaction>();
+
+        const serverWithRepeatedFailures = createServer();
+
+        const currentServers: Server[] = [serverWithRepeatedFailures];
+
+        // Server has been empty for just 5 minutes (should NOT be terminated yet)
+        const initialEmptySince = new Date(Date.now() - 5 * 60 * 1000); // 5 minutes ago
+        const serverActivities: ServerActivity[] = [
+            {
+                serverId: serverWithRepeatedFailures.serverId,
+                emptySince: initialEmptySince, 
+                lastCheckedAt: new Date(),
+            }
+        ];
+
+        beforeAll(async () => {
+            // Mock runInTransaction to execute the callback function for all calls
+            mocks.serverRepository.runInTransaction.mockImplementation(async (callback: any) => {
+                return await callback(mockTransaction);
+            });
+
+            // Mock findById to return existing server for all transaction checks
+            mocks.serverRepository.findById.mockResolvedValue(serverWithRepeatedFailures);
+
+            when(mocks.serverActivityRepository.getAll).calledWith(mockTransaction).thenResolve(serverActivities);
+            when(mocks.serverRepository.getAllServers).calledWith("ready", mockTransaction).thenResolve(currentServers);
+
+            // Mock configManager.getVariantConfig
+            when(mocks.configManager.getVariantConfig)
+                .calledWith(serverWithRepeatedFailures.variant)
+                .thenReturn({ emptyMinutesTerminate: 10 } as VariantConfig);
+
+            // Mock RCON query to always fail
+            const queryParams = {
+                command: "status",
+                host: serverWithRepeatedFailures.rconAddress,
+                password: serverWithRepeatedFailures.rconPassword,
+                port: 27015,
+                timeout: 5000,
+            };
+            when(mocks.serverCommander.query).calledWith(queryParams).thenReject(new Error("Server not responding"));
+
+            await sut.execute();
+        });
+
+        it("should NOT terminate the server since it has only been empty for 5 minutes", async () => {
+            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith({
+                region: serverWithRepeatedFailures.region,
+                serverId: serverWithRepeatedFailures.serverId
+            });
+        });
+
+        it("should preserve the original emptySince timestamp when status queries fail", async () => {
+            expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
+                serverId: serverWithRepeatedFailures.serverId,
+                emptySince: initialEmptySince, // Shouldnt change
+                lastCheckedAt: expect.any(Date)
+            }, mockTransaction);
+        });
+    });
+
+    describe("Server with first-time status query failure should set emptySince", () => {
+        const { sut, mocks } = createTestEnvironment();
+        const mockTransaction = mock<Knex.Transaction>();
+
+        const serverWithFirstTimeFailure = createServer();
+
+        const currentServers: Server[] = [serverWithFirstTimeFailure];
+
+        // Server has never been empty before (emptySince is null)
+        const serverActivities: ServerActivity[] = [
+            {
+                serverId: serverWithFirstTimeFailure.serverId,
+                emptySince: null, 
+                lastCheckedAt: new Date(),
+            }
+        ];
+
+        beforeAll(async () => {
+            // Mock runInTransaction to execute the callback function for all calls
+            mocks.serverRepository.runInTransaction.mockImplementation(async (callback: any) => {
+                return await callback(mockTransaction);
+            });
+
+            // Mock findById to return existing server for all transaction checks
+            mocks.serverRepository.findById.mockResolvedValue(serverWithFirstTimeFailure);
+
+            when(mocks.serverActivityRepository.getAll).calledWith(mockTransaction).thenResolve(serverActivities);
+            when(mocks.serverRepository.getAllServers).calledWith("ready", mockTransaction).thenResolve(currentServers);
+
+            // Mock configManager.getVariantConfig
+            when(mocks.configManager.getVariantConfig)
+                .calledWith(serverWithFirstTimeFailure.variant)
+                .thenReturn({ emptyMinutesTerminate: 10 } as VariantConfig);
+
+            // Mock RCON query to fail
+            const queryParams = {
+                command: "status",
+                host: serverWithFirstTimeFailure.rconAddress,
+                password: serverWithFirstTimeFailure.rconPassword,
+                port: 27015,
+                timeout: 5000,
+            };
+            when(mocks.serverCommander.query).calledWith(queryParams).thenReject(new Error("Server not responding"));
+
+            await sut.execute();
+        });
+
+        it("should set emptySince for the first time when status query fails", async () => {
+            expect(mocks.serverActivityRepository.upsert).toHaveBeenCalledWith({
+                serverId: serverWithFirstTimeFailure.serverId,
+                emptySince: expect.any(Date), // Should be set to current time
+                lastCheckedAt: expect.any(Date)
+            }, mockTransaction);
+        });
+    });
 });
