@@ -2,3 +2,6 @@ logaddress_list
 logaddress_delall
 logaddress_add
 logaddress_del
+killserver
+quit
+exit
