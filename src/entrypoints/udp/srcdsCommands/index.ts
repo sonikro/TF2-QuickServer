@@ -1,3 +1,4 @@
+import { rcon } from "./Rcon";
 import { say } from "./Say";
 import { SRCDSCommand, SRCDSCommandParser } from "./SRCDSCommand";
 import { userEnteredGame } from "./UserEnteredGame";
@@ -5,6 +6,7 @@ import { userEnteredGame } from "./UserEnteredGame";
 export const commands: SRCDSCommandParser<any>[] = [
     userEnteredGame,
     say,
+    rcon,
 ]
 
 export function parseSRCDSCommand(rawString: string): SRCDSCommand<any> | null {
