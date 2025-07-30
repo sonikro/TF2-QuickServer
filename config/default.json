@@ -1,27 +1,27 @@
 {
     "regions": {
         "sa-saopaulo-1": {
-            "displayName": "São Paulo (Brazil)",
+            "displayName": "São Paulo",
             "srcdsHostname": "TF2-QuickServer | São Paulo",
             "tvHostname": "TF2-QuickServer TV | São Paulo"
         },
         "sa-santiago-1": {
-            "displayName": "Santiago (Chile)",
+            "displayName": "Santiago",
             "srcdsHostname": "TF2-QuickServer | Santiago",
             "tvHostname": "TF2-QuickServer TV | Santiago"
         },
         "sa-bogota-1": {
-            "displayName": "Bogotá (Colombia)",
+            "displayName": "Bogotá",
             "srcdsHostname": "TF2-QuickServer | Bogotá",
             "tvHostname": "TF2-QuickServer TV | Bogotá"
         },
         "us-chicago-1": {
-            "displayName": "Chicago (USA)",
+            "displayName": "Chicago",
             "srcdsHostname": "TF2-QuickServer | Chicago",
             "tvHostname": "TF2-QuickServer TV | Chicago"
         },
         "eu-frankfurt-1": {
-            "displayName": "Frankfurt (Germany)",
+            "displayName": "Frankfurt",
             "srcdsHostname": "TF2-QuickServer | Frankfurt",
             "tvHostname": "TF2-QuickServer TV | Frankfurt"
         }

@@ -1,5 +1,5 @@
 import { containerinstances, core } from "oci-sdk";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
@@ -9,6 +9,14 @@ import { ConfigManager } from "../../core/utils/ConfigManager";
 import { DefaultServerAbortManager } from "./DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
+import { logger } from "../../telemetry/otel";
+
+// Mock the logger
+vi.mock('../../telemetry/otel', () => ({
+  logger: {
+    emit: vi.fn()
+  }
+}));
 
 const testRegion = Region.SA_SAOPAULO_1;
 const testVariant = "vanilla" as Variant;
@@ -222,6 +230,7 @@ edicts  : 426 used of 2048 max
     variantConfig,
     serverAbortManager,
     statusUpdater: vi.fn(),
+    loggerSpy: vi.mocked(logger).emit,
   };
 }
 
@@ -241,11 +250,11 @@ describe("OCIServerManager", () => {
         region: testRegion,
         variantName: pickupVariant,
         sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-pickup",
+        serverId: "test-server-id",
         statusUpdater,
       });
       const containerInstanceRequest = env.containerClient.createContainerInstance.mock.calls[0][0];
-      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === "test-server-pickup");
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === "test-server-id");
       expect(tf2Container).toBeDefined();
       // Arguments should not include +sv_logsecret
       expect(env.serverCommander.query).not.toHaveBeenCalledWith(expect.objectContaining({
@@ -307,7 +316,7 @@ describe("OCIServerManager", () => {
                 "logaddress:port",
               ],
               environmentVariables: {
-                SERVER_HOSTNAME: "Test Server",
+                SERVER_HOSTNAME: "#test Test Server",
                 SERVER_PASSWORD: "test-password",
                 DEMOS_TF_APIKEY: "test-demo-tf-api-key",
                 LOGS_TF_APIKEY: "test-logs-tf-api-key",
@@ -378,6 +387,66 @@ describe("OCIServerManager", () => {
       expect(result.hostPassword).toBe("test-password");
       expect(result.tvPassword).toBe("test-password");
     });
+
+    it("should log all messages with serverId attribute", () => {
+      // Check that all log messages include the serverId
+      expect(environment.loggerSpy).toHaveBeenCalledWith(expect.objectContaining({
+        attributes: expect.objectContaining({
+          serverId: "test-server-id"
+        })
+      }));
+      
+      // Verify all logger calls have serverId
+      const loggerCalls = environment.loggerSpy.mock.calls;
+      loggerCalls.forEach((call: any) => {
+        expect(call[0]).toEqual(expect.objectContaining({
+          attributes: expect.objectContaining({
+            serverId: "test-server-id"
+          })
+        }));
+      });
+    });
+  })
+
+  describe("hostname with UUID prefix", () => {
+    it("should prepend first UUID block with # to hostname when using default hostname", async () => {
+      const { sut, containerClient, configManager } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+      const uuidServerId = "abcd1234-5678-9012-3456-789012345678";
+      
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: uuidServerId,
+        statusUpdater,
+      });
+      
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
+      
+      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#abcd1234 Test Server");
+    });
+
+    it("should prepend first UUID block with # to custom hostname", async () => {
+      const { sut, containerClient, variantConfig } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+      const uuidServerId = "xyz9876a-bcde-f012-3456-789012345678";
+      variantConfig.hostname = "Custom Server | {region} @ TF2-QuickServer";
+      
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: uuidServerId,
+        statusUpdater,
+      });
+      
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
+      
+      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#xyz9876a Custom Server | São Paulo @ TF2-QuickServer");
+    });
   })
 
   describe("custom variant hostname", () => {
@@ -400,7 +469,7 @@ describe("OCIServerManager", () => {
           containers: [
             expect.objectContaining({
               environmentVariables: expect.objectContaining({
-                SERVER_HOSTNAME: `custom-hostname | São Paulo (Brazil) @ TF2-QuickServer`,
+                SERVER_HOSTNAME: `#test custom-hostname | São Paulo @ TF2-QuickServer`,
               }),
             }),
             expect.anything(),

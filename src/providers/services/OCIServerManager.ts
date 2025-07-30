@@ -101,11 +101,16 @@ export class OCIServerManager implements ServerManager {
         // the admins array is immutable, so we need to create a new array
         const adminList = variantConfig.admins ? [...variantConfig.admins, sourcemodAdminSteamId] : [sourcemodAdminSteamId];
 
+        // Extract first UUID block (before first hyphen) for hostname prefix
+        const uuidPrefix = serverId.split('-')[0];
+        
         const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
+        const finalHostname = `#${uuidPrefix} ${hostname}`;
+        
         // Determine if this is a pickup variant
         const isPickupVariant = variantName.toLowerCase().includes("pickup");
         const environmentVariables: Record<string, string> = {
-            SERVER_HOSTNAME: hostname,
+            SERVER_HOSTNAME: finalHostname,
             SERVER_PASSWORD: serverPassword,
             DEMOS_TF_APIKEY: process.env.DEMOS_TF_APIKEY || "",
             LOGS_TF_APIKEY: process.env.LOGS_TF_APIKEY || "",
@@ -119,6 +124,7 @@ export class OCIServerManager implements ServerManager {
 
         // Notify user: Creating security group
         await statusUpdater(`🛡️ [1/5] Creating SHIELD Firewall...`);
+        logger.emit({ severityText: 'INFO', body: `Creating network security group for server ID: ${serverId}`, attributes: { serverId } });
         // Create NSG for this server
         const nsgId = await this.createNetworkSecurityGroup({ serverId, region, vncClient, vcnId: oracleRegionConfig.vnc_id, compartmentId: oracleRegionConfig.compartment_id });
 
@@ -273,6 +279,7 @@ export class OCIServerManager implements ServerManager {
 
         // Set sv_logsecret via RCON after server is ready (if not pickup variant)
         if (!isPickupVariant) {
+            logger.emit({ severityText: 'INFO', body: `Setting sv_logsecret for server ID: ${serverId}`, attributes: { serverId } });
             await serverCommander.query({
                 command: `sv_logsecret ${logSecret}`,
                 host: publicIp!,
@@ -282,6 +289,7 @@ export class OCIServerManager implements ServerManager {
             });
         }
 
+        logger.emit({ severityText: 'INFO', body: `Server deployment completed successfully for server ID: ${serverId}`, attributes: { serverId } });
         serverAbortManager.delete(serverId); // Clean up the abort controller after successful deployment
 
         const [sdrIp, sdrPort] = sdrAddress.split(":");
@@ -305,6 +313,8 @@ export class OCIServerManager implements ServerManager {
     async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
         const { ociClientFactory } = this.dependencies;
         const { region, serverId } = args;
+        logger.emit({ severityText: 'INFO', body: `Starting server deletion for server ID: ${serverId}`, attributes: { serverId } });
+        
         const { containerClient, vncClient } = ociClientFactory(region);
         const oracleConfig = this.dependencies.configManager.getOracleConfig();
         const oracleRegionConfig = oracleConfig.regions[region];
@@ -334,11 +344,15 @@ export class OCIServerManager implements ServerManager {
         if (nsgs.items && nsgs.items.length > 0) {
             nsgId = nsgs.items[0].id;
         }
+        
+        logger.emit({ severityText: 'INFO', body: `Deleting container instance for server ID: ${serverId}`, attributes: { serverId } });
         await containerClient.deleteContainerInstance({
             containerInstanceId,
         });
+        
         // Wait for the NSG to have no VNICs associated before deleting it
         if (nsgId) {
+            logger.emit({ severityText: 'INFO', body: `Deleting network security group for server ID: ${serverId}`, attributes: { serverId } });
             await waitUntil(async () => {
                 const vnicsResp = await vncClient.listNetworkSecurityGroupVnics({ networkSecurityGroupId: nsgId });
                 if (!vnicsResp.items || vnicsResp.items.length === 0) {
@@ -348,6 +362,8 @@ export class OCIServerManager implements ServerManager {
             }, { interval: 5000, timeout: 300000 });
             await this.deleteNetworkSecurityGroup({ nsgId, vncClient });
         }
+        
+        logger.emit({ severityText: 'INFO', body: `Server deletion completed successfully for server ID: ${serverId}`, attributes: { serverId } });
     }
 
 }
