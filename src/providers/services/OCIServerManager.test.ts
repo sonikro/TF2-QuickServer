@@ -11,12 +11,16 @@ import { OCIServerManager } from "./OCIServerManager";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 import { logger } from "../../telemetry/otel";
 
-// Mock the logger
-vi.mock('../../telemetry/otel', () => ({
-  logger: {
-    emit: vi.fn()
-  }
-}));
+// Mock only the logger, not the whole otel module
+vi.mock('../../telemetry/otel', async () => {
+  const actual = await vi.importActual<any>('../../telemetry/otel');
+  return {
+    ...actual,
+    logger: {
+      emit: vi.fn()
+    }
+  };
+});
 
 const testRegion = Region.SA_SAOPAULO_1;
 const testVariant = "vanilla" as Variant;

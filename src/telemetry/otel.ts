@@ -7,6 +7,7 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
+import { trace } from '@opentelemetry/api';
 
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
@@ -59,3 +60,5 @@ try {
 } catch (err: unknown) {
   console.error('[otel] Error starting OpenTelemetry SDK:', err);
 }
+
+export const tracer = trace.getTracer('tf2-quickserver');
