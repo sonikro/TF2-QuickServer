@@ -13,10 +13,8 @@ export const rcon: SRCDSCommandParser<{ sourceIp: string, command: string }> = (
             handler: async ({ args, password: logSecret, services }) => {
                 const { sourceIp, command } = args;
                 const server = await services.serverRepository.findByLogsecret(Number(logSecret));
-                if (!server) {
-                    logger.emit({ severityText: 'ERROR', body: `Server not found for logSecret ${logSecret}` });
-                    return;
-                }
+                if (!server) return;
+                
                 logger.emit({ severityText: 'INFO', body: `RCON command received from ${sourceIp}: ${command}`, attributes: { serverId: server.serverId } });
 
 
