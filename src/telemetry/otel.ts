@@ -7,7 +7,7 @@ import { resourceFromAttributes } from '@opentelemetry/resources';
 import { LoggerProvider, SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { trace } from '@opentelemetry/api';
+import { trace, metrics } from '@opentelemetry/api';
 
 
 diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
@@ -62,3 +62,4 @@ try {
 }
 
 export const tracer = trace.getTracer('tf2-quickserver');
+export const meter = metrics.getMeter('tf2-quickserver');
