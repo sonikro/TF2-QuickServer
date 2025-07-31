@@ -32,7 +32,8 @@ export class ResilientLogReceiver {
             const command = parseSRCDSCommand(message);
             if (command) {
                 try {
-                    logger.emit({ severityText: 'INFO', body: `[SRCDS Command Received] ${command.raw}`, attributes: { command: command.raw, args: command.args } });
+                    const server = await services.serverRepository.findByLogsecret(Number(password));
+                    logger.emit({ severityText: 'INFO', body: `[SRCDS Command Received] ${command.raw}`, attributes: { command: command.raw, args: command.args, serverId: server?.serverId } });
                     await defaultGracefulShutdownManager.run(() => command.handler({ args: command.args, password, services }))
                 } catch (error: Error | any) {
                     await services.eventLogger.log({
