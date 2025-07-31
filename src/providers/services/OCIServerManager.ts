@@ -75,9 +75,10 @@ export class OCIServerManager implements ServerManager {
     }): Promise<Server> {
         return await tracer.startActiveSpan('OCIServerManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
+            const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
+            const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
+            const abortController = serverAbortManager.getOrCreate(serverId);
             try {
-                const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
-                const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
 
                 const { containerClient, vncClient } = ociClientFactory(region);
                 const variantConfig = configManager.getVariantConfig(variantName);
@@ -211,7 +212,6 @@ export class OCIServerManager implements ServerManager {
                         }
                     };
 
-                    const abortController = serverAbortManager.getOrCreate(serverId);
                     logger.emit({ severityText: 'INFO', body: `Creating container instance for server ID: ${serverId}`, attributes: { serverId } });
                     const response = await containerClient.createContainerInstance(containerRequest);
                     containerId = response.containerInstance?.id;
@@ -234,7 +234,7 @@ export class OCIServerManager implements ServerManager {
                             return containerInstance.containerInstance.vnics[0].vnicId;
                         };
                         throw new Error("VNIC ID not available yet");
-                    }, { signal: serverAbortManager.getOrCreate(serverId).signal });
+                    }, { signal: abortController.signal });
                     span.end();
                 });
 
@@ -262,7 +262,7 @@ export class OCIServerManager implements ServerManager {
                             return true;
                         }
                         throw new Error(`Container instance ${containerId} is not ACTIVE yet. Current state: ${containerInstance.containerInstance.lifecycleState}`);
-                    }, { interval: 5000, timeout: 480000, signal: serverAbortManager.getOrCreate(serverId).signal });
+                    }, { interval: 5000, timeout: 480000, signal: abortController.signal });
                     span.end();
                 });
 
@@ -292,7 +292,7 @@ export class OCIServerManager implements ServerManager {
                         {
                             timeout: 360000,
                             interval: 5000,
-                            signal: serverAbortManager.getOrCreate(serverId).signal,
+                            signal: abortController.signal,
                         }
                     );
                     sdrAddress = result.sdrAddress;
