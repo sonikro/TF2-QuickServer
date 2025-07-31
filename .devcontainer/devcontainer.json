@@ -17,7 +17,8 @@
 			"extensions": [
 				"vitest.explorer",
 				"github.vscode-github-actions",
-				"yy0931.vscode-sqlite3-editor"
+				"yy0931.vscode-sqlite3-editor",
+				"Sarrus.sourcepawn-vscode"
 			]
 		}
 	},
