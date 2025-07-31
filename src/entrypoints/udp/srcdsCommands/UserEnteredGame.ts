@@ -13,8 +13,6 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 
-                logger.emit({ severityText: 'INFO', body: `User entered game: ${userId} (${steamId3}) on server with logSecret ${logSecret}` });
-
                 // Check if user is banned
                 const banResult = await userBanRepository.isUserBanned(steamId3);
                 if (!banResult.isBanned) return;
@@ -24,7 +22,7 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 if (!server) return;
 
                 // Ban the user using RCON
-                logger.emit({ severityText: 'INFO', body: `Banning user ${userId} (${steamId3}) on server ${server.serverId}` });
+                logger.emit({ severityText: 'INFO', body: `Banning user ${userId} (${steamId3}) on server ${server.serverId}`, attributes: { serverId: server.serverId, steamId3 } });
                 await serverCommander.query({
                     host: server.rconAddress,
                     port: 27015,

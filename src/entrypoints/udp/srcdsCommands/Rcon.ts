@@ -14,10 +14,6 @@ export const rcon: SRCDSCommandParser<{ sourceIp: string, command: string }> = (
                 const { sourceIp, command } = args;
                 const server = await services.serverRepository.findByLogsecret(Number(logSecret));
                 if (!server) return;
-                
-                logger.emit({ severityText: 'INFO', body: `RCON command received from ${sourceIp}: ${command}`, attributes: { serverId: server.serverId } });
-
-
                 /**
                  * Ideally the status command should not be used by anyone other than the TF2-QuickServer itself.
                  * If it is used, we log a warning and send a message to the server.
