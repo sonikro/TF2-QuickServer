@@ -1,4 +1,4 @@
-import { logger, tracer } from '../../telemetry/otel';
+import { logger, tracer, meter } from '../../telemetry/otel';
 import { Span } from '@opentelemetry/api';
 import { containerinstances, core } from "oci-sdk";
 import { getRegionDisplayName, Region, Server, Variant } from "../../core/domain";
@@ -14,6 +14,10 @@ import { StatusUpdater } from "../../core/services/StatusUpdater";
 import { Chance } from "chance";
 
 const chance = new Chance();
+
+const serverCreationDurationHistogram = meter.createHistogram('server_creation_duration_seconds', {
+  description: 'Duration to create a server (seconds)',
+});
 
 export class OCIServerManager implements ServerManager {
     constructor(
@@ -75,6 +79,7 @@ export class OCIServerManager implements ServerManager {
     }): Promise<Server> {
         return await tracer.startActiveSpan('OCIServerManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
+            const startTime = Date.now();
             const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
             const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
@@ -321,6 +326,12 @@ export class OCIServerManager implements ServerManager {
                 const [sdrIp, sdrPort] = sdrAddress.split(":");
 
                 parentSpan.end();
+                // Record server creation duration in seconds
+                const durationSeconds = (Date.now() - startTime) / 1000;
+                serverCreationDurationHistogram.record(durationSeconds, {
+                    region: region,
+                    variant: variantName,
+                });
                 return {
                     serverId,
                     region,
