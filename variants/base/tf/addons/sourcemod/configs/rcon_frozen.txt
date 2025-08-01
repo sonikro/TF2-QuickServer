@@ -1,1 +1,2 @@
 rcon_password
+sv_logsecret
