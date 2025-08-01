@@ -175,6 +175,8 @@ export class OCIServerManager implements ServerManager {
                                         "on",
                                         "+logaddress_add",
                                         process.env.SRCDS_LOG_ADDRESS || "",
+                                        "+sv_logsecret",
+                                        logSecret.toString(),
                                     ],
                                     environmentVariables,
                                 },
