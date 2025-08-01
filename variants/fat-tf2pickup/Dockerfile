@@ -49,3 +49,5 @@ COPY ./variants/fat-tf2pickup/stac.cfg  ${SERVER_DIR}/tf/cfg/sourcemod/stac.cfg
 # Remove rcon_block plugin to avoid conflicts with the pickup system
 RUN rm "${SERVER_DIR}/tf/addons/sourcemod/plugins/rcon_blocklist.smx"
 
+# Remove enforced cvars file to avoid conflicts with the pickup system
+RUN rm "${SERVER_DIR}/enforced_cvars.cfg"
