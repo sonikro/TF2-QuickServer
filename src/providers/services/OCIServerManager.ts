@@ -118,7 +118,6 @@ export class OCIServerManager implements ServerManager {
                 const finalHostname = `#${uuidPrefix} ${hostname}`;
                 
                 // Determine if this is a pickup variant
-                const isPickupVariant = variantName.toLowerCase().includes("pickup");
                 const environmentVariables: Record<string, string> = {
                     SERVER_HOSTNAME: finalHostname,
                     SERVER_PASSWORD: serverPassword,
@@ -128,6 +127,7 @@ export class OCIServerManager implements ServerManager {
                     STV_NAME: regionConfig.tvHostname,
                     STV_PASSWORD: tvPassword,
                     ADMIN_LIST: adminList.join(","),
+                    SV_LOGSECRET: logSecret.toString(),
                     ...Object.assign({}, ...defaultCfgsEnvironment),
                     ...extraEnvs,
                 };
@@ -303,22 +303,6 @@ export class OCIServerManager implements ServerManager {
                     sdrAddress = result.sdrAddress;
                     span.end();
                 });
-
-                // Set sv_logsecret via RCON after server is ready (if not pickup variant)
-                if (!isPickupVariant) {
-                    await tracer.startActiveSpan('Set sv_logsecret', async (span: Span) => {
-                        span.setAttribute('serverId', serverId);
-                        logger.emit({ severityText: 'INFO', body: `Setting sv_logsecret for server ID: ${serverId}`, attributes: { serverId } });
-                        await serverCommander.query({
-                            command: `sv_logsecret ${logSecret}`,
-                            host: publicIp!,
-                            password: rconPassword,
-                            port: 27015,
-                            timeout: 5000,
-                        });
-                        span.end();
-                    });
-                }
 
                 logger.emit({ severityText: 'INFO', body: `Server deployment completed successfully for server ID: ${serverId}`, attributes: { serverId } });
                 serverAbortManager.delete(serverId); // Clean up the abort controller after successful deployment
