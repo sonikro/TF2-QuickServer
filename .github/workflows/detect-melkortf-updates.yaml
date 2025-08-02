@@ -2,7 +2,7 @@ name: Check TF2 Standard Competitive Image Updates
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:
