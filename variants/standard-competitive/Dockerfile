@@ -49,6 +49,21 @@ RUN wget -nv https://fbtf.tf/uploads/cfgs/fbtf_cfg_s23.zip -O /tmp/fbtf_cfg_s23.
   && mv /tmp/fbtf_cfg/* "${SERVER_DIR}/tf/cfg/" \
   && rm -rf /tmp/fbtf_cfg /tmp/fbtf_cfg_s23.zip
 
+# Add RGL CFG
+ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
+ARG RGL_CONFIGS_VERSION=v348
+ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
+RUN wget -nv "${RGL_CONFIGS_URL}" -O "${RGL_CONFIGS_FILE_NAME}" \
+  && unzip -q "${RGL_CONFIGS_FILE_NAME}" \
+  && cp "cfg/"* "${SERVER_DIR}/tf/cfg/" \
+  && cp "addons/sourcemod/plugins/"{config_checker,rglqol}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/" \
+  && cp "addons/sourcemod/scripting/"{config_checker,rglqol}.sp "${SERVER_DIR}/tf/addons/sourcemod/scripting/" \
+  && mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled" \
+  && cp "addons/sourcemod/plugins/disabled/"{p4sstime,roundtimer_override}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" \
+  && mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/scripting/disabled" \
+  && cp "addons/sourcemod/scripting/disabled/roundtimer_override.sp" "${SERVER_DIR}/tf/addons/sourcemod/scripting/disabled/" \
+  && rm -rf "${RGL_CONFIGS_FILE_NAME}" cfg addons
+
 # Copy custom sourcemod configs and plugins
 COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/configs/* $SERVER_DIR/tf/addons/sourcemod/configs/
 COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/plugins/* $SERVER_DIR/tf/addons/sourcemod/plugins/
