@@ -1,0 +1,111 @@
+// Whitelist generated at Thu, 04 Jul 2024 19:05:03 +0200
+// Custom Whitelist ID: 14618
+
+// Share or view this whitelist:
+//	https://whitelist.tf/14618
+
+// New items added to the game are: allowed
+// Hats are: allowed
+// Miscs are: allowed
+// Pyrovision is: allowed
+// Noisemakers are: allowed
+// Restricted noisemakers are: allowed
+// Halloween/Full Moon items are: allowed
+// Noise making miscs are: allowed
+// Explosion on death miscs are: allowed
+// Festive weapon reskins are: allowed
+// Botkiller weapon reskins are: allowed
+
+// Blocked weapons for Scout
+// - Secondary
+//  * Crit-a-Cola
+//  * Mad Milk
+
+// Blocked weapons for Engineer
+// - Secondary
+//  * Short Circuit
+
+// Blocked weapons for Sniper
+// - Secondary
+//  * Jarate
+
+// Blocked weapons for Spy
+// - Secondary
+//  * Diamondback
+
+"item_whitelist"
+{
+	"unlisted_items_default_to"		"1"
+
+	//------------- Blocked weapons/reskins (Total: 9) --------------\\
+	//____________________________ Scout ____________________________\\
+	"Crit-a-Cola"							"0"
+	"Mad Milk"							"0"
+	"Mutated Milk"							"0"
+	//____________________________ Heavy ____________________________\\
+	"Deflector"							"0"
+	//__________________________ Engineer ___________________________\\
+	"The Short Circuit"						"0"
+	//___________________________ Sniper ____________________________\\
+	"Festive Jarate"						"0"
+	"Jarate"							"0"
+	"The Self-Aware Beauty Mark"					"0"
+	//_____________________________ Spy _____________________________\\
+	"The Diamondback"						"0"
+
+	//------------- ConTrabanned ConTracker (Total: 1) --------------\\
+	//_________________________ All classes _________________________\\
+	"Activated Campaign 3 Pass"					"0"
+
+	//--------------------- Taunts (Total: 40) ----------------------\\
+	//_________________________ All classes _________________________\\
+	"Laugh Taunt"							"0"
+	"Replay Taunt"							"0"
+	"Taunt: Burstchester"						"0"
+	"Taunt: Cheers!"						"0"
+	"Taunt: Killer Joke"						"0"
+	"Taunt: Mourning Mercs"						"0"
+	"Taunt: Second Rate Sorcery"					"0"
+	"Taunt: The Scaredy-cat!"					"0"
+	"Taunt: Yeti Punch"						"0"
+	"Taunt: Yeti Smash"						"0"
+	"The Shred Alert"						"0"
+	//____________________________ Scout ____________________________\\
+	"Battin' a Thousand Taunt"					"0"
+	"Deep Fried Desire Taunt"					"0"
+	"Taunt: Foul Play"						"0"
+	"Taunt: The Boston Breakdance"					"0"
+	"Taunt: The Killer Signature"					"0"
+	"Taunt: The Trackman's Touchdown"				"0"
+	//___________________________ Soldier ___________________________\\
+	"Fresh Brewed Victory Taunt"					"0"
+	"Taunt: Soldier's Requiem"					"0"
+	"Taunt: Star-Spangled Strategy"					"0"
+	"Taunt: The Fubar Fanfare"					"0"
+	"Taunt: The Profane Puppeteer"					"0"
+	//____________________________ Pyro _____________________________\\
+	"Party Trick Taunt"						"0"
+	"Taunt: The Headcase"						"0"
+	//___________________________ Demoman ___________________________\\
+	"Oblooterated Taunt"						"0"
+	"Spent Well Spirits Taunt"					"0"
+	"Taunt: Roar O'War"						"0"
+	"Taunt: True Scotsman's Call"					"0"
+	//____________________________ Heavy ____________________________\\
+	"Taunt: The Proletariat Showoff"				"0"
+	//__________________________ Engineer ___________________________\\
+	"Taunt: Texas Twirl 'Em"					"0"
+	//____________________________ Medic ____________________________\\
+	"Meet the Medic Heroic Taunt"					"0"
+	"Results Are In Taunt"						"0"
+	"Taunt: Borrowed Bones"						"0"
+	"Taunt: Doctor's Defibrillators"				"0"
+	"Taunt: The Head Doctor"					"0"
+	//___________________________ Sniper ____________________________\\
+	"I See You Taunt"						"0"
+	"Taunt: Most Wanted"						"0"
+	"Taunt: The Killer Solo"					"0"
+	//_____________________________ Spy _____________________________\\
+	"Buy A Life Taunt"						"0"
+	"Taunt: Disco Fever"						"0"
+}
