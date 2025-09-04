@@ -158,6 +158,35 @@
                 "cp_steel_2024h": "tfarena_6v6_stopwatch.cfg"
             },
             "guildId": "803785792052527114"
+        },
+        "bf-9v9": {
+            "displayName": "Brasil Fortress HL",
+            "hostname": "Brasil Fortress HL | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "pl": "bf_hl_stopwatch.cfg",
+                "5cp": "bf_hl_5cp.cfg",
+                "koth": "bf_hl_koth.cfg",
+                "cp_steel_f12": "bf_hl_stopwatch.cfg"
+            },
+            "guildId": "312687261219160065"
+        },
+        "bf-6v6-standard": {
+            "displayName": "Brasil Fortress",
+            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "bf_6v6_5cp.cfg",
+                "koth": "bf_6v6_koth.cfg"
+            },
+            "guildId": "312687261219160065"
+        },
+        "bf-6v6-invite": {
+            "displayName": "Brasil Fortress",
+            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "bf_6v6_5cp_invite.cfg",
+                "koth": "bf_6v6_koth.cfg"
+            },
+            "guildId": "312687261219160065"
         }
     },
     "discord": {
