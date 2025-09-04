@@ -160,7 +160,7 @@
             "guildId": "803785792052527114"
         },
         "bf-9v9": {
-            "displayName": "Brasil Fortress HL",
+            "displayName": "BF HL",
             "hostname": "Brasil Fortress HL | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "pl": "bf_hl_stopwatch.cfg",
@@ -171,7 +171,7 @@
             "guildId": "312687261219160065"
         },
         "bf-6v6-standard": {
-            "displayName": "Brasil Fortress",
+            "displayName": "BF 6v6 Standard",
             "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "bf_6v6_5cp.cfg",
@@ -180,7 +180,7 @@
             "guildId": "312687261219160065"
         },
         "bf-6v6-invite": {
-            "displayName": "Brasil Fortress",
+            "displayName": "BF 6v6 Invite",
             "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "bf_6v6_5cp_invite.cfg",
