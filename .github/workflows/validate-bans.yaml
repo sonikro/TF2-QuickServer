@@ -24,12 +24,9 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: '.nvmrc'
 
-      - name: Run validation tests
-        run: node scripts/test-validate-bans.js
-
-      - name: Validate bans.csv file
+      - name: Run validation tests and validate bans.csv file
         run: node scripts/validate-bans.js
 
       - name: Summary
