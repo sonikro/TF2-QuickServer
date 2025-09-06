@@ -26,8 +26,11 @@ jobs:
         with:
           node-version-file: '.nvmrc'
 
-      - name: Run validation tests and validate bans.csv file
-        run: node scripts/validate-bans.js
+      - name: Run validation tests
+        run: node scripts/validate-bans.spec.js
+
+      - name: Validate bans.csv file
+        run: node scripts/validate-bans.js --validate-only
 
       - name: Summary
         run: |
