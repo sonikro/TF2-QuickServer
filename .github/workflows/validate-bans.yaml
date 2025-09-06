@@ -1,0 +1,39 @@
+name: Validate Bans CSV
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'db/bans.csv'
+  push:
+    branches:
+      - main
+    paths:
+      - 'db/bans.csv'
+
+jobs:
+  validate-bans:
+    runs-on: ubuntu-latest
+    name: Validate bans.csv format and Steam3 IDs
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Run validation tests
+        run: node scripts/test-validate-bans.js
+
+      - name: Validate bans.csv file
+        run: node scripts/validate-bans.js
+
+      - name: Summary
+        run: |
+          echo "✅ bans.csv validation completed successfully"
+          echo "- CSV structure is valid"
+          echo "- All Steam3 IDs are in correct format (U:1:xxxxxxxxx)"
