@@ -92,5 +92,12 @@
     {
         "name": "koth_berry_b3a",
         "url": "https://tf2maps.net/downloads/borgville.19389/download"
-    }
+    },
+    "mge_14processes",
+    "mge_16_spires",
+    "mge_16badlands",
+    "mge_16temples",
+    "mge_16viaducts",
+    "mge_8logjams",
+    "mge_ammomod"
 ]
