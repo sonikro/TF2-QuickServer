@@ -1,0 +1,144 @@
+"Phrases"
+{
+    "enabled"
+    {
+        "en"    "Demo Checking has been enabled. Testing all users in the server and new users joining."
+        "pt"    "Verificação de Demo foi ativada. Testando todos os usuários no servidor e novos usuários que estão entrando."
+        "nl"    "Demo Checking is ingeschakeld. Test alle gebruikers op de server en nieuwe gebruikers die deelnemen."
+        "es"    "La Verificación de Demo ha sido activada. Probando todos los usuarios en el servidor y nuevos usuarios que se unen."
+    }
+    "disabled"
+    {
+        "en"    "Demo Checking has been disabled."
+        "pt"    "Verificação de Demo foi desativada."
+        "nl"    "Demo Checking is uitgeschakeld."
+        "es"    "La Verificación de Demo ha sido desactivada."
+    }
+    "ds_enabled 0"
+    {
+        "en"    "ds_enable is set to 0, you are not recording a demo."
+        "pt"    "ds_enable está definido como 0, você não está gravando uma demo."
+        "nl"    "ds_enable is ingesteld op 0, je neemt geen demo op."
+        "es"    "ds_enable está configurado en 0, no estás grabando una demo."
+    }
+    "ds_enabled 1"
+    {
+        "en"    "ds_enable is set to 1, you are only recording Valve Competitive Demos."
+        "pt"    "ds_enable está definido como 1, você está gravando apenas Demos Competitivos da Valve."
+        "nl"    "ds_enable is ingesteld op 1, je neemt alleen Valve Competitive Demo's op."
+        "es"    "ds_enable está configurado en 1, solo estás grabando Demos Competitivos de Valve."
+    }
+    "ds_enabled 2 or 3"
+    {
+        "en"    "ds_enable is set to 2 or 3, you are recording a demo."
+        "pt"    "ds_enable está definido como 2 ou 3, você está gravando uma demo."
+        "nl"    "ds_enable is ingesteld op 2 of 3, je neemt een demo op."
+        "es"    "ds_enable está configurado en 2 o 3, estás grabando una demo."
+    }
+    "ds_autodelete 1"
+    {
+        "en"    "ds_autodelete is set to 1, demos are being deleted."
+        "pt"    "ds_autodelete está definido como 1, as demos estão sendo excluídas."
+        "nl"    "ds_autodelete is ingesteld op 1, demo's worden verwijderd."
+        "es"    "ds_autodelete está configurado en 1, las demos están siendo eliminadas."
+    }
+    "ds_autodelete 0"
+    {
+        "en"    "ds_autodelete is set to 0, demos are not being deleted."
+        "pt"    "ds_autodelete está definido como 0, as demos não estão sendo excluídas."
+        "nl"    "ds_autodelete is ingesteld op 0, demo's worden niet verwijderd."
+        "es"    "ds_autodelete está configurado en 0, las demos no están siendo eliminadas."
+    }
+    "kicked"
+    {
+        "en"    "You have been kicked from the server for failing the Demo Check. See console for details."
+        "pt"    "Você foi expulso do servidor por falhar na Verificação de Demo. Veja o console para detalhes."
+        "nl"    "Je bent van de server getrapt omdat je de Demo Check hebt gefaald. Zie console voor details."
+        "es"    "Has sido expulsado del servidor por fallar en la Verificación de Demo. Ver consola para detalles."
+    }
+    "kicked_announce_disabled"
+    {
+        "#format" "{1:s}"
+        "en"    "{red}Warning! {lime}{1}{white} does not appear to be auto-recording demos correctly. If this is a match, please ensure you are recording a demo."
+        "pt"    "{red}Aviso! {lime}{1}{white} não parece estar gravando demos automaticamente de forma correta. Se esta é uma partida, certifique-se de que está gravando uma demo."
+        "nl"    "{red}Waarschuwing! {lime}{1}{white} lijkt niet correct automatisch demo's op te nemen. Als dit een wedstrijd is, zorg er dan voor dat je een demo opneemt."
+        "es"    "{red}¡Advertencia! {lime}{1}{white} no parece estar grabando demos automáticamente de forma correcta. Si esto es una partida, asegúrate de que estés grabando una demo."
+    }
+    "kicked_announce"
+    {
+        "#format" "{1:s}"
+        "en"    "{lime}{1}{white} was kicked from the server for failing the Demo Check."
+        "pt"    "{lime}{1}{white} foi expulso do servidor por falhar na Verificação de Demo."
+        "nl"    "{lime}{1}{white} is van de server getrapt omdat hij de Demo Check heeft gefaald."
+        "es"    "{lime}{1}{white} fue expulsado del servidor por fallar en la Verificación de Demo."
+    }
+    "docs"
+    {
+        "en"    "Your settings for recording Demos is incorrect. Please read the docs here: docs.ozfortress.com/guides/pov_demo_recording/"
+        "pt"    "Suas configurações para gravar Demos estão incorretas. Por favor, leia a documentação aqui: docs.ozfortress.com/guides/pov_demo_recording/"
+        "nl"    "Je instellingen voor het opnemen van Demo's zijn onjuist. Lees de documentatie hier: docs.ozfortress.com/guides/pov_demo_recording/"
+        "es"    "Tu configuración para grabar Demos es incorrecta. Por favor, lee la documentación aquí: docs.ozfortress.com/guides/pov_demo_recording/"
+    }
+
+    "discord_democheck"
+    {
+        "#format" "{1:s},{2:s},{3:s},{4:s},{5:s}"
+        "en"    "[{1} ({2})]({3}) failed the demo check at {4} - `{5}`"
+        "pt"    "[{1} ({2})]({3}) falhou na verificação de demo em {4} - `{5}`"
+        "nl"    "[{1} ({2})]({3}) faalde de demo check op {4} - `{5}`"
+        "es"    "[{1} ({2})]({3}) falló en la verificación de demo en {4} - `{5}`"
+    }
+
+    "discord_democheck_warn"
+    {
+        "#format" "{1:s},{2:s},{3:s},{4:s},{5:s}"
+        "en"    "[{1} ({2})]({3}) failed the demo check (in warn only mode) at {4} - `{5}`"
+        "pt"    "[{1} ({2})]({3}) falhou na verificação de demo (em modo apenas aviso) em {4} - `{5}`"
+        "nl"    "[{1} ({2})]({3}) faalde de demo check (in alleen waarschuwingsmodus) op {4} - `{5}`"
+        "es"    "[{1} ({2})]({3}) falló en la verificación de demo (en modo solo advertencia) en {4} - `{5}`"
+    }
+
+    "logs_democheck"
+    {
+        "#format" "{1:s},{2:s},{3:s},{4:s}"
+        "en"    "{1} ({2}) [{3}] failed the demo check: {4}"
+        "pt"    "{1} ({2}) [{3}] falhou na verificação de demo: {4}"
+        "nl"    "{1} ({2}) [{3}] faalde de demo check: {4}"
+        "es"    "{1} ({2}) [{3}] falló en la verificación de demo: {4}"
+    }
+
+    "logs_democheck_warn"
+    {
+        "#format" "{1:s},{2:s},{3:s},{4:s}"
+        "en"    "{1} ({2}) [{3}] failed the demo check for: {4} (in warn only mode)"
+        "pt"    "{1} ({2}) [{3}] falhou na verificação de demo por: {4} (em modo apenas aviso)"
+        "nl"    "{1} ({2}) [{3}] faalde de demo check voor: {4} (in alleen waarschuwingsmodus)"
+        "es"    "{1} ({2}) [{3}] falló en la verificación de demo por: {4} (en modo solo advertencia)"
+    }
+
+    "plugin_start_check_all"
+    {
+        "en"    "Demo Check - Plugin Started and Demo Checking has been enabled. Testing all users in the server."
+        "pt"    "Verificação de Demo - Plugin Iniciado e Verificação de Demo foi ativada. Testando todos os usuários no servidor."
+        "nl"    "Demo Check - Plugin Gestart en Demo Checking is ingeschakeld. Test alle gebruikers op de server."
+        "es"    "Verificación de Demo - Plugin Iniciado y la Verificación de Demo ha sido activada. Probando todos los usuarios en el servidor."
+    }
+
+    "plugin_authid_failed"
+    {
+        "#format" "{1:s},{2:s}"
+        "en"    "Couldn't validate SteamID for {1}, GetClientAuthId returned {2}. Thanks SourceMod!"
+        "pt"    "Não foi possível validar o SteamID para {1}, GetClientAuthId retornou {2}. Obrigado SourceMod!"
+        "nl"    "Kon SteamID voor {1} niet valideren, GetClientAuthId gaf {2} terug. Bedankt SourceMod!"
+        "es"    "No se pudo validar el SteamID para {1}, GetClientAuthId devolvió {2}. ¡Gracias SourceMod!"
+    }
+
+    "join_cvar_check"
+    {
+        "#format" "{1:s},{2:s},{3:s}"
+        "en"    "sm_democheck_enabled: {1}, sm_democheck_onreadyup: {2}, sm_democheck_warn: {3}"
+        "pt"    "sm_democheck_enabled: {1}, sm_democheck_onreadyup: {2}, sm_democheck_warn: {3}"
+        "nl"    "sm_democheck_enabled: {1}, sm_democheck_onreadyup: {2}, sm_democheck_warn: {3}"
+        "es"    "sm_democheck_enabled: {1}, sm_democheck_onreadyup: {2}, sm_democheck_warn: {3}"
+    }
+}

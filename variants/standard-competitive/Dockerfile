@@ -53,8 +53,10 @@ RUN wget -nv https://fbtf.tf/uploads/cfgs/fbtf_cfg_s23.zip -O /tmp/fbtf_cfg_s23.
 
 # Copy custom sourcemod configs and plugins
 COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/configs/* $SERVER_DIR/tf/addons/sourcemod/configs/
-COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/plugins/* $SERVER_DIR/tf/addons/sourcemod/plugins/
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/plugins/*.smx $SERVER_DIR/tf/addons/sourcemod/plugins/
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/plugins/disabled/*.smx $SERVER_DIR/tf/addons/sourcemod/plugins/disabled/
 COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/scripting/* $SERVER_DIR/tf/addons/sourcemod/scripting/
+COPY --chown=tf2:tf2 ./variants/base/tf/addons/sourcemod/translations/* $SERVER_DIR/tf/addons/sourcemod/translations/
 
 COPY --chown=tf2:tf2 ./variants/base/custom_entrypoint.sh .
 
