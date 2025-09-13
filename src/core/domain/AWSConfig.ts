@@ -11,6 +11,8 @@ export interface AWSRegionSettings {
     vpc_id: string;     // VPC ID needed for security group creation
     task_execution_role_arn: string;
     task_role_arn: string;
+    instance_profile_arn: string; // IAM instance profile for EC2 instances
+    log_group_name: string; // CloudWatch log group for ECS containers
     rootRegion: string; // The root AWS region that contains this Local Zone
 }
 
@@ -24,6 +26,8 @@ export function getAWSConfig(): AWSConfig {
                 vpc_id: config.get<string>(`buenos_aires_vpc_id.value`),
                 task_execution_role_arn: config.get<string>(`buenos_aires_task_execution_role_arn.value`),
                 task_role_arn: config.get<string>(`buenos_aires_task_role_arn.value`),
+                instance_profile_arn: config.get<string>(`buenos_aires_instance_profile_arn.value`),
+                log_group_name: config.get<string>(`buenos_aires_log_group_name.value`),
                 rootRegion: "us-east-1",
             },
         }

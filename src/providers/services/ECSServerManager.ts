@@ -6,14 +6,22 @@ import {
     DescribeTasksCommand,
     ListTasksCommand,
     RegisterTaskDefinitionCommand,
-    waitUntilServicesStable
+    waitUntilServicesStable,
+    DescribeContainerInstancesCommand,
+    ListContainerInstancesCommand
 } from "@aws-sdk/client-ecs";
 import {
     CreateSecurityGroupCommand,
     DeleteSecurityGroupCommand,
     DescribeSecurityGroupsCommand,
     AuthorizeSecurityGroupIngressCommand,
-    DescribeNetworkInterfacesCommand
+    DescribeNetworkInterfacesCommand,
+    RunInstancesCommand,
+    TerminateInstancesCommand,
+    DescribeInstancesCommand,
+    DescribeImagesCommand,
+    _InstanceType,
+    waitUntilInstanceRunning
 } from "@aws-sdk/client-ec2";
 import { logger, tracer, meter } from '../../telemetry/otel';
 import { Span } from '@opentelemetry/api';
@@ -111,21 +119,20 @@ export class ECSServerManager implements ServerManager {
                 };
 
                 // Convert environment to ECS format
-                const environmentArray = Object.entries(environmentVariables).map(([name, value]) => ({ name, value }));
+                const environmentArray = Object.entries(environmentVariables).map(([name, value]: [string, string | number]) => ({ name, value: typeof value === "number" ? value.toString() : value }));
 
                 // Notify user: Creating task definition
                 let taskDefinitionArn: string;
                 await tracer.startActiveSpan('Register Task Definition', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`📋 [1/5] Creating task definition...`);
+                    await statusUpdater(`📋 [1/8] Creating task definition...`);
                     logger.emit({ severityText: 'INFO', body: `Registering task definition for server ID: ${serverId}`, attributes: { serverId } });
 
                     const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
                         family: serverId,
-                        networkMode: "awsvpc",
-                        requiresCompatibilities: ["FARGATE"],
-                        cpu: (variantConfig.ocpu * 1024).toString(), // Convert OCPU to ECS CPU units (1 OCPU = 1024 CPU units)
-                        memory: (variantConfig.memory * 1024).toString(), // Convert GB to MB
+                        networkMode: "host",
+                        requiresCompatibilities: ["EC2"],
+                        // Remove CPU and memory constraints - these are handled by the EC2 instance
                         executionRoleArn: awsRegionConfig.task_execution_role_arn,
                         taskRoleArn: awsRegionConfig.task_role_arn,
                         // TODO: Add Shield and NewRelic Containers
@@ -134,6 +141,8 @@ export class ECSServerManager implements ServerManager {
                                 name: "tf2-server",
                                 image: containerImage,
                                 essential: true,
+                                cpu: 1536,
+                                memory: 3584, // Reserve 3.5GB for the game server (leaving 0.5GB for system)
                                 environment: environmentArray,
                                 command: [
                                     "-enablefakeip",
@@ -147,21 +156,33 @@ export class ECSServerManager implements ServerManager {
                                 portMappings: [
                                     {
                                         containerPort: 27015,
+                                        hostPort: 27015,
                                         protocol: "tcp"
                                     },
                                     {
                                         containerPort: 27015,
+                                        hostPort: 27015,
                                         protocol: "udp"
                                     },
                                     {
                                         containerPort: 27020,
+                                        hostPort: 27020,
                                         protocol: "tcp"
                                     },
                                     {
                                         containerPort: 27020,
+                                        hostPort: 27020,
                                         protocol: "udp"
                                     }
                                 ],
+                                logConfiguration: {
+                                    logDriver: "awslogs",
+                                    options: {
+                                        "awslogs-group": awsRegionConfig.log_group_name,
+                                        "awslogs-region": awsRegionConfig.rootRegion,
+                                        "awslogs-stream-prefix": `tf2-server-${serverId}`
+                                    }
+                                }
                             },
                         ],
                     }));
@@ -177,8 +198,152 @@ export class ECSServerManager implements ServerManager {
                 let securityGroupId: string;
                 await tracer.startActiveSpan('Create Security Group', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`🔒 [2/6] Creating security group...`);
+                    await statusUpdater(`🔒 [2/8] Creating security group...`);
                     securityGroupId = await this.createSecurityGroup({ serverId, region });
+                    span.end();
+                });
+
+                // Create dedicated EC2 instance for the game server
+                let instanceId: string;
+                await tracer.startActiveSpan('Create EC2 Instance', async (span: Span) => {
+                    span.setAttribute('serverId', serverId);
+                    await statusUpdater(`🖥️ [3/8] Creating dedicated EC2 instance...`);
+                    instanceId = await this.createGameServerInstance({ 
+                        serverId, 
+                        region, 
+                        variantConfig, 
+                        securityGroupId 
+                    });
+                    span.end();
+                });
+
+                // Wait for instance to be running and registered with ECS
+                await tracer.startActiveSpan('Wait for Instance Ready', async (span: Span) => {
+                    span.setAttribute('serverId', serverId);
+                    await statusUpdater(`⏳ [4/8] Waiting for instance to be ready...`);
+                    
+                    // First, wait for EC2 instance to be running
+                    logger.emit({ 
+                        severityText: 'INFO', 
+                        body: `Waiting for EC2 instance ${instanceId} to be running`, 
+                        attributes: { serverId, instanceId } 
+                    });
+                    
+                    const { ec2Client, ecsClient } = awsClientFactory(awsRegionConfig.rootRegion);
+                    
+                    await waitUntilInstanceRunning({
+                        client: ec2Client,
+                        maxWaitTime: 300, // 5 minutes
+                        maxDelay: 15,
+                        minDelay: 5
+                    }, {
+                        InstanceIds: [instanceId]
+                    });
+                    
+                    logger.emit({ 
+                        severityText: 'INFO', 
+                        body: `EC2 instance ${instanceId} is now running, waiting for ECS registration`, 
+                        attributes: { serverId, instanceId } 
+                    });
+                    
+                    // Then wait for the instance to register with ECS cluster
+                    let isRegistered = false;
+                    const maxRetries = 40; // 10 minutes with 15 second intervals
+                    let retries = 0;
+                    
+                    while (!isRegistered && retries < maxRetries) {
+                        try {
+                            logger.emit({ 
+                                severityText: 'INFO', 
+                                body: `Checking ECS registration attempt ${retries + 1}/${maxRetries} for instance ${instanceId}`, 
+                                attributes: { serverId, instanceId, retry: retries + 1, maxRetries } 
+                            });
+
+                            const containerInstancesResponse = await ecsClient.send(new ListContainerInstancesCommand({
+                                cluster: awsRegionConfig.cluster_name
+                            }));
+                            
+                            logger.emit({ 
+                                severityText: 'INFO', 
+                                body: `Found ${containerInstancesResponse.containerInstanceArns?.length || 0} container instances in cluster`, 
+                                attributes: { serverId, instanceId, containerInstanceCount: containerInstancesResponse.containerInstanceArns?.length || 0 } 
+                            });
+                            
+                            if (containerInstancesResponse.containerInstanceArns && containerInstancesResponse.containerInstanceArns.length > 0) {
+                                const containerInstanceDetails = await ecsClient.send(new DescribeContainerInstancesCommand({
+                                    cluster: awsRegionConfig.cluster_name,
+                                    containerInstances: containerInstancesResponse.containerInstanceArns
+                                }));
+                                
+                                // Log all container instances for debugging
+                                containerInstanceDetails.containerInstances?.forEach(ci => {
+                                    logger.emit({ 
+                                        severityText: 'INFO', 
+                                        body: `Container instance: ${ci.ec2InstanceId}, status: ${ci.status}, attributes: ${JSON.stringify(ci.attributes)}`, 
+                                        attributes: { serverId, instanceId, containerInstanceId: ci.ec2InstanceId, status: ci.status } 
+                                    });
+                                });
+                                
+                                // Check if our instance is registered and has the correct server-id attribute
+                                const ourInstance = containerInstanceDetails.containerInstances?.find(ci => 
+                                    ci.ec2InstanceId === instanceId && 
+                                    ci.attributes?.some(attr => attr.name === 'server-id' && attr.value === serverId)
+                                );
+                                
+                                if (ourInstance && ourInstance.status === 'ACTIVE') {
+                                    isRegistered = true;
+                                    logger.emit({ 
+                                        severityText: 'INFO', 
+                                        body: `Instance ${instanceId} successfully registered with ECS cluster`, 
+                                        attributes: { serverId, instanceId, containerInstanceArn: ourInstance.containerInstanceArn } 
+                                    });
+                                } else if (ourInstance) {
+                                    logger.emit({ 
+                                        severityText: 'INFO', 
+                                        body: `Instance ${instanceId} found in cluster but status is ${ourInstance.status}, waiting...`, 
+                                        attributes: { serverId, instanceId, status: ourInstance.status } 
+                                    });
+                                } else {
+                                    // Check if the EC2 instance is registered but without our server-id attribute
+                                    const instanceInCluster = containerInstanceDetails.containerInstances?.find(ci => 
+                                        ci.ec2InstanceId === instanceId
+                                    );
+                                    
+                                    if (instanceInCluster) {
+                                        logger.emit({ 
+                                            severityText: 'WARNING', 
+                                            body: `Instance ${instanceId} is in cluster but missing server-id attribute: ${JSON.stringify(instanceInCluster.attributes)}`, 
+                                            attributes: { serverId, instanceId, attributes: JSON.stringify(instanceInCluster.attributes) } 
+                                        });
+                                    } else {
+                                        logger.emit({ 
+                                            severityText: 'INFO', 
+                                            body: `Instance ${instanceId} not yet registered in ECS cluster`, 
+                                            attributes: { serverId, instanceId } 
+                                        });
+                                    }
+                                }
+                            }
+                            
+                            if (!isRegistered) {
+                                retries++;
+                                await new Promise(resolve => setTimeout(resolve, 15000)); // Wait 15 seconds before retry
+                            }
+                        } catch (error) {
+                            logger.emit({ 
+                                severityText: 'WARNING', 
+                                body: `Error checking ECS registration for instance ${instanceId}: ${error}`, 
+                                attributes: { serverId, instanceId, retry: retries, error: error instanceof Error ? error.message : String(error) } 
+                            });
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, 15000));
+                        }
+                    }
+                    
+                    if (!isRegistered) {
+                        throw new Error(`Instance ${instanceId} failed to register with ECS cluster within 10 minutes. Check the instance user data logs at /var/log/user-data.log`);
+                    }
+                    
                     span.end();
                 });
 
@@ -186,7 +351,7 @@ export class ECSServerManager implements ServerManager {
                 let serviceArn: string;
                 await tracer.startActiveSpan('Create ECS Service', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`🚀 [3/6] Launching ECS service...`);
+                    await statusUpdater(`🚀 [5/8] Launching ECS service...`);
                     logger.emit({ severityText: 'INFO', body: `Creating ECS service for server ID: ${serverId}`, attributes: { serverId } });
 
                     const serviceResponse = await ecsClient.send(new CreateServiceCommand({
@@ -194,14 +359,15 @@ export class ECSServerManager implements ServerManager {
                         serviceName: serverId,
                         taskDefinition: taskDefinitionArn,
                         desiredCount: 1,
-                        launchType: "FARGATE",
-                        networkConfiguration: {
-                            awsvpcConfiguration: {
-                                subnets: [awsRegionConfig.subnet_id],
-                                securityGroups: [securityGroupId],
-                                assignPublicIp: "ENABLED",
-                            },
-                        },
+                        launchType: "EC2",
+                        placementConstraints: [
+                            {
+                                type: "memberOf",
+                                expression: `attribute:server-id == ${serverId}`
+                            }
+                        ],
+                        // No networkConfiguration needed for host network mode
+                        // The container will use the EC2 instance's primary network interface
                     }));
 
                     serviceArn = serviceResponse.service?.serviceArn!;
@@ -214,7 +380,7 @@ export class ECSServerManager implements ServerManager {
                 // Notify user: Waiting for service to be stable
                 await tracer.startActiveSpan('Wait for Service Stable', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`⏳ [4/6] Waiting for service to be stable...`);
+                    await statusUpdater(`⏳ [6/8] Waiting for service to be stable...`);
                     logger.emit({ severityText: 'INFO', body: `Waiting for ECS service to be stable: ${serverId}`, attributes: { serverId } });
 
                     await waitUntilServicesStable({
@@ -234,51 +400,30 @@ export class ECSServerManager implements ServerManager {
                 let publicIp: string = "";
                 await tracer.startActiveSpan('Get Public IP', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`🌐 [5/6] Retrieving public IP...`);
+                    await statusUpdater(`🌐 [7/8] Retrieving public IP...`);
                     logger.emit({ severityText: 'INFO', body: `Getting public IP for server ID: ${serverId}`, attributes: { serverId } });
 
-                    // List tasks associated with the service
-                    const listTasksResponse = await ecsClient.send(
-                        new ListTasksCommand({
-                            cluster: awsRegionConfig.cluster_name,
-                            serviceName: serverId
-                        })
-                    );
-
-                    const taskArn = listTasksResponse.taskArns?.[0];
-                    if (!taskArn) {
-                        throw new Error("No tasks found for the service");
-                    }
-
-                    // Get the public IP of the task
-                    const taskResponse = await ecsClient.send(new DescribeTasksCommand({
-                        cluster: awsRegionConfig.cluster_name,
-                        tasks: [taskArn],
+                    // Get the public IP directly from the EC2 instance
+                    const describeInstanceResponse = await ec2Client.send(new DescribeInstancesCommand({
+                        InstanceIds: [instanceId]
                     }));
 
-                    const task = taskResponse.tasks?.[0];
-                    if (!task) {
-                        throw new Error("Task not found");
+                    const instance = describeInstanceResponse.Reservations?.[0]?.Instances?.[0];
+                    if (!instance) {
+                        throw new Error("EC2 instance not found");
                     }
 
-                    const eniId = task.attachments?.[0]?.details?.find(detail => detail.name === "networkInterfaceId")?.value;
-                    if (!eniId) {
-                        throw new Error("Network interface ID not found");
-                    }
-
-                    const networkInterfaceResponse = await ec2Client.send(new DescribeNetworkInterfacesCommand({
-                        NetworkInterfaceIds: [eniId],
-                    }));
-
-                    const networkInterface = networkInterfaceResponse.NetworkInterfaces?.[0];
-                    if (!networkInterface) {
-                        throw new Error("Network interface not found");
-                    }
-
-                    publicIp = networkInterface.Association?.PublicIp!;
+                    publicIp = instance.PublicIpAddress || "";
                     if (!publicIp) {
-                        throw new Error("Failed to retrieve public IP");
+                        throw new Error("Failed to retrieve public IP from EC2 instance. Instance may not be in a public subnet or may not have a public IP assigned.");
                     }
+
+                    logger.emit({ 
+                        severityText: 'INFO', 
+                        body: `Retrieved public IP from EC2 instance: ${publicIp}`, 
+                        attributes: { serverId, instanceId, publicIp } 
+                    });
+
                     span.end();
                 });
 
@@ -286,7 +431,7 @@ export class ECSServerManager implements ServerManager {
                 let sdrAddress: string = "";
                 await tracer.startActiveSpan('Wait for Server Ready', async (span: Span) => {
                     span.setAttribute('serverId', serverId);
-                    await statusUpdater(`🎮 [6/6] Waiting for TF2 server to be ready...`);
+                    await statusUpdater(`🎮 [8/8] Waiting for TF2 server to respond to RCON Commands`);
                     logger.emit({ severityText: 'INFO', body: `Waiting for TF2 server to be ready: ${serverId}`, attributes: { serverId } });
 
                     const result = await waitUntil<{ sdrAddress: string }>(
@@ -352,16 +497,7 @@ export class ECSServerManager implements ServerManager {
                     attributes: { serverId, error: error instanceof Error ? error.message : String(error) }
                 });
 
-                // Clean up on error
-                try {
-                    await this.deleteServer({ serverId, region });
-                } catch (cleanupError) {
-                    logger.emit({
-                        severityText: 'WARN',
-                        body: `Failed to cleanup server after deployment error: ${serverId}`,
-                        attributes: { serverId, cleanupError: cleanupError instanceof Error ? cleanupError.message : String(cleanupError) }
-                    });
-                }
+                // Don't auto-cleanup on deployment failure - let the cleanup job handle it
                 throw error;
             } finally {
                 parentSpan.end();
@@ -419,6 +555,9 @@ export class ECSServerManager implements ServerManager {
                 await ecsClient.send(new DeregisterTaskDefinitionCommand({
                     taskDefinition: taskDefinitionArn,
                 }));
+
+                // Terminate the dedicated EC2 instance
+                await this.terminateGameServerInstance({ serverId, region });
 
                 // Delete the security group
                 await this.deleteSecurityGroup({ serverId, region });
@@ -571,6 +710,257 @@ export class ECSServerManager implements ServerManager {
                     body: `Failed to delete security group for server: ${serverId}`,
                     attributes: { serverId, region, error: error instanceof Error ? error.message : String(error) }
                 });
+            } finally {
+                span.end();
+            }
+        });
+    }
+
+    /**
+     * Maps variant configuration to appropriate EC2 instance type
+     */
+    private getInstanceTypeForVariant(ocpu: number, memory: number): _InstanceType {
+        // Validate that variant specs don't exceed t3.medium capabilities
+        if (ocpu > 1 || memory > 4) {
+            throw new Error(`Variant configuration exceeds t3.medium capabilities: ${ocpu} OCPU and ${memory}GB memory requested, but maximum is 1 OCPU and 4GB memory`);
+        }
+        
+        // Always use t3.medium (2 vCPU, 4 GB RAM)
+        return _InstanceType.t3_medium;
+    }
+
+    /**
+     * Creates a dedicated EC2 instance for the game server
+     */
+    private async createGameServerInstance(args: { 
+        serverId: string; 
+        region: Region; 
+        variantConfig: any; 
+        securityGroupId: string 
+    }): Promise<string> {
+        return await tracer.startActiveSpan('ECSServerManager.createGameServerInstance', async (span: Span) => {
+            span.setAttribute('serverId', args.serverId);
+            const { awsClientFactory, configManager } = this.dependencies;
+            const { region, serverId, variantConfig, securityGroupId } = args;
+            
+            try {
+                const awsConfig = configManager.getAWSConfig();
+                const awsRegionConfig = awsConfig.regions[region];
+                
+                if (!awsRegionConfig) {
+                    throw new Error(`Region ${region} is not configured in AWS config`);
+                }
+
+                const { ec2Client } = awsClientFactory(awsRegionConfig.rootRegion);
+                
+                // Get the appropriate instance type
+                const instanceType = this.getInstanceTypeForVariant(variantConfig.ocpu, variantConfig.memory);
+                
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `Creating EC2 instance for game server: ${serverId} with type: ${instanceType}`, 
+                    attributes: { serverId, region, instanceType } 
+                });
+
+                // Get ECS-optimized AMI ID (use more specific filter)
+                const imageResponse = await ec2Client.send(new DescribeImagesCommand({
+                    Owners: ['amazon'],
+                    Filters: [
+                        {
+                            Name: 'name',
+                            Values: ['amzn2-ami-ecs-hvm-2.0.*-x86_64-ebs']
+                        },
+                        {
+                            Name: 'architecture',
+                            Values: ['x86_64']
+                        },
+                        {
+                            Name: 'state',
+                            Values: ['available']
+                        },
+                        {
+                            Name: 'virtualization-type',
+                            Values: ['hvm']
+                        }
+                    ]
+                }));
+
+                if (!imageResponse.Images || imageResponse.Images.length === 0) {
+                    throw new Error('No ECS-optimized AMI found');
+                }
+
+                // Sort by creation date and get the latest
+                const latestImage = imageResponse.Images
+                    .sort((a, b) => new Date(b.CreationDate!).getTime() - new Date(a.CreationDate!).getTime())[0];
+
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `Using ECS-optimized AMI: ${latestImage.ImageId} (${latestImage.Name})`, 
+                    attributes: { serverId, region, amiId: latestImage.ImageId, amiName: latestImage.Name } 
+                });
+
+                // User data script to register with ECS cluster (AWS-recommended approach)
+                const userData = Buffer.from(`#!/bin/bash
+# Log all output for debugging
+exec > >(tee /var/log/user-data.log) 2>&1
+
+echo "Starting ECS agent configuration..."
+echo "Cluster name: ${awsRegionConfig.cluster_name}"
+echo "Server ID: ${serverId}"
+echo "Region: ${awsRegionConfig.rootRegion}"
+
+# Configure ECS agent - this is all that's needed on ECS-optimized AMI
+# AWS Documentation: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/bootstrap_container_instance.html
+cat <<'EOF' >> /etc/ecs/ecs.config
+ECS_CLUSTER=${awsRegionConfig.cluster_name}
+ECS_INSTANCE_ATTRIBUTES={"server-id":"${serverId}"}
+ECS_ENABLE_CONTAINER_METADATA=true
+ECS_AVAILABLE_LOGGING_DRIVERS=["json-file","awslogs"]
+ECS_LOGLEVEL=info
+ECS_ENABLE_TASK_IAM_ROLE=true
+EOF
+
+echo "ECS configuration written successfully"
+echo "Final ECS config contents:"
+cat /etc/ecs/ecs.config
+
+# Test network connectivity to ECS (for debugging)
+echo "Testing network connectivity to ECS..."
+curl -I https://ecs.${awsRegionConfig.rootRegion}.amazonaws.com/ 2>&1 || echo "ECS endpoint check failed"
+
+# Check IAM role (for debugging)
+echo "Checking IAM role..."
+curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/ || echo "No IAM role attached"
+
+echo "ECS configuration completed - services will start automatically via systemd"
+echo "Note: Amazon Linux 2 systemd will automatically start Docker and ECS services"
+`).toString('base64');
+
+                // Create the EC2 instance
+                const runResponse = await ec2Client.send(new RunInstancesCommand({
+                    ImageId: latestImage.ImageId!,
+                    InstanceType: instanceType,
+                    MinCount: 1,
+                    MaxCount: 1,
+                    SecurityGroupIds: [securityGroupId],
+                    SubnetId: awsRegionConfig.subnet_id,
+                    UserData: userData,
+                    IamInstanceProfile: {
+                        Arn: awsRegionConfig.instance_profile_arn
+                    },
+                    TagSpecifications: [
+                        {
+                            ResourceType: 'instance',
+                            Tags: [
+                                {
+                                    Key: 'Name',
+                                    Value: `TF2-GameServer-${serverId}`
+                                },
+                                {
+                                    Key: 'ServerID',
+                                    Value: serverId
+                                },
+                                {
+                                    Key: 'ManagedBy',
+                                    Value: 'TF2-QuickServer'
+                                }
+                            ]
+                        }
+                    ]
+                }));
+
+                const instanceId = runResponse.Instances![0].InstanceId!;
+                
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `EC2 instance created: ${instanceId} for server: ${serverId}`, 
+                    attributes: { serverId, region, instanceId, instanceType } 
+                });
+
+                return instanceId;
+
+            } catch (error) {
+                logger.emit({
+                    severityText: 'ERROR',
+                    body: `Failed to create EC2 instance for server: ${serverId}`,
+                    attributes: { serverId, region, error: error instanceof Error ? error.message : String(error) }
+                });
+                throw error;
+            } finally {
+                span.end();
+            }
+        });
+    }
+
+    /**
+     * Terminates the dedicated EC2 instance for the game server
+     */
+    private async terminateGameServerInstance(args: { serverId: string; region: Region }): Promise<void> {
+        return await tracer.startActiveSpan('ECSServerManager.terminateGameServerInstance', async (span: Span) => {
+            span.setAttribute('serverId', args.serverId);
+            const { awsClientFactory, configManager } = this.dependencies;
+            const { region, serverId } = args;
+            
+            try {
+                const awsConfig = configManager.getAWSConfig();
+                const awsRegionConfig = awsConfig.regions[region];
+                
+                if (!awsRegionConfig) {
+                    throw new Error(`Region ${region} is not configured in AWS config`);
+                }
+
+                const { ec2Client } = awsClientFactory(awsRegionConfig.rootRegion);
+                
+                // Find the instance by server ID tag
+                const describeResponse = await ec2Client.send(new DescribeInstancesCommand({
+                    Filters: [
+                        {
+                            Name: 'tag:ServerID',
+                            Values: [serverId]
+                        },
+                        {
+                            Name: 'instance-state-name',
+                            Values: ['running', 'pending', 'stopping']
+                        }
+                    ]
+                }));
+
+                const instances = describeResponse.Reservations?.flatMap(r => r.Instances || []) || [];
+                
+                if (instances.length === 0) {
+                    logger.emit({ 
+                        severityText: 'WARNING', 
+                        body: `No EC2 instance found for server: ${serverId}`, 
+                        attributes: { serverId, region } 
+                    });
+                    return;
+                }
+
+                const instanceIds = instances.map(i => i.InstanceId!);
+                
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `Terminating EC2 instances for server: ${serverId}`, 
+                    attributes: { serverId, region, instanceIds } 
+                });
+
+                await ec2Client.send(new TerminateInstancesCommand({
+                    InstanceIds: instanceIds
+                }));
+
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `EC2 instances termination initiated for server: ${serverId}`, 
+                    attributes: { serverId, region, instanceIds } 
+                });
+
+            } catch (error) {
+                logger.emit({
+                    severityText: 'ERROR',
+                    body: `Failed to terminate EC2 instance for server: ${serverId}`,
+                    attributes: { serverId, region, error: error instanceof Error ? error.message : String(error) }
+                });
+                // Don't throw - we still want to continue with other cleanup
             } finally {
                 span.end();
             }
