@@ -24,6 +24,11 @@
             "displayName": "Frankfurt",
             "srcdsHostname": "TF2-QuickServer | Frankfurt",
             "tvHostname": "TF2-QuickServer TV | Frankfurt"
+        },
+        "us-east-1-bue-1a": {
+            "displayName": "Buenos Aires",
+            "srcdsHostname": "TF2-QuickServer | Buenos Aires",
+            "tvHostname": "TF2-QuickServer TV | Buenos Aires"
         }
     },
     "variants": {

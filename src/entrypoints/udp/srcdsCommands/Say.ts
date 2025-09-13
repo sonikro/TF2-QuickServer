@@ -11,7 +11,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
             args: { userId: Number(match[1]), steamId3: match[2], message: match[3] },
             type: "say",
             handler: async ({ args, password: logSecret, services }) => {
-                const { serverRepository, userRepository, serverCommander, serverManager, eventLogger } = services;
+                const { serverRepository, userRepository, serverCommander, serverManagerFactory, eventLogger } = services;
                 const { userId, steamId3, message } = args;
 
                 switch (message) {
@@ -35,6 +35,7 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
                                 timeout: 5000
                             })
 
+                            const serverManager = serverManagerFactory.createServerManager(server.region);
                             await serverManager.deleteServer({
                                 region: server.region,
                                 serverId: server.serverId

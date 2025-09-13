@@ -3,7 +3,7 @@ import { UserBanRepository } from "../../../core/repository/UserBanRepository";
 import { UserRepository } from "../../../core/repository/UserRepository";
 import { EventLogger } from "../../../core/services/EventLogger";
 import { ServerCommander } from "../../../core/services/ServerCommander";
-import { ServerManager } from "../../../core/services/ServerManager";
+import { ServerManagerFactory } from "../../../providers/services/ServerManagerFactory";
 
 /**
  * List of services available to UDP Command Handlers
@@ -12,7 +12,7 @@ export type UDPCommandsServices = {
     serverCommander: ServerCommander;
     userBanRepository: UserBanRepository;
     serverRepository: ServerRepository;
-    serverManager: ServerManager;
+    serverManagerFactory: ServerManagerFactory;
     userRepository: UserRepository
     eventLogger: EventLogger;
 }

@@ -7,7 +7,8 @@
     "start": "env-cmd -f .env tsx ./src/index.ts",
     "test": "vitest",
     "dev": "nodemon",
-    "oracle:deploy": "terraform -chdir=./oracle-terraform init && terraform -chdir=./oracle-terraform apply -auto-approve && terraform -chdir=./oracle-terraform output -json > ./config/local.json",
+    "terraform:deploy": "terraform -chdir=./terraform init && terraform -chdir=./terraform apply -auto-approve && terraform -chdir=./terraform output -json > ./config/local.json",
+    "terraform:plan": "terraform -chdir=./terraform  init && terraform -chdir=./terraform plan",
     "download:maps": "tsx ./scripts/downloadMaps.ts",
     "migration:run": "knex --knexfile knexfile.ts migrate:latest",
     "migration:create": "knex --knexfile knexfile.ts migrate:make",
@@ -57,6 +58,8 @@
   },
   "dependencies": {
     "@adyen/api-library": "^26.1.0",
+    "@aws-sdk/client-ec2": "^3.888.0",
+    "@aws-sdk/client-ecs": "^3.888.0",
     "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",
     "@opentelemetry/auto-instrumentations-node": "^0.62.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",

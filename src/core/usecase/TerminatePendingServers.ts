@@ -1,12 +1,12 @@
 import { ServerRepository } from "../repository/ServerRepository";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { EventLogger } from "../services/EventLogger";
 import { Client as DiscordClient } from "discord.js";
 import { ServerStatus } from "../domain/DeployedServer";
 
 export class TerminatePendingServers {
     constructor(private readonly dependencies: {
-        serverManager: ServerManager,
+        serverManagerFactory: ServerManagerFactory,
         serverRepository: ServerRepository,
         eventLogger: EventLogger,
         discordBot: DiscordClient
@@ -16,7 +16,7 @@ export class TerminatePendingServers {
      * Terminates servers that have been stuck in 'pending' status for more than 10 minutes.
      */
     public async execute(): Promise<void> {
-        const { serverManager, serverRepository, eventLogger, discordBot } = this.dependencies;
+        const { serverManagerFactory, serverRepository, eventLogger, discordBot } = this.dependencies;
         // Fetch all servers with status 'pending'
         const servers = await serverRepository.getAllServers("pending");
         const now = new Date();
@@ -25,6 +25,7 @@ export class TerminatePendingServers {
                 const pendingDuration = now.getTime() - server.createdAt.getTime();
                 if (pendingDuration >= 15 * 60 * 1000) { // 15 minutes
                     try {
+                        const serverManager = serverManagerFactory.createServerManager(server.region);
                         await serverManager.deleteServer({
                             region: server.region,
                             serverId: server.serverId,

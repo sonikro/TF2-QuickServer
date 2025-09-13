@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { Server } from "../../../core/domain/DeployedServer";
 import { User } from "../../../core/domain/User";
+import { ServerManager } from "../../../core/services/ServerManager";
 import { say } from "./Say";
 import { UDPCommandsServices } from "./UDPCommandServices";
 
@@ -40,17 +41,22 @@ describe("say command parser", () => {
 
         function createTestEnvironment() {
             const services = mockDeep<UDPCommandsServices>();
+            const mockServerManager = mockDeep<ServerManager>();
+            
+            // Configure the factory to return the mocked server manager
+            services.serverManagerFactory.createServerManager.mockReturnValue(mockServerManager);
+            
             const command = say(rawString);
             const handler = command?.handler;
-            return { services, command, handler };
+            return { services, command, handler, mockServerManager };
         }
 
         it("should terminate the server if user is creator and says !terminate", async () => {
-            const { services, command, handler } = createTestEnvironment();
+            const { services, command, handler, mockServerManager } = createTestEnvironment();
             services.serverRepository.findByLogsecret.mockResolvedValue(fakeServer);
             services.userRepository.findBySteamId.mockResolvedValue(fakeUser);
             services.serverCommander.query.mockResolvedValue("");
-            services.serverManager.deleteServer.mockResolvedValue();
+            mockServerManager.deleteServer.mockResolvedValue();
             services.serverRepository.deleteServer.mockResolvedValue();
 
             if (!command || !handler) throw new Error("Command or handler is undefined");
@@ -66,7 +72,8 @@ describe("say command parser", () => {
                 command: expect.stringContaining("Server is being terminated"),
                 timeout: 5000
             }));
-            expect(services.serverManager.deleteServer).toHaveBeenCalledWith(expect.objectContaining({
+            expect(services.serverManagerFactory.createServerManager).toHaveBeenCalledWith(fakeServer.region);
+            expect(mockServerManager.deleteServer).toHaveBeenCalledWith(expect.objectContaining({
                 region: fakeServer.region,
                 serverId: fakeServer.serverId
             }));
@@ -74,7 +81,7 @@ describe("say command parser", () => {
         });
 
         it("should not terminate if user is not creator", async () => {
-            const { services, command, handler } = createTestEnvironment();
+            const { services, command, handler, mockServerManager } = createTestEnvironment();
             services.serverRepository.findByLogsecret.mockResolvedValue(fakeServer);
             services.userRepository.findBySteamId.mockResolvedValue({ id: "99", steamIdText: "U:1:999999" });
             if (!command || !handler) throw new Error("Command or handler is undefined");
@@ -84,7 +91,7 @@ describe("say command parser", () => {
                 services
             });
             expect(services.serverCommander.query).not.toHaveBeenCalled();
-            expect(services.serverManager.deleteServer).not.toHaveBeenCalled();
+            expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
             expect(services.serverRepository.deleteServer).not.toHaveBeenCalled();
         });
     });

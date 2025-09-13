@@ -1,10 +1,12 @@
 import { Client as DiscordClient, User } from "discord.js";
 import { beforeEach, describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
+import { when } from "vitest-when";
 import { Server } from "../domain/DeployedServer";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { TerminatePendingServers } from "./TerminatePendingServers";
 
 function createServer(overrides: Partial<Server> = {}): Server {
@@ -27,6 +29,7 @@ function createServer(overrides: Partial<Server> = {}): Server {
 
 describe("TerminatePendingServers", () => {
     let serverManager: ReturnType<typeof mock<ServerManager>>;
+    let serverManagerFactory: ReturnType<typeof mock<ServerManagerFactory>>;
     let serverRepository: ReturnType<typeof mock<ServerRepository>>;
     let eventLogger: ReturnType<typeof mock<EventLogger>>;
     let discordBot: ReturnType<typeof mock<DiscordClient>>;
@@ -35,12 +38,17 @@ describe("TerminatePendingServers", () => {
 
     beforeEach(() => {
         serverManager = mock<ServerManager>();
+        serverManagerFactory = mock<ServerManagerFactory>();
         serverRepository = mock<ServerRepository>();
         eventLogger = mock<EventLogger>();
         discordBot = mock<DiscordClient>({ users: mock() });
         user = mock<User>();
+        
+        // Configure the factory to return the mocked server manager
+        when(serverManagerFactory.createServerManager).calledWith(expect.any(String)).thenReturn(serverManager);
+        
         sut = new TerminatePendingServers({
-            serverManager,
+            serverManagerFactory,
             serverRepository,
             eventLogger,
             discordBot

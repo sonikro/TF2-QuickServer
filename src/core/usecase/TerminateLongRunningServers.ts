@@ -1,7 +1,7 @@
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 
 export class TerminateLongRunningServers {
     private readonly warningThresholdMs = 9 * 60 * 60 * 1000; // 9 hours
@@ -9,13 +9,13 @@ export class TerminateLongRunningServers {
 
     constructor(private readonly dependencies: {
         serverRepository: ServerRepository,
-        serverManager: ServerManager,
+        serverManagerFactory: ServerManagerFactory,
         serverCommander: ServerCommander,
         eventLogger: EventLogger
     }) {}
 
     async execute() {
-        const { serverRepository, serverManager, serverCommander, eventLogger } = this.dependencies;
+        const { serverRepository, serverManagerFactory, serverCommander, eventLogger } = this.dependencies;
         const servers = await serverRepository.getAllServers();
         const now = Date.now();
         const settledPromises: PromiseSettledResult<any>[] = [];
@@ -49,6 +49,7 @@ export class TerminateLongRunningServers {
                 password: server.rconPassword,
                 timeout: 5000
             });
+            const serverManager = serverManagerFactory.createServerManager(server.region);
             await serverManager.deleteServer({
                 serverId: server.serverId,
                 region: server.region
