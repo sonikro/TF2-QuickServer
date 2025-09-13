@@ -10,6 +10,7 @@ import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
 import { ServerManager } from '../services/ServerManager';
+import { ServerManagerFactory } from '../../providers/services/ServerManagerFactory';
 import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';
@@ -25,6 +26,7 @@ const chance = new Chance();
 const createTestEnvironment = () => {
     const serverRepository = mock<ServerRepository>();
     const serverManager = mock<ServerManager>();
+    const serverManagerFactory = mock<ServerManagerFactory>();
     const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
@@ -33,6 +35,9 @@ const createTestEnvironment = () => {
     const userBanRepository = mock<UserBanRepository>({
         isUserBanned: vi.fn().mockResolvedValue({ isBanned: false, reason: '' })
     });
+
+    // Configure the factory to return the mocked server manager for any Region
+    serverManagerFactory.createServerManager.mockReturnValue(serverManager);
 
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
@@ -89,7 +94,7 @@ const createTestEnvironment = () => {
 
     return {
         sut: new CreateServerForUser({
-            serverManager,
+            serverManagerFactory,
             serverRepository,
             userCreditsRepository,
             eventLogger,
@@ -101,6 +106,7 @@ const createTestEnvironment = () => {
         mocks: {
             serverRepository,
             serverManager,
+            serverManagerFactory,
             userCreditsRepository,
             configManager,
             eventLogger,

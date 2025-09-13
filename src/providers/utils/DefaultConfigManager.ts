@@ -1,4 +1,4 @@
-import { CreditsConfig, DiscordConfig, getCreditsConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
+import { AWSConfig, CreditsConfig, DiscordConfig, getAWSConfig, getCreditsConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
 import { ConfigManager } from "../../core/utils/ConfigManager";
 
 export class DefaultConfigManager implements ConfigManager {
@@ -13,6 +13,9 @@ export class DefaultConfigManager implements ConfigManager {
     }
     getOracleConfig(): OracleConfig {
         return getOracleConfig();
+    }
+    getAWSConfig(): AWSConfig {
+        return getAWSConfig();
     }
     getCreditsConfig(): CreditsConfig {
         return getCreditsConfig();

@@ -2,7 +2,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 
 export class TerminateServersWithoutCredit {
 
@@ -11,13 +11,13 @@ export class TerminateServersWithoutCredit {
     constructor(private readonly dependencies: {
         serverRepository: ServerRepository,
         userCreditsRepository: UserCreditsRepository
-        serverManager: ServerManager,
+        serverManagerFactory: ServerManagerFactory,
         serverCommander: ServerCommander
         eventLogger: EventLogger
     }) { }
     async execute() {
 
-        const { serverCommander, serverManager, serverRepository, userCreditsRepository, eventLogger } = this.dependencies
+        const { serverCommander, serverManagerFactory, serverRepository, userCreditsRepository, eventLogger } = this.dependencies
 
         const servers = await serverRepository.getAllServers()
 
@@ -47,6 +47,8 @@ export class TerminateServersWithoutCredit {
 
         // Terminate servers without credits
         const terminationPromises = await Promise.allSettled(serversWithoutCredits.map(async server => {
+            // Get the appropriate server manager for this region
+            const serverManager = serverManagerFactory.createServerManager(server.region);
             await serverCommander.query({
                 command: `say Your server is being terminated due to lack of credits.`,
                 host: server.rconAddress,

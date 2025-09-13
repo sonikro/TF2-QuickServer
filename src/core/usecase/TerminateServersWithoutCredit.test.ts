@@ -7,6 +7,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { TerminateServersWithoutCredit } from "./TerminateServersWithoutCredit";
 import { EventLogger } from "../services/EventLogger";
 
@@ -29,14 +30,18 @@ const createTestEnvironment = () => {
     const serverRepository = mock<ServerRepository>();
     const userCreditsRepository = mock<UserCreditsRepository>();
     const serverManager = mock<ServerManager>();
+    const serverManagerFactory = mock<ServerManagerFactory>();
     const serverCommander = mock<ServerCommander>();
     const eventLogger = mock<EventLogger>();
+
+    // Configure the factory to return the mocked server manager
+    when(serverManagerFactory.createServerManager).calledWith(expect.any(String)).thenReturn(serverManager);
 
     return {
         sut: new TerminateServersWithoutCredit({
             serverRepository,
             userCreditsRepository,
-            serverManager,
+            serverManagerFactory,
             serverCommander,
             eventLogger
         }),
@@ -44,6 +49,7 @@ const createTestEnvironment = () => {
             serverRepository,
             userCreditsRepository,
             serverManager,
+            serverManagerFactory,
             serverCommander
         }
     }

@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { mock } from "vitest-mock-extended";
 import { ServerRepository } from "../repository/ServerRepository";
 import { ServerActivity } from "../domain/ServerActivity";
@@ -20,6 +21,7 @@ const chance = new Chance();
 
 function createTestEnvironment() {
     const serverManager = mock<ServerManager>();
+    const serverManagerFactory = mock<ServerManagerFactory>();
     const serverRepository = mock<ServerRepository>();
     const serverActivityRepository = mock<ServerActivityRepository>();
     const serverCommander = mock<ServerCommander>();
@@ -29,8 +31,11 @@ function createTestEnvironment() {
         users: mock()
     });
 
+    // Configure the factory to return the mocked server manager
+    when(serverManagerFactory.createServerManager).calledWith(expect.any(String)).thenReturn(serverManager);
+
     const sut = new TerminateEmptyServers({
-        serverManager,
+        serverManagerFactory,
         serverRepository,
         serverActivityRepository,
         serverCommander,
@@ -43,6 +48,7 @@ function createTestEnvironment() {
         sut,
         mocks: {
             serverManager,
+            serverManagerFactory,
             serverRepository,
             serverActivityRepository,
             serverCommander,

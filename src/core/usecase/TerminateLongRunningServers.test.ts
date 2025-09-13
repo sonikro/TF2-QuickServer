@@ -6,6 +6,7 @@ import { Region } from "../domain";
 import { ServerRepository } from "../repository/ServerRepository";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { EventLogger } from "../services/EventLogger";
 import { TerminateLongRunningServers } from "./TerminateLongRunningServers";
 
@@ -29,16 +30,21 @@ const createServer = (createdAtOffsetMs: number) => ({
 const createTestEnvironment = () => {
     const serverRepository = mock<ServerRepository>();
     const serverManager = mock<ServerManager>();
+    const serverManagerFactory = mock<ServerManagerFactory>();
     const serverCommander = mock<ServerCommander>();
     const eventLogger = mock<EventLogger>();
+    
+    // Configure the factory to return the mocked server manager
+    when(serverManagerFactory.createServerManager).calledWith(expect.any(String)).thenReturn(serverManager);
+    
     return {
         sut: new TerminateLongRunningServers({
             serverRepository,
-            serverManager,
+            serverManagerFactory,
             serverCommander,
             eventLogger
         }),
-        mocks: { serverRepository, serverManager, serverCommander, eventLogger }
+        mocks: { serverRepository, serverManager, serverManagerFactory, serverCommander, eventLogger }
     };
 };
 

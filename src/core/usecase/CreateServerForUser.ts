@@ -6,7 +6,7 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";
@@ -14,7 +14,7 @@ import SteamID from "steamid"
 export class CreateServerForUser {
 
     constructor(private readonly dependencies: {
-        serverManager: ServerManager,
+        serverManagerFactory: ServerManagerFactory,
         serverRepository: ServerRepository,
         userCreditsRepository: UserCreditsRepository,
         guildParametersRepository: GuildParametersRepository,
@@ -31,8 +31,11 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManager, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
         const statusUpdater = args.statusUpdater;
+        
+        // Get the appropriate server manager for this region
+        const serverManager = serverManagerFactory.createServerManager(args.region);
         const user = await userRepository.getById(args.creatorId);
         if (!user || !user.steamIdText) {
             throw new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.');

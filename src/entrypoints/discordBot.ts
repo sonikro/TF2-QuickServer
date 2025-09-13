@@ -19,9 +19,9 @@ import { SQliteUserRepository } from "../providers/repository/SQliteUserReposito
 import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
+import { DefaultServerManagerFactory } from "../providers/services/ServerManagerFactory";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
-import { OCIServerManager } from "../providers/services/OCIServerManager";
 import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
@@ -65,9 +65,8 @@ export async function startDiscordBot() {
 
     const serverAbortManager = new DefaultServerAbortManager();
 
-    const ociServerManager = new OCIServerManager({
+    const serverManagerFactory = new DefaultServerManagerFactory({
         serverCommander,
-        ociClientFactory: defaultOracleServiceFactory,
         configManager: defaultConfigManager,
         passwordGenerator: chancePasswordGenerator,
         serverAbortManager,
@@ -112,7 +111,7 @@ export async function startDiscordBot() {
 
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverRepository,
             userCreditsRepository,
             eventLogger,
@@ -122,7 +121,7 @@ export async function startDiscordBot() {
             userBanRepository
         }),
         deleteServerForUser: new DeleteServerForUser({
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverRepository,
             serverActivityRepository,
             eventLogger,
@@ -143,7 +142,7 @@ export async function startDiscordBot() {
     // Schedule jobs
     scheduleServerCleanupRoutine({
         terminateEmptyServers: new TerminateEmptyServers({
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverRepository,
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander,
@@ -167,7 +166,7 @@ export async function startDiscordBot() {
         terminateServersWithoutCredit: new TerminateServersWithoutCredit({
             serverRepository,
             userCreditsRepository,
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverCommander,
             eventLogger
         }),
@@ -177,7 +176,7 @@ export async function startDiscordBot() {
 
     schedulePendingServerCleanupRoutine({
         terminatePendingServers: new TerminatePendingServers({
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverRepository,
             eventLogger,
             discordBot: client
@@ -188,7 +187,7 @@ export async function startDiscordBot() {
     scheduleTerminateLongRunningServerRoutine({
         terminateLongRunningServers: new TerminateLongRunningServers({
             serverRepository,
-            serverManager: ociServerManager,
+            serverManagerFactory: serverManagerFactory,
             serverCommander,
             eventLogger
         }),
@@ -275,7 +274,7 @@ export async function startDiscordBot() {
         serverCommander,
         userBanRepository,
         serverRepository,
-        serverManager: ociServerManager,
+        serverManagerFactory: serverManagerFactory,
         userRepository,
         eventLogger
     });

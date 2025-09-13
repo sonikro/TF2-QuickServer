@@ -3,14 +3,14 @@ import { ServerActivityRepository } from "../repository/ServerActivityRepository
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerAbortManager } from "../services/ServerAbortManager";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 
 export class DeleteServerForUser {
     constructor(
         private readonly dependencies: {
             serverRepository: ServerRepository;
             serverActivityRepository: ServerActivityRepository;
-            serverManager: ServerManager;
+            serverManagerFactory: ServerManagerFactory;
             eventLogger: EventLogger;
             serverAbortManager: ServerAbortManager
         }
@@ -19,7 +19,7 @@ export class DeleteServerForUser {
     async execute(args: {
         userId: string;
     }): Promise<void> {
-        const { serverRepository, serverActivityRepository, serverManager, eventLogger, serverAbortManager } = this.dependencies;
+        const { serverRepository, serverActivityRepository, serverManagerFactory, eventLogger, serverAbortManager } = this.dependencies;
         const { userId } = args;
         
         // Use transaction to ensure consistency
@@ -36,6 +36,8 @@ export class DeleteServerForUser {
 
             const settled = await Promise.allSettled(server.map(async (s) => {
                 const { serverId, region } = s;
+                // Get the appropriate server manager for this region
+                const serverManager = serverManagerFactory.createServerManager(region);
                 // Perform server-specific cleanup using ServerManager
                 await serverManager.deleteServer({
                     region,

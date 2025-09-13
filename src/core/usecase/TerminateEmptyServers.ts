@@ -5,13 +5,13 @@ import { ServerActivityRepository } from "../repository/ServerActivityRepository
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManager } from "../services/ServerManager";
+import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { ConfigManager } from "../utils/ConfigManager";
 
 export class TerminateEmptyServers {
 
     constructor(private readonly dependencies: {
-        serverManager: ServerManager,
+        serverManagerFactory: ServerManagerFactory,
         serverRepository: ServerRepository
         serverActivityRepository: ServerActivityRepository,
         serverCommander: ServerCommander,
@@ -26,7 +26,7 @@ export class TerminateEmptyServers {
      * @param args.minutesEmpty - The duration in minutes after which servers should be terminated.
      */
     public async execute(): Promise<void> {
-        const { serverManager, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, discordBot } = this.dependencies;
+        const { serverManagerFactory, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, discordBot } = this.dependencies;
 
         // Use transaction to ensure consistency for fetching data
         const { servers, serverActivities } = await serverRepository.runInTransaction(async (trx) => {
@@ -63,6 +63,7 @@ export class TerminateEmptyServers {
                                     return;
                                 }
 
+                                const serverManager = serverManagerFactory.createServerManager(server.region);
                                 await serverManager.deleteServer({
                                     region: server.region,
                                     serverId: server.serverId,
