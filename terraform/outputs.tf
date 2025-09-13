@@ -135,6 +135,16 @@ output "buenos_aires_task_execution_role_arn" {
 }
 
 output "buenos_aires_task_role_arn" {
-  description = "ECS task role ARN in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"
+  description = "ECS task role ARN in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"  
   value       = module.aws-ecs-us-east-1.task_role_arn
+}
+
+output "buenos_aires_instance_profile_arn" {
+  description = "ECS instance profile ARN in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.instance_profile_arn
+}
+
+output "buenos_aires_log_group_name" {
+  description = "CloudWatch log group name for ECS containers in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.log_group_name
 }

@@ -13,7 +13,7 @@ resource "aws_ecs_cluster" "main" {
 
   setting {
     name  = "containerInsights"
-    value = "enabled"
+    value = "disabled"
   }
 
   tags = {
@@ -21,19 +21,6 @@ resource "aws_ecs_cluster" "main" {
     Description = "ECS cluster in us-east-1 N.Virginia for Buenos Aires Local Zone deployments"
     Region      = "us-east-1"
     LocalZone   = "Buenos Aires us-east-1-bue-1a"
-  }
-}
-
-# ECS Cluster Capacity Providers - Fargate only
-resource "aws_ecs_cluster_capacity_providers" "main" {
-  cluster_name = aws_ecs_cluster.main.name
-
-  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
-
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = "FARGATE"
   }
 }
 
@@ -112,4 +99,67 @@ resource "aws_iam_role_policy" "ecs_task_role_policy" {
       }
     ]
   })
+}
+
+# ECS Instance Role for EC2 instances in the ECS cluster
+resource "aws_iam_role" "ecs_instance_role" {
+  name = "tf2-quickserver-ecs-instance-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "TF2-QuickServer-instance-role"
+    Description = "ECS instance role for EC2 instances in us-east-1 N.Virginia serving Buenos Aires Local Zone"
+    Region      = "us-east-1"
+  }
+}
+
+# Attach the Amazon ECS Container Instance policy
+resource "aws_iam_role_policy_attachment" "ecs_instance_role_policy" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+# Additional policy for SSM access (helpful for debugging)
+resource "aws_iam_role_policy_attachment" "ecs_instance_ssm_policy" {
+  role       = aws_iam_role.ecs_instance_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Create IAM instance profile for ECS instances
+resource "aws_iam_instance_profile" "ecs_instance_profile" {
+  name = "tf2-quickserver-ecsInstanceRole"
+  role = aws_iam_role.ecs_instance_role.name
+
+  tags = {
+    Name        = "TF2-QuickServer-instance-profile"
+    Description = "Instance profile for ECS EC2 instances in Buenos Aires Local Zone"
+    Region      = "us-east-1"
+  }
+}
+
+# ===========================================
+# CLOUDWATCH LOG GROUP
+# ===========================================
+
+resource "aws_cloudwatch_log_group" "ecs_log_group" {
+  name              = "/ecs/tf2-quickserver"
+  retention_in_days = 7
+
+  tags = {
+    Name        = "TF2 QuickServer ECS Logs"
+    Environment = "production"
+    Service     = "tf2-quickserver"
+  }
 }
