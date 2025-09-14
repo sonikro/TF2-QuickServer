@@ -1,29 +1,26 @@
-import { Chance } from "chance";
+import { PasswordGeneratorService } from "../../../core/services/PasswordGeneratorService";
 import { ServerCommander } from "../../../core/services/ServerCommander";
 import { ConfigManager } from "../../../core/utils/ConfigManager";
-import { PasswordGeneratorService } from "../../../core/services/PasswordGeneratorService";
 import { AWSClientFactory } from "../../services/defaultAWSServiceFactory";
-import { ECSServerManager } from "./ECSServerManager";
-import { DefaultTaskDefinitionService } from "./services/TaskDefinitionService";
-import { DefaultECSServiceManager } from "./services/ECSServiceManager";
-import { DefaultSecurityGroupService } from "./services/SecurityGroupService";
-import { DefaultNetworkService } from "./services/NetworkService";
-import { DefaultEC2InstanceService } from "./services/EC2InstanceService";
-import { DefaultCredentialsService } from "../../services/DefaultCredentialsService";
 import { DefaultEnvironmentBuilderService } from "../../services/DefaultEnvironmentBuilderService";
 import { DefaultTF2ServerReadinessService } from "../../services/DefaultTF2ServerReadinessService";
+import { ECSServerManager } from "./ECSServerManager";
+import { DefaultEC2InstanceService } from "./services/EC2InstanceService";
+import { DefaultECSServiceManager } from "./services/ECSServiceManager";
+import { DefaultNetworkService } from "./services/NetworkService";
+import { DefaultSecurityGroupService } from "./services/SecurityGroupService";
+import { DefaultTaskDefinitionService } from "./services/TaskDefinitionService";
 
 export interface ECSServerManagerDependencies {
     configManager: ConfigManager;
     awsClientFactory: AWSClientFactory;
     serverCommander: ServerCommander;
     passwordGeneratorService: PasswordGeneratorService;
-    chance: Chance.Chance;
 }
 
 export class ECSServerManagerFactory {
     static createServerManager(dependencies: ECSServerManagerDependencies): ECSServerManager {
-        const { configManager, awsClientFactory, serverCommander, passwordGeneratorService, chance } = dependencies;
+        const { configManager, awsClientFactory, serverCommander, passwordGeneratorService } = dependencies;
         
         // Create AWS services - they take configManager and awsClientFactory
         const taskDefinitionService = new DefaultTaskDefinitionService(configManager, awsClientFactory);
@@ -33,7 +30,6 @@ export class ECSServerManagerFactory {
         const ec2InstanceService = new DefaultEC2InstanceService(configManager, awsClientFactory);
         
         // Create core services
-        const credentialsService = new DefaultCredentialsService(passwordGeneratorService, chance);
         const environmentBuilderService = new DefaultEnvironmentBuilderService();
         const tf2ServerReadinessService = new DefaultTF2ServerReadinessService(serverCommander);
         
@@ -45,7 +41,7 @@ export class ECSServerManagerFactory {
             networkService,
             tf2ServerReadinessService,
             environmentBuilderService,
-            credentialsService,
+            passwordGeneratorService,
             configManager
         );
     }

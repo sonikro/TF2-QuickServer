@@ -1,16 +1,16 @@
 import { containerinstances, core } from "oci-sdk";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../../core/domain";
+import { OCICredentialsFactory } from "../../../core/services/OCICredentialsFactory";
+import { PasswordGeneratorService } from "../../../core/services/PasswordGeneratorService";
 import { AbortError } from "../../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../../core/services/ServerCommander";
 import { ConfigManager } from "../../../core/utils/ConfigManager";
-import { PasswordGeneratorService } from "../../../core/services/PasswordGeneratorService";
+import { logger } from "../../../telemetry/otel";
 import { DefaultServerAbortManager } from "../../services/DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
-import { OCICredentialsFactory } from "../../../core/services/OCICredentialsFactory";
-import { logger } from "../../../telemetry/otel";
 
 // Mock only the logger, not the whole otel module
 vi.mock('../../../telemetry/otel', async () => {
@@ -30,7 +30,8 @@ function createTestEnvironment() {
   const serverCommander = mock<ServerCommander>();
   const configManager = mock<ConfigManager>();
   const passwordGeneratorService = {
-    generatePassword: vi.fn().mockReturnValue("test-password")
+    generatePassword: vi.fn().mockReturnValue("test-password"),
+    generateNumericPassword: vi.fn().mockReturnValue(123456)
   } as PasswordGeneratorService;
 
   const containerClient = mock<containerinstances.ContainerInstanceClient>();

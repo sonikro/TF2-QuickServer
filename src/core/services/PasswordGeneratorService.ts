@@ -8,4 +8,6 @@ export interface PasswordGeneratorService {
         numeric?: boolean;
         symbols?: boolean;
     }): string;
+
+    generateNumericPassword(settings: { min: number, max: number }): number;
 }
