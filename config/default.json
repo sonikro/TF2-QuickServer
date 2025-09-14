@@ -3,32 +3,38 @@
         "sa-saopaulo-1": {
             "displayName": "São Paulo",
             "srcdsHostname": "TF2-QuickServer | São Paulo",
-            "tvHostname": "TF2-QuickServer TV | São Paulo"
+            "tvHostname": "TF2-QuickServer TV | São Paulo",
+            "cloudProvider": "oracle"
         },
         "sa-santiago-1": {
             "displayName": "Santiago",
             "srcdsHostname": "TF2-QuickServer | Santiago",
-            "tvHostname": "TF2-QuickServer TV | Santiago"
+            "tvHostname": "TF2-QuickServer TV | Santiago",
+            "cloudProvider": "oracle"
         },
         "sa-bogota-1": {
             "displayName": "Bogotá",
             "srcdsHostname": "TF2-QuickServer | Bogotá",
-            "tvHostname": "TF2-QuickServer TV | Bogotá"
+            "tvHostname": "TF2-QuickServer TV | Bogotá",
+            "cloudProvider": "oracle"
         },
         "us-chicago-1": {
             "displayName": "Chicago",
             "srcdsHostname": "TF2-QuickServer | Chicago",
-            "tvHostname": "TF2-QuickServer TV | Chicago"
+            "tvHostname": "TF2-QuickServer TV | Chicago",
+            "cloudProvider": "oracle"
         },
         "eu-frankfurt-1": {
             "displayName": "Frankfurt",
             "srcdsHostname": "TF2-QuickServer | Frankfurt",
-            "tvHostname": "TF2-QuickServer TV | Frankfurt"
+            "tvHostname": "TF2-QuickServer TV | Frankfurt",
+            "cloudProvider": "oracle"
         },
         "us-east-1-bue-1a": {
             "displayName": "Buenos Aires (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Buenos Aires",
-            "tvHostname": "TF2-QuickServer TV | Buenos Aires"
+            "tvHostname": "TF2-QuickServer TV | Buenos Aires",
+            "cloudProvider": "aws"
         }
     },
     "variants": {

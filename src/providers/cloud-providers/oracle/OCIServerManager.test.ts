@@ -2,7 +2,7 @@ import { containerinstances, core } from "oci-sdk";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../../core/domain";
+import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../../core/domain";
 import { AbortError } from "../../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../../core/services/ServerCommander";
 import { ConfigManager } from "../../../core/utils/ConfigManager";
@@ -59,6 +59,7 @@ function createTestEnvironment() {
     srcdsHostname: "Test Server",
     tvHostname: "Test STV",
     displayName: "Test Region",
+    cloudProvider: CloudProvider.ORACLE,
   };
 
   const oracleConfig: OracleConfig = {

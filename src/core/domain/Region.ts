@@ -1,4 +1,5 @@
 import config from "config";
+import { CloudProvider } from "./CloudProvider";
 
 export enum Region {
     SA_SAOPAULO_1 = "sa-saopaulo-1",
@@ -13,6 +14,7 @@ export type RegionConfig = {
     displayName: string;
     srcdsHostname: string;
     tvHostname: string;
+    cloudProvider: CloudProvider;
 }
 
 export function isValidRegion(region: string): region is Region {
@@ -45,16 +47,12 @@ export function getRegions(): Region[] {
 }
 
 /**
- * Determines if a region uses AWS ECS for server deployment.
+ * Gets the cloud provider for a specific region.
  * 
  * @param region - The region to check
- * @returns true if the region uses AWS ECS, false if it uses Oracle Cloud
+ * @returns The cloud provider for the region
  */
-export function isAWSRegion(region: Region): boolean {
-    // Define which regions use AWS ECS
-    const awsRegions: Region[] = [
-        Region.US_EAST_1_BUE_1A, // Buenos Aires Local Zone
-    ];
-    
-    return awsRegions.includes(region);
+export function getCloudProvider(region: Region): CloudProvider {
+    const regionConfig = getRegionConfig(region);
+    return regionConfig.cloudProvider;
 }

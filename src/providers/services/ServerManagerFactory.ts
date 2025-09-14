@@ -1,4 +1,4 @@
-import { Region, isAWSRegion } from "../../core/domain";
+import { Region, getCloudProvider, CloudProvider } from "../../core/domain";
 import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
@@ -29,25 +29,29 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
     ) { }
 
     createServerManager(region: Region): ServerManager {
-        // Strategy pattern: Choose server manager based on region
-        if (isAWSRegion(region)) {
-            // Use the new ECSServerManager architecture
-            return ECSServerManagerFactory.createServerManager({
-                configManager: this.dependencies.configManager,
-                awsClientFactory: defaultAWSServiceFactory,
-                serverCommander: this.dependencies.serverCommander,
-                passwordGeneratorService: this.dependencies.passwordGeneratorService,
-                chance: chance
-            });
-        } else {
-            return new OCIServerManager({
-                serverCommander: this.dependencies.serverCommander,
-                configManager: this.dependencies.configManager,
-                passwordGeneratorService: this.dependencies.passwordGeneratorService,
-                ociClientFactory: defaultOracleServiceFactory,
-                serverAbortManager: this.dependencies.serverAbortManager,
-                ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
-            });
+        // Strategy pattern: Choose server manager based on region's cloud provider
+        const cloudProvider = getCloudProvider(region);
+
+        switch (cloudProvider) {
+            case CloudProvider.AWS:
+                return ECSServerManagerFactory.createServerManager({
+                    configManager: this.dependencies.configManager,
+                    awsClientFactory: defaultAWSServiceFactory,
+                    serverCommander: this.dependencies.serverCommander,
+                    passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                    chance: chance
+                });
+            case CloudProvider.ORACLE:
+                return new OCIServerManager({
+                    serverCommander: this.dependencies.serverCommander,
+                    configManager: this.dependencies.configManager,
+                    passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                    ociClientFactory: defaultOracleServiceFactory,
+                    serverAbortManager: this.dependencies.serverAbortManager,
+                    ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
+                });
+            default:
+                throw new Error(`Unsupported cloud provider: ${cloudProvider} for region: ${region}`);
         }
     }
 }

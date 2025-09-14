@@ -5,3 +5,4 @@ export * from "./DiscordConfig";
 export * from "./OracleConfig";
 export * from "./AWSConfig";
 export * from "./CreditsConfig";
+export * from "./CloudProvider";

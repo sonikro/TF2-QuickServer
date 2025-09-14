@@ -1,15 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { Region } from "../../core/domain";
+import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
+import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
 import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
-import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
-import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
-import { DefaultServerManagerFactory } from "./ServerManagerFactory";
-import { ECSServerManager } from "../cloud-providers/aws/ECSServerManager";
 import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
-import { ServerManager } from "../../core/services/ServerManager";
+import { DefaultServerManagerFactory } from "./ServerManagerFactory";
 
 // Mock the concrete server manager classes
 vi.mock('../cloud-providers/aws/ECSServerManager');
