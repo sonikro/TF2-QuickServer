@@ -6,8 +6,8 @@ import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorS
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
-import { ECSServerManagerFactory } from "./ecs-server-management/ECSServerManagerFactory";
-import { OCIServerManager } from "./OCIServerManager";
+import { ECSServerManagerFactory } from "../cloud-providers/aws/ECSServerManagerFactory";
+import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 import { Chance } from "chance";
 

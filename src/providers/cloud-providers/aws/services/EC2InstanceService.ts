@@ -9,11 +9,19 @@ import {
 import { Region, VariantConfig } from '../../../../core/domain';
 import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces';
 import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
+import { ConfigManager } from '../../../../core/utils/ConfigManager';
+import { AWSClients } from '../../../services/defaultAWSServiceFactory';
 
 /**
  * Service responsible for managing dedicated EC2 instances for TF2 servers
  */
 export class DefaultEC2InstanceService extends AWSResourceManagerBase implements EC2InstanceServiceInterface {
+    constructor(
+        configManager: ConfigManager,
+        awsClientFactory: (rootRegion: string) => AWSClients
+    ) {
+        super(configManager, awsClientFactory);
+    }
     
     private getInstanceTypeForVariant(ocpu: number, memory: number): _InstanceType {
         // Basic mapping - can be enhanced based on requirements

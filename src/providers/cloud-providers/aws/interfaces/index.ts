@@ -1,6 +1,6 @@
-import { Region, VariantConfig, RegionConfig } from "../../../../core/domain";
-import { DeploymentContext } from "../models/DeploymentContext";
-import { ServerCredentials } from "../models/ServerCredentials";
+import { Region, VariantConfig } from "../../../../core/domain";
+import { DeploymentContext } from "../../../../core/models/DeploymentContext";
+import { ServerCredentials } from "../../../../core/models/ServerCredentials";
 
 export interface TaskDefinitionService {
     /**
@@ -77,28 +77,4 @@ export interface NetworkService {
      * Retrieves the public IP address from an EC2 instance
      */
     getPublicIp(instanceId: string, region: Region): Promise<string>;
-}
-
-export interface TF2ServerReadinessService {
-    /**
-     * Waits for the TF2 server to be ready and returns SDR address
-     */
-    waitForReady(
-        publicIp: string,
-        rconPassword: string,
-        serverId: string,
-        abortSignal?: AbortSignal
-    ): Promise<string>;
-}
-
-export interface EnvironmentVariableBuilder {
-    /**
-     * Builds environment variables for the container
-     */
-    build(
-        context: DeploymentContext,
-        credentials: ServerCredentials,
-        variantConfig: VariantConfig,
-        regionConfig: RegionConfig,
-    ): Record<string, string>;
 }

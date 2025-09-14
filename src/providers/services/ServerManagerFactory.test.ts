@@ -7,12 +7,13 @@ import { ConfigManager } from "../../core/utils/ConfigManager";
 import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 import { DefaultServerManagerFactory } from "./ServerManagerFactory";
-import { ECSServerManager } from "./ecs-server-management/ECSServerManager";
-import { OCIServerManager } from "./OCIServerManager";
+import { ECSServerManager } from "../cloud-providers/aws/ECSServerManager";
+import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { ServerManager } from "../../core/services/ServerManager";
 
 // Mock the concrete server manager classes
-vi.mock('./ecs-server-management/ECSServerManager');
+vi.mock('../cloud-providers/aws/ECSServerManager');
+vi.mock('../cloud-providers/oracle/OCIServerManager');
 vi.mock('./OCIServerManager');
 
 describe('DefaultServerManagerFactory', () => {

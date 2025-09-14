@@ -1,14 +1,14 @@
-import { TF2ServerReadinessService as TF2ServerReadinessServiceInterface } from '../interfaces';
-import { ServerCommander } from '../../../../core/services/ServerCommander';
-import { ServerStatus } from '../../../../core/domain/ServerStatus';
-import { waitUntil } from "../../../utils/waitUntil";
-import { logger } from '../../../../telemetry/otel';
+import { TF2ServerReadinessService } from '../../core/services/TF2ServerReadinessService';
+import { ServerCommander } from '../../core/services/ServerCommander';
+import { ServerStatus } from '../../core/domain/ServerStatus';
+import { waitUntil } from "../utils/waitUntil";
+import { logger } from '../../telemetry/otel';
 
 /**
- * Service responsible for monitoring TF2 server readiness
+ * Default implementation of TF2ServerReadinessService
  * This is a generic service that can be used by any cloud provider (AWS, OCI, etc.)
  */
-export class DefaultTF2ServerReadinessService implements TF2ServerReadinessServiceInterface {
+export class DefaultTF2ServerReadinessService implements TF2ServerReadinessService {
     constructor(private readonly serverCommander: ServerCommander) {}
     
     async waitForReady(
@@ -53,7 +53,11 @@ export class DefaultTF2ServerReadinessService implements TF2ServerReadinessServi
         logger.emit({ 
             severityText: 'INFO', 
             body: `TF2 server is ready: ${serverId}`, 
-            attributes: { serverId, sdrAddress: result.sdrAddress } 
+            attributes: { 
+                serverId, 
+                publicIp, 
+                sdrAddress: result.sdrAddress 
+            } 
         });
 
         return result.sdrAddress;

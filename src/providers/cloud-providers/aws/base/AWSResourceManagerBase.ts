@@ -2,7 +2,7 @@ import { logger, tracer } from '../../../../telemetry/otel';
 import { Span } from '@opentelemetry/api';
 import { Region } from '../../../../core/domain';
 import { ConfigManager } from '../../../../core/utils/ConfigManager';
-import { AWSClients } from '../../defaultAWSServiceFactory';
+import { AWSClients } from '../../../services/defaultAWSServiceFactory';
 
 /**
  * Base class for AWS resource managers providing common patterns

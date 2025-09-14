@@ -1,5 +1,5 @@
-import { Region, Variant } from "../../../../core/domain";
-import { StatusUpdater } from "../../../../core/services/StatusUpdater";
+import { Region, Variant } from "../domain";
+import { StatusUpdater } from "../services/StatusUpdater";
 
 /**
  * Immutable value object containing all context needed for server deployment
