@@ -1,13 +1,10 @@
-import { ServerCredentials } from '../models/ServerCredentials';
-import { PasswordGeneratorService } from './PasswordGeneratorService';
+import { ServerCredentials } from '../../core/models/ServerCredentials';
+import { PasswordGeneratorService } from '../../core/services/PasswordGeneratorService';
+import { CredentialsService } from '../../core/services/CredentialsService';
 
 /**
- * Service responsible for generating all server credentials
+ * Default implementation of CredentialsService
  */
-export interface CredentialsService {
-    generateCredentials(): ServerCredentials;
-}
-
 export class DefaultCredentialsService implements CredentialsService {
     constructor(
         private readonly passwordGeneratorService: PasswordGeneratorService,

@@ -1,15 +1,15 @@
-import { ServerCredentials } from '../models/ServerCredentials';
-import { DeploymentContext } from '../models/DeploymentContext';
-import { EnvironmentVariableBuilder } from '../interfaces';
-import { VariantConfig, RegionConfig, getRegionDisplayName } from '../../../../core/domain';
+import { ServerCredentials } from '../../core/models/ServerCredentials';
+import { DeploymentContext } from '../../core/models/DeploymentContext';
+import { EnvironmentBuilderService } from '../../core/services/EnvironmentBuilderService';
+import { VariantConfig, RegionConfig, getRegionDisplayName } from '../../core/domain';
 import { Chance } from "chance";
 
 const chance = new Chance();
 
 /**
- * Service responsible for building environment variables for containers
+ * Default implementation of EnvironmentBuilderService
  */
-export class DefaultEnvironmentVariableBuilder implements EnvironmentVariableBuilder {
+export class DefaultEnvironmentBuilderService implements EnvironmentBuilderService {
     
     build(
         context: DeploymentContext,
@@ -48,5 +48,4 @@ export class DefaultEnvironmentVariableBuilder implements EnvironmentVariableBui
 
         return environment;
     }
-
 }

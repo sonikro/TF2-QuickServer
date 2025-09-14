@@ -3,8 +3,8 @@ import {
     DeregisterTaskDefinitionCommand,
 } from "@aws-sdk/client-ecs";
 import { Region } from '../../../../core/domain';
-import { DeploymentContext } from '../models/DeploymentContext';
-import { ServerCredentials } from '../models/ServerCredentials';
+import { DeploymentContext } from '../../../../core/models/DeploymentContext';
+import { ServerCredentials } from '../../../../core/models/ServerCredentials';
 import { TaskDefinitionService as TaskDefinitionServiceInterface } from '../interfaces';
 import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
 

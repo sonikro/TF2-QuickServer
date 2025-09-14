@@ -2,19 +2,19 @@ import { containerinstances, core } from "oci-sdk";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../core/domain";
-import { AbortError } from "../../core/services/ServerAbortManager";
-import { ServerCommander } from "../../core/services/ServerCommander";
-import { ConfigManager } from "../../core/utils/ConfigManager";
-import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
-import { DefaultServerAbortManager } from "./DefaultServerAbortManager";
+import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../../../core/domain";
+import { AbortError } from "../../../core/services/ServerAbortManager";
+import { ServerCommander } from "../../../core/services/ServerCommander";
+import { ConfigManager } from "../../../core/utils/ConfigManager";
+import { PasswordGeneratorService } from "../../../core/services/PasswordGeneratorService";
+import { DefaultServerAbortManager } from "../../services/DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
-import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
-import { logger } from "../../telemetry/otel";
+import { OCICredentialsFactory } from "../../../core/services/OCICredentialsFactory";
+import { logger } from "../../../telemetry/otel";
 
 // Mock only the logger, not the whole otel module
-vi.mock('../../telemetry/otel', async () => {
-  const actual = await vi.importActual<any>('../../telemetry/otel');
+vi.mock('../../../telemetry/otel', async () => {
+  const actual = await vi.importActual<any>('../../../telemetry/otel');
   return {
     ...actual,
     logger: {
