@@ -1,32 +1,40 @@
 import {
-    RegisterTaskDefinitionCommand,
     DeregisterTaskDefinitionCommand,
+    RegisterTaskDefinitionCommand,
 } from "@aws-sdk/client-ecs";
 import { Region } from '../../../../core/domain';
 import { DeploymentContext } from '../../../../core/models/DeploymentContext';
 import { ServerCredentials } from '../../../../core/models/ServerCredentials';
+import { ConfigManager } from "../../../../core/utils/ConfigManager";
+import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { TaskDefinitionService as TaskDefinitionServiceInterface } from '../interfaces';
-import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
+import { AWSConfigService } from "./AWSConfigService";
 
 /**
  * Service responsible for managing ECS Task Definitions for TF2 servers
  */
-export class DefaultTaskDefinitionService extends AWSResourceManagerBase implements TaskDefinitionServiceInterface {
-    
+export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterface {
+
+    constructor(
+        private readonly configManager: ConfigManager,
+        private readonly awsConfigService: AWSConfigService,
+        private readonly tracingService: OperationTracingService
+    ) { }
+
     async create(
         context: DeploymentContext,
         credentials: ServerCredentials,
         environment: Record<string, string>
     ): Promise<string> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'TaskDefinitionService.create',
             context.serverId,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(context.region);
-                const { ecsClient } = this.getAWSClients(context.region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(context.region);
+                const { ecsClient } = this.awsConfigService.getClients(context.region);
                 const variantConfig = this.configManager.getVariantConfig(context.variantName);
 
-                this.logOperationStart('Registering task definition', context.serverId, context.region);
+                this.tracingService.logOperationStart('Registering task definition', context.serverId, context.region);
 
                 // Convert environment to ECS format
                 const environmentArray = Object.entries(environment).map(([name, value]: [string, string]) => ({ 
@@ -97,8 +105,8 @@ export class DefaultTaskDefinitionService extends AWSResourceManagerBase impleme
                     throw new Error("Failed to register task definition");
                 }
 
-                this.logOperationSuccess('Task definition registered', context.serverId, context.region, { 
-                    taskDefinitionArn 
+                this.tracingService.logOperationSuccess('Task definition registered', context.serverId, context.region, {
+                    taskDefinitionArn
                 });
                 
                 return taskDefinitionArn;
@@ -107,19 +115,19 @@ export class DefaultTaskDefinitionService extends AWSResourceManagerBase impleme
     }
 
     async delete(taskDefinitionArn: string, region: Region): Promise<void> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'TaskDefinitionService.delete',
             taskDefinitionArn,
             async () => {
-                const { ecsClient } = this.getAWSClients(region);
+                const { ecsClient } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Deregistering task definition', taskDefinitionArn, region);
+                this.tracingService.logOperationStart('Deregistering task definition', taskDefinitionArn, region);
 
                 await ecsClient.send(new DeregisterTaskDefinitionCommand({
                     taskDefinition: taskDefinitionArn,
                 }));
 
-                this.logOperationSuccess('Task definition deregistered', taskDefinitionArn, region);
+                this.tracingService.logOperationSuccess('Task definition deregistered', taskDefinitionArn, region);
             }
         );
     }

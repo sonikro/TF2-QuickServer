@@ -5,28 +5,31 @@ import {
     waitUntilServicesStable,
 } from "@aws-sdk/client-ecs";
 import { Region } from '../../../../core/domain';
-import { ECSServiceManager as ECSServiceManagerInterface } from '../interfaces';
-import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
+import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { waitUntil } from "../../../utils/waitUntil";
+import { ECSServiceManager as ECSServiceManagerInterface } from '../interfaces';
+import { AWSConfigService } from "./AWSConfigService";
 
-/**
- * Service responsible for managing ECS Services for TF2 servers
- */
-export class DefaultECSServiceManager extends AWSResourceManagerBase implements ECSServiceManagerInterface {
-    
+export class DefaultECSServiceManager implements ECSServiceManagerInterface {
+
+    constructor(
+        private readonly awsConfigService: AWSConfigService,
+        private readonly tracingService: OperationTracingService
+    ) { }
+
     async create(
         serverId: string,
         region: Region,
         taskDefinitionArn: string
     ): Promise<string> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'ECSServiceManager.create',
             serverId,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(region);
-                const { ecsClient } = this.getAWSClients(region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(region);
+                const { ecsClient } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Creating ECS service', serverId, region);
+                this.tracingService.logOperationStart('Creating ECS service', serverId, region);
 
                 const serviceResponse = await ecsClient.send(new CreateServiceCommand({
                     cluster: awsRegionConfig.cluster_name,
@@ -47,7 +50,7 @@ export class DefaultECSServiceManager extends AWSResourceManagerBase implements 
                     throw new Error("Failed to create ECS service");
                 }
 
-                this.logOperationSuccess('ECS service created', serverId, region, { serviceArn });
+                this.tracingService.logOperationSuccess('ECS service created', serverId, region, { serviceArn });
                 return serviceArn;
             }
         );
@@ -58,14 +61,14 @@ export class DefaultECSServiceManager extends AWSResourceManagerBase implements 
         region: Region,
         abortSignal?: AbortSignal
     ): Promise<void> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'ECSServiceManager.waitForStable',
             serviceArn,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(region);
-                const { ecsClient } = this.getAWSClients(region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(region);
+                const { ecsClient } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Waiting for ECS service to be stable', serviceArn, region);
+                this.tracingService.logOperationStart('Waiting for ECS service to be stable', serviceArn, region);
 
                 await waitUntilServicesStable({
                     client: ecsClient,
@@ -78,20 +81,20 @@ export class DefaultECSServiceManager extends AWSResourceManagerBase implements 
                     services: [serviceArn]
                 });
 
-                this.logOperationSuccess('ECS service is stable', serviceArn, region);
+                this.tracingService.logOperationSuccess('ECS service is stable', serviceArn, region);
             }
         );
     }
 
     async delete(serverId: string, region: Region): Promise<void> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'ECSServiceManager.delete',
             serverId,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(region);
-                const { ecsClient } = this.getAWSClients(region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(region);
+                const { ecsClient } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Deleting ECS service', serverId, region);
+                this.tracingService.logOperationStart('Deleting ECS service', serverId, region);
 
                 // Delete the service with force flag
                 await ecsClient.send(new DeleteServiceCommand({
@@ -111,7 +114,7 @@ export class DefaultECSServiceManager extends AWSResourceManagerBase implements 
                     return service?.status === 'DELETED';
                 });
 
-                this.logOperationSuccess('ECS service deleted', serverId, region);
+                this.tracingService.logOperationSuccess('ECS service deleted', serverId, region);
             }
         );
     }

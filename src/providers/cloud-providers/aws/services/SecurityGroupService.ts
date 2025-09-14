@@ -1,27 +1,33 @@
 import {
+    AuthorizeSecurityGroupIngressCommand,
     CreateSecurityGroupCommand,
     DeleteSecurityGroupCommand,
     DescribeSecurityGroupsCommand,
-    AuthorizeSecurityGroupIngressCommand,
 } from "@aws-sdk/client-ec2";
 import { Region } from '../../../../core/domain';
+import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { SecurityGroupService as SecurityGroupServiceInterface } from '../interfaces';
-import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
+import { AWSConfigService } from "./AWSConfigService";
 
 /**
  * Service responsible for managing AWS Security Groups for TF2 servers
  */
-export class DefaultSecurityGroupService extends AWSResourceManagerBase implements SecurityGroupServiceInterface {
-    
+export class DefaultSecurityGroupService implements SecurityGroupServiceInterface {
+
+    constructor(
+        private readonly awsConfigService: AWSConfigService,
+        private readonly tracingService: OperationTracingService
+    ) { }
+
     async create(serverId: string, region: Region): Promise<string> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'SecurityGroupService.create',
             serverId,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(region);
-                const { ec2Client } = this.getAWSClients(region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(region);
+                const { ec2Client } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Creating security group', serverId, region);
+                this.tracingService.logOperationStart('Creating security group', serverId, region);
 
                 // Create security group
                 const createSgResponse = await ec2Client.send(new CreateSecurityGroupCommand({
@@ -51,21 +57,21 @@ export class DefaultSecurityGroupService extends AWSResourceManagerBase implemen
                     ],
                 }));
 
-                this.logOperationSuccess('Security group created', serverId, region, { securityGroupId });
+                this.tracingService.logOperationSuccess('Security group created', serverId, region, { securityGroupId });
                 return securityGroupId;
             }
         );
     }
 
     async delete(serverId: string, region: Region): Promise<void> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'SecurityGroupService.delete',
             serverId,
             async () => {
-                const awsRegionConfig = this.getAWSRegionConfig(region);
-                const { ec2Client } = this.getAWSClients(region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(region);
+                const { ec2Client } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Deleting security group', serverId, region);
+                this.tracingService.logOperationStart('Deleting security group', serverId, region);
 
                 // Find the security group by name (serverId)
                 const describeResponse = await ec2Client.send(new DescribeSecurityGroupsCommand({
@@ -83,7 +89,7 @@ export class DefaultSecurityGroupService extends AWSResourceManagerBase implemen
 
                 const securityGroup = describeResponse.SecurityGroups?.[0];
                 if (!securityGroup) {
-                    this.logOperationSuccess('Security group not found (already deleted)', serverId, region);
+                    this.tracingService.logOperationSuccess('Security group not found (already deleted)', serverId, region);
                     return;
                 }
 
@@ -92,8 +98,8 @@ export class DefaultSecurityGroupService extends AWSResourceManagerBase implemen
                     GroupId: securityGroup.GroupId!,
                 }));
 
-                this.logOperationSuccess('Security group deleted', serverId, region, { 
-                    securityGroupId: securityGroup.GroupId 
+                this.tracingService.logOperationSuccess('Security group deleted', serverId, region, {
+                    securityGroupId: securityGroup.GroupId
                 });
             }
         );

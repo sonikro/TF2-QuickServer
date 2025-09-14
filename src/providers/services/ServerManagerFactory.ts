@@ -5,7 +5,7 @@ import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
 import { ConfigManager } from "../../core/utils/ConfigManager";
-import { ECSServerManagerFactory } from "../cloud-providers/aws/ECSServerManagerFactory";
+import { AWSServerManager } from "../cloud-providers";
 import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
@@ -31,7 +31,7 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
 
         switch (cloudProvider) {
             case CloudProvider.AWS:
-                return ECSServerManagerFactory.createServerManager({
+                return AWSServerManager.create({
                     configManager: this.dependencies.configManager,
                     awsClientFactory: defaultAWSServiceFactory,
                     serverCommander: this.dependencies.serverCommander,

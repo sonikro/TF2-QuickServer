@@ -1,21 +1,27 @@
 import { DescribeInstancesCommand } from "@aws-sdk/client-ec2";
 import { Region } from '../../../../core/domain';
+import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { NetworkService as NetworkServiceInterface } from '../interfaces';
-import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
+import { AWSConfigService } from "./AWSConfigService";
 
 /**
  * Service responsible for network-related operations for TF2 servers
  */
-export class DefaultNetworkService extends AWSResourceManagerBase implements NetworkServiceInterface {
-    
+export class DefaultNetworkService  implements NetworkServiceInterface {
+
+    constructor(
+        private readonly awsConfigService: AWSConfigService,
+        private readonly tracingService: OperationTracingService
+    ) { }
+
     async getPublicIp(instanceId: string, region: Region): Promise<string> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'NetworkService.getPublicIp',
             instanceId,
             async () => {
-                const { ec2Client } = this.getAWSClients(region);
+                const { ec2Client } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Retrieving public IP', instanceId, region);
+                this.tracingService.logOperationStart('Retrieving public IP', instanceId, region);
 
                 const describeInstanceResponse = await ec2Client.send(new DescribeInstancesCommand({
                     InstanceIds: [instanceId]
@@ -31,7 +37,7 @@ export class DefaultNetworkService extends AWSResourceManagerBase implements Net
                     throw new Error("Failed to retrieve public IP from EC2 instance. Instance may not be in a public subnet or may not have a public IP assigned.");
                 }
 
-                this.logOperationSuccess('Public IP retrieved', instanceId, region, { publicIp });
+                this.tracingService.logOperationSuccess('Public IP retrieved', instanceId, region, { publicIp });
                 return publicIp;
             }
         );

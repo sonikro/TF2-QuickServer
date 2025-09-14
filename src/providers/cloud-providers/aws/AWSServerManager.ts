@@ -3,11 +3,15 @@ import { ServerCredentials } from '../../../core/models';
 import { DeploymentContext } from '../../../core/models/DeploymentContext';
 import { EnvironmentBuilderService } from '../../../core/services/EnvironmentBuilderService';
 import { PasswordGeneratorService } from '../../../core/services/PasswordGeneratorService';
+import { ServerCommander } from '../../../core/services/ServerCommander';
 import { ServerManager } from '../../../core/services/ServerManager';
 import { StatusUpdater } from '../../../core/services/StatusUpdater';
 import { TF2ServerReadinessService } from '../../../core/services/TF2ServerReadinessService';
 import { ConfigManager } from '../../../core/utils/ConfigManager';
+import { OperationTracingService } from '../../../telemetry/OperationTracingService';
 import { logger } from '../../../telemetry/otel';
+import { DefaultEnvironmentBuilderService, DefaultTF2ServerReadinessService } from '../../services';
+import { AWSClientFactory } from '../../services/defaultAWSServiceFactory';
 import {
     EC2InstanceService,
     ECSServiceManager,
@@ -16,13 +20,57 @@ import {
     TaskDefinitionService
 } from './interfaces';
 import { AWSServerDeploymentResult } from './models/AWSServerDeploymentResult';
+import { DefaultEC2InstanceService, DefaultECSServiceManager, DefaultNetworkService, DefaultSecurityGroupService, DefaultTaskDefinitionService } from './services';
+import { AWSConfigService } from './services/AWSConfigService';
+
+
+export interface AWSServerManagerDependencies {
+    configManager: ConfigManager;
+    awsClientFactory: AWSClientFactory;
+    serverCommander: ServerCommander;
+    passwordGeneratorService: PasswordGeneratorService;
+}
 
 /**
  * Main ECS Server Manager that coordinates all the individual services
  * to deploy a TF2 server. This class follows the Single Responsibility Principle
  * by delegating specific tasks to focused services and implements the ServerManager interface.
  */
-export class ECSServerManager implements ServerManager {
+export class AWSServerManager implements ServerManager {
+
+    /**
+     * Factory method to create an instance of AWSServerManager
+     * @param dependencies 
+     * @returns 
+     */
+    static create(dependencies: AWSServerManagerDependencies): AWSServerManager {
+        const { configManager, awsClientFactory, serverCommander, passwordGeneratorService } = dependencies;
+
+        const awsConfigService = new AWSConfigService(configManager, awsClientFactory);
+        const operationTracer = new OperationTracingService();
+
+        const taskDefinitionService = new DefaultTaskDefinitionService(configManager, awsConfigService, operationTracer);
+        const ecsServiceManager = new DefaultECSServiceManager(awsConfigService, operationTracer);
+        const securityGroupService = new DefaultSecurityGroupService(awsConfigService, operationTracer);
+        const networkService = new DefaultNetworkService(awsConfigService, operationTracer);
+        const ec2InstanceService = new DefaultEC2InstanceService(awsConfigService, operationTracer);
+
+        const environmentBuilderService = new DefaultEnvironmentBuilderService();
+        const tf2ServerReadinessService = new DefaultTF2ServerReadinessService(serverCommander);
+
+        return new AWSServerManager(
+            taskDefinitionService,
+            securityGroupService,
+            ec2InstanceService,
+            ecsServiceManager,
+            networkService,
+            tf2ServerReadinessService,
+            environmentBuilderService,
+            passwordGeneratorService,
+            configManager
+        );
+    }
+
     constructor(
         private readonly taskDefinitionService: TaskDefinitionService,
         private readonly securityGroupService: SecurityGroupService,
@@ -33,7 +81,7 @@ export class ECSServerManager implements ServerManager {
         private readonly environmentBuilderService: EnvironmentBuilderService,
         private readonly passwordGeneratorService: PasswordGeneratorService,
         private readonly configManager: ConfigManager,
-    ) {}
+    ) { }
 
     /**
      * Deploys a new TF2 server in the selected region with a specific variant.
@@ -79,9 +127,9 @@ export class ECSServerManager implements ServerManager {
             logger.emit({
                 severityText: 'INFO',
                 body: `Server deployment completed: ${args.serverId}`,
-                attributes: { 
-                    serverId: args.serverId, 
-                    region: args.region, 
+                attributes: {
+                    serverId: args.serverId,
+                    region: args.region,
                     publicIp: result.publicIp,
                     sdrAddress: result.sdrAddress
                 }
@@ -105,9 +153,9 @@ export class ECSServerManager implements ServerManager {
             logger.emit({
                 severityText: 'ERROR',
                 body: `Server deployment failed: ${args.serverId}`,
-                attributes: { 
-                    serverId: args.serverId, 
-                    region: args.region, 
+                attributes: {
+                    serverId: args.serverId,
+                    region: args.region,
                     error: error instanceof Error ? error.message : String(error)
                 }
             });
@@ -172,7 +220,11 @@ export class ECSServerManager implements ServerManager {
         });
     }
 
-    async destroyServer(serverId: string, region: Region): Promise<void> {
+    /**
+     * Deletes an existing TF2 server (implements ServerManager interface).
+     */
+    async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
+        const { serverId, region } = args;
         logger.emit({
             severityText: 'INFO',
             body: `Starting server destruction: ${serverId}`,
@@ -201,20 +253,13 @@ export class ECSServerManager implements ServerManager {
             logger.emit({
                 severityText: 'ERROR',
                 body: `Server destruction failed: ${serverId}`,
-                attributes: { 
-                    serverId, 
-                    region, 
+                attributes: {
+                    serverId,
+                    region,
                     error: error instanceof Error ? error.message : String(error)
                 }
             });
             throw error;
         }
-    }
-
-    /**
-     * Deletes an existing TF2 server (implements ServerManager interface).
-     */
-    async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
-        await this.destroyServer(args.serverId, args.region);
     }
 }
