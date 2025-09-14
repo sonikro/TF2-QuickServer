@@ -20,9 +20,6 @@ export class AWSServerDeploymentResult extends ServerDeploymentResult {
         securityGroupId: string;
         taskDefinitionArn: string;
         serviceArn: string;
-        success?: boolean;
-        message?: string;
-        error?: Error;
     }) {
         super({
             serverId: data.serverId,
@@ -31,9 +28,6 @@ export class AWSServerDeploymentResult extends ServerDeploymentResult {
             serverPassword: data.serverPassword,
             tvPassword: data.tvPassword,
             sdrAddress: data.sdrAddress,
-            success: data.success,
-            message: data.message,
-            error: data.error
         });
         
         this.instanceId = data.instanceId;
@@ -42,24 +36,4 @@ export class AWSServerDeploymentResult extends ServerDeploymentResult {
         this.serviceArn = data.serviceArn;
     }
 
-    /**
-     * Creates a failed AWS deployment result
-     */
-    static createFailure(serverId: string, error: Error, message: string): AWSServerDeploymentResult {
-        return new AWSServerDeploymentResult({
-            serverId,
-            publicIp: '',
-            rconPassword: '',
-            serverPassword: '',
-            tvPassword: '',
-            sdrAddress: '',
-            instanceId: '',
-            securityGroupId: '',
-            taskDefinitionArn: '',
-            serviceArn: '',
-            success: false,
-            message,
-            error
-        });
-    }
 }
