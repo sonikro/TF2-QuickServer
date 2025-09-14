@@ -2,7 +2,6 @@ import config from "config";
 
 export interface AWSConfig {
     regions: { [key: string]: AWSRegionSettings };
-    account_id: string;
 }
 
 export interface AWSRegionSettings {
@@ -18,7 +17,6 @@ export interface AWSRegionSettings {
 
 export function getAWSConfig(): AWSConfig {
     return {
-        account_id: process.env.AWS_ACCOUNT_ID || "",
         regions: {
             "us-east-1-bue-1a": {
                 cluster_name: config.get<string>(`buenos_aires_cluster_name.value`),
