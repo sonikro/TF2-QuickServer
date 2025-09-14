@@ -21,32 +21,32 @@ terraform {
 
 # Loop over each region and create a provider with alias
 provider "oci" {
-  alias  = "sa-saopaulo-1"
-  region = "sa-saopaulo-1"
+  alias               = "sa-saopaulo-1"
+  region              = "sa-saopaulo-1"
   config_file_profile = "sa-saopaulo-1"
 }
 
 provider "oci" {
-  alias  = "us-chicago-1"
-  region = "us-chicago-1"
+  alias               = "us-chicago-1"
+  region              = "us-chicago-1"
   config_file_profile = "us-chicago-1"
 }
 
 provider "oci" {
-  alias  = "sa-bogota-1"
-  region = "sa-bogota-1"
+  alias               = "sa-bogota-1"
+  region              = "sa-bogota-1"
   config_file_profile = "sa-bogota-1"
 }
 
 provider "oci" {
-  alias  = "sa-santiago-1"
-  region = "sa-santiago-1"
+  alias               = "sa-santiago-1"
+  region              = "sa-santiago-1"
   config_file_profile = "sa-santiago-1"
 }
 
 provider "oci" {
-  alias  = "eu-frankfurt-1"
-  region = "eu-frankfurt-1"
+  alias               = "eu-frankfurt-1"
+  region              = "eu-frankfurt-1"
   config_file_profile = "eu-frankfurt-1"
 }
 
@@ -137,6 +137,8 @@ module "oci-iam-sa-santiago-1" {
 # Create network module for us-east-1 (N. Virginia) region with Buenos Aires Local Zone subnet
 module "aws-network-us-east-1" {
   source = "./modules/aws/network"
+
+  availability_zone = "us-east-1-bue-1a"
 
   providers = {
     aws = aws.us-east-1
