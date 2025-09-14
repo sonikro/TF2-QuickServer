@@ -1,3 +1,5 @@
+import { PasswordGeneratorService } from "../services/PasswordGeneratorService";
+
 /**
  * Immutable value object containing all server authentication credentials
  */
@@ -22,14 +24,14 @@ export class ServerCredentials {
     /**
      * Creates ServerCredentials with generated passwords
      */
-    static generate(passwordGenerator: (settings: Partial<Chance.StringOptions>) => string, chance: Chance.Chance): ServerCredentials {
+    static generate(passwordGeneratorService: PasswordGeneratorService): ServerCredentials {
         const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false, };
 
         return new ServerCredentials({
-            serverPassword: passwordGenerator(passwordSettings),
-            rconPassword: passwordGenerator(passwordSettings),
-            tvPassword: passwordGenerator(passwordSettings),
-            logSecret: chance.integer({ min: 1, max: 999999 })
+            serverPassword: passwordGeneratorService.generatePassword(passwordSettings),
+            rconPassword: passwordGeneratorService.generatePassword(passwordSettings),
+            tvPassword: passwordGeneratorService.generatePassword(passwordSettings),
+            logSecret: passwordGeneratorService.generateNumericPassword({ min: 1, max: 999999 })
         });
     }
 }

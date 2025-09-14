@@ -1,6 +1,11 @@
 import { Region, Server, Variant } from '../../../core/domain';
+import { ServerCredentials } from '../../../core/models';
+import { DeploymentContext } from '../../../core/models/DeploymentContext';
+import { EnvironmentBuilderService } from '../../../core/services/EnvironmentBuilderService';
+import { PasswordGeneratorService } from '../../../core/services/PasswordGeneratorService';
 import { ServerManager } from '../../../core/services/ServerManager';
 import { StatusUpdater } from '../../../core/services/StatusUpdater';
+import { TF2ServerReadinessService } from '../../../core/services/TF2ServerReadinessService';
 import { ConfigManager } from '../../../core/utils/ConfigManager';
 import { logger } from '../../../telemetry/otel';
 import {
@@ -10,11 +15,7 @@ import {
     SecurityGroupService,
     TaskDefinitionService
 } from './interfaces';
-import { DeploymentContext } from '../../../core/models/DeploymentContext';
 import { AWSServerDeploymentResult } from './models/AWSServerDeploymentResult';
-import { CredentialsService } from '../../../core/services/CredentialsService';
-import { EnvironmentBuilderService } from '../../../core/services/EnvironmentBuilderService';
-import { TF2ServerReadinessService } from '../../../core/services/TF2ServerReadinessService';
 
 /**
  * Main ECS Server Manager that coordinates all the individual services
@@ -30,7 +31,7 @@ export class ECSServerManager implements ServerManager {
         private readonly networkService: NetworkService,
         private readonly tf2ServerReadinessService: TF2ServerReadinessService,
         private readonly environmentBuilderService: EnvironmentBuilderService,
-        private readonly credentialsService: CredentialsService,
+        private readonly passwordGeneratorService: PasswordGeneratorService,
         private readonly configManager: ConfigManager,
     ) {}
 
@@ -63,7 +64,7 @@ export class ECSServerManager implements ServerManager {
             });
 
             // Generate server credentials
-            const credentials = this.credentialsService.generateCredentials();
+            const credentials = ServerCredentials.generate(this.passwordGeneratorService);
 
             // Get configuration
             const variantConfig = this.configManager.getVariantConfig(args.variantName);
