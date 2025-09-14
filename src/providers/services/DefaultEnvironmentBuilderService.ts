@@ -27,8 +27,8 @@ export class DefaultEnvironmentBuilderService implements EnvironmentBuilderServi
         const adminList = variantConfig.admins ? [...variantConfig.admins, context.sourcemodAdminSteamId] : [context.sourcemodAdminSteamId];
 
         // Extract first UUID block (before first hyphen) for hostname prefix
-        const uuidPrefix = context.serverId.split('-')[0];
-        
+        const uuidPrefix = context.uuidPrefix;
+
         const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(context.region)) : regionConfig.srcdsHostname;
         const finalHostname = `#${uuidPrefix} ${hostname}`;
 
