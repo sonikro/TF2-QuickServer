@@ -5,12 +5,12 @@ output "vpc_id" {
 
 output "subnet_id" {
   description = "ID of the Buenos Aires Local Zone subnet (us-east-1-bue-1a) within us-east-1 (N. Virginia)"
-  value       = aws_subnet.buenos_aires_subnet.id
+  value       = aws_subnet.local_zone_subnet.id
 }
 
 output "subnet_cidr_block" {
   description = "CIDR block of the Buenos Aires Local Zone subnet within us-east-1 (N. Virginia)"
-  value       = aws_subnet.buenos_aires_subnet.cidr_block
+  value       = aws_subnet.local_zone_subnet.cidr_block
 }
 
 output "internet_gateway_id" {
@@ -25,5 +25,5 @@ output "route_table_id" {
 
 output "availability_zone" {
   description = "Availability zone of the Buenos Aires Local Zone (us-east-1-bue-1a) within us-east-1 (N. Virginia)"
-  value       = aws_subnet.buenos_aires_subnet.availability_zone
+  value       = aws_subnet.local_zone_subnet.availability_zone
 }
