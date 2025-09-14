@@ -18,20 +18,12 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
-    Name        = "TF2-QuickServer-vpc"
-    Description = "VPC in us-east-1 N.Virginia for Buenos Aires Local Zone deployment"
-  }
 }
 
 # Create Internet Gateway for us-east-1 (N. Virginia) VPC
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name        = "TF2-QuickServer-igw"
-    Description = "Internet Gateway for us-east-1 N.Virginia VPC serving Buenos Aires Local Zone"
-  }
 }
 
 # Create Route Table for public subnet in us-east-1 (N. Virginia)
@@ -43,10 +35,6 @@ resource "aws_route_table" "public_rt" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = {
-    Name        = "TF2-QuickServer-public-rt"
-    Description = "Public route table for us-east-1 N.Virginia serving Buenos Aires Local Zone"
-  }
 }
 
 # Create subnet in Buenos Aires Local Zone (us-east-1-bue-1a)
@@ -57,12 +45,6 @@ resource "aws_subnet" "buenos_aires_subnet" {
   availability_zone       = "us-east-1-bue-1a"
   map_public_ip_on_launch = true
 
-  tags = {
-    Name        = "TF2-QuickServer-buenos-aires-subnet"
-    Description = "Buenos Aires Local Zone subnet us-east-1-bue-1a within us-east-1 N.Virginia region"
-    LocalZone   = "Buenos Aires"
-    ParentRegion = "us-east-1"
-  }
 }
 
 # Associate the route table with the subnet
