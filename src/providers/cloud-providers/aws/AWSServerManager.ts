@@ -139,7 +139,7 @@ export class AWSServerManager implements ServerManager {
                 serverId: result.serverId,
                 region: args.region,
                 variant: args.variantName,
-                hostIp: result.publicIp,
+                hostIp: result.sdrHost,
                 hostPort: result.sdrPort,
                 tvIp: result.publicIp,
                 tvPort: result.tvPort,
@@ -221,7 +221,7 @@ export class AWSServerManager implements ServerManager {
     }
 
     /**
-     * Deletes an existing TF2 server (implements ServerManager interface).
+     * Deletes an existing TF2 server
      */
     async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
         const { serverId, region } = args;
@@ -232,16 +232,13 @@ export class AWSServerManager implements ServerManager {
         });
 
         try {
-            // Delete ECS service
             await this.ecsServiceManager.delete(serverId, region);
 
-            // Terminate EC2 instance
             await this.ec2InstanceService.terminate(serverId, region);
 
-            // Delete security group
             await this.securityGroupService.delete(serverId, region);
 
-            // Note: Task definition cleanup is handled separately as they can be reused
+            await this.taskDefinitionService.delete(serverId, region);
 
             logger.emit({
                 severityText: 'INFO',

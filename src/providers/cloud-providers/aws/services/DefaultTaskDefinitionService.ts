@@ -1,6 +1,7 @@
 import {
-    DeregisterTaskDefinitionCommand,
-    RegisterTaskDefinitionCommand,
+    DeleteTaskDefinitionsCommand,
+    ListTaskDefinitionsCommand,
+    RegisterTaskDefinitionCommand
 } from "@aws-sdk/client-ecs";
 import { Region } from '../../../../core/domain';
 import { DeploymentContext } from '../../../../core/models/DeploymentContext';
@@ -37,9 +38,9 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                 this.tracingService.logOperationStart('Registering task definition', context.serverId, context.region);
 
                 // Convert environment to ECS format
-                const environmentArray = Object.entries(environment).map(([name, value]: [string, string]) => ({ 
-                    name, 
-                    value 
+                const environmentArray = Object.entries(environment).map(([name, value]: [string, string]) => ({
+                    name,
+                    value
                 }));
 
                 const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
@@ -108,27 +109,47 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                 this.tracingService.logOperationSuccess('Task definition registered', context.serverId, context.region, {
                     taskDefinitionArn
                 });
-                
+
                 return taskDefinitionArn;
             }
         );
     }
 
-    async delete(taskDefinitionArn: string, region: Region): Promise<void> {
+    async delete(serverId: string, region: Region): Promise<void> {
         return this.tracingService.executeWithTracing(
             'TaskDefinitionService.delete',
-            taskDefinitionArn,
+            serverId,
             async () => {
                 const { ecsClient } = this.awsConfigService.getClients(region);
 
-                this.tracingService.logOperationStart('Deregistering task definition', taskDefinitionArn, region);
+                this.tracingService.logOperationStart('Deleting task definition', serverId, region);
 
-                await ecsClient.send(new DeregisterTaskDefinitionCommand({
-                    taskDefinition: taskDefinitionArn,
+                // Find the TaskDefinitionARN by the Family Name
+                const taskDefinitionArn = await this.findTaskDefinitionArn(serverId, region);
+                if(!taskDefinitionArn){
+                    this.tracingService.logOperationSuccess('Task definition not found, already deleted', serverId, region);
+                    return;
+                }
+                await ecsClient.send(new DeleteTaskDefinitionsCommand({
+                    taskDefinitions: [taskDefinitionArn]
                 }));
 
-                this.tracingService.logOperationSuccess('Task definition deregistered', taskDefinitionArn, region);
+                this.tracingService.logOperationSuccess('Task definition deleted', serverId, region);
             }
         );
+    }
+    async findTaskDefinitionArn(serverId: string, region: Region) {
+        const { ecsClient } = this.awsConfigService.getClients(region);
+        const response = await ecsClient.send(new ListTaskDefinitionsCommand({
+            familyPrefix: serverId,
+            sort: "DESC",
+            maxResults: 1
+        }));
+
+        const taskDefinitionArn = response.taskDefinitionArns?.[0];
+        if (!taskDefinitionArn) {
+            return undefined;
+        }
+        return taskDefinitionArn;
     }
 }
