@@ -26,7 +26,7 @@ import { PaypalPaymentService } from "../providers/services/PaypalPaymentService
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
-import { chancePasswordGenerator } from "../providers/utils/chancePasswordGenerator";
+import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
 import { createCommands } from "./commands";
 import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
@@ -65,10 +65,12 @@ export async function startDiscordBot() {
 
     const serverAbortManager = new DefaultServerAbortManager();
 
+    const passwordGeneratorService = new ChancePasswordGeneratorService();
+
     const serverManagerFactory = new DefaultServerManagerFactory({
         serverCommander,
         configManager: defaultConfigManager,
-        passwordGenerator: chancePasswordGenerator,
+        passwordGeneratorService: passwordGeneratorService,
         serverAbortManager,
         ociCredentialsFactory: FileSystemOCICredentialsFactory
     })

@@ -45,6 +45,8 @@
     "@types/supertest": "^6.0.3",
     "@types/websocket": "^1.0.10",
     "@vitest/coverage-v8": "^3.0.9",
+    "aws-sdk-client-mock": "^4.1.0",
+    "aws-sdk-client-mock-vitest": "^6.2.0",
     "env-cmd": "^10.1.0",
     "msw": "^2.7.3",
     "node-bzip2": "^1.0.2",

@@ -6,6 +6,7 @@ import { OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../.
 import { AbortError } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ConfigManager } from "../../core/utils/ConfigManager";
+import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
 import { DefaultServerAbortManager } from "./DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
@@ -28,7 +29,9 @@ const testVariant = "vanilla" as Variant;
 function createTestEnvironment() {
   const serverCommander = mock<ServerCommander>();
   const configManager = mock<ConfigManager>();
-  const passwordGenerator = vi.fn().mockReturnValue("test-password");
+  const passwordGeneratorService = {
+    generatePassword: vi.fn().mockReturnValue("test-password")
+  } as PasswordGeneratorService;
 
   const containerClient = mock<containerinstances.ContainerInstanceClient>();
   const vncClient = mock<core.VirtualNetworkClient>();
@@ -158,7 +161,7 @@ edicts  : 426 used of 2048 max
   const sut = new OCIServerManager({
     serverCommander,
     configManager,
-    passwordGenerator,
+    passwordGeneratorService,
     ociClientFactory,
     serverAbortManager,
     ociCredentialsFactory
@@ -228,7 +231,7 @@ edicts  : 426 used of 2048 max
     sut,
     serverCommander,
     configManager,
-    passwordGenerator,
+    passwordGeneratorService,
     containerClient,
     vncClient,
     variantConfig,

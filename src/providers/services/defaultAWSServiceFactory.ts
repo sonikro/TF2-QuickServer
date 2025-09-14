@@ -6,6 +6,8 @@ export interface AWSClients {
     ec2Client: EC2Client;
 }
 
+export type AWSClientFactory = (rootRegion: string) => AWSClients;
+
 /**
  * Factory function to create AWS clients for a given region.
  * @param rootRegion - The root AWS region for SDK connections.
