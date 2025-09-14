@@ -1,38 +1,35 @@
 import {
+    _InstanceType,
+    DescribeImagesCommand,
+    DescribeInstancesCommand,
     RunInstancesCommand,
     TerminateInstancesCommand,
-    DescribeInstancesCommand,
-    DescribeImagesCommand,
-    waitUntilInstanceRunning,
-    _InstanceType
+    waitUntilInstanceRunning
 } from "@aws-sdk/client-ec2";
 import { Region, VariantConfig } from '../../../../core/domain';
+import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces';
-import { AWSResourceManagerBase } from '../base/AWSResourceManagerBase';
-import { ConfigManager } from '../../../../core/utils/ConfigManager';
-import { AWSClients } from '../../../services/defaultAWSServiceFactory';
+import { AWSConfigService } from "./AWSConfigService";
 
 /**
  * Service responsible for managing dedicated EC2 instances for TF2 servers
  */
-export class DefaultEC2InstanceService extends AWSResourceManagerBase implements EC2InstanceServiceInterface {
+export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
     constructor(
-        configManager: ConfigManager,
-        awsClientFactory: (rootRegion: string) => AWSClients
-    ) {
-        super(configManager, awsClientFactory);
-    }
-    
+        private readonly awsConfigService: AWSConfigService,
+        private readonly tracingService: OperationTracingService
+    ) { }
+
     private getInstanceTypeForVariant(ocpu: number, memory: number): _InstanceType {
-        // Basic mapping - can be enhanced based on requirements
-        if (ocpu >= 4 && memory >= 8) {
-            return _InstanceType.t3_xlarge;
+        // Currently only supporting t3_medum;
+        if (ocpu === 1 && memory === 4) {
+            return _InstanceType.t3_medium;
         }
-        return _InstanceType.t3_medium;
+        throw new Error(`Currently only supporting t3_medium instances`);
     }
 
     private async getLatestECSOptimizedAMI(region: Region): Promise<string> {
-        const { ec2Client: rootEc2Client } = this.getAWSClients(region);
+        const { ec2Client: rootEc2Client } = this.awsConfigService.getClients(region);
 
         const imageResponse = await rootEc2Client.send(new DescribeImagesCommand({
             Owners: ['amazon'],
@@ -73,14 +70,14 @@ export class DefaultEC2InstanceService extends AWSResourceManagerBase implements
         variantConfig: VariantConfig;
         securityGroupId: string;
     }): Promise<string> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'GameServerInstanceService.create',
             args.serverId,
             async () => {
-                const { ec2Client } = this.getAWSClients(args.region);
-                const awsRegionConfig = this.getAWSRegionConfig(args.region);
+                const { ec2Client } = this.awsConfigService.getClients(args.region);
+                const awsRegionConfig = this.awsConfigService.getRegionConfig(args.region);
 
-                this.logOperationStart('Launching EC2 instance', args.serverId, args.region);
+                this.tracingService.logOperationStart('Launching EC2 instance', args.serverId, args.region);
 
                 // Get the appropriate instance type and AMI
                 const instanceType = this.getInstanceTypeForVariant(args.variantConfig.ocpu, args.variantConfig.memory);
@@ -142,8 +139,8 @@ echo "ECS configuration completed"
                     throw new Error("Failed to launch EC2 instance");
                 }
 
-                this.logOperationSuccess('EC2 instance launched', args.serverId, args.region, { 
-                    instanceId 
+                this.tracingService.logOperationSuccess('EC2 instance launched', args.serverId, args.region, {
+                    instanceId
                 });
 
                 // Wait for instance to be running
@@ -152,8 +149,8 @@ echo "ECS configuration completed"
                     { InstanceIds: [instanceId] }
                 );
 
-                this.logOperationSuccess('EC2 instance is running', args.serverId, args.region, { 
-                    instanceId 
+                this.tracingService.logOperationSuccess('EC2 instance is running', args.serverId, args.region, {
+                    instanceId
                 });
 
                 return instanceId;
@@ -162,13 +159,13 @@ echo "ECS configuration completed"
     }
 
     async terminate(serverId: string, region: Region): Promise<void> {
-        return this.executeWithTracing(
+        return this.tracingService.executeWithTracing(
             'GameServerInstanceService.terminate',
             serverId,
             async () => {
-                const { ec2Client } = this.getAWSClients(region);
+                const { ec2Client } = this.awsConfigService.getClients(region);
 
-                this.logOperationStart('Finding instance to terminate', serverId, region);
+                this.tracingService.logOperationStart('Finding instance to terminate', serverId, region);
 
                 // First, find the instance by server ID
                 const describeResponse = await ec2Client.send(new DescribeInstancesCommand({
@@ -190,20 +187,20 @@ echo "ECS configuration completed"
                     .filter((id): id is string => id !== undefined);
 
                 if (instanceIds.length === 0) {
-                    this.logOperationSuccess('No running instances found to terminate', serverId, region);
+                    this.tracingService.logOperationSuccess('No running instances found to terminate', serverId, region);
                     return;
                 }
 
-                this.logOperationStart('Terminating instances', serverId, region, { 
-                    instanceIds 
+                this.tracingService.logOperationStart('Terminating instances', serverId, region, {
+                    instanceIds
                 });
 
                 await ec2Client.send(new TerminateInstancesCommand({
                     InstanceIds: instanceIds,
                 }));
 
-                this.logOperationSuccess('Instances terminated', serverId, region, { 
-                    instanceIds 
+                this.tracingService.logOperationSuccess('Instances terminated', serverId, region, {
+                    instanceIds
                 });
             }
         );
