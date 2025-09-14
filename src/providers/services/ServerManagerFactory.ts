@@ -1,14 +1,17 @@
-import { Region } from "../../core/domain";
+import { Region, isAWSRegion } from "../../core/domain";
 import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
+import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
 import { ConfigManager } from "../../core/utils/ConfigManager";
-import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
-import { ECSServerManager } from "./ECSServerManager";
+import { ECSServerManagerFactory } from "./ecs-server-management/ECSServerManagerFactory";
 import { OCIServerManager } from "./OCIServerManager";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
+import { Chance } from "chance";
+
+const chance = new Chance();
 
 export interface ServerManagerFactory {
     createServerManager(region: Region): ServerManager;
@@ -19,7 +22,7 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
         private readonly dependencies: {
             serverCommander: ServerCommander;
             configManager: ConfigManager;
-            passwordGenerator: PasswordGenerator;
+            passwordGeneratorService: PasswordGeneratorService;
             serverAbortManager: ServerAbortManager;
             ociCredentialsFactory: OCICredentialsFactory;
         }
@@ -27,32 +30,24 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
 
     createServerManager(region: Region): ServerManager {
         // Strategy pattern: Choose server manager based on region
-        if (this.isAWSRegion(region)) {
-            return new ECSServerManager({
-                serverCommander: this.dependencies.serverCommander,
+        if (isAWSRegion(region)) {
+            // Use the new ECSServerManager architecture
+            return ECSServerManagerFactory.createServerManager({
                 configManager: this.dependencies.configManager,
-                passwordGenerator: this.dependencies.passwordGenerator,
                 awsClientFactory: defaultAWSServiceFactory,
-                serverAbortManager: this.dependencies.serverAbortManager,
+                serverCommander: this.dependencies.serverCommander,
+                passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                chance: chance
             });
         } else {
             return new OCIServerManager({
                 serverCommander: this.dependencies.serverCommander,
                 configManager: this.dependencies.configManager,
-                passwordGenerator: this.dependencies.passwordGenerator,
+                passwordGeneratorService: this.dependencies.passwordGeneratorService,
                 ociClientFactory: defaultOracleServiceFactory,
                 serverAbortManager: this.dependencies.serverAbortManager,
                 ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
             });
         }
-    }
-
-    private isAWSRegion(region: Region): boolean {
-        // Define which regions use AWS ECS
-        const awsRegions: Region[] = [
-            Region.US_EAST_1_BUE_1A, // Buenos Aires region uses AWS
-        ];
-        
-        return awsRegions.includes(region);
     }
 }

@@ -43,3 +43,18 @@ export function getRegions(): Region[] {
         .map(([region]) => region as Region);
     return enabledRegions;
 }
+
+/**
+ * Determines if a region uses AWS ECS for server deployment.
+ * 
+ * @param region - The region to check
+ * @returns true if the region uses AWS ECS, false if it uses Oracle Cloud
+ */
+export function isAWSRegion(region: Region): boolean {
+    // Define which regions use AWS ECS
+    const awsRegions: Region[] = [
+        Region.US_EAST_1_BUE_1A, // Buenos Aires Local Zone
+    ];
+    
+    return awsRegions.includes(region);
+}

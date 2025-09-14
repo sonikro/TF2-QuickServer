@@ -6,8 +6,8 @@ import { ServerStatus } from "../../core/domain/ServerStatus";
 import { ServerAbortManager } from "../../core/services/ServerAbortManager";
 import { ServerCommander } from "../../core/services/ServerCommander";
 import { ServerManager } from "../../core/services/ServerManager";
+import { PasswordGeneratorService } from "../../core/services/PasswordGeneratorService";
 import { ConfigManager } from "../../core/utils/ConfigManager";
-import { PasswordGenerator } from "../../core/utils/PasswordGenerator";
 import { waitUntil } from "../utils/waitUntil";
 import { OCICredentialsFactory } from "../../core/services/OCICredentialsFactory";
 import { StatusUpdater } from "../../core/services/StatusUpdater";
@@ -24,7 +24,7 @@ export class OCIServerManager implements ServerManager {
         private readonly dependencies: {
             serverCommander: ServerCommander;
             configManager: ConfigManager;
-            passwordGenerator: PasswordGenerator;
+            passwordGeneratorService: PasswordGeneratorService;
             ociClientFactory: (region: Region) => { containerClient: containerinstances.ContainerInstanceClient, vncClient: core.VirtualNetworkClient }
             serverAbortManager: ServerAbortManager,
             ociCredentialsFactory: OCICredentialsFactory
@@ -80,7 +80,7 @@ export class OCIServerManager implements ServerManager {
         return await tracer.startActiveSpan('OCIServerManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
             const startTime = Date.now();
-            const { serverCommander, configManager, passwordGenerator, ociClientFactory, serverAbortManager } = this.dependencies;
+            const { serverCommander, configManager, passwordGeneratorService, ociClientFactory, serverAbortManager } = this.dependencies;
             const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
             try {
@@ -95,9 +95,9 @@ export class OCIServerManager implements ServerManager {
                 }
 
                 const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false };
-                const serverPassword = passwordGenerator(passwordSettings);
-                const rconPassword = passwordGenerator(passwordSettings);
-                const tvPassword = passwordGenerator(passwordSettings);
+                const serverPassword = passwordGeneratorService.generatePassword(passwordSettings);
+                const rconPassword = passwordGeneratorService.generatePassword(passwordSettings);
+                const tvPassword = passwordGeneratorService.generatePassword(passwordSettings);
 
                 const containerImage = variantConfig.image;
                 const logSecret = chance.integer({ min: 1, max: 999999 })
