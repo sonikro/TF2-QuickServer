@@ -12,7 +12,7 @@ export interface TaskDefinitionService {
     ): Promise<string>;
 
     /**
-     * Deregisters a task definition
+     * Deletes the ECS task definition for a game server
      */
-    delete(taskDefinitionArn: string, region: Region): Promise<void>;
+    delete(serverId: string, region: Region): Promise<void>;
 }
