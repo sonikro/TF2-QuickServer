@@ -87,15 +87,14 @@ export class ECSServerManager implements ServerManager {
                 }
             });
 
-            const [sdrIp, sdrPort] = result.sdrAddress.split(':');
             return {
                 serverId: result.serverId,
                 region: args.region,
                 variant: args.variantName,
-                hostIp: sdrIp,
-                hostPort: Number(sdrPort),
+                hostIp: result.publicIp,
+                hostPort: result.sdrPort,
                 tvIp: result.publicIp,
-                tvPort: 27020,
+                tvPort: result.tvPort,
                 rconPassword: result.rconPassword,
                 rconAddress: result.publicIp,
                 hostPassword: result.serverPassword,
@@ -170,8 +169,6 @@ export class ECSServerManager implements ServerManager {
             securityGroupId,
             taskDefinitionArn,
             serviceArn,
-            success: true,
-            message: 'Server deployed successfully'
         });
     }
 
