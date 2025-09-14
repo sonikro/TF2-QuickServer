@@ -16,12 +16,6 @@ resource "aws_ecs_cluster" "main" {
     value = "disabled"
   }
 
-  tags = {
-    Name        = "TF2-QuickServer-cluster"
-    Description = "ECS cluster in us-east-1 N.Virginia for Buenos Aires Local Zone deployments"
-    Region      = "us-east-1"
-    LocalZone   = "Buenos Aires us-east-1-bue-1a"
-  }
 }
 
 # ECS Task Execution Role for us-east-1 (N. Virginia) region
@@ -41,11 +35,6 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 
-  tags = {
-    Name        = "TF2-QuickServer-task-execution-role"
-    Description = "ECS task execution role for us-east-1 N.Virginia serving Buenos Aires Local Zone"
-    Region      = "us-east-1"
-  }
 }
 
 # Attach the AWS managed policy for ECS task execution
@@ -71,11 +60,6 @@ resource "aws_iam_role" "ecs_task_role" {
     ]
   })
 
-  tags = {
-    Name        = "TF2-QuickServer-task-role"
-    Description = "ECS task role for us-east-1 N.Virginia serving Buenos Aires Local Zone"
-    Region      = "us-east-1"
-  }
 }
 
 # Policy for the task role (if the TF2 server needs specific AWS permissions)
@@ -118,11 +102,6 @@ resource "aws_iam_role" "ecs_instance_role" {
     ]
   })
 
-  tags = {
-    Name        = "TF2-QuickServer-instance-role"
-    Description = "ECS instance role for EC2 instances in us-east-1 N.Virginia serving Buenos Aires Local Zone"
-    Region      = "us-east-1"
-  }
 }
 
 # Attach the Amazon ECS Container Instance policy
@@ -142,11 +121,6 @@ resource "aws_iam_instance_profile" "ecs_instance_profile" {
   name = "tf2-quickserver-ecsInstanceRole"
   role = aws_iam_role.ecs_instance_role.name
 
-  tags = {
-    Name        = "TF2-QuickServer-instance-profile"
-    Description = "Instance profile for ECS EC2 instances in Buenos Aires Local Zone"
-    Region      = "us-east-1"
-  }
 }
 
 # ===========================================
@@ -157,9 +131,5 @@ resource "aws_cloudwatch_log_group" "ecs_log_group" {
   name              = "/ecs/tf2-quickserver"
   retention_in_days = 7
 
-  tags = {
-    Name        = "TF2 QuickServer ECS Logs"
-    Environment = "production"
-    Service     = "tf2-quickserver"
   }
 }
