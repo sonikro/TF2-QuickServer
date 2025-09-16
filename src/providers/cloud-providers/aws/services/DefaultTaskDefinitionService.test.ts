@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
     ECSClient,
     DeleteTaskDefinitionsCommand,
     ListTaskDefinitionsCommand,
-    RegisterTaskDefinitionCommand
+    RegisterTaskDefinitionCommand,
+    TransportProtocol
 } from "@aws-sdk/client-ecs";
 import { Region } from "../../../../core/domain";
 import { DeploymentContext } from "../../../../core/models/DeploymentContext";
@@ -36,6 +37,9 @@ describe("DefaultTaskDefinitionService", () => {
         ecsClientMock.reset();
         vi.clearAllMocks();
         
+        // Clear any existing environment variables
+        delete process.env.NEW_RELIC_LICENSE_KEY;
+        
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ecsClient: ecsClientMock as unknown as ECSClient,
@@ -63,6 +67,11 @@ describe("DefaultTaskDefinitionService", () => {
         vi.mocked(mockTracingService.executeWithTracing).mockImplementation(async (_, __, fn) => await fn({} as any));
     });
 
+    afterEach(() => {
+        // Clean up environment variables after each test
+        delete process.env.NEW_RELIC_LICENSE_KEY;
+    });
+
     describe("create", () => {
         const context = {
             serverId: "test-server-123",
@@ -82,7 +91,7 @@ describe("DefaultTaskDefinitionService", () => {
             "TV_PASSWORD": "tv123"
         };
 
-        it("creates task definition successfully", async () => {
+        it("creates task definition successfully without NewRelic", async () => {
             const taskDefinitionArn = "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1";
             
             ecsClientMock.on(RegisterTaskDefinitionCommand).resolves({
@@ -123,13 +132,107 @@ describe("DefaultTaskDefinitionService", () => {
                         "cp_process_final"
                     ],
                     portMappings: [
-                        { containerPort: 27015, hostPort: 27015, protocol: "tcp" },
-                        { containerPort: 27015, hostPort: 27015, protocol: "udp" },
-                        { containerPort: 27020, hostPort: 27020, protocol: "tcp" },
-                        { containerPort: 27020, hostPort: 27020, protocol: "udp" }
+                        { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.TCP },
+                        { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.UDP },
+                        { containerPort: 27020, hostPort: 27020, protocol: TransportProtocol.TCP },
+                        { containerPort: 27020, hostPort: 27020, protocol: TransportProtocol.UDP }
                     ]
                 }]
             });
+        });
+
+        it("creates task definition successfully with NewRelic sidecar", async () => {
+            // Set up NewRelic environment variable
+            process.env.NEW_RELIC_LICENSE_KEY = "test-license-key";
+            
+            const taskDefinitionArn = "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1";
+            
+            ecsClientMock.on(RegisterTaskDefinitionCommand).resolves({
+                taskDefinition: {
+                    taskDefinitionArn
+                }
+            });
+
+            const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
+            
+            const result = await service.create(context, credentials, environment);
+            
+            expect(result).toBe(taskDefinitionArn);
+            expect(ecsClientMock).toHaveReceivedCommandWith(RegisterTaskDefinitionCommand, {
+                family: "test-server-123",
+                networkMode: "host",
+                requiresCompatibilities: ["EC2"],
+                executionRoleArn: "arn:aws:iam::123456789012:role/execution-role",
+                taskRoleArn: "arn:aws:iam::123456789012:role/task-role",
+                containerDefinitions: [
+                    {
+                        name: "tf2-server",
+                        image: "sonikro/tf2-standard-competitive:latest",
+                        essential: true,
+                        cpu: 1536,
+                        memory: 3584,
+                        environment: [
+                            { name: "RCON_PASSWORD", value: "rcon123" },
+                            { name: "SERVER_PASSWORD", value: "server123" },
+                            { name: "TV_PASSWORD", value: "tv123" }
+                        ],
+                        command: [
+                            "-enablefakeip",
+                            "+sv_pure",
+                            "2",
+                            "+maxplayers",
+                            "12",
+                            "+map",
+                            "cp_process_final"
+                        ],
+                        portMappings: [
+                            { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.TCP },
+                            { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.UDP },
+                            { containerPort: 27020, hostPort: 27020, protocol: TransportProtocol.TCP },
+                            { containerPort: 27020, hostPort: 27020, protocol: TransportProtocol.UDP }
+                        ]
+                    },
+                    {
+                        name: "newrelic-infra",
+                        image: "newrelic/infrastructure:latest",
+                        essential: false,
+                        cpu: 128,
+                        memory: 256,
+                        environment: [
+                            { name: "NRIA_LICENSE_KEY", value: "test-license-key" },
+                            { name: "NRIA_DISPLAY_NAME", value: "TF2-Server-us-east-1-bue-1a-test-server-123" },
+                            { name: "NRIA_OVERRIDE_HOSTNAME", value: "tf2-server-us-east-1-bue-1a-test-server-123" },
+                            { name: "NRIA_CUSTOM_ATTRIBUTES", value: "region=us-east-1-bue-1a,serverId=test-server-123,variant=standard-competitive" }
+                        ]
+                    }
+                ]
+            });
+        });
+
+        it("does not add NewRelic sidecar when license key is empty", async () => {
+            // Set up empty NewRelic environment variable
+            process.env.NEW_RELIC_LICENSE_KEY = "";
+            
+            const taskDefinitionArn = "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1";
+            
+            ecsClientMock.on(RegisterTaskDefinitionCommand).resolves({
+                taskDefinition: {
+                    taskDefinitionArn
+                }
+            });
+
+            const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
+            
+            const result = await service.create(context, credentials, environment);
+            
+            expect(result).toBe(taskDefinitionArn);
+            
+            // Verify only one container definition (TF2 server) is created
+            const registerCall = ecsClientMock.commandCalls(RegisterTaskDefinitionCommand)[0];
+            const containerDefinitions = registerCall.args[0].input.containerDefinitions;
+            expect(containerDefinitions).toBeDefined();
+            expect(containerDefinitions).toHaveLength(1);
+            expect(containerDefinitions![0].name).toBe("tf2-server");
         });
 
         it("throws error when task definition registration fails", async () => {
