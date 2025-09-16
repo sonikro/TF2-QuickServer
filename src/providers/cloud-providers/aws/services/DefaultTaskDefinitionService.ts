@@ -1,7 +1,9 @@
 import {
+    ContainerDefinition,
     DeleteTaskDefinitionsCommand,
     ListTaskDefinitionsCommand,
-    RegisterTaskDefinitionCommand
+    RegisterTaskDefinitionCommand,
+    TransportProtocol
 } from "@aws-sdk/client-ecs";
 import { Region } from '../../../../core/domain';
 import { DeploymentContext } from '../../../../core/models/DeploymentContext';
@@ -43,62 +45,94 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                     value
                 }));
 
+                // Build container definitions array starting with the main TF2 server
+                const containerDefinitions: ContainerDefinition[] = [
+                    {
+                        name: "tf2-server",
+                        image: variantConfig.image,
+                        essential: true,
+                        cpu: 1536,
+                        memory: 3584, // Reserve 3.5GB for the game server
+                        environment: environmentArray,
+                        command: [
+                            "-enablefakeip",
+                            "+sv_pure",
+                            variantConfig.svPure.toString(),
+                            "+maxplayers",
+                            variantConfig.maxPlayers.toString(),
+                            "+map",
+                            variantConfig.map,
+                        ],
+                        portMappings: [
+                            {
+                                containerPort: 27015,
+                                hostPort: 27015,
+                                protocol: TransportProtocol.TCP
+                            },
+                            {
+                                containerPort: 27015,
+                                hostPort: 27015,
+                                protocol: TransportProtocol.UDP
+                            },
+                            {
+                                containerPort: 27020,
+                                hostPort: 27020,
+                                protocol: TransportProtocol.TCP
+                            },
+                            {
+                                containerPort: 27020,
+                                hostPort: 27020,
+                                protocol: TransportProtocol.UDP
+                            }
+                        ],
+                        // TODO: Remove logging to reduce cost
+                        // logConfiguration: {
+                        //     logDriver: "awslogs",
+                        //     options: {
+                        //         "awslogs-group": awsRegionConfig.log_group_name,
+                        //         "awslogs-region": awsRegionConfig.rootRegion,
+                        //         "awslogs-stream-prefix": `tf2-server-${context.serverId}`
+                        //     }
+                        // }
+                    }
+                ];
+
+                // Conditionally add NewRelic infrastructure monitoring sidecar
+                if (process.env.NEW_RELIC_LICENSE_KEY && process.env.NEW_RELIC_LICENSE_KEY !== "") {
+                    containerDefinitions.push({
+                        name: "newrelic-infra",
+                        image: "newrelic/infrastructure:latest",
+                        essential: false,
+                        cpu: 128,
+                        memory: 256,
+                        environment: [
+                            {
+                                name: "NRIA_LICENSE_KEY",
+                                value: process.env.NEW_RELIC_LICENSE_KEY
+                            },
+                            {
+                                name: "NRIA_DISPLAY_NAME",
+                                value: `TF2-Server-${context.region}-${context.serverId}`
+                            },
+                            {
+                                name: "NRIA_OVERRIDE_HOSTNAME",
+                                value: `tf2-server-${context.region}-${context.serverId}`
+                            },
+                            {
+                                name: "NRIA_CUSTOM_ATTRIBUTES",
+                                value: `region=${context.region},serverId=${context.serverId},variant=${context.variantName}`
+                            }
+                        ]
+                    });
+                }
+
                 const taskDefinitionResponse = await ecsClient.send(new RegisterTaskDefinitionCommand({
                     family: context.serverId,
                     networkMode: "host",
                     requiresCompatibilities: ["EC2"],
                     executionRoleArn: awsRegionConfig.task_execution_role_arn,
                     taskRoleArn: awsRegionConfig.task_role_arn,
-                    containerDefinitions: [
-                        {
-                            name: "tf2-server",
-                            image: variantConfig.image,
-                            essential: true,
-                            cpu: 1536,
-                            memory: 3584, // Reserve 3.5GB for the game server
-                            environment: environmentArray,
-                            command: [
-                                "-enablefakeip",
-                                "+sv_pure",
-                                variantConfig.svPure.toString(),
-                                "+maxplayers",
-                                variantConfig.maxPlayers.toString(),
-                                "+map",
-                                variantConfig.map,
-                            ],
-                            portMappings: [
-                                {
-                                    containerPort: 27015,
-                                    hostPort: 27015,
-                                    protocol: "tcp"
-                                },
-                                {
-                                    containerPort: 27015,
-                                    hostPort: 27015,
-                                    protocol: "udp"
-                                },
-                                {
-                                    containerPort: 27020,
-                                    hostPort: 27020,
-                                    protocol: "tcp"
-                                },
-                                {
-                                    containerPort: 27020,
-                                    hostPort: 27020,
-                                    protocol: "udp"
-                                }
-                            ],
-                            // TODO: Remove logging to reduce cost
-                            // logConfiguration: {
-                            //     logDriver: "awslogs",
-                            //     options: {
-                            //         "awslogs-group": awsRegionConfig.log_group_name,
-                            //         "awslogs-region": awsRegionConfig.rootRegion,
-                            //         "awslogs-stream-prefix": `tf2-server-${context.serverId}`
-                            //     }
-                            // }
-                        },
-                    ],
+                    containerDefinitions,
                 }));
 
                 const taskDefinitionArn = taskDefinitionResponse.taskDefinition?.taskDefinitionArn;
