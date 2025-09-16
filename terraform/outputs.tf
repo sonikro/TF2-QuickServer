@@ -148,3 +148,60 @@ output "buenos_aires_log_group_name" {
   description = "CloudWatch log group name for ECS containers in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"
   value       = module.aws-ecs-us-east-1.log_group_name
 }
+
+# Lima Region
+output "lima_vpc_id" {
+  description = "VPC ID for us-east-1 (N. Virginia) region used by Lima Local Zone"
+  value       = module.aws-network-us-east-1-lima.vpc_id
+}
+
+output "lima_subnet_id" {
+  description = "Subnet ID for Lima Local Zone (us-east-1-lim-1a) within us-east-1 (N. Virginia)"
+  value       = module.aws-network-us-east-1-lima.subnet_id
+}
+
+output "lima_subnet_cidr_block" {
+  description = "CIDR block of the Lima Local Zone subnet within us-east-1 (N. Virginia)"
+  value       = module.aws-network-us-east-1-lima.subnet_cidr_block
+}
+
+output "lima_internet_gateway_id" {
+  description = "Internet Gateway ID for us-east-1 (N. Virginia) VPC used by Lima Local Zone"
+  value       = module.aws-network-us-east-1-lima.internet_gateway_id
+}
+
+output "lima_route_table_id" {
+  description = "Route table ID for Lima Local Zone subnet within us-east-1 (N. Virginia)"
+  value       = module.aws-network-us-east-1-lima.route_table_id
+}
+
+# ECS outputs for us-east-1 (N. Virginia) region
+output "lima_cluster_name" {
+  description = "ECS cluster name in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.cluster_name
+}
+
+output "lima_cluster_arn" {
+  description = "ECS cluster ARN in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.cluster_arn
+}
+
+output "lima_task_execution_role_arn" {
+  description = "ECS task execution role ARN in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.task_execution_role_arn
+}
+
+output "lima_task_role_arn" {
+  description = "ECS task role ARN in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.task_role_arn
+}
+
+output "lima_instance_profile_arn" {
+  description = "ECS instance profile ARN in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.instance_profile_arn
+}
+
+output "lima_log_group_name" {
+  description = "CloudWatch log group name for ECS containers in us-east-1 (N. Virginia) for Lima Local Zone deployment"
+  value       = module.aws-ecs-us-east-1.log_group_name
+}

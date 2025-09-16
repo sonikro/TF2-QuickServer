@@ -10,7 +10,8 @@
 		"ghcr.io/jckimble/devcontainer-features/ngrok:3": {},
 		"ghcr.io/devcontainers/features/terraform:1": {},
 		"ghcr.io/devcontainers/features/go:1": {},
-		"ghcr.io/devcontainers-extra/features/cmake:1": {}
+		"ghcr.io/devcontainers-extra/features/cmake:1": {},
+		"ghcr.io/devcontainers/features/aws-cli:1": {}
 	},
 	"customizations": {
 		"vscode": {

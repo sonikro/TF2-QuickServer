@@ -145,6 +145,16 @@ module "aws-network-us-east-1" {
   }
 }
 
+module "aws-network-us-east-1-lima" {
+  source = "./modules/aws/network"
+
+  availability_zone = "us-east-1-lim-1a"
+
+  providers = {
+    aws = aws.us-east-1
+  }
+}
+
 # Create ECS module for us-east-1 (N. Virginia) region to support Buenos Aires Local Zone deployments
 module "aws-ecs-us-east-1" {
   source = "./modules/aws/ecs"
