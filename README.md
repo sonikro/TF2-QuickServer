@@ -80,6 +80,7 @@ The main TF2-QuickServer app currently supports the following regions for instan
 
 ### AWS Local Zones
 - 🇦🇷 **Buenos Aires (Experimental)** – Ultra-low latency deployment using AWS Local Zone
+- 🇵🇪 **Lima (Experimental)** – Ultra-low latency deployment using AWS Local Zone
 
 If you are self-hosting, you can use **any** region that supports Oracle Container Instances or AWS ECS in Local Zones.  
 See the full lists: [Oracle Cloud Regions](https://www.oracle.com/cloud/public-cloud-regions/) | [AWS Local Zones](https://aws.amazon.com/about-aws/global-infrastructure/localzones/)

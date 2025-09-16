@@ -191,7 +191,7 @@ export class AWSServerManager implements ServerManager {
         const serviceArn = await this.ecsServiceManager.create(context.serverId, context.region, taskDefinitionArn);
 
         // Update status: Waiting for service to stabilize
-        await context.statusUpdater("⏳ [5/7] Waiting for service to stabilize (this can take up to 15 minutes in Buenos Aires)...");
+        await context.statusUpdater("⏳ [5/7] Waiting for service to stabilize (this can take up to 15 minutes in AWS Experimental Zones)...");
         await this.ecsServiceManager.waitForStable(serviceArn, context.region);
 
         // Update status: Getting public IP

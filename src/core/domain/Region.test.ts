@@ -10,9 +10,9 @@ describe('Region utilities', () => {
             const awsRegions = allRegions.filter(region => getCloudProvider(region) === CloudProvider.AWS);
             const oracleRegions = allRegions.filter(region => getCloudProvider(region) === CloudProvider.ORACLE);
 
-            // Currently only Buenos Aires is AWS
-            expect(awsRegions).toEqual([Region.US_EAST_1_BUE_1A]);
-            
+            // Currently only Buenos Aires and Lima are AWS
+            expect(awsRegions).toEqual([Region.US_EAST_1_BUE_1A, Region.US_EAST_1_LIM_1A]);
+
             // All other regions should be Oracle Cloud
             expect(oracleRegions).toEqual([
                 Region.SA_SAOPAULO_1,
