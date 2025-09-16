@@ -35,6 +35,12 @@
             "srcdsHostname": "TF2-QuickServer | Buenos Aires",
             "tvHostname": "TF2-QuickServer TV | Buenos Aires",
             "cloudProvider": "aws"
+        },
+        "us-east-1-lim-1a": {
+            "displayName": "Lima (Experimental)",
+            "srcdsHostname": "TF2-QuickServer | Lima",
+            "tvHostname": "TF2-QuickServer TV | Lima",
+            "cloudProvider": "aws"
         }
     },
     "variants": {

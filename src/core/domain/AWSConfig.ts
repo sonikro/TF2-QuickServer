@@ -28,6 +28,16 @@ export function getAWSConfig(): AWSConfig {
                 log_group_name: config.get<string>(`buenos_aires_log_group_name.value`),
                 rootRegion: "us-east-1",
             },
+            "us-east-1-lim-1a": {
+                cluster_name: config.get<string>(`lima_cluster_name.value`),
+                subnet_id: config.get<string>(`lima_subnet_id.value`),
+                vpc_id: config.get<string>(`lima_vpc_id.value`),
+                task_execution_role_arn: config.get<string>(`lima_task_execution_role_arn.value`),
+                task_role_arn: config.get<string>(`lima_task_role_arn.value`),
+                instance_profile_arn: config.get<string>(`lima_instance_profile_arn.value`),
+                log_group_name: config.get<string>(`lima_log_group_name.value`),
+                rootRegion: "us-east-1",
+            }
         }
     };
 }

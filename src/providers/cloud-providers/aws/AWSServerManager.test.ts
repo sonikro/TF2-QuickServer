@@ -205,7 +205,7 @@ describe("AWSServerManager", () => {
             expect(mockStatusUpdater).toHaveBeenNthCalledWith(2, "📋 [2/7] Creating task definition...");
             expect(mockStatusUpdater).toHaveBeenNthCalledWith(3, "🖥️ [3/7] Launching EC2 instance...");
             expect(mockStatusUpdater).toHaveBeenNthCalledWith(4, "🚀 [4/7] Creating ECS service...");
-            expect(mockStatusUpdater).toHaveBeenNthCalledWith(5, "⏳ [5/7] Waiting for service to stabilize (this can take up to 15 minutes in Buenos Aires)...");
+            expect(mockStatusUpdater).toHaveBeenNthCalledWith(5, "⏳ [5/7] Waiting for service to stabilize (this can take up to 15 minutes in AWS Experimental Zones)...");
             expect(mockStatusUpdater).toHaveBeenNthCalledWith(6, "🌐 [6/7] Getting public IP...");
             expect(mockStatusUpdater).toHaveBeenNthCalledWith(7, "🔄 [7/7] Waiting for TF2 server to be ready to receive RCON Commands...");
 
