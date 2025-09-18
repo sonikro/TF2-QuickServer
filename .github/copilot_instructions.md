@@ -6,11 +6,13 @@ This file serves as an index for all project-specific instructions for GitHub Co
 
 | File                                                                         | Path                                               | Applies To                | Purpose                                                                   |
 | ---------------------------------------------------------------------------- | -------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------- |
+| [Bans Instructions](.github/instructions/bans.instructions.md)               | `.github/instructions/bans.instructions.md`        | `db/bans.csv`             | Guidelines for managing banned players in the TF2-QuickServer platform    |
 | [Core Instructions](.github/instructions/core.instructions.md)               | `.github/instructions/core.instructions.md`        | `src/core/**/*.ts`        | Guidelines for the core domain layer (models, business rules, interfaces) |
 | [Database Instructions](.github/instructions/database.instructions.md)       | `.github/instructions/database.instructions.md`    | `migrations/**/*.ts`      | Guidelines for SQLite database migrations using Knex.js                   |
 | [Entrypoints Instructions](.github/instructions/entrypoints.instructions.md) | `.github/instructions/entrypoints.instructions.md` | `src/entrypoints/**/*.ts` | Guidelines for the user interfaces layer (Discord commands, HTTP APIs)    |
 | [Providers Instructions](.github/instructions/providers.instructions.md)     | `.github/instructions/providers.instructions.md`   | `src/providers/**/*.ts`   | Guidelines for implementation of core interfaces, external integrations   |
 | [Server Config Instructions](.github/instructions/servercfg.instructions.md) | `.github/instructions/servercfg.instructions.md`   | `variants/**/*`           | Guidelines for TF2 server configuration, maps, and Docker images          |
+| [Shield Instructions](.github/instructions/shield.instructions.md)           | `.github/instructions/shield.instructions.md`      | `shield/**/*`             | Guidelines for the DDoS protection sidecar component                      |
 | [Telemetry Instructions](.github/instructions/telemetry.instructions.md)     | `.github/instructions/telemetry.instructions.md`   | `src/**/*.ts`             | Guidelines for OpenTelemetry usage across the project                     |
 | [Tests Instructions](.github/instructions/tests.instructions.md)             | `.github/instructions/tests.instructions.md`       | `src/**/*.test.ts`        | Guidelines for writing tests using the Given/When/Then approach           |
 
