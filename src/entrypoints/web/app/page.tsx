@@ -73,47 +73,40 @@ export default function HomePage() {
     <Box>
       {/* Hero Section */}
       <Container maxWidth="lg">
-        <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            fontWeight={700} 
+        <Box sx={{ textAlign: 'center', mb: 8, pt: 8 }}>
+          <Typography
+            variant="h2"
+            component="h1"
+            fontWeight={700}
             gutterBottom
-            sx={{ 
-              background: 'linear-gradient(45deg, #FF6B35, #F7931E)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              color: 'transparent',
-              mb: 3
-            }}
           >
             🎮 TF2-QuickServer
           </Typography>
-          
-          <Typography 
-            variant="h5" 
-            color="text.secondary" 
+
+          <Typography
+            variant="h5"
+            color="text.secondary"
             paragraph
             sx={{ mb: 4, maxWidth: '800px', mx: 'auto' }}
           >
-            Instantly deploy Team Fortress 2 servers straight from Discord — powered by Docker, 
+            Instantly deploy Team Fortress 2 servers straight from Discord — powered by Docker,
             multi-cloud architecture (Oracle Cloud & AWS), and SDR.
           </Typography>
 
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={2} 
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={2}
             justifyContent="center"
             sx={{ mb: 4 }}
           >
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               size="large"
               href="https://discord.gg/HfDgMj73cW"
               target="_blank"
               startIcon={<DiscordIcon />}
-              sx={{ 
-                px: 4, 
+              sx={{
+                px: 4,
                 py: 1.5,
                 borderRadius: '25px',
                 background: 'linear-gradient(45deg, #5865F2, #7289DA)',
@@ -124,14 +117,14 @@ export default function HomePage() {
             >
               Join Discord
             </Button>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               size="large"
               href="https://github.com/sonikro/TF2-QuickServer"
               target="_blank"
               startIcon={<GitHub />}
-              sx={{ 
-                px: 4, 
+              sx={{
+                px: 4,
                 py: 1.5,
                 borderRadius: '25px',
                 borderWidth: 2,
@@ -166,12 +159,12 @@ export default function HomePage() {
           <Grid container spacing={4}>
             {features.map((feature, index) => (
               <Grid size={{ xs: 12, md: 6, lg: 4 }} key={index}>
-                <Card 
-                  elevation={3} 
-                  sx={{ 
-                    height: '100%', 
+                <Card
+                  elevation={3}
+                  sx={{
+                    height: '100%',
                     transition: 'all 0.3s',
-                    '&:hover': { 
+                    '&:hover': {
                       elevation: 8,
                       transform: 'translateY(-4px)'
                     }
@@ -214,24 +207,24 @@ export default function HomePage() {
               { step: '5', title: 'Play!', description: 'Join with friends and start fragging!' }
             ].map((item, index) => (
               <Grid size={{ xs: 12, sm: 6, md: 2.4 }} key={index}>
-                <Paper 
-                  elevation={2} 
-                  sx={{ 
-                    p: 3, 
-                    textAlign: 'center', 
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: 3,
+                    textAlign: 'center',
                     height: '100%',
                     transition: 'all 0.3s',
-                    '&:hover': { 
+                    '&:hover': {
                       elevation: 6,
                       transform: 'scale(1.05)'
                     }
                   }}
                 >
-                  <Avatar 
-                    sx={{ 
-                      width: 56, 
-                      height: 56, 
-                      mx: 'auto', 
+                  <Avatar
+                    sx={{
+                      width: 56,
+                      height: 56,
+                      mx: 'auto',
                       mb: 2,
                       background: 'linear-gradient(45deg, #FF6B35, #F7931E)',
                       fontSize: '1.5rem',
@@ -266,12 +259,12 @@ export default function HomePage() {
           <Grid container spacing={2} justifyContent="center">
             {regions.map((region, index) => (
               <Grid size={{ xs: 6, sm: 4, md: 3 }} key={index}>
-                <Card 
-                  elevation={2} 
-                  sx={{ 
+                <Card
+                  elevation={2}
+                  sx={{
                     textAlign: 'center',
                     transition: 'all 0.3s',
-                    '&:hover': { 
+                    '&:hover': {
                       elevation: 4,
                       transform: 'translateY(-2px)'
                     }
@@ -284,9 +277,9 @@ export default function HomePage() {
                     <Typography variant="h6" fontWeight={600} gutterBottom>
                       {region.name}
                     </Typography>
-                    <Chip 
-                      label={region.provider} 
-                      size="small" 
+                    <Chip
+                      label={region.provider}
+                      size="small"
                       color={region.provider === 'AWS Local Zone' ? 'warning' : 'primary'}
                       variant="outlined"
                     />
@@ -304,7 +297,7 @@ export default function HomePage() {
           <Typography variant="h3" component="h2" textAlign="center" fontWeight={600} gutterBottom>
             ⚙️ Tech Stack
           </Typography>
-          
+
           <Grid container spacing={3} justifyContent="center" sx={{ mt: 4 }}>
             {[
               { name: 'Docker', description: 'Containerized server deployments' },
@@ -317,13 +310,13 @@ export default function HomePage() {
               { name: 'Discord.js', description: 'Bot integration' }
             ].map((tech, index) => (
               <Grid size={{ xs: 6, sm: 4, md: 3 }} key={index}>
-                <Paper 
-                  elevation={1} 
-                  sx={{ 
-                    p: 2, 
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 2,
                     textAlign: 'center',
                     transition: 'all 0.3s',
-                    '&:hover': { 
+                    '&:hover': {
                       elevation: 3
                     }
                   }}
@@ -350,20 +343,20 @@ export default function HomePage() {
           <Typography variant="h6" color="text.secondary" paragraph sx={{ mb: 4 }}>
             Join thousands of players already using TF2-QuickServer
           </Typography>
-          
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={3} 
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={3}
             justifyContent="center"
           >
-            <Button 
-              variant="contained" 
+            <Button
+              variant="contained"
               size="large"
               href="https://discord.gg/HfDgMj73cW"
               target="_blank"
               startIcon={<DiscordIcon />}
-              sx={{ 
-                px: 6, 
+              sx={{
+                px: 6,
                 py: 2,
                 borderRadius: '30px',
                 background: 'linear-gradient(45deg, #5865F2, #7289DA)',
@@ -375,14 +368,14 @@ export default function HomePage() {
             >
               Join Discord & Start Playing
             </Button>
-            <Button 
-              variant="outlined" 
+            <Button
+              variant="outlined"
               size="large"
               component={Link}
               href="/status"
               startIcon={<BarChart />}
-              sx={{ 
-                px: 6, 
+              sx={{
+                px: 6,
                 py: 2,
                 borderRadius: '30px',
                 borderWidth: 2,
