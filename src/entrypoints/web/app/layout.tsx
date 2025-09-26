@@ -1,38 +1,45 @@
-import { Metadata } from 'next'
-import Link from 'next/link'
-import '../globals.css'  // Import global styles
+import { Metadata } from 'next';
+import { AppBar, Toolbar, Typography, Container, Box } from '@mui/material';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
+import ThemeRegistry from './ThemeRegistry';
+import Link from 'next/link';
+import '../globals.css';
 
 export const metadata: Metadata = {
   title: 'TF2 QuickServer Manager',
   description: 'Manage and deploy TF2 servers quickly and easily',
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body>
-        <div className="min-h-screen bg-gray-50">
-          <header className="bg-white shadow">
-            <div className="max-w-7xl mx-auto py-6 px-4">
-              <h1 className="text-3xl font-bold text-gray-900">
-                TF2 QuickServer Manager
-              </h1>
-              <nav className="mt-4">
-                <Link href="/" className="text-gray-600 hover:text-gray-900 mr-4">
-                  Home
-                </Link>
-              </nav>
-            </div>
-          </header>
-          <main className="max-w-7xl mx-auto py-6 px-4">
-            {children}
-          </main>
-        </div>
+        <AppRouterCacheProvider>
+          <ThemeRegistry>
+            <Box sx={{ flexGrow: 1 }}>
+              <AppBar position="static">
+                <Toolbar>
+                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                    TF2 QuickServer Manager
+                  </Typography>
+                  <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    <Typography variant="body1">
+                      Home
+                    </Typography>
+                  </Link>
+                </Toolbar>
+              </AppBar>
+              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                {children}
+              </Container>
+            </Box>
+          </ThemeRegistry>
+        </AppRouterCacheProvider>
       </body>
     </html>
-  )
+  );
 }
