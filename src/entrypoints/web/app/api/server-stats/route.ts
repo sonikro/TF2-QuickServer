@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getRegions, getRegionDisplayName, Region } from '../../../../../core/domain/Region';
+import { SQLiteServerRepository } from '../../../../../providers/repository/SQliteServerRepository';
+import { KnexConnectionManager } from '../../../../../providers/repository/KnexConnectionManager';
 
 export interface RegionServerStats {
   region: Region;
@@ -13,20 +15,33 @@ export interface ServerStatsData {
   totalServers: number;
 }
 
-// Generate mock data using real regions
-const generateMockServerStats = (): ServerStatsData => {
-  const regions = getRegions();
-  const regionStats: RegionServerStats[] = regions.map(region => ({
-    region,
-    displayName: getRegionDisplayName(region),
-    readyServers: Math.floor(Math.random() * 10) + 1, // 1-10 ready servers
-    pendingServers: Math.floor(Math.random() * 3), // 0-2 pending servers
-  }));
+// Fetch real server stats from database
+const getServerStats = async (): Promise<ServerStatsData> => {
+  const serverRepository = new SQLiteServerRepository({
+    knex: KnexConnectionManager.client,
+  });
 
-  const totalServers = regionStats.reduce(
-    (sum, region) => sum + region.readyServers + region.pendingServers,
-    0
-  );
+  // Fetch all servers from the database
+  const allServers = await serverRepository.getAllServers();
+  
+  // Get all regions
+  const regions = getRegions();
+  
+  // Group servers by region and calculate stats
+  const regionStats: RegionServerStats[] = regions.map(region => {
+    const regionServers = allServers.filter(server => server.region === region);
+    const readyServers = regionServers.filter(server => server.status === 'ready').length;
+    const pendingServers = regionServers.filter(server => server.status === 'pending').length;
+    
+    return {
+      region,
+      displayName: getRegionDisplayName(region),
+      readyServers,
+      pendingServers,
+    };
+  });
+
+  const totalServers = allServers.length;
 
   return {
     regions: regionStats,
@@ -36,11 +51,13 @@ const generateMockServerStats = (): ServerStatsData => {
 
 export async function GET() {
   try {
-    // This runs on the server side, so config library will work
-    const serverStats = generateMockServerStats();
+
+    const serverStats = await getServerStats();
+    
     return NextResponse.json(serverStats);
   } catch (error) {
-    console.error('Failed to fetch server stats:', error);
+    console.error('Failed to fetch server stats from database:', error);
+
     return NextResponse.json(
       { error: 'Failed to fetch server stats' },
       { status: 500 }
