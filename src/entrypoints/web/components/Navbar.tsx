@@ -6,25 +6,25 @@ import Link from 'next/link';
 import DiscordIcon from './DiscordIcon';
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  backgroundColor: `${theme.palette.background.paper}f2`,
   backdropFilter: 'blur(10px)',
-  boxShadow: '0 2px 20px rgba(0, 0, 0, 0.1)',
-  borderBottom: '1px solid rgba(0, 0, 0, 0.05)',
+  boxShadow: `0 2px 20px ${theme.palette.grey[800]}26`,
+  borderBottom: `1px solid ${theme.palette.grey[300]}`,
 }));
 
 const NavButton = styled(Button)(({ theme }) => ({
-  color: '#000339',
+  color: theme.palette.text.primary,
   fontWeight: 500,
   textTransform: 'none',
   borderRadius: '8px',
   padding: '8px 16px',
   '&:hover': {
-    backgroundColor: 'rgba(0, 3, 57, 0.08)',
+    backgroundColor: `${theme.palette.primary.main}14`,
   },
 }));
 
 const ExternalNavButton = styled('a')(({ theme }) => ({
-  color: '#000339',
+  color: theme.palette.text.primary,
   fontWeight: 500,
   textTransform: 'none',
   borderRadius: '8px',
@@ -35,7 +35,7 @@ const ExternalNavButton = styled('a')(({ theme }) => ({
   gap: '8px',
   transition: 'background-color 0.2s',
   '&:hover': {
-    backgroundColor: 'rgba(0, 3, 57, 0.08)',
+    backgroundColor: `${theme.palette.primary.main}14`,
   },
 }));
 
@@ -51,7 +51,7 @@ export default function Navbar() {
             sx={{ 
               flexGrow: 1,
               fontWeight: 700,
-              color: '#000339',
+              color: 'primary.main',
               textDecoration: 'none',
               fontSize: '1.5rem'
             }}
@@ -88,10 +88,10 @@ export default function Navbar() {
               target="_blank"
               rel="noopener noreferrer"
               startIcon={<DiscordIcon />}
-              sx={{
+              sx={(theme) => ({
                 ml: 1,
                 backgroundColor: '#5865F2',
-                color: '#fff',
+                color: theme.palette.common.white,
                 fontWeight: 600,
                 textTransform: 'none',
                 borderRadius: '8px',
@@ -99,7 +99,7 @@ export default function Navbar() {
                 '&:hover': {
                   backgroundColor: '#4752C4',
                 },
-              }}
+              })}
             >
               Discord
             </Button>
