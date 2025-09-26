@@ -1,8 +1,11 @@
-// Whitelist generated at Tue, 16 Sep 2025 19:21:40 +0200
-// Custom Whitelist ID: 14451
-
+// Whitelist generated at Thu, 26 Sep 2025 13:22:00 +0000
+// Custom Whitelist ID: 18462
+// 
+// IMPORTANT: This whitelist content needs to be updated manually
+// Download the latest content from: https://whitelist.tf/download/custom_whitelist_18462.txt
+//
 // Share or view this whitelist:
-//	https://whitelist.tf/14451
+//	https://whitelist.tf/18462
 
 // New items added to the game are: allowed
 // Hats are: allowed
