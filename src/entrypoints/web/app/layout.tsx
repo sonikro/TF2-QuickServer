@@ -1,9 +1,8 @@
 import { Metadata } from 'next';
-import { AppBar, Toolbar, Typography, Container, Box, Button } from '@mui/material';
+import { Box } from '@mui/material';
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter';
 import ThemeRegistry from './ThemeRegistry';
-import Link from 'next/link';
-import { Home, BarChart } from '@mui/icons-material';
+import Navbar from '../components/Navbar';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -18,38 +17,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <AppRouterCacheProvider>
           <ThemeRegistry>
             <Box sx={{ flexGrow: 1 }}>
-              <AppBar position="static">
-                <Toolbar>
-                  <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    TF2 QuickServer Manager
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 2 }}>
-                    <Button
-                      color="inherit"
-                      component={Link}
-                      href="/"
-                      startIcon={<Home />}
-                    >
-                      Home
-                    </Button>
-                    <Button
-                      color="inherit"
-                      component={Link}
-                      href="/status"
-                      startIcon={<BarChart />}
-                    >
-                      Status
-                    </Button>
-                  </Box>
-                </Toolbar>
-              </AppBar>
-              <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                {children}
-              </Container>
+              <Navbar />
+              {children}
             </Box>
           </ThemeRegistry>
         </AppRouterCacheProvider>
