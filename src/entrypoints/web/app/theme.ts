@@ -3,20 +3,60 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#000339',
-      light: '#E6F0FF',
+      main: '#5597f9', // Cornflower blue
+      light: '#75aafa',
+      dark: '#136ef6',
+      contrastText: '#fefeff',
     },
     secondary: {
-      main: '#FF6B35',
-      light: '#F7931E',
+      main: '#136ef6', // Darker cornflower blue
+      light: '#5597f9',
+      dark: '#0751c0',
+      contrastText: '#fefeff',
+    },
+    error: {
+      main: '#dc2626', // Red
+      light: '#fca5a5',
+      dark: '#991b1b',
+    },
+    warning: {
+      main: '#f59e0b', // Amber/Orange - this was causing your orange text
+      light: '#fde68a',
+      dark: '#d97706',
+    },
+    info: {
+      main: '#5597f9', // Use your cornflower blue
+      light: '#75aafa',
+      dark: '#136ef6',
+    },
+    success: {
+      main: '#5597f9', // Use your cornflower blue instead of green
+      light: '#75aafa',
+      dark: '#136ef6',
     },
     text: {
-      primary: '#000339',
-      secondary: '#5A6473',
+      primary: '#000000',
+      secondary: '#666666',
     },
     background: {
-      default: '#FFFFFF',
-      paper: '#FFFFFF',
+      default: '#fefeff',
+      paper: '#fefeff',
+    },
+    grey: {
+      50: '#fefeff',
+      100: '#ddeafe',
+      200: '#bad5fd',
+      300: '#98bffb',
+      400: '#75aafa',
+      500: '#5597f9',
+      600: '#136ef6',
+      700: '#0751c0',
+      800: '#053680',
+      900: '#021b40',
+    },
+    common: {
+      black: '#000000',
+      white: '#fefeff',
     },
   },
   typography: {
@@ -32,44 +72,44 @@ const theme = createTheme({
     h1: {
       fontSize: '3.5rem',
       fontWeight: 700,
-      color: '#000339',
+      color: '#5597f9',
       lineHeight: 1.2,
     },
     h2: {
       fontSize: '2.5rem',
       fontWeight: 700,
-      color: '#000339',
+      color: '#5597f9',
       lineHeight: 1.3,
     },
     h3: {
       fontSize: '2rem',
       fontWeight: 600,
-      color: '#000339',
+      color: '#5597f9',
       lineHeight: 1.4,
     },
     h4: {
       fontSize: '1.5rem',
       fontWeight: 600,
-      color: '#000339',
+      color: '#5597f9',
     },
     h5: {
       fontSize: '1.25rem',
       fontWeight: 500,
-      color: '#5A6473',
+      color: '#666666',
     },
     h6: {
       fontSize: '1.125rem',
       fontWeight: 500,
-      color: '#000339',
+      color: '#5597f9',
     },
     body1: {
       fontSize: '1rem',
-      color: '#5A6473',
+      color: '#666666',
       lineHeight: 1.6,
     },
     body2: {
       fontSize: '0.875rem',
-      color: '#5A6473',
+      color: '#666666',
       lineHeight: 1.5,
     },
   },
