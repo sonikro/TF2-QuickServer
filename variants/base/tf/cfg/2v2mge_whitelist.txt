@@ -1,8 +1,8 @@
-// Whitelist generated at Thu, 26 Sep 2025 13:22:00 +0000
+// Whitelist generated at Thu, 26 Sep 2025 13:33:00 +0000
 // Custom Whitelist ID: 18462
 // 
 // IMPORTANT: This whitelist content needs to be updated manually
-// Download the latest content from: https://whitelist.tf/download/custom_whitelist_18462.txt
+// Download the latest content from: https://whitelist.tf/custom_whitelist_18462.txt
 //
 // Share or view this whitelist:
 //	https://whitelist.tf/18462
