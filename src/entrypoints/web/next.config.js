@@ -18,6 +18,9 @@ const nextConfig = {
   images: {
     domains: [], // Add domains for external images if needed
   },
+   experimental: {
+    serverComponentsExternalPackages: ['knex', 'sqlite3', 'oracledb', 'mysql2', 'pg'],
+  },
 };
 
 export default nextConfig;
