@@ -1,40 +1,28 @@
 import { useState, useEffect } from 'react';
-import { Region } from '../../../core/domain/Region';
+import { getServerStatsAction, ServerStatsData, RegionServerStats } from '../app/actions/serverActions';
 
-export interface RegionServerStats {
-  region: Region;
-  displayName: string;
-  readyServers: number;
-  pendingServers: number;
-}
+// Re-export types for convenience
+export type { RegionServerStats, ServerStatsData };
 
-export interface ServerStatsData {
-  regions: RegionServerStats[];
-  totalServers: number;
-}
-
-// Custom hook to fetch server statistics
+// Custom hook to fetch server statistics using Server Actions
 export const useServerStats = () => {
   const [data, setData] = useState<ServerStatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchServerStats = async () => {
       try {
         setLoading(true);
         setError(null);
-
-        // Fetch from API route
-        const response = await fetch('/api/server-stats');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch server stats: ${response.status}`);
-        }
-        
-        const serverStats = await response.json();
+        const serverStats = await getServerStatsAction();
         setData(serverStats);
+        setLastUpdated(new Date());
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch server stats');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch server stats';
+        setError(errorMessage);
+        console.error('Error fetching server stats:', err);
       } finally {
         setLoading(false);
       }
@@ -48,5 +36,15 @@ export const useServerStats = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  return { data, loading, error };
+  return { 
+    data, 
+    loading, 
+    error, 
+    lastUpdated,
+    // Helper to manually refresh data
+    refresh: () => {
+      setLoading(true);
+      setError(null);
+    }
+  };
 };
