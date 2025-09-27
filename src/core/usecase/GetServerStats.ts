@@ -92,7 +92,7 @@ export class GetServerStatsUseCase {
               error: error instanceof Error ? error.message : String(error)
             }
           });
-          throw new Error('Failed to get server statistics');
+          throw new Error(`Failed to get server statistics. ${error instanceof Error ? error.message : String(error)}`);
         }
       }
     );

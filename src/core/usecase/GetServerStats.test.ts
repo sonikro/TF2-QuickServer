@@ -108,6 +108,6 @@ describe('GetServerStatsUseCase', () => {
     when(serverRepositoryMock.getAllServers).calledWith().thenReject(new Error('Database error'));
 
     // When & Then
-    await expect(sut.execute()).rejects.toThrow('Failed to get server statistics');
+    await expect(sut.execute()).rejects.toThrow('Failed to get server statistics. Database error');
   });
 });
