@@ -45,7 +45,7 @@ export const RegionCard: React.FC<RegionCardProps> = ({ region }) => {
       <CardContent>
         {/* Region Header */}
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3}>
-          <Typography variant="h6" component="h3" fontWeight={600}>
+          <Typography variant="h6" component="h3" fontWeight={600} data-testid="region-label">
             {region.displayName}
           </Typography>
           <Chip
@@ -64,7 +64,7 @@ export const RegionCard: React.FC<RegionCardProps> = ({ region }) => {
               Ready
             </Typography>
           </Box>
-          <Typography variant="h3" fontWeight={700} color="success.main">
+          <Typography variant="h3" fontWeight={700} color="success.main" data-testid="ready-servers-count">
             {region.readyServers}
           </Typography>
         </Box>
@@ -77,7 +77,7 @@ export const RegionCard: React.FC<RegionCardProps> = ({ region }) => {
               Pending
             </Typography>
           </Box>
-          <Typography variant="h3" fontWeight={700} color="warning.main">
+          <Typography variant="h3" fontWeight={700} color="warning.main" data-testid="pending-servers-count">
             {region.pendingServers}
           </Typography>
         </Box>

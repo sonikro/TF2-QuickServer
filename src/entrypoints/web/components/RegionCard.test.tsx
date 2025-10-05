@@ -36,9 +36,9 @@ describe('RegionCard', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('US Chicago')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument(); // ready servers
-    expect(screen.getByText('2')).toBeInTheDocument(); // pending servers
+    expect(screen.getByTestId('region-label')).toHaveTextContent('US Chicago');
+    expect(screen.getByTestId('ready-servers-count')).toHaveTextContent('3');
+    expect(screen.getByTestId('pending-servers-count')).toHaveTextContent('2');
   });
 
   it('displays ready servers with correct status', () => {
@@ -66,9 +66,9 @@ describe('RegionCard', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('EU Frankfurt')).toBeInTheDocument();
-    expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByTestId('region-label')).toHaveTextContent('EU Frankfurt');
+    expect(screen.getByTestId('ready-servers-count')).toHaveTextContent('5');
+    expect(screen.getByTestId('pending-servers-count')).toHaveTextContent('0');
   });
 
   it('shows correct status when no servers are ready', () => {
@@ -85,9 +85,9 @@ describe('RegionCard', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('SA São Paulo')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByTestId('region-label')).toHaveTextContent('SA São Paulo');
+    expect(screen.getByTestId('ready-servers-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('pending-servers-count')).toHaveTextContent('3');
   });
 
   it('shows correct status when no servers exist', () => {
@@ -104,8 +104,9 @@ describe('RegionCard', () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText('SA Bogotá')).toBeInTheDocument();
-    expect(screen.getAllByText('0')).toHaveLength(2); // Both ready and pending should be 0
+    expect(screen.getByTestId('region-label')).toHaveTextContent('SA Bogotá');
+    expect(screen.getByTestId('ready-servers-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('pending-servers-count')).toHaveTextContent('0');
   });
 
   it('has proper hover effects styling', () => {
@@ -148,7 +149,7 @@ describe('RegionCard', () => {
     );
 
     // The component should show both ready and pending server counts
-    expect(screen.getByText('4')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByTestId('ready-servers-count')).toHaveTextContent('4');
+    expect(screen.getByTestId('pending-servers-count')).toHaveTextContent('3');
   });
 });
