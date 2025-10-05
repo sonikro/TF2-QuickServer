@@ -18,9 +18,9 @@ const nextConfig = {
   images: {
     domains: [], // Add domains for external images if needed
   },
-   experimental: {
-    serverComponentsExternalPackages: ['knex', 'sqlite3', 'oracledb', 'mysql2', 'pg'],
-  },
+  
+  // External packages that should not be bundled by Next.js
+  serverExternalPackages: ['knex', 'sqlite3', 'oracledb', 'mysql2', 'pg'],
 };
 
 module.exports = nextConfig;

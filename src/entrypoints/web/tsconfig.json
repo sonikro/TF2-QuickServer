@@ -22,18 +22,7 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@/core/*": [
-        "../../core/*"
-      ],
-      "@/providers/*": [
-        "../../providers/*"
-      ]
-    }
+    "baseUrl": "."
   },
   "include": [
     "**/*.ts",
