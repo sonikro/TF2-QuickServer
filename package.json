@@ -41,6 +41,9 @@
   },
   "homepage": "https://github.com/sonikro/TF2-QuickServer#readme",
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/chance": "^1.1.6",
     "@types/config": "^3.3.5",
     "@types/express": "^5.0.1",
@@ -54,6 +57,7 @@
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-vitest": "^6.2.0",
     "env-cmd": "^10.1.0",
+    "jsdom": "^27.0.0",
     "msw": "^2.7.3",
     "node-bzip2": "^1.0.2",
     "nodemon": "^3.1.9",
