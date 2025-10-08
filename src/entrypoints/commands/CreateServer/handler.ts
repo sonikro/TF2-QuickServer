@@ -7,7 +7,8 @@ import {
     ButtonStyle,
     ComponentType,
     MessageComponentInteraction,
-    Collection
+    Collection,
+    PermissionFlagsBits
 } from "discord.js";
 import { getRegionDisplayName, getVariantConfigs, Region } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
@@ -21,6 +22,24 @@ export function createServerCommandHandlerFactory(dependencies: {
     return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
         const { createServerForUser } = dependencies;
         const region = interaction.options.getString('region') as Region;
+
+        // Check if user is a guild administrator
+        const isAdmin = interaction.member?.permissions && 
+            typeof interaction.member.permissions !== 'string' &&
+            interaction.member.permissions.has(PermissionFlagsBits.Administrator);
+
+        // TEMPORARY: Check if Santiago region is selected and notify user of downtime (unless they're an admin)
+        if (region === Region.SA_SANTIAGO_1 && !isAdmin) {
+            await interaction.reply({
+                content: `⚠️ **Santiago Region Currently Unavailable** ⚠️\n\n` +
+                    `The Santiago region (\`sa-santiago-1\`) is currently experiencing issues due to problems with the underlying Oracle Cloud infrastructure.\n\n` +
+                    `Please select a different region for now. We apologize for the inconvenience and are working to resolve this issue.\n\n` +
+                    `**Recommended alternative for Chilean users:**\n` +
+                    `• Buenos Aires (\`us-east-1-bue-1a\`) - Closest geographically with similar latency`,
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
 
         // Step 1: Show variant buttons
         const variants = getVariantConfigs().filter(variant => {
