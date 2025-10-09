@@ -1,17 +1,23 @@
 import { Chance } from "chance";
-import { ButtonInteraction, CacheType, ChatInputCommandInteraction, InteractionCollector, Message, MessageComponentInteraction, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, InteractionCollector, Message, MessageComponentInteraction, MessageFlags, PermissionsBitField } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
+import { getVariantConfigs } from "../../../core/domain";
 import { Server } from "../../../core/domain/DeployedServer";
 import { Region } from "../../../core/domain/Region";
 import { UserError } from "../../../core/errors/UserError";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createServerCommandHandlerFactory } from "./handler";
-import { getVariantConfigs } from "../../../core/domain";
 
 describe("createServerCommandHandler", () => {
     const chance = new Chance();
+
+    // Helper to get a non-Santiago region for tests
+    const getTestRegion = () => {
+        const nonSantiagoRegions = Object.values(Region).filter(r => r !== Region.SA_SANTIAGO_1);
+        return chance.pickone(nonSantiagoRegions);
+    };
 
     const createHandler = () => {
         const interaction = mock<ChatInputCommandInteraction>();
@@ -26,7 +32,7 @@ describe("createServerCommandHandler", () => {
 
         const message = mock<Message<boolean>>()
         when(interaction.fetchReply).calledWith().thenResolve(message)
-        const collector = mock<InteractionCollector<any>>(); 
+        const collector = mock<InteractionCollector<any>>();
         when(message.createMessageComponentCollector).calledWith(expect.anything()).thenReturn(collector);
 
 
@@ -58,7 +64,7 @@ describe("createServerCommandHandler", () => {
 
     it("should create a server with the specified region and variant via button interaction", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const variantName = "standard-competitive";
 
         when(interaction.options.getString)
@@ -101,7 +107,7 @@ describe("createServerCommandHandler", () => {
         if (!collectCall) throw new Error("Collect callback not found");
         const collectCallback = collectCall[1];
         await collectCallback(buttonInteraction);
- 
+
         // Assertions
         expect(interaction.reply).toHaveBeenCalled();
         expect(createServerForUser.execute).toHaveBeenCalledWith({
@@ -123,7 +129,7 @@ describe("createServerCommandHandler", () => {
 
     it("should handle tf2pickup variant differently", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const variantName = "tf2pickup";
 
         when(interaction.options.getString)
@@ -179,7 +185,7 @@ describe("createServerCommandHandler", () => {
 
     it("should reply with an error if the server creation fails", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const variantName = "standard-competitive";
 
         when(interaction.options.getString)
@@ -220,7 +226,7 @@ describe("createServerCommandHandler", () => {
 
     it("should reply with user errors", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const variantName = "casual";
 
         when(interaction.options.getString)
@@ -261,14 +267,14 @@ describe("createServerCommandHandler", () => {
 
     it("should only show variants with matching guildId or no guildId", async () => {
         const { handler, interaction, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const guildId = interaction.guildId;
 
         const variants = getVariantConfigs();
 
         const variantsWithGuildId = variants.filter(v => v.config.guildId === guildId);
         const variantsWithoutGuildId = variants.filter(v => !v.config.guildId);
-        const expectedVariants = [ ...variantsWithoutGuildId].map(v => v.config.displayName || v.name);
+        const expectedVariants = [...variantsWithoutGuildId].map(v => v.config.displayName || v.name);
         const expectedHiddenVariants = variantsWithGuildId.map(v => v.config.displayName || v.name);
         when(interaction.options.getString)
             .calledWith("region")
@@ -291,7 +297,7 @@ describe("createServerCommandHandler", () => {
 
     it("should reply with abort message if server creation is aborted by the user", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const region = chance.pickone(Object.values(Region));
+        const region = getTestRegion();
         const variantName = "standard-competitive";
 
         when(interaction.options.getString)
@@ -330,5 +336,123 @@ describe("createServerCommandHandler", () => {
             content: `Operation was aborted by the user.`,
             flags: MessageFlags.Ephemeral,
         });
+    });
+
+    it("should block non-admin users from creating servers in Santiago region", async () => {
+        const { handler, interaction, createServerForUser } = createHandler();
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(Region.SA_SANTIAGO_1);
+
+        // Mock non-admin permissions
+        const permissions = mock<PermissionsBitField>();
+        when(permissions.has).calledWith(expect.anything()).thenReturn(false);
+        interaction.member = {
+            permissions
+        } as any;
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: expect.stringContaining("Santiago Region Currently Unavailable"),
+            flags: MessageFlags.Ephemeral,
+        });
+        expect(createServerForUser.execute).not.toHaveBeenCalled();
+    });
+
+    it("should allow admin users to create servers in Santiago region", async () => {
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(Region.SA_SANTIAGO_1);
+
+        // Mock admin permissions
+        const permissions = mock<PermissionsBitField>();
+        when(permissions.has).calledWith(expect.anything()).thenReturn(true);
+        interaction.member = {
+            permissions
+        } as any;
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        const deployedServer = mock<Server>({
+            serverId: chance.guid(),
+            region: Region.SA_SANTIAGO_1,
+            variant: variantName,
+            hostIp: chance.ip(),
+            hostPort: chance.integer(),
+            tvIp: chance.ip(),
+            tvPort: chance.integer(),
+            rconPassword: chance.word(),
+            hostPassword: chance.word(),
+            tvPassword: chance.word(),
+            rconAddress: chance.ip(),
+        });
+
+        when(createServerForUser.execute).calledWith({
+            region: Region.SA_SANTIAGO_1,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
+        }).thenResolve(deployedServer);
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Should show variant buttons, not the Santiago unavailable message
+        expect(interaction.reply).toHaveBeenCalledWith(
+            expect.objectContaining({
+                content: expect.stringContaining("Select a server variant"),
+                components: expect.anything(),
+            })
+        );
+
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
+        if (!collectCall) throw new Error("Collect callback not found");
+        const collectCallback = collectCall[1];
+        await collectCallback(buttonInteraction);
+
+        expect(createServerForUser.execute).toHaveBeenCalledWith({
+            region: Region.SA_SANTIAGO_1,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
+        });
+    });
+
+    it("should not allow Santiago region for non-guild contexts (DMs)", async () => {
+        const { handler, interaction, createServerForUser, message, collector } = createHandler();
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(Region.SA_SANTIAGO_1);
+
+        // No member (DM context)
+        interaction.member = null;
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Should show variant buttons (no member means no permission check, so blocked)
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: expect.stringContaining("Santiago Region Currently Unavailable"),
+            flags: MessageFlags.Ephemeral,
+        });
+        expect(createServerForUser.execute).not.toHaveBeenCalled();
     });
 });
