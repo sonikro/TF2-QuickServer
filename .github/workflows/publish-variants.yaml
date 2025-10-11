@@ -59,11 +59,17 @@ jobs:
       - name: Build fat-tf2-pickup image
         run: docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .
 
+      - name: Build fat-tf2-standard-competitive-amd64 image
+        run: docker build -t sonikro/fat-tf2-standard-competitive-amd64:latest -f ./variants/fat-standard-competitive-amd64/Dockerfile .
+
       - name: Run container and check health (fat-tf2-standard-competitive)
         run: bash ./scripts/test_image.sh sonikro/fat-tf2-standard-competitive:latest
 
       - name: Run container and check health (fat-tf2-pickup)
         run: bash ./scripts/test_image.sh sonikro/fat-tf2-pickup:latest
+
+      - name: Run container and check health (fat-tf2-standard-competitive-amd64)
+        run: bash ./scripts/test_image.sh sonikro/fat-tf2-standard-competitive-amd64:latest
 
       - name: Login to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -92,3 +98,10 @@ jobs:
           docker push sonikro/fat-tf2-pickup:latest
           docker tag sonikro/fat-tf2-pickup:latest sonikro/fat-tf2-pickup:${{ github.sha }}
           docker push sonikro/fat-tf2-pickup:${{ github.sha }}
+
+      - name: Push fat-tf2-standard-competitive-amd64 image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker push sonikro/fat-tf2-standard-competitive-amd64:latest
+          docker tag sonikro/fat-tf2-standard-competitive-amd64:latest sonikro/fat-tf2-standard-competitive-amd64:${{ github.sha }}
+          docker push sonikro/fat-tf2-standard-competitive-amd64:${{ github.sha }}

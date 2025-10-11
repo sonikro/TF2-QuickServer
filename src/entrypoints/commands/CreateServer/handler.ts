@@ -43,8 +43,22 @@ export function createServerCommandHandlerFactory(dependencies: {
 
         // Step 1: Show variant buttons
         const variants = getVariantConfigs().filter(variant => {
-            if (!variant.config.guildId) return true;
-            return variant.config.guildId === interaction.guildId;
+            // Filter by guildId
+            if (variant.config.guildId && variant.config.guildId !== interaction.guildId) {
+                return false;
+            }
+
+            // Special filtering for SA_SANTIAGO_1: only allow standard-competitive-64bit (amd64 version)
+            if (region === Region.SA_SANTIAGO_1) {
+                return variant.name === 'standard-competitive-64bit';
+            }
+
+            // For all other regions: exclude the amd64 variant (standard-competitive-64bit)
+            if (variant.name === 'standard-competitive-64bit') {
+                return false;
+            }
+
+            return true;
         });
 
         const rows = [];

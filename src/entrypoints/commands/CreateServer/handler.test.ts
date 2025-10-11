@@ -274,7 +274,10 @@ describe("createServerCommandHandler", () => {
 
         const variantsWithGuildId = variants.filter(v => v.config.guildId === guildId);
         const variantsWithoutGuildId = variants.filter(v => !v.config.guildId);
-        const expectedVariants = [...variantsWithoutGuildId].map(v => v.config.displayName || v.name);
+        // For non-Santiago regions, exclude standard-competitive-64bit variant
+        const expectedVariants = [...variantsWithoutGuildId]
+            .filter(v => v.name !== 'standard-competitive-64bit')
+            .map(v => v.config.displayName || v.name);
         const expectedHiddenVariants = variantsWithGuildId.map(v => v.config.displayName || v.name);
         when(interaction.options.getString)
             .calledWith("region")
@@ -365,7 +368,7 @@ describe("createServerCommandHandler", () => {
 
     it("should allow admin users to create servers in Santiago region", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
-        const variantName = "standard-competitive";
+        const variantName = "standard-competitive-64bit";
 
         when(interaction.options.getString)
             .calledWith("region")
@@ -428,6 +431,31 @@ describe("createServerCommandHandler", () => {
             guildId: interaction.guildId!,
             statusUpdater: expect.any(Function),
         });
+    });
+
+    it("should only show standard-competitive-64bit variant for Santiago region", async () => {
+        const { handler, interaction } = createHandler();
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(Region.SA_SANTIAGO_1);
+
+        // Mock admin permissions to bypass the Santiago block
+        const permissions = mock<PermissionsBitField>();
+        when(permissions.has).calledWith(expect.anything()).thenReturn(true);
+        interaction.member = {
+            permissions
+        } as any;
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Check that only the standard-competitive-64bit variant is shown
+        const replyCall = (interaction.reply as any).mock.calls[0][0];
+        const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
+        
+        expect(displayedVariants).toEqual(['Standard Competitive 64-bit (Experimental)']);
     });
 
     it("should not allow Santiago region for non-guild contexts (DMs)", async () => {
