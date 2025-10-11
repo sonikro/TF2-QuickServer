@@ -178,7 +178,7 @@ COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/x64/*.smx "${SERVER_D
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/translations/* "${SERVER_DIR}/tf/addons/sourcemod/translations/"
-
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/gamedata/* "${SERVER_DIR}/tf/addons/sourcemod/gamedata/"
 # Copy maps
 COPY --chown=tf2 maps/ "${SERVER_DIR}/tf/maps/"
 

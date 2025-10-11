@@ -1,0 +1,101 @@
+"Games"
+{
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"orangebox_valve"
+		}
+		"Addresses"
+		{
+			"g_nFakeIP"
+			{
+				"linux"
+				{
+					"signature"	"g_nFakeIP"
+				}
+				"linux64"
+				{
+					"signature"	"g_nFakeIP"
+				}
+				"windows"
+				{
+					"signature"	"CSteam3Server::OnFakeIPResults()"
+					"read"		"37"
+				}
+			}
+			"g_arFakePorts"
+			{
+				"linux"
+				{
+					"signature"	"g_arFakePorts"
+				}
+				"linux64"
+				{
+					"signature"	"g_arFakePorts"
+				}
+				"windows"
+				{
+					"signature"	"CSteam3Server::OnFakeIPResults()"
+					"read"		"135"
+				}
+			}
+			"s_Steam3Server"
+			{
+				"windows"
+				{
+					"signature"	"sv_setsteamaccount_f()"
+					"read"		"5"
+					"offset"	"-4"
+				}
+			}
+		}
+		"Signatures"
+		{
+			"Steam3Server()"
+			{
+				"library"	"engine"
+				"linux"		"@_Z12Steam3Serverv"
+				"linux64"	"@_Z12Steam3Serverv"
+			}
+			"CSteam3Server::OnFakeIPResults()"
+			{
+				// contains unique string "FakeIP allocation succeeded: %s"
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x83\xEC\x1C"
+			}
+			"sv_setsteamaccount_f()"
+			{
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x40\x20"
+			}
+			
+			"g_nFakeIP"
+			{
+				"library"	"engine"
+				"linux"		"@g_nFakeIP"
+				"linux64"	"@g_nFakeIP"
+			}
+			"g_arFakePorts"
+			{
+				"library"	"engine"
+				"linux"		"@g_arFakePorts"
+				"linux64"	"@g_arFakePorts"
+			}
+		}
+		"Offsets"
+		{
+			"ISteamGameServer::BLoggedOn()"
+			{
+				// vcalled in status(CCommand const&)
+				"linux"		"8"
+				"linux64"	"8"
+				"windows"	"8"
+			}
+		}
+		"Keys"
+		{
+			"NumFakePorts"	"2"
+		}
+	}
+}
