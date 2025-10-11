@@ -78,3 +78,29 @@ services:
       - "cp_badlands"
     profiles:
       - server
+  fat-server-amd64:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-standard-competitive-amd64/Dockerfile
+    container_name: tf2-fat-server-amd64
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+      - +log
+      - on
+      - +logaddress_add
+      - "host.docker.internal:27101"
+    profiles:
+      - server
