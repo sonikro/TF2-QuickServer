@@ -38,13 +38,12 @@ Example map entry in `maps.json`:
 
 This repository generates three different Docker images:
 
-1. **sonikro/tf2-standard-competitive:latest**
-   - Contains the base TF2 server with all configurations and entrypoints
-   - Does not contain maps to keep the image size small
-
-2. **sonikro/fat-tf2-standard-competitive:latest**
+1. **sonikro/fat-tf2-standard-competitive:latest**
    - Same as standard-competitive but includes all maps specified in `maps.json`
    - This is the image deployed for the majority of servers
+
+2. **sonikro/fat-tf2-standard-competitive-amd64:latest**
+   - 64bit variant of the fat-standard-competitive image
 
 3. **sonikro/fat-tf2-pickup:latest**
    - Specialized image used only for pickup game variants

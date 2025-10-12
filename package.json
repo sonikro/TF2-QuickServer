@@ -12,7 +12,6 @@
     "download:maps": "tsx ./scripts/downloadMaps.ts",
     "migration:run": "knex --knexfile knexfile.ts migrate:latest",
     "migration:create": "knex --knexfile knexfile.ts migrate:make",
-    "build:standard-competitive": "docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile .",
     "build:fat:standard-competitive": "docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .",
     "push:fat:standard-competitive": "docker push sonikro/fat-tf2-standard-competitive:latest",
     "build:fat:standard-competitive-amd64": "docker build -t sonikro/fat-tf2-standard-competitive-amd64:latest -f ./variants/fat-standard-competitive-amd64/Dockerfile .",

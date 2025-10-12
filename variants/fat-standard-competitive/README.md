@@ -1,4 +1,4 @@
-# sonikro/tf2-standard-competitive
+# sonikro/fat-tf2-standard-competitive
 
 This Docker image is a customized version of `melkortf/tf2-competitive`, tailored specifically for use with the [TF2-QuickServer](https://github.com/sonikro/TF2-QuickServer) project.
 
