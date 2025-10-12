@@ -3,6 +3,7 @@ import {
     CreateSecurityGroupCommand,
     DeleteSecurityGroupCommand,
     DescribeSecurityGroupsCommand,
+    EC2Client,
 } from "@aws-sdk/client-ec2";
 import { Region } from '../../../../core/domain';
 import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
@@ -93,15 +94,66 @@ export class DefaultSecurityGroupService implements SecurityGroupServiceInterfac
                     return;
                 }
 
-                // Delete the security group
-                await ec2Client.send(new DeleteSecurityGroupCommand({
-                    GroupId: securityGroup.GroupId!,
-                }));
+                // Delete the security group with retry logic for dependency errors
+                await this.deleteSecurityGroupWithRetry(ec2Client, securityGroup.GroupId!, serverId, region);
 
                 this.tracingService.logOperationSuccess('Security group deleted', serverId, region, {
                     securityGroupId: securityGroup.GroupId
                 });
             }
+        );
+    }
+
+    private async deleteSecurityGroupWithRetry(
+        ec2Client: EC2Client,
+        securityGroupId: string,
+        serverId: string,
+        region: Region,
+        maxRetries: number = 10,
+        delayMs: number = 5000
+    ): Promise<void> {
+        let lastError: Error | undefined;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                await ec2Client.send(new DeleteSecurityGroupCommand({
+                    GroupId: securityGroupId,
+                }));
+                
+                // Success - exit the retry loop
+                return;
+            } catch (error: any) {
+                lastError = error;
+                
+                // Check if the error is a dependency error
+                const isDependencyError = 
+                    error.name === 'DependencyViolation' ||
+                    error.Code === 'DependencyViolation' ||
+                    (error.message && error.message.includes('DependencyViolation')) ||
+                    (error.message && error.message.includes('has a dependent object'));
+
+                if (isDependencyError) {
+                    this.tracingService.logOperationStart(
+                        `Security group deletion failed due to dependency (attempt ${attempt}/${maxRetries}). Retrying in ${delayMs}ms...`,
+                        serverId,
+                        region,
+                        { securityGroupId, errorMessage: error.message }
+                    );
+
+                    if (attempt < maxRetries) {
+                        // Wait before retrying
+                        await new Promise(resolve => setTimeout(resolve, delayMs));
+                    }
+                } else {
+                    // Non-dependency error - throw immediately
+                    throw error;
+                }
+            }
+        }
+
+        // If we exhausted all retries, throw the last error
+        throw new Error(
+            `Failed to delete security group ${securityGroupId} after ${maxRetries} attempts. Last error: ${lastError?.message}`
         );
     }
 }

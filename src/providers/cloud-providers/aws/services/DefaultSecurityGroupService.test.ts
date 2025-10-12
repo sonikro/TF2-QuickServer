@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
     EC2Client,
@@ -48,6 +48,10 @@ describe("DefaultSecurityGroupService", () => {
         });
 
         vi.mocked(mockTracingService.executeWithTracing).mockImplementation(async (_, __, fn) => await fn({} as any));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     describe("create", () => {
@@ -124,6 +128,176 @@ describe("DefaultSecurityGroupService", () => {
             
             expect(ec2ClientMock).toHaveReceivedCommand(DescribeSecurityGroupsCommand);
             expect(ec2ClientMock).not.toHaveReceivedCommand(DeleteSecurityGroupCommand);
+        });
+
+        it("retries deletion when DependencyViolation error occurs", async () => {
+            // Given: Use fake timers to avoid real delays
+            vi.useFakeTimers();
+            
+            // Security group exists but initially has dependency error
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            // First two attempts fail with DependencyViolation, third succeeds
+            ec2ClientMock.on(DeleteSecurityGroupCommand)
+                .rejectsOnce({
+                    name: 'DependencyViolation',
+                    message: 'resource sg-12345 has a dependent object',
+                    Code: 'DependencyViolation'
+                })
+                .rejectsOnce({
+                    name: 'DependencyViolation',
+                    message: 'resource sg-12345 has a dependent object',
+                    Code: 'DependencyViolation'
+                })
+                .resolvesOnce({});
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            // When: Start the deletion and advance timers
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            
+            // Advance timers to trigger retries (5000ms delay between attempts)
+            await vi.advanceTimersByTimeAsync(5000);
+            await vi.advanceTimersByTimeAsync(5000);
+            
+            await deletePromise;
+            
+            // Then: Should have attempted delete 3 times
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 3);
+            expect(mockTracingService.logOperationStart).toHaveBeenCalledWith(
+                expect.stringContaining('Security group deletion failed due to dependency'),
+                "test-server-123",
+                Region.US_EAST_1_BUE_1A,
+                expect.objectContaining({
+                    securityGroupId: "sg-12345",
+                    errorMessage: expect.any(String)
+                })
+            );
+        });
+
+        it("succeeds on first attempt when no dependency error", async () => {
+            // Given: Security group exists and can be deleted immediately
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            ec2ClientMock.on(DeleteSecurityGroupCommand).resolvesOnce({});
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            // When
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            
+            // Then: Should have attempted delete only once
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 1);
+        });
+
+        it("throws error after max retries with DependencyViolation", async () => {
+            // Given: Use fake timers to avoid real delays
+            vi.useFakeTimers();
+            
+            // Security group exists but always has dependency error
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            // All attempts fail with DependencyViolation
+            ec2ClientMock.on(DeleteSecurityGroupCommand).rejects({
+                name: 'DependencyViolation',
+                message: 'resource sg-12345 has a dependent object',
+                Code: 'DependencyViolation'
+            });
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            // When: Start the deletion and set up the expectation before advancing timers
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            
+            // Catch the rejection to prevent unhandled promise rejection
+            deletePromise.catch(() => {});
+            
+            // Advance timers for all 10 attempts (9 delays of 5000ms each)
+            for (let i = 0; i < 9; i++) {
+                await vi.advanceTimersByTimeAsync(5000);
+            }
+            
+            // Then: Should throw after max retries (10 attempts)
+            await expect(deletePromise).rejects.toThrow('Failed to delete security group sg-12345 after 10 attempts');
+            
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 10);
+        });
+
+        it("throws immediately on non-dependency errors without retrying", async () => {
+            // Given: Security group exists but deletion fails with non-dependency error
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            ec2ClientMock.on(DeleteSecurityGroupCommand).rejects({
+                name: 'AccessDenied',
+                message: 'User is not authorized to perform DeleteSecurityGroup',
+                Code: 'AccessDenied'
+            });
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            // When/Then: Should throw immediately without retrying
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A))
+                .rejects.toThrow('User is not authorized to perform DeleteSecurityGroup');
+            
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 1);
+        });
+
+        it("handles various DependencyViolation error formats", async () => {
+            // Given: Use fake timers to avoid real delays
+            vi.useFakeTimers();
+            
+            // Security group exists
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            // Test different error formats that should all be recognized as dependency errors
+            ec2ClientMock.on(DeleteSecurityGroupCommand)
+                .rejectsOnce({
+                    name: 'DependencyViolation',
+                    message: 'error message'
+                })
+                .rejectsOnce({
+                    Code: 'DependencyViolation',
+                    message: 'error message'
+                })
+                .rejectsOnce({
+                    message: 'resource has a dependent object'
+                })
+                .resolvesOnce({});
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            // When: Start the deletion and advance timers
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            
+            // Advance timers for 3 retry delays
+            await vi.advanceTimersByTimeAsync(5000);
+            await vi.advanceTimersByTimeAsync(5000);
+            await vi.advanceTimersByTimeAsync(5000);
+            
+            await deletePromise;
+            
+            // Then: Should have retried for all dependency error formats
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 4);
         });
     });
 });
