@@ -266,7 +266,7 @@ describe("createServerCommandHandler", () => {
     });
 
     it("should only show variants with matching guildId or no guildId", async () => {
-        const { handler, interaction, message, collector } = createHandler();
+        const { handler, interaction } = createHandler();
         const region = getTestRegion();
         const guildId = interaction.guildId;
 
@@ -343,28 +343,24 @@ describe("createServerCommandHandler", () => {
 
 
 
-    it("should only show standard-competitive-64bit variant for Santiago region", async () => {
+    it("it should only show 64bit variants for Santiago", async () => {
         const { handler, interaction } = createHandler();
+
+        interaction.guildId = "1323509685264842752" // InsertCoin
 
         when(interaction.options.getString)
             .calledWith("region")
             .thenReturn(Region.SA_SANTIAGO_1);
 
         // Mock admin permissions to bypass the Santiago block
-        const permissions = mock<PermissionsBitField>();
-        when(permissions.has).calledWith(expect.anything()).thenReturn(true);
-        interaction.member = {
-            permissions
-        } as any;
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
 
         await handler(interaction);
 
-        // Check that only the standard-competitive-64bit variant is shown
         const replyCall = (interaction.reply as any).mock.calls[0][0];
         const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
         
-        expect(displayedVariants).toEqual(['Standard Competitive 64-bit (Experimental)']);
+        expect(displayedVariants).toEqual(['Standard Competitive 64-bit (Experimental)', 'InsertCoin Mixes']);
     });
 });

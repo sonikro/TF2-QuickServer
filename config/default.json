@@ -102,6 +102,7 @@
         },
         "insertcoin": {
             "displayName": "InsertCoin Mixes",
+            "image": "sonikro/fat-tf2-standard-competitive-amd64:latest",
             "hostname": "InsertCoin Mixes | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "insertcoin_5cp.cfg",

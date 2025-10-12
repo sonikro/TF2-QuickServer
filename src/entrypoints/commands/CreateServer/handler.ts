@@ -30,16 +30,15 @@ export function createServerCommandHandlerFactory(dependencies: {
                 return false;
             }
 
-            // Special filtering for SA_SANTIAGO_1: only allow standard-competitive-64bit (amd64 version)
-            if (region === Region.SA_SANTIAGO_1) {
-                return variant.name === 'standard-competitive-64bit';
-            }
-
-            // For all other regions: exclude the amd64 variant (standard-competitive-64bit)
-            if (variant.name === 'standard-competitive-64bit') {
+            // Only show amd64  images for Santiago region
+            if (region !== Region.SA_SANTIAGO_1 && variant.config.image.includes("amd64")) {
                 return false;
             }
 
+            // Do not show 32-bit variants in Santiago
+            if (region === Region.SA_SANTIAGO_1 && !variant.config.image.includes("amd64")) {
+                return false;
+            }
             return true;
         });
 
