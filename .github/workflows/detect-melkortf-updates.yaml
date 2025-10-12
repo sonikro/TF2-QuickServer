@@ -13,7 +13,7 @@ jobs:
   check-update:
     runs-on: ubuntu-latest
     env:
-      FILE_PATH: ./variants/standard-competitive/base-image-version.txt
+      FILE_PATH: ./variants/fat-standard-competitive/base-image-version.txt
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

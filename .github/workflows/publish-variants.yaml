@@ -50,9 +50,6 @@ jobs:
         if: steps.cache-maps.outputs.cache-hit != 'true'
         run: npm run download:maps
 
-      - name: Build tf2-standard-competitive image
-        run: docker build -t sonikro/tf2-standard-competitive:latest -f ./variants/standard-competitive/Dockerfile .
-
       - name: Build fat-tf2-standard-competitive image
         run: docker build -t sonikro/fat-tf2-standard-competitive:latest -f ./variants/fat-standard-competitive/Dockerfile .
 
@@ -71,13 +68,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Push tf2-standard-competitive image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          docker push sonikro/tf2-standard-competitive:latest
-          docker tag sonikro/tf2-standard-competitive:latest sonikro/tf2-standard-competitive:${{ github.sha }}
-          docker push sonikro/tf2-standard-competitive:${{ github.sha }}
 
       - name: Push fat-tf2-standard-competitive image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

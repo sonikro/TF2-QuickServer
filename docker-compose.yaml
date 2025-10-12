@@ -29,34 +29,6 @@ services:
       - "cp_badlands"
     profiles:
       - server
-  tf2-server:
-    build:
-      context: ./
-      dockerfile: ./variants/standard-competitive/Dockerfile
-    container_name: tf2-server
-    ports:
-      - 27015:27015
-      - 27015:27015/udp
-      - 27020:27020
-      - 27020:27020/udp
-    env_file:
-      - .env
-    command:
-      - "-enablefakeip"
-      - "+sv_pure"
-      - "2"
-      - "+maxplayers"
-      - "24"
-      - "+map"
-      - "cp_badlands"
-      - +log
-      - on
-      - +logaddress_add
-      - "host.docker.internal:27101"
-      - +sv_logsecret
-      - "9fbb53da-2964-4113-9575-3391837872b0"
-    profiles:
-      - server
   fat-server:
     build:
       context: ./
