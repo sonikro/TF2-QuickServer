@@ -30,11 +30,6 @@ export function createServerCommandHandlerFactory(dependencies: {
                 return false;
             }
 
-            // Only show amd64  images for Santiago region
-            if (region !== Region.SA_SANTIAGO_1 && variant.config.image.includes("amd64")) {
-                return false;
-            }
-
             // Do not show 32-bit variants in Santiago
             if (region === Region.SA_SANTIAGO_1 && !variant.config.image.includes("amd64")) {
                 return false;
