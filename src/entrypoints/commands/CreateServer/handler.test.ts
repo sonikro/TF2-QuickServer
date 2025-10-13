@@ -274,9 +274,7 @@ describe("createServerCommandHandler", () => {
 
         const variantsWithGuildId = variants.filter(v => v.config.guildId === guildId);
         const variantsWithoutGuildId = variants.filter(v => !v.config.guildId);
-        // For non-Santiago regions, exclude standard-competitive-64bit variant
         const expectedVariants = [...variantsWithoutGuildId]
-            .filter(v => v.name !== 'standard-competitive-64bit')
             .map(v => v.config.displayName || v.name);
         const expectedHiddenVariants = variantsWithGuildId.map(v => v.config.displayName || v.name);
         when(interaction.options.getString)
@@ -361,6 +359,6 @@ describe("createServerCommandHandler", () => {
         const replyCall = (interaction.reply as any).mock.calls[0][0];
         const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
         
-        expect(displayedVariants).toEqual(['Standard Competitive 64-bit (Experimental)', 'InsertCoin Mixes']);
+        expect(displayedVariants).toEqual(['Standard Competitive', 'InsertCoin Mixes']);
     });
 });

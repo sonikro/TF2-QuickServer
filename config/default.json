@@ -51,17 +51,7 @@
             "maxPlayers": 24,
             "map": "cp_process_f12",
             "svPure": 2,
-            "image": "sonikro/fat-tf2-standard-competitive:latest"
-        },
-        "standard-competitive-64bit": {
-            "displayName": "Standard Competitive 64-bit (Experimental)",
-            "image": "sonikro/fat-tf2-standard-competitive-amd64:latest",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp.cfg",
-                "koth": "fbtf_6v6_koth.cfg",
-                "pl": "rgl_HL_stopwatch.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            }
+            "image": "sonikro/fat-tf2-standard-competitive-amd64:latest"
         },
         "standard-competitive": {
             "displayName": "Standard Competitive",
@@ -102,7 +92,6 @@
         },
         "insertcoin": {
             "displayName": "InsertCoin Mixes",
-            "image": "sonikro/fat-tf2-standard-competitive-amd64:latest",
             "hostname": "InsertCoin Mixes | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "insertcoin_5cp.cfg",
