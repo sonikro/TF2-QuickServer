@@ -55,6 +55,13 @@ The `bans.csv` file is used by the TF2-QuickServer platform to:
 2. Prevent banned users from joining any existing QuickServer servers
 3. Automatically kick banned users if they attempt to join a server
 
+**Auto-Reload Feature**: As of the latest update, the ban list is automatically reloaded whenever the CSV file is modified. This means:
+- ✅ No bot restart required when adding or removing bans
+- ✅ Changes take effect immediately on the next ban check
+- ✅ Comprehensive logging helps track ban decisions
+
+For detailed information about how the ban system works, troubleshooting steps, and logging details, see [docs/BAN_SYSTEM.md](../../docs/BAN_SYSTEM.md).
+
 ## Example Entries
 
 ```
@@ -69,5 +76,8 @@ If a ban is not taking effect:
 
 1. Verify the Steam ID format is correct
 2. Ensure the CSV file has no formatting errors
-3. Check that the platform services have been restarted to load the updated ban list
+3. ~~Check that the platform services have been restarted to load the updated ban list~~ (No longer needed - auto-reload is enabled)
 4. Verify file permissions allow the service to read the bans file
+5. Check the logs for "Loaded X bans from CSV file" and "Ban CSV file has been modified, reloading bans" messages
+
+For comprehensive troubleshooting guidance, see [docs/BAN_SYSTEM.md](../../docs/BAN_SYSTEM.md).
