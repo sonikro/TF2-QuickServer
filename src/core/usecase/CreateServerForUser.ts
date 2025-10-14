@@ -10,7 +10,8 @@ import { ServerManagerFactory } from "../../providers/services/ServerManagerFact
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";
-import SteamID from "steamid"
+import SteamID from "steamid";
+import { logger } from "../../telemetry/otel";
 export class CreateServerForUser {
 
     constructor(private readonly dependencies: {
@@ -44,10 +45,41 @@ export class CreateServerForUser {
         // Check if user is banned
         const steamId = new SteamID(user.steamIdText);
         const steamID3 = steamId.steam3().replace("[", "").replace("]", "");
+        
+        logger.emit({
+            severityText: 'INFO',
+            body: 'Checking if user is banned before creating server',
+            attributes: {
+                userId: args.creatorId,
+                steamID3,
+                region: args.region,
+                variant: args.variantName
+            }
+        });
+        
         const banResult = await userBanRepository.isUserBanned(steamID3, args.creatorId);
+        
         if (banResult.isBanned) {
+            logger.emit({
+                severityText: 'WARN',
+                body: 'Banned user attempted to create server',
+                attributes: {
+                    userId: args.creatorId,
+                    steamID3,
+                    banReason: banResult.reason || 'No reason provided'
+                }
+            });
             throw new UserError(`You are banned and cannot create servers. Reason: ${banResult.reason || 'No reason provided'}`);
         }
+        
+        logger.emit({
+            severityText: 'DEBUG',
+            body: 'User is not banned, proceeding with server creation',
+            attributes: {
+                userId: args.creatorId,
+                steamID3
+            }
+        });
 
         const creditsConfig = configManager.getCreditsConfig();
 

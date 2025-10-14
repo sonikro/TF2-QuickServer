@@ -13,23 +13,99 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 const { serverCommander, userBanRepository, serverRepository } = services;
                 const { userId, steamId3 } = args;
 
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `User entered game, checking ban status`, 
+                    attributes: { 
+                        userId, 
+                        steamId3, 
+                        logSecret 
+                    } 
+                });
+
                 // Check if user is banned
                 const banResult = await userBanRepository.isUserBanned(steamId3);
-                if (!banResult.isBanned) return;
+                
+                if (!banResult.isBanned) {
+                    logger.emit({ 
+                        severityText: 'DEBUG', 
+                        body: `User is not banned, allowing entry`, 
+                        attributes: { 
+                            userId, 
+                            steamId3 
+                        } 
+                    });
+                    return;
+                }
+
+                logger.emit({ 
+                    severityText: 'WARN', 
+                    body: `Banned user attempted to join server`, 
+                    attributes: { 
+                        userId, 
+                        steamId3, 
+                        banReason: banResult.reason || 'no reason provided',
+                        logSecret 
+                    } 
+                });
 
                 // Find server by logSecret
                 const server = await serverRepository.findByLogsecret(Number(logSecret));
-                if (!server) return;
+                if (!server) {
+                    logger.emit({ 
+                        severityText: 'ERROR', 
+                        body: `Cannot ban user: server not found by logSecret`, 
+                        attributes: { 
+                            userId, 
+                            steamId3, 
+                            logSecret 
+                        } 
+                    });
+                    return;
+                }
 
                 // Ban the user using RCON
-                logger.emit({ severityText: 'INFO', body: `Banning user ${userId} (${steamId3}) on server ${server.serverId}`, attributes: { serverId: server.serverId, steamId3 } });
-                await serverCommander.query({
-                    host: server.rconAddress,
-                    port: 27015,
-                    password: server.rconPassword,
-                    command: `sm_ban #${userId} 0 ${banResult.reason ? `${banResult.reason}` : 'You are banned from TF2-QuickServer'}`,
-                    timeout: 5000
+                logger.emit({ 
+                    severityText: 'INFO', 
+                    body: `Executing ban command via RCON`, 
+                    attributes: { 
+                        serverId: server.serverId, 
+                        steamId3, 
+                        userId,
+                        banReason: banResult.reason || 'You are banned from TF2-QuickServer'
+                    } 
                 });
+                
+                try {
+                    await serverCommander.query({
+                        host: server.rconAddress,
+                        port: 27015,
+                        password: server.rconPassword,
+                        command: `sm_ban #${userId} 0 ${banResult.reason ? `${banResult.reason}` : 'You are banned from TF2-QuickServer'}`,
+                        timeout: 5000
+                    });
+                    
+                    logger.emit({ 
+                        severityText: 'INFO', 
+                        body: `Successfully banned user`, 
+                        attributes: { 
+                            serverId: server.serverId, 
+                            steamId3, 
+                            userId 
+                        } 
+                    });
+                } catch (error) {
+                    logger.emit({ 
+                        severityText: 'ERROR', 
+                        body: `Failed to execute ban command: ${error instanceof Error ? error.message : String(error)}`, 
+                        attributes: { 
+                            serverId: server.serverId, 
+                            steamId3, 
+                            userId,
+                            error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+                        } 
+                    });
+                }
             }
         };
     }
