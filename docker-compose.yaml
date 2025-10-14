@@ -4,6 +4,9 @@ services:
       dockerfile: Dockerfile
       context: .
     container_name: tf2-quickserver
+    ports:
+      - "3000:3000"  # Discord bot + Express API
+      - "3001:3001"  # NextJS web interface
     env_file:
       - .env
     volumes:
