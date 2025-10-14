@@ -51,6 +51,7 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
 
                 // Find server by logSecret
                 const server = await serverRepository.findByLogsecret(Number(logSecret));
+                
                 if (!server) {
                     logger.emit({ 
                         severityText: 'ERROR', 
@@ -67,10 +68,10 @@ export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: str
                 // Ban the user using RCON
                 logger.emit({ 
                     severityText: 'INFO', 
-                    body: `Executing ban command via RCON`, 
+                    body: `Banning user ${userId} (${steamId3}) on server ${server.serverId}`, 
                     attributes: { 
                         serverId: server.serverId, 
-                        steamId3, 
+                        steamId3,
                         userId,
                         banReason: banResult.reason || 'You are banned from TF2-QuickServer'
                     } 
