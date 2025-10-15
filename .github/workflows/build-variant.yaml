@@ -1,0 +1,78 @@
+name: Build Variant Image (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      variant-name:
+        description: 'Name of the variant (e.g., fat-tf2-standard-competitive)'
+        required: true
+        type: string
+      dockerfile-path:
+        description: 'Path to the Dockerfile relative to repo root'
+        required: true
+        type: string
+      image-name:
+        description: 'Docker image name (e.g., sonikro/fat-tf2-standard-competitive)'
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # CMake is required for node-bzip2
+      - name: Install CMake
+        run: sudo apt-get update -y && sudo apt-get install -y cmake
+
+      - name: Cache maps directory
+        id: cache-maps
+        uses: actions/cache@v4
+        with:
+          path: maps/
+          key: maps-${{ hashFiles('maps.json') }}
+          restore-keys: |
+            maps-
+
+      - name: Use Node.js from .nvmrc
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Download maps
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        run: npm run download:maps
+
+      - name: Build ${{ inputs.variant-name }} image
+        run: docker build -t ${{ inputs.image-name }}:latest -f ${{ inputs.dockerfile-path }} .
+
+      - name: Run container and check health
+        run: bash ./scripts/test_image.sh ${{ inputs.image-name }}:latest
+
+      - name: Login to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push ${{ inputs.variant-name }} image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker push ${{ inputs.image-name }}:latest
+          docker tag ${{ inputs.image-name }}:latest ${{ inputs.image-name }}:${{ github.sha }}
+          docker push ${{ inputs.image-name }}:${{ github.sha }}
