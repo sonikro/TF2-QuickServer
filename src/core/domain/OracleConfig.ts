@@ -9,6 +9,7 @@ export interface OracleRegionSettings {
     subnet_id: string;
     compartment_id: string;
     vnc_id: string;
+    secret_id: string;
 }
 
 export function getOracleConfig(): OracleConfig {
@@ -20,6 +21,7 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`sao_paulo_subnet_id.value`),
                 compartment_id: config.get<string>(`compartment_id.value`),
                 vnc_id: config.get<string>(`sao_paulo_vnc_id.value`),
+                secret_id: config.get<string>(`sao_paulo_secret_id.value`),
             },
             "us-chicago-1": {
                 availability_domain: config.get<string>(`chicago_availability_domain.value`),
@@ -27,6 +29,7 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`chicago_subnet_id.value`),
                 compartment_id: config.get<string>(`compartment_id.value`),
                 vnc_id: config.get<string>(`chicago_vnc_id.value`),
+                secret_id: config.get<string>(`chicago_secret_id.value`),
             },
             "sa-bogota-1": {
                 availability_domain: config.get<string>(`bogota_availability_domain.value`),
@@ -34,6 +37,7 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`bogota_subnet_id.value`),
                 compartment_id: config.get<string>(`compartment_id.value`),
                 vnc_id: config.get<string>(`bogota_vnc_id.value`),
+                secret_id: config.get<string>(`bogota_secret_id.value`),
             },
             "sa-santiago-1": {
                 availability_domain: config.get<string>(`santiago_availability_domain.value`),
@@ -41,6 +45,7 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`santiago_subnet_id.value`),
                 compartment_id: config.get<string>(`santiago_compartment_id.value`),
                 vnc_id: config.get<string>(`santiago_vnc_id.value`),
+                secret_id: config.get<string>(`santiago_secret_id.value`),
             },
             "eu-frankfurt-1": {
                 availability_domain: config.get<string>(`frankfurt_availability_domain.value`),
@@ -48,6 +53,7 @@ export function getOracleConfig(): OracleConfig {
                 subnet_id: config.get<string>(`frankfurt_subnet_id.value`),
                 compartment_id: config.get<string>(`santiago_compartment_id.value`),
                 vnc_id: config.get<string>(`frankfurt_vnc_id.value`),
+                secret_id: config.get<string>(`frankfurt_secret_id.value`),
             }
         },
     }

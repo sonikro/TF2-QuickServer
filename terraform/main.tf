@@ -111,6 +111,62 @@ module "oci-network-eu-frankfurt-1" {
   }
 }
 
+# Create Vault modules for each region to store Docker Hub credentials
+module "oci-vault-sa-saopaulo-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.sa-saopaulo-1
+  }
+}
+
+module "oci-vault-us-chicago-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.us-chicago-1
+  }
+}
+
+module "oci-vault-sa-bogota-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.sa-bogota-1
+  }
+}
+
+module "oci-vault-sa-santiago-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.santiago_compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.sa-santiago-1
+  }
+}
+
+module "oci-vault-eu-frankfurt-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.santiago_compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.eu-frankfurt-1
+  }
+}
+
 # Create IAM Policies for each Root Region
 module "oci-iam-us-chicago-1" {
   source           = "./modules/oci/iam"

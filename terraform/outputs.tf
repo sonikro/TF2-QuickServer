@@ -23,6 +23,11 @@ output "sao_paulo_vnc_id" {
   value = module.oci-network-sa-saopaulo-1.vnc_id
 }
 
+output "sao_paulo_secret_id" {
+  value     = module.oci-vault-sa-saopaulo-1.secret_id
+  sensitive = true
+}
+
 # Chicago Region
 output "chicago_subnet_id" {
   value = module.oci-network-us-chicago-1.subnet_id
@@ -40,6 +45,11 @@ output "chicago_vnc_id" {
   value = module.oci-network-us-chicago-1.vnc_id
 }
 
+output "chicago_secret_id" {
+  value     = module.oci-vault-us-chicago-1.secret_id
+  sensitive = true
+}
+
 # Bogotá Region
 output "bogota_subnet_id" {
   value = module.oci-network-sa-bogota-1.subnet_id
@@ -52,6 +62,10 @@ output "bogota_nsg_id" {
 }
 output "bogota_vnc_id" {
   value = module.oci-network-sa-bogota-1.vnc_id
+}
+output "bogota_secret_id" {
+  value     = module.oci-vault-sa-bogota-1.secret_id
+  sensitive = true
 }
 
 # Santiago Region
@@ -70,6 +84,10 @@ output "santiago_compartment_id" {
 output "santiago_vnc_id" {
   value = module.oci-network-sa-santiago-1.vnc_id
 }
+output "santiago_secret_id" {
+  value     = module.oci-vault-sa-santiago-1.secret_id
+  sensitive = true
+}
 
 # Frankfurt Region
 output "frankfurt_compartment_id" {
@@ -86,6 +104,10 @@ output "frankfurt_nsg_id" {
 }
 output "frankfurt_vnc_id" {
   value = module.oci-network-eu-frankfurt-1.vnc_id
+}
+output "frankfurt_secret_id" {
+  value     = module.oci-vault-eu-frankfurt-1.secret_id
+  sensitive = true
 }
 
 # ===========================================
