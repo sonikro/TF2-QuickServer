@@ -12,6 +12,18 @@ variable "santiago_compartment_ocid" {
   type        = string
 }
 
+variable "docker_username" {
+  description = "Docker Hub username for pulling container images"
+  type        = string
+  sensitive   = true
+}
+
+variable "docker_password" {
+  description = "Docker Hub password or access token for pulling container images"
+  type        = string
+  sensitive   = true
+}
+
 # ===========================================
 # AWS VARIABLES
 # ===========================================

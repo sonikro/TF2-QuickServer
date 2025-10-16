@@ -216,6 +216,13 @@ export class OCIServerManager implements ServerManager {
                                     ],
                                 },
                             ],
+                            imagePullSecrets: [
+                                {
+                                    secretType: "VAULT",
+                                    registryEndpoint: "docker.io",
+                                    secretId: oracleRegionConfig.secret_id,
+                                } as containerinstances.models.CreateVaultImagePullSecretDetails
+                            ],
                         }
                     };
 
