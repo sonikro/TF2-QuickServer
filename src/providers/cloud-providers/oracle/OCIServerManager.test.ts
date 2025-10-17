@@ -71,6 +71,7 @@ function createTestEnvironment() {
         nsg_id: "nsg123",
         compartment_id: "compartment123",
         vnc_id: "vnc123",
+        secret_id: "ocid1.vaultsecret.oc1.sa-saopaulo-1.test123",
       }
     }
   };
@@ -337,9 +338,29 @@ describe("OCIServerManager", () => {
               nsgIds: ["nsg123"],
             },
           ],
+          imagePullSecrets: [
+            {
+              secretType: "VAULT",
+              registryEndpoint: "docker.io",
+              secretId: "ocid1.vaultsecret.oc1.sa-saopaulo-1.test123",
+            }
+          ],
         },
       });
       });
+
+    it("should include imagePullSecrets with vault configuration", () => {
+      const containerInstanceRequest = environment.containerClient.createContainerInstance.mock.calls[0][0];
+      const imagePullSecrets = containerInstanceRequest.createContainerInstanceDetails.imagePullSecrets;
+      
+      expect(imagePullSecrets).toBeDefined();
+      expect(imagePullSecrets).toHaveLength(1);
+      expect(imagePullSecrets![0]).toEqual({
+        secretType: "VAULT",
+        registryEndpoint: "docker.io",
+        secretId: "ocid1.vaultsecret.oc1.sa-saopaulo-1.test123",
+      });
+    });
 
     it("returns a server object with correct serverId", () => {
       expect(result.serverId).toBe("test-server-id");
