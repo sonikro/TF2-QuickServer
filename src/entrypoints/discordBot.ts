@@ -27,6 +27,8 @@ import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
+import { InMemoryBackgroundTaskQueue } from "../providers/queue/InMemoryBackgroundTaskQueue";
+import { DeleteServerTaskProcessor } from "../providers/queue/DeleteServerTaskProcessor";
 import { createCommands } from "./commands";
 import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
@@ -111,6 +113,22 @@ export async function startDiscordBot() {
 
     const userBanRepository = new CsvUserBanRepository()
 
+    const backgroundTaskQueue = new InMemoryBackgroundTaskQueue(defaultGracefulShutdownManager);
+    const deleteServerUseCase = new DeleteServerForUser({
+        serverManagerFactory: serverManagerFactory,
+        serverRepository,
+        serverActivityRepository,
+        eventLogger,
+        serverAbortManager
+    });
+
+    backgroundTaskQueue.registerProcessor(
+        'delete-server',
+        new DeleteServerTaskProcessor({
+            deleteServerForUser: deleteServerUseCase,
+        })
+    );
+
     const discordCommands = createCommands({
         createServerForUser: new CreateServerForUser({
             serverManagerFactory: serverManagerFactory,
@@ -122,13 +140,7 @@ export async function startDiscordBot() {
             guildParametersRepository,
             userBanRepository
         }),
-        deleteServerForUser: new DeleteServerForUser({
-            serverManagerFactory: serverManagerFactory,
-            serverRepository,
-            serverActivityRepository,
-            eventLogger,
-            serverAbortManager
-        }),
+        deleteServerForUser: deleteServerUseCase,
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
             paymentService: adyenPaymentService,
@@ -138,7 +150,8 @@ export async function startDiscordBot() {
             userRepository
         }),
         userCreditsRepository,
-        configManager: defaultConfigManager
+        configManager: defaultConfigManager,
+        backgroundTaskQueue
     })
 
     // Schedule jobs
@@ -271,6 +284,13 @@ export async function startDiscordBot() {
     // Login to Discord
     client.login(token);
 
+    // Start background task queue
+    await backgroundTaskQueue.start();
+    logger.emit({
+        severityText: 'INFO',
+        body: 'Background task queue started'
+    });
+
     // Start UDP log listener with dependency injection
     startSrcdsCommandListener({
         serverCommander,
@@ -316,6 +336,7 @@ export async function startDiscordBot() {
             severityText: 'INFO',
             body: 'Received SIGTERM signal, shutting down gracefully...'
         })
+        await backgroundTaskQueue.stop();
         await defaultGracefulShutdownManager.onShutdownWait();
         process.exit(0);
     });
@@ -325,6 +346,7 @@ export async function startDiscordBot() {
             severityText: 'INFO',
             body: 'Received SIGINT signal, shutting down gracefully...'
         })
+        await backgroundTaskQueue.stop();
         await defaultGracefulShutdownManager.onShutdownWait();
         process.exit(0);
     })

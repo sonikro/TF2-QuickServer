@@ -69,7 +69,8 @@ describe("DeleteServerForUser", () => {
                 tvIp: "1.1.1.1",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "1.1.1.1:27015"
+                rconAddress: "1.1.1.1:27015",
+                status: "ready" as any
             },
             { 
                 serverId: chance.guid(), 
@@ -80,13 +81,20 @@ describe("DeleteServerForUser", () => {
                 tvIp: "2.2.2.2",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "2.2.2.2:27015"
+                rconAddress: "2.2.2.2:27015",
+                status: "ready" as any
             },
         ];
 
-        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
+        const terminatingServers = servers.map(s => ({ ...s, status: "terminating" as any }));
+
+        mockServerRepository.getAllServersByUserId
+            .mockResolvedValueOnce(servers)  // First call: mark as terminating
+            .mockResolvedValueOnce(terminatingServers);  // Second call: get terminating servers
+        
         mockServerManager.deleteServer.mockResolvedValue();
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerRepository.upsertServer.mockResolvedValue();
         mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
         mockAbortManager.getOrCreate.mockReturnValue({ abort: vi.fn(), signal: {} } as any);
@@ -118,7 +126,8 @@ describe("DeleteServerForUser", () => {
                 tvIp: "1.1.1.1",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "1.1.1.1:27015"
+                rconAddress: "1.1.1.1:27015",
+                status: "ready" as any
             },
             { 
                 serverId: chance.guid(), 
@@ -129,11 +138,16 @@ describe("DeleteServerForUser", () => {
                 tvIp: "2.2.2.2",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "2.2.2.2:27015"
+                rconAddress: "2.2.2.2:27015",
+                status: "ready" as any
             },
         ];
 
-        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
+        const terminatingServers = servers.map(s => ({ ...s, status: "terminating" as any }));
+
+        mockServerRepository.getAllServersByUserId
+            .mockResolvedValueOnce(servers)  // First call: mark as terminating
+            .mockResolvedValueOnce(terminatingServers);  // Second call: get terminating servers
 
         // One succeeds, one fails
         mockServerManager.deleteServer
@@ -141,6 +155,7 @@ describe("DeleteServerForUser", () => {
             .mockRejectedValueOnce(new Error("Failed to delete server"));
 
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerRepository.upsertServer.mockResolvedValue();
         mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
         mockAbortManager.getOrCreate.mockReturnValue({ abort: vi.fn(), signal: {} } as any);
@@ -166,7 +181,8 @@ describe("DeleteServerForUser", () => {
                 tvIp: "1.1.1.1",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "1.1.1.1:27015"
+                rconAddress: "1.1.1.1:27015",
+                status: "ready" as any
             },
             { 
                 serverId: chance.guid(), 
@@ -177,17 +193,25 @@ describe("DeleteServerForUser", () => {
                 tvIp: "2.2.2.2",
                 tvPort: 27020,
                 rconPassword: "test",
-                rconAddress: "2.2.2.2:27015"
+                rconAddress: "2.2.2.2:27015",
+                status: "ready" as any
             },
         ];
+        const terminatingServers = servers.map(s => ({ ...s, status: "terminating" as any }));
         const abortControllers = servers.map(() => ({ abort: vi.fn(), signal: {} }));
-        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
-        // Mock abort manager to return a different controller for each server
+        
+        mockServerRepository.getAllServersByUserId
+            .mockResolvedValueOnce(servers)  // First call: mark as terminating
+            .mockResolvedValueOnce(terminatingServers);  // Second call: get terminating servers
+        
+        // Mock abort manager to return a different controller for each server deletion
         mockAbortManager.getOrCreate
-            .mockImplementationOnce(() => abortControllers[0] as any as AbortController)
-            .mockImplementationOnce(() => abortControllers[1] as any as AbortController);
+            .mockReturnValueOnce(abortControllers[0] as any as AbortController)
+            .mockReturnValueOnce(abortControllers[1] as any as AbortController);
+            
         mockServerManager.deleteServer.mockResolvedValue();
         mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerRepository.upsertServer.mockResolvedValue();
         mockServerActivityRepository.deleteById.mockResolvedValue();
         mockEventLogger.log.mockResolvedValue();
 

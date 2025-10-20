@@ -34,7 +34,21 @@ export class DeleteServerForUser {
                 throw new UserError("You don't have any servers to terminate.");
             }
 
-            const settled = await Promise.allSettled(server.map(async (s) => {
+            // Mark all servers as terminating
+            for (const s of server) {
+                await serverRepository.upsertServer({
+                    ...s,
+                    status: "terminating"
+                }, trx);
+            }
+        });
+
+        // Perform actual deletion outside of the transaction
+        await serverRepository.runInTransaction(async (trx) => {
+            const server = await serverRepository.getAllServersByUserId(userId, trx);
+            const terminatingServers = server.filter(s => s.status === "terminating");
+
+            const settled = await Promise.allSettled(terminatingServers.map(async (s) => {
                 const { serverId, region } = s;
                 // Get the appropriate server manager for this region
                 const serverManager = serverManagerFactory.createServerManager(region);
