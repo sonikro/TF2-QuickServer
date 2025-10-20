@@ -1,7 +1,7 @@
 import { Region } from "./Region";
 import { Variant } from "./Variant";
 
-export type ServerStatus = "pending" | "ready";
+export type ServerStatus = "pending" | "ready" | "terminating";
 export interface Server {
     serverId: string;
     region: Region;

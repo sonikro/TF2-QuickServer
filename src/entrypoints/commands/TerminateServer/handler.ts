@@ -1,24 +1,25 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { DeleteServerForUser } from "../../../core/usecase/DeleteServerForUser";
+import { BackgroundTaskQueue } from "../../../core/services/BackgroundTaskQueue";
+import { DeleteServerTaskData } from "../../../providers/queue/DeleteServerTaskProcessor";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 export function terminateServerHandlerFactory(dependencies: {
-    deleteServerForUser: DeleteServerForUser
+    backgroundTaskQueue: BackgroundTaskQueue;
 }) {
     return async function terminateServerCommandHandler(interaction: ChatInputCommandInteraction) {
         const userId = interaction.user.id;
-        const { deleteServerForUser } = dependencies;
+        const { backgroundTaskQueue } = dependencies;
 
         await interaction.deferReply({
             flags: MessageFlags.Ephemeral
         })
 
         try {
-            await deleteServerForUser.execute({
-                userId: userId,
-            })
+            const taskData: DeleteServerTaskData = { userId };
+            await backgroundTaskQueue.enqueue('delete-server', taskData);
+
             await interaction.followUp({
-                content: `All servers created by you have been terminated.`,
+                content: `Server termination in progress. Your servers will be terminated shortly.`,
                 flags: MessageFlags.Ephemeral
             });
         } catch (error: Error | any) {

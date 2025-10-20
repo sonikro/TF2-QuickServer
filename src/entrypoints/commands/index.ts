@@ -3,6 +3,7 @@ import { UserCreditsRepository } from "../../core/repository/UserCreditsReposito
 import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../../core/usecase/DeleteServerForUser";
+import { BackgroundTaskQueue } from "../../core/services/BackgroundTaskQueue";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
@@ -18,6 +19,7 @@ export type CommandDependencies = {
     createCreditsPurchaseOrder: CreateCreditsPurchaseOrder;
     configManager: ConfigManager;
     setUserData: SetUserData;
+    backgroundTaskQueue: BackgroundTaskQueue;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -33,7 +35,7 @@ export function createCommands(dependencies: CommandDependencies) {
             name: "terminate-servers",
             definition: terminateServerCommandDefinition,
             handler: terminateServerHandlerFactory({
-                deleteServerForUser: dependencies.deleteServerForUser,
+                backgroundTaskQueue: dependencies.backgroundTaskQueue,
             }),
         },
         setUserData: {
