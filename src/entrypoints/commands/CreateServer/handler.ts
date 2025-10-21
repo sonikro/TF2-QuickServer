@@ -131,50 +131,52 @@ export function createServerCommandHandlerFactory(dependencies: {
                     });
                 } catch (error: Error | any) {
                     // Log the error for debugging
-                    logger.emit({
-                        severityText: 'ERROR',
-                        body: 'Server creation failed, triggering automatic cleanup',
-                        attributes: {
-                            userId: buttonInteraction.user.id,
-                            region,
-                            variant: variantName,
-                            error: error instanceof Error ? error.message : String(error)
-                        }
-                    });
-
-                    // Trigger cleanup task to delete all user servers (including the failed one)
-                    try {
-                        const taskData: DeleteServerTaskData = { userId: buttonInteraction.user.id };
-                        await backgroundTaskQueue.enqueue('delete-server', taskData, {
-                            onSuccess: async () => {
-                                logger.emit({
-                                    severityText: 'INFO',
-                                    body: 'Automatic server cleanup completed successfully after creation failure',
-                                    attributes: {
-                                        userId: buttonInteraction.user.id
-                                    }
-                                });
-                            },
-                            onError: async (cleanupError: Error) => {
-                                logger.emit({
-                                    severityText: 'ERROR',
-                                    body: 'Automatic server cleanup failed after creation failure',
-                                    attributes: {
-                                        userId: buttonInteraction.user.id,
-                                        cleanupError: cleanupError.message
-                                    }
-                                });
-                            }
-                        });
-                    } catch (queueError) {
+                    if (error.name !== 'UserError') {
                         logger.emit({
                             severityText: 'ERROR',
-                            body: 'Failed to enqueue cleanup task after server creation failure',
+                            body: 'Server creation failed, triggering automatic cleanup',
                             attributes: {
                                 userId: buttonInteraction.user.id,
-                                queueError: queueError instanceof Error ? queueError.message : String(queueError)
+                                region,
+                                variant: variantName,
+                                error: error instanceof Error ? error.message : String(error)
                             }
                         });
+
+                        // Trigger cleanup task to delete all user servers (including the failed one)
+                        try {
+                            const taskData: DeleteServerTaskData = { userId: buttonInteraction.user.id };
+                            await backgroundTaskQueue.enqueue('delete-server', taskData, {
+                                onSuccess: async () => {
+                                    logger.emit({
+                                        severityText: 'INFO',
+                                        body: 'Automatic server cleanup completed successfully after creation failure',
+                                        attributes: {
+                                            userId: buttonInteraction.user.id
+                                        }
+                                    });
+                                },
+                                onError: async (cleanupError: Error) => {
+                                    logger.emit({
+                                        severityText: 'ERROR',
+                                        body: 'Automatic server cleanup failed after creation failure',
+                                        attributes: {
+                                            userId: buttonInteraction.user.id,
+                                            cleanupError: cleanupError.message
+                                        }
+                                    });
+                                }
+                            });
+                        } catch (queueError) {
+                            logger.emit({
+                                severityText: 'ERROR',
+                                body: 'Failed to enqueue cleanup task after server creation failure',
+                                attributes: {
+                                    userId: buttonInteraction.user.id,
+                                    queueError: queueError instanceof Error ? queueError.message : String(queueError)
+                                }
+                            });
+                        }
                     }
 
                     await commandErrorHandler(buttonInteraction, error);
