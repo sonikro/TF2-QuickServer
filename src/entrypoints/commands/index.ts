@@ -2,7 +2,6 @@ import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "dis
 import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
 import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
-import { DeleteServerForUser } from "../../core/usecase/DeleteServerForUser";
 import { BackgroundTaskQueue } from "../../core/services/BackgroundTaskQueue";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
@@ -14,7 +13,6 @@ import { SetUserData } from "../../core/usecase/SetUserData";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
-    deleteServerForUser: DeleteServerForUser;
     userCreditsRepository: UserCreditsRepository;
     createCreditsPurchaseOrder: CreateCreditsPurchaseOrder;
     configManager: ConfigManager;
