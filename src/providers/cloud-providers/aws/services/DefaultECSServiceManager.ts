@@ -96,26 +96,47 @@ export class DefaultECSServiceManager implements ECSServiceManagerInterface {
 
                 this.tracingService.logOperationStart('Deleting ECS service', serverId, region);
 
-                // Delete the service with force flag
-                await ecsClient.send(new DeleteServiceCommand({
-                    cluster: awsRegionConfig.cluster_name,
-                    service: serverId,
-                    force: true,
-                }));
-
-                // Wait until service was deleted
-                await waitUntil(async () => {
-                    const describeServiceResponse = await ecsClient.send(new DescribeServicesCommand({
+                try {
+                    // Delete the service with force flag
+                    await ecsClient.send(new DeleteServiceCommand({
                         cluster: awsRegionConfig.cluster_name,
-                        services: [serverId],
+                        service: serverId,
+                        force: true,
                     }));
 
-                    const service = describeServiceResponse.services?.[0];
-                    return service?.status === 'DELETED';
-                });
+                    // Wait until service was deleted
+                    await waitUntil(async () => {
+                        const describeServiceResponse = await ecsClient.send(new DescribeServicesCommand({
+                            cluster: awsRegionConfig.cluster_name,
+                            services: [serverId],
+                        }));
 
-                this.tracingService.logOperationSuccess('ECS service deleted', serverId, region);
+                        const service = describeServiceResponse.services?.[0];
+                        return service?.status === 'DELETED';
+                    });
+
+                    this.tracingService.logOperationSuccess('ECS service deleted', serverId, region);
+                } catch (error: any) {
+                    if (this.isServiceNotFoundError(error)) {
+                        this.tracingService.logOperationSuccess('ECS service not found (already deleted)', serverId, region);
+                        return;
+                    }
+                    throw error;
+                }
             }
+        );
+    }
+
+    private isServiceNotFoundError(error: any): boolean {
+        const errorName = error.name || '';
+        const errorCode = error.Code || '';
+        const errorMessage = error.message || '';
+
+        return (
+            errorName === 'ServiceNotFoundException' ||
+            errorCode === 'ServiceNotFoundException' ||
+            errorMessage.includes('ServiceNotFoundException') ||
+            errorMessage.includes('service was not found')
         );
     }
 }

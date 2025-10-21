@@ -130,6 +130,31 @@ describe("DefaultSecurityGroupService", () => {
             expect(ec2ClientMock).not.toHaveReceivedCommand(DeleteSecurityGroupCommand);
         });
 
+        it("handles InvalidGroup.NotFound error during deletion (idempotent)", async () => {
+            ec2ClientMock.on(DescribeSecurityGroupsCommand).resolves({
+                SecurityGroups: [{
+                    GroupId: "sg-12345"
+                }]
+            });
+
+            // Group was already deleted by the time we try to delete it
+            ec2ClientMock.on(DeleteSecurityGroupCommand).rejects({
+                Code: 'InvalidGroup.NotFound',
+                message: 'The specified security group does not exist'
+            });
+
+            const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
+            
+            expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
+                expect.stringContaining('Security group not found during deletion'),
+                "test-server-123",
+                Region.US_EAST_1_BUE_1A,
+                expect.objectContaining({ securityGroupId: "sg-12345" })
+            );
+        });
+
         it("retries deletion when DependencyViolation error occurs", async () => {
             // Given: Use fake timers to avoid real delays
             vi.useFakeTimers();

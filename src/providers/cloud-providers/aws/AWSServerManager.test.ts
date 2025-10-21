@@ -277,11 +277,22 @@ describe("AWSServerManager", () => {
 
             await serverManager.deleteServer(deleteArgs);
 
-            // Verify deletion steps are called in correct order
+            // Verify deletion steps are called in correct order:
+            // 1. ECS Service, 2. EC2 Instance, 3. Task Definition, 4. Security Group
             expect(mockECSServiceManager.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
             expect(mockEC2InstanceService.terminate).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
-            expect(mockSecurityGroupService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
             expect(mockTaskDefinitionService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
+            expect(mockSecurityGroupService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
+
+            // Verify call order by checking mock call counts at each verification
+            const ecsCallOrder = vi.mocked(mockECSServiceManager.delete).mock.invocationCallOrder[0];
+            const ec2CallOrder = vi.mocked(mockEC2InstanceService.terminate).mock.invocationCallOrder[0];
+            const taskDefCallOrder = vi.mocked(mockTaskDefinitionService.delete).mock.invocationCallOrder[0];
+            const sgCallOrder = vi.mocked(mockSecurityGroupService.delete).mock.invocationCallOrder[0];
+
+            expect(ecsCallOrder).toBeLessThan(ec2CallOrder);
+            expect(ec2CallOrder).toBeLessThan(taskDefCallOrder);
+            expect(taskDefCallOrder).toBeLessThan(sgCallOrder);
         });
 
         it("handles deletion errors correctly", async () => {
