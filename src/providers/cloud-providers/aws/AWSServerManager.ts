@@ -221,7 +221,15 @@ export class AWSServerManager implements ServerManager {
     }
 
     /**
-     * Deletes an existing TF2 server
+     * Deletes an existing TF2 server. This operation is idempotent and follows
+     * a specific deletion order to avoid dependency conflicts.
+     *
+     * Deletion order:
+     * 1. ECS Service - must be deleted first as it manages tasks
+     * 2. EC2 Instance - must be terminated before security group
+     * 3. Task Definition - can be deleted after service
+     * 4. Security Group - deleted last as it may have dependencies on ENIs
+     *    The security group service includes retry logic for dependency violations
      */
     async deleteServer(args: { serverId: string; region: Region }): Promise<void> {
         const { serverId, region } = args;
@@ -236,9 +244,9 @@ export class AWSServerManager implements ServerManager {
 
             await this.ec2InstanceService.terminate(serverId, region);
 
-            await this.securityGroupService.delete(serverId, region);
-
             await this.taskDefinitionService.delete(serverId, region);
+
+            await this.securityGroupService.delete(serverId, region);
 
             logger.emit({
                 severityText: 'INFO',

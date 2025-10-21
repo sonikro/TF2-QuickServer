@@ -176,7 +176,7 @@ echo "ECS configuration completed"
                         },
                         {
                             Name: "instance-state-name",
-                            Values: ["running", "pending"],
+                            Values: ["running", "pending", "stopped"],
                         },
                     ],
                 }));
@@ -187,7 +187,7 @@ echo "ECS configuration completed"
                     .filter((id): id is string => id !== undefined);
 
                 if (instanceIds.length === 0) {
-                    this.tracingService.logOperationSuccess('No running instances found to terminate', serverId, region);
+                    this.tracingService.logOperationSuccess('No instances found to terminate (already terminated)', serverId, region);
                     return;
                 }
 

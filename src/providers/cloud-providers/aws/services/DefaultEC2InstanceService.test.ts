@@ -228,7 +228,7 @@ describe("DefaultEC2InstanceService", () => {
             expect(ec2Mock).toHaveReceivedCommandWith(DescribeInstancesCommand, {
                 Filters: [
                     { Name: "tag:Server", Values: ["test-server-123"] },
-                    { Name: "instance-state-name", Values: ["running", "pending"] }
+                    { Name: "instance-state-name", Values: ["running", "pending", "stopped"] }
                 ]
             });
             expect(ec2Mock).toHaveReceivedCommandWith(TerminateInstancesCommand, {
@@ -236,17 +236,42 @@ describe("DefaultEC2InstanceService", () => {
             });
         });
 
-        it("handles no running instances gracefully", async () => {
+        it("handles no running instances gracefully (idempotent)", async () => {
             ec2Mock.on(DescribeInstancesCommand).resolves({
                 Reservations: []
             });
 
             const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
             
-            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1A);
+            await expect(service.terminate("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
             
             expect(ec2Mock).toHaveReceivedCommand(DescribeInstancesCommand);
             expect(ec2Mock).not.toHaveReceivedCommand(TerminateInstancesCommand);
+            expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
+                expect.stringContaining("already terminated"),
+                "test-server-123",
+                Region.US_EAST_1_BUE_1A
+            );
+        });
+
+        it("terminates multiple instances if found", async () => {
+            ec2Mock.on(DescribeInstancesCommand).resolves({
+                Reservations: [
+                    {
+                        Instances: [{ InstanceId: "i-12345" }, { InstanceId: "i-67890" }]
+                    }
+                ]
+            });
+
+            ec2Mock.on(TerminateInstancesCommand).resolves({});
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1A);
+            
+            expect(ec2Mock).toHaveReceivedCommandWith(TerminateInstancesCommand, {
+                InstanceIds: ["i-12345", "i-67890"]
+            });
         });
     });
 });

@@ -185,5 +185,30 @@ describe("DefaultECSServiceManager", () => {
                 services: ["test-server-123"]
             });
         });
+
+        it("handles ServiceNotFoundException gracefully (idempotent)", async () => {
+            const error = new Error("Service not found");
+            (error as any).Code = "ServiceNotFoundException";
+            ecsClientMock.on(DeleteServiceCommand).rejects(error);
+
+            const service = new DefaultECSServiceManager(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
+            
+            expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
+                expect.stringContaining("ECS service not found"),
+                "test-server-123",
+                Region.US_EAST_1_BUE_1A
+            );
+        });
+
+        it("throws error on non-idempotent failures", async () => {
+            const error = new Error("Some other error");
+            ecsClientMock.on(DeleteServiceCommand).rejects(error);
+
+            const service = new DefaultECSServiceManager(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).rejects.toThrow("Some other error");
+        });
     });
 });

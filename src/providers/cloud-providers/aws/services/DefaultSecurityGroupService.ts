@@ -119,14 +119,22 @@ export class DefaultSecurityGroupService implements SecurityGroupServiceInterfac
                 await ec2Client.send(new DeleteSecurityGroupCommand({
                     GroupId: securityGroupId,
                 }));
-                
-                // Success - exit the retry loop
+
                 return;
             } catch (error: any) {
                 lastError = error;
-                
-                // Check if the error is a dependency error
-                const isDependencyError = 
+
+                if (this.isGroupNotFoundError(error)) {
+                    this.tracingService.logOperationSuccess(
+                        'Security group not found during deletion (already deleted)',
+                        serverId,
+                        region,
+                        { securityGroupId }
+                    );
+                    return;
+                }
+
+                const isDependencyError =
                     error.name === 'DependencyViolation' ||
                     error.Code === 'DependencyViolation' ||
                     (error.message && error.message.includes('DependencyViolation')) ||
@@ -141,19 +149,29 @@ export class DefaultSecurityGroupService implements SecurityGroupServiceInterfac
                     );
 
                     if (attempt < maxRetries) {
-                        // Wait before retrying
                         await new Promise(resolve => setTimeout(resolve, delayMs));
                     }
                 } else {
-                    // Non-dependency error - throw immediately
                     throw error;
                 }
             }
         }
 
-        // If we exhausted all retries, throw the last error
         throw new Error(
             `Failed to delete security group ${securityGroupId} after ${maxRetries} attempts. Last error: ${lastError?.message}`
+        );
+    }
+
+    private isGroupNotFoundError(error: any): boolean {
+        const errorName = error.name || '';
+        const errorCode = error.Code || '';
+        const errorMessage = error.message || '';
+
+        return (
+            errorCode === 'InvalidGroup.NotFound' ||
+            errorName === 'InvalidGroup.NotFound' ||
+            errorMessage.includes('InvalidGroup.NotFound') ||
+            errorMessage.includes('does not exist')
         );
     }
 }
