@@ -56,8 +56,7 @@ describe("say command parser", () => {
             services.serverRepository.findByLogsecret.mockResolvedValue(fakeServer);
             services.userRepository.findBySteamId.mockResolvedValue(fakeUser);
             services.serverCommander.query.mockResolvedValue("");
-            mockServerManager.deleteServer.mockResolvedValue();
-            services.serverRepository.deleteServer.mockResolvedValue();
+            services.backgroundTaskQueue.enqueue.mockResolvedValue("task-id");
 
             if (!command || !handler) throw new Error("Command or handler is undefined");
             await handler({
@@ -72,12 +71,7 @@ describe("say command parser", () => {
                 command: expect.stringContaining("Server is being terminated"),
                 timeout: 5000
             }));
-            expect(services.serverManagerFactory.createServerManager).toHaveBeenCalledWith(fakeServer.region);
-            expect(mockServerManager.deleteServer).toHaveBeenCalledWith(expect.objectContaining({
-                region: fakeServer.region,
-                serverId: fakeServer.serverId
-            }));
-            expect(services.serverRepository.deleteServer).toHaveBeenCalledWith(fakeServer.serverId);
+            expect(services.backgroundTaskQueue.enqueue).toHaveBeenCalledWith('delete-server', { userId: fakeUser.id });
         });
 
         it("should not terminate if user is not creator", async () => {
@@ -91,8 +85,7 @@ describe("say command parser", () => {
                 services
             });
             expect(services.serverCommander.query).not.toHaveBeenCalled();
-            expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
-            expect(services.serverRepository.deleteServer).not.toHaveBeenCalled();
+            expect(services.backgroundTaskQueue.enqueue).not.toHaveBeenCalled();
         });
     });
 });
