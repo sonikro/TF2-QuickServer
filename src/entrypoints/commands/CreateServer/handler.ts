@@ -15,12 +15,15 @@ import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createInteractionStatusUpdater } from "../../../providers/services/DiscordInteractionStatusUpdater";
 import { commandErrorHandler } from "../commandErrorHandler";
 import { defaultGracefulShutdownManager } from "../../../providers/services/DefaultGracefulShutdownManager";
+import { BackgroundTaskQueue } from "../../../core/services/BackgroundTaskQueue";
+import { DeleteServerTaskData } from "../../../providers/queue/DeleteServerTaskProcessor";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
+    backgroundTaskQueue: BackgroundTaskQueue,
 }) {
     return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
-        const { createServerForUser } = dependencies;
+        const { createServerForUser, backgroundTaskQueue } = dependencies;
         const region = interaction.options.getString('region') as Region;
 
         // Step 1: Show variant buttons
@@ -127,6 +130,53 @@ export function createServerCommandHandlerFactory(dependencies: {
                         flags: MessageFlags.Ephemeral
                     });
                 } catch (error: Error | any) {
+                    // Log the error for debugging
+                    logger.emit({
+                        severityText: 'ERROR',
+                        body: 'Server creation failed, triggering automatic cleanup',
+                        attributes: {
+                            userId: buttonInteraction.user.id,
+                            region,
+                            variant: variantName,
+                            error: error instanceof Error ? error.message : String(error)
+                        }
+                    });
+
+                    // Trigger cleanup task to delete all user servers (including the failed one)
+                    try {
+                        const taskData: DeleteServerTaskData = { userId: buttonInteraction.user.id };
+                        await backgroundTaskQueue.enqueue('delete-server', taskData, {
+                            onSuccess: async () => {
+                                logger.emit({
+                                    severityText: 'INFO',
+                                    body: 'Automatic server cleanup completed successfully after creation failure',
+                                    attributes: {
+                                        userId: buttonInteraction.user.id
+                                    }
+                                });
+                            },
+                            onError: async (cleanupError: Error) => {
+                                logger.emit({
+                                    severityText: 'ERROR',
+                                    body: 'Automatic server cleanup failed after creation failure',
+                                    attributes: {
+                                        userId: buttonInteraction.user.id,
+                                        cleanupError: cleanupError.message
+                                    }
+                                });
+                            }
+                        });
+                    } catch (queueError) {
+                        logger.emit({
+                            severityText: 'ERROR',
+                            body: 'Failed to enqueue cleanup task after server creation failure',
+                            attributes: {
+                                userId: buttonInteraction.user.id,
+                                queueError: queueError instanceof Error ? queueError.message : String(queueError)
+                            }
+                        });
+                    }
+
                     await commandErrorHandler(buttonInteraction, error);
                 }
             });

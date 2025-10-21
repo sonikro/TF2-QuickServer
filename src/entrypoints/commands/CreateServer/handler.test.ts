@@ -8,6 +8,7 @@ import { Server } from "../../../core/domain/DeployedServer";
 import { Region } from "../../../core/domain/Region";
 import { UserError } from "../../../core/errors/UserError";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
+import { BackgroundTaskQueue } from "../../../core/services/BackgroundTaskQueue";
 import { createServerCommandHandlerFactory } from "./handler";
 
 describe("createServerCommandHandler", () => {
@@ -37,12 +38,15 @@ describe("createServerCommandHandler", () => {
 
 
         const createServerForUser = mock<CreateServerForUser>();
+        const backgroundTaskQueue = mock<BackgroundTaskQueue>();
         const handler = createServerCommandHandlerFactory({
             createServerForUser,
+            backgroundTaskQueue,
         });
 
         return {
             createServerForUser,
+            backgroundTaskQueue,
             interaction,
             handler,
             message,
@@ -222,6 +226,53 @@ describe("createServerCommandHandler", () => {
             content: `There was an unexpected error running the command. Please reach out to the App Administrator.`,
             flags: MessageFlags.Ephemeral,
         });
+    });
+
+    it("should trigger cleanup task when server creation fails", async () => {
+        const { handler, interaction, createServerForUser, backgroundTaskQueue, message, collector } = createHandler();
+        const region = getTestRegion();
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
+        }).thenReject(new Error("Server creation failed"));
+
+        when(backgroundTaskQueue.enqueue).calledWith(
+            "delete-server",
+            { userId: interaction.user.id },
+            expect.any(Object)
+        ).thenResolve("cleanup-task-id");
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
+        if (!collectCall) throw new Error("Collect callback not found");
+        const collectCallback = collectCall[1];
+        await collectCallback(buttonInteraction);
+
+        // Verify that the cleanup task was enqueued
+        expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
+            "delete-server",
+            { userId: interaction.user.id },
+            expect.objectContaining({
+                onSuccess: expect.any(Function),
+                onError: expect.any(Function)
+            })
+        );
     });
 
     it("should reply with user errors", async () => {

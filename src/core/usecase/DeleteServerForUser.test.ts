@@ -223,19 +223,39 @@ describe("DeleteServerForUser", () => {
         })
     });
 
-    it("should throw an error if the user has a pending server", async () => {
+    it("should delete pending servers when requested", async () => {
         const servers: Server[] = [
-            { serverId: chance.guid(), region: "us-east", status: "pending" } as any
+            { 
+                serverId: chance.guid(), 
+                region: Region.US_CHICAGO_1,
+                variant: "pugs" as any,
+                hostIp: "1.1.1.1",
+                hostPort: 27015,
+                tvIp: "1.1.1.1",
+                tvPort: 27020,
+                rconPassword: "test",
+                rconAddress: "1.1.1.1:27015",
+                status: "pending" as any
+            },
         ];
-        mockServerRepository.getAllServersByUserId.mockResolvedValue(servers);
 
-        await expect(deleteServerForUser.execute({ userId })).rejects.toThrow(
-            "You have a server that is still being created. Please wait until it is ready before deleting."
-        );
+        const terminatingServers = servers.map(s => ({ ...s, status: "terminating" as any }));
 
-        expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId, mockTransaction);
-        expect(mockServerManager.deleteServer).not.toHaveBeenCalled();
-        expect(mockServerRepository.deleteServer).not.toHaveBeenCalled();
-        expect(mockEventLogger.log).not.toHaveBeenCalled();
+        mockServerRepository.getAllServersByUserId
+            .mockResolvedValueOnce(servers)  // First call: mark as terminating
+            .mockResolvedValueOnce(terminatingServers);  // Second call: get terminating servers
+        
+        mockServerManager.deleteServer.mockResolvedValue();
+        mockServerRepository.deleteServer.mockResolvedValue();
+        mockServerRepository.upsertServer.mockResolvedValue();
+        mockServerActivityRepository.deleteById.mockResolvedValue();
+        mockEventLogger.log.mockResolvedValue();
+        mockAbortManager.getOrCreate.mockReturnValue({ abort: vi.fn(), signal: {} } as any);
+
+        await deleteServerForUser.execute({ userId });
+
+        expect(mockServerManager.deleteServer).toHaveBeenCalled();
+        expect(mockServerRepository.deleteServer).toHaveBeenCalled();
+        expect(mockEventLogger.log).toHaveBeenCalled();
     });
 });
