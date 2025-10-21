@@ -1,5 +1,5 @@
 import { logger } from '../../telemetry/otel';
-import { BackgroundTask, BackgroundTaskQueue, BackgroundTaskProcessor } from '../../core/services/BackgroundTaskQueue';
+import { BackgroundTask, BackgroundTaskQueue, BackgroundTaskProcessor, BackgroundTaskCallbacks } from '../../core/services/BackgroundTaskQueue';
 import { GracefulShutdownManager } from '../../core/services/GracefulShutdownManager';
 
 export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
@@ -20,7 +20,8 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
 
   async enqueue<T extends Record<string, unknown>>(
     type: string,
-    data: T
+    data: T,
+    callbacks?: BackgroundTaskCallbacks
   ): Promise<string> {
     const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const task: BackgroundTask = {
@@ -28,6 +29,7 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
       type,
       data,
       createdAt: new Date(),
+      callbacks,
     };
 
     this.tasks.push(task);
@@ -106,7 +108,6 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     }
 
     try {
-      // Wrap task processing with graceful shutdown manager
       await this.shutdownManager.run(async () => {
         logger.emit({
           severityText: 'DEBUG',
@@ -117,7 +118,7 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
           },
         });
 
-        await processor.process(task.data);
+        const result = await processor.process(task.data);
 
         logger.emit({
           severityText: 'INFO',
@@ -127,6 +128,10 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
             taskType: task.type,
           },
         });
+
+        if (task.callbacks?.onSuccess) {
+          await task.callbacks.onSuccess(result);
+        }
       });
     } catch (error) {
       logger.emit({
@@ -138,6 +143,10 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
           error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
         },
       });
+
+      if (task.callbacks?.onError) {
+        await task.callbacks.onError(error instanceof Error ? error : new Error(String(error)));
+      }
     }
   }
 }

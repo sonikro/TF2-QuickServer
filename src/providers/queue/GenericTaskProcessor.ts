@@ -2,7 +2,7 @@ import { logger } from '../../telemetry/otel';
 import { BackgroundTaskProcessor } from '../../core/services/BackgroundTaskQueue';
 
 type UseCase<T> = {
-  execute(data: T): Promise<void>;
+  execute(data: T): Promise<unknown>;
 };
 
 type GenericTaskProcessorDependencies<T> = {
@@ -17,7 +17,7 @@ export class GenericTaskProcessor<T extends Record<string, unknown>>
     private readonly dependencies: GenericTaskProcessorDependencies<T>
   ) {}
 
-  async process(data: T): Promise<void> {
+  async process(data: T): Promise<unknown> {
     const { useCase, taskName } = this.dependencies;
 
     try {
@@ -27,13 +27,15 @@ export class GenericTaskProcessor<T extends Record<string, unknown>>
         attributes: { taskName },
       });
 
-      await useCase.execute(data);
+      const result = await useCase.execute(data);
 
       logger.emit({
         severityText: 'INFO',
         body: `${taskName} task completed successfully`,
         attributes: { taskName },
       });
+
+      return result;
     } catch (error) {
       logger.emit({
         severityText: 'ERROR',

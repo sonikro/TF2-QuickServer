@@ -3,16 +3,23 @@ export interface BackgroundTask {
   type: string;
   data: Record<string, unknown>;
   createdAt: Date;
+  callbacks?: BackgroundTaskCallbacks;
 }
 
 export interface BackgroundTaskProcessor<T = Record<string, unknown>> {
-  process(data: T): Promise<void>;
+  process(data: T): Promise<unknown>;
 }
+
+export type BackgroundTaskCallbacks = {
+  onSuccess?: (result: unknown) => Promise<void>;
+  onError?: (error: Error) => Promise<void>;
+};
 
 export interface BackgroundTaskQueue {
   enqueue<T extends Record<string, unknown>>(
     type: string,
-    data: T
+    data: T,
+    callbacks?: BackgroundTaskCallbacks
   ): Promise<string>;
   registerProcessor<T extends Record<string, unknown>>(
     type: string,
