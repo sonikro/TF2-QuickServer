@@ -316,6 +316,40 @@ describe("createServerCommandHandler", () => {
         });
     });
 
+    it("should not trigger cleanup task when UserError is thrown", async () => {
+        const { handler, interaction, createServerForUser, backgroundTaskQueue, message, collector } = createHandler();
+        const region = getTestRegion();
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
+        }).thenReject(new UserError("User does not have permission"));
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
+        if (!collectCall) throw new Error("Collect callback not found");
+        const collectCallback = collectCall[1];
+        await collectCallback(buttonInteraction);
+
+        // Verify that the cleanup task was NOT enqueued
+        expect(backgroundTaskQueue.enqueue).not.toHaveBeenCalled();
+    });
+
     it("should only show variants with matching guildId or no guildId", async () => {
         const { handler, interaction } = createHandler();
         const region = getTestRegion();
