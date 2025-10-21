@@ -27,6 +27,7 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: createServerCommandDefinition,
             handler: createServerCommandHandlerFactory({
                 createServerForUser: dependencies.createServerForUser,
+                backgroundTaskQueue: dependencies.backgroundTaskQueue,
             }),
         },
         terminateServer: {
