@@ -16,7 +16,20 @@ export function terminateServerHandlerFactory(dependencies: {
 
         try {
             const taskData: DeleteServerTaskData = { userId };
-            await backgroundTaskQueue.enqueue('delete-server', taskData);
+            await backgroundTaskQueue.enqueue('delete-server', taskData, {
+                onSuccess: async () => {
+                    await interaction.followUp({
+                        content: `Server terminated successfully.`,
+                        flags: MessageFlags.Ephemeral
+                    });
+                },
+                onError: async (error) => {
+                    await interaction.followUp({
+                        content: `Failed to terminate server: ${error.message}`,
+                        flags: MessageFlags.Ephemeral
+                    });
+                }
+            });
 
             await interaction.followUp({
                 content: `Server termination has been initiated.`,

@@ -41,7 +41,11 @@ describe("terminateServerCommandHandler", () => {
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
             "delete-server",
-            { userId }
+            { userId },
+            expect.objectContaining({
+                onSuccess: expect.any(Function),
+                onError: expect.any(Function),
+            })
         );
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `Server termination has been initiated.`,
@@ -64,6 +68,64 @@ describe("terminateServerCommandHandler", () => {
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: "There was an unexpected error running the command. Please reach out to the App Administrator.",
+            flags: MessageFlags.Ephemeral,
+        });
+    });
+
+    it("should call onSuccess callback when task completes", async () => {
+        // Given
+        const { handler, interaction, backgroundTaskQueue } = createHandler();
+        const userId = chance.guid();
+        interaction.user = { id: userId } as any;
+
+        let onSuccessCallback: ((result: unknown) => Promise<void>) | undefined;
+        backgroundTaskQueue.enqueue.mockImplementation(
+            async (_, __, callbacks) => {
+                onSuccessCallback = callbacks?.onSuccess;
+                return "task-123";
+            }
+        );
+        interaction.deferReply.mockResolvedValue({} as any);
+        interaction.followUp.mockResolvedValue({} as any);
+
+        // When
+        await handler(interaction);
+        if (onSuccessCallback) {
+            await onSuccessCallback(undefined);
+        }
+
+        // Then
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: `Server terminated successfully.`,
+            flags: MessageFlags.Ephemeral,
+        });
+    });
+
+    it("should call onError callback when task fails", async () => {
+        // Given
+        const { handler, interaction, backgroundTaskQueue } = createHandler();
+        const userId = chance.guid();
+        interaction.user = { id: userId } as any;
+
+        let onErrorCallback: ((error: Error) => Promise<void>) | undefined;
+        backgroundTaskQueue.enqueue.mockImplementation(
+            async (_, __, callbacks) => {
+                onErrorCallback = callbacks?.onError;
+                return "task-123";
+            }
+        );
+        interaction.deferReply.mockResolvedValue({} as any);
+        interaction.followUp.mockResolvedValue({} as any);
+
+        // When
+        await handler(interaction);
+        if (onErrorCallback) {
+            await onErrorCallback(new Error("Server termination failed"));
+        }
+
+        // Then
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: `Failed to terminate server: Server termination failed`,
             flags: MessageFlags.Ephemeral,
         });
     });
