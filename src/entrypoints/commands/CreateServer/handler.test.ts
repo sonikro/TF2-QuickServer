@@ -424,6 +424,42 @@ describe("createServerCommandHandler", () => {
         });
     });
 
+    it("should not trigger cleanup task when AbortError is thrown", async () => {
+        const { handler, interaction, createServerForUser, backgroundTaskQueue, message, collector } = createHandler();
+        const region = getTestRegion();
+        const variantName = "standard-competitive";
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        const abortError = new Error("Aborted by user");
+        abortError.name = "AbortError";
+        when(createServerForUser.execute).calledWith({
+            region,
+            variantName,
+            creatorId: interaction.user.id,
+            guildId: interaction.guildId!,
+            statusUpdater: expect.any(Function),
+        }).thenReject(abortError);
+
+        const buttonInteraction = mockButtonInteraction(interaction, variantName);
+        buttonInteraction.editReply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        // Simulate the collector's "collect" event firing
+        const collectCall = collector.on.mock.calls.find(call => call[0] === "collect");
+        if (!collectCall) throw new Error("Collect callback not found");
+        const collectCallback = collectCall[1];
+        await collectCallback(buttonInteraction);
+
+        // Verify that the cleanup task was NOT enqueued
+        expect(backgroundTaskQueue.enqueue).not.toHaveBeenCalled();
+    });
+
 
 
     it("it should only show 64bit variants for Santiago", async () => {

@@ -131,7 +131,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                     });
                 } catch (error: Error | any) {
                     // Log the error for debugging
-                    if (error.name !== 'UserError') {
+                    if (error.name !== 'UserError' && error.name !== 'AbortError') {
                         logger.emit({
                             severityText: 'ERROR',
                             body: 'Server creation failed, triggering automatic cleanup',
