@@ -43,9 +43,6 @@ describe("say command parser", () => {
             const services = mockDeep<UDPCommandsServices>();
             const mockServerManager = mockDeep<ServerManager>();
             
-            // Configure the factory to return the mocked server manager
-            services.serverManagerFactory.createServerManager.mockReturnValue(mockServerManager);
-            
             const command = say(rawString);
             const handler = command?.handler;
             return { services, command, handler, mockServerManager };
