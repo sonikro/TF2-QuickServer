@@ -238,7 +238,7 @@ describe('CreateServerForUser Use Case', () => {
         });
     });
 
-    it("should only allow one server per user", async () => {
+    it("should only allow one server per user with ready status", async () => {
         const { data, mocks, sut } = createTestEnvironment();
 
         when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
@@ -247,7 +247,7 @@ describe('CreateServerForUser Use Case', () => {
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
-            .thenResolve([data.deployedServer]);
+            .thenResolve([{ ...data.deployedServer, status: "ready" }]);
 
         const act = () => sut.execute({
             creatorId: data.userId,
@@ -258,6 +258,63 @@ describe('CreateServerForUser Use Case', () => {
         });
 
         await expect(act()).rejects.toThrow(new UserError("You already have a server running. Please terminate it before creating a new one."));
+    });
+
+    it("should only allow one server per user with pending status", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+
+        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
+            enabled: false
+        });
+
+        when(mocks.serverRepository.getAllServersByUserId)
+            .calledWith(data.userId, mocks.trx)
+            .thenResolve([{ ...data.deployedServer, status: "pending" }]);
+
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName,
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+        });
+
+        await expect(act()).rejects.toThrow(new UserError("You already have a server running. Please terminate it before creating a new one."));
+    });
+
+    it("should allow server creation if existing server is terminating", async () => {
+        const { data, mocks, sut } = createTestEnvironment();
+
+        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
+            enabled: false
+        });
+
+        when(mocks.serverRepository.getAllServersByUserId)
+            .calledWith(data.userId, mocks.trx)
+            .thenResolve([{ ...data.deployedServer, status: "terminating" }]);
+
+        when(mocks.serverManager.deployServer)
+            .calledWith(expect.objectContaining({
+                region: data.region,
+                variantName: data.variantName,
+                serverId: "test-uuid",
+                sourcemodAdminSteamId: data.steamId
+            }))
+            .thenResolve(data.deployedServer);
+
+        when(mocks.guildParametersRepository.findById)
+            .calledWith(data.guildId)
+            .thenResolve(null);
+
+        const act = () => sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName,
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+        });
+
+        await expect(act()).resolves.toBeDefined();
     });
 
     it("should add the server to the repository even if the serverManager fails", async () => {
