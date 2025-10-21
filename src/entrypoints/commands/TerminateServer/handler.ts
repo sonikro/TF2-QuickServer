@@ -19,7 +19,7 @@ export function terminateServerHandlerFactory(dependencies: {
             await backgroundTaskQueue.enqueue('delete-server', taskData);
 
             await interaction.followUp({
-                content: `Server termination in progress. Your servers will be terminated shortly.`,
+                content: `Server termination has been initiated.`,
                 flags: MessageFlags.Ephemeral
             });
         } catch (error: Error | any) {

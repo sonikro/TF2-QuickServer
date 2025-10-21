@@ -44,7 +44,7 @@ describe("terminateServerCommandHandler", () => {
             { userId }
         );
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: `Server termination in progress. Your servers will be terminated shortly.`,
+            content: `Server termination has been initiated.`,
             flags: MessageFlags.Ephemeral,
         });
     });
