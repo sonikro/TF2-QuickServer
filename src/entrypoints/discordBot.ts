@@ -292,9 +292,9 @@ export async function startDiscordBot() {
         serverCommander,
         userBanRepository,
         serverRepository,
-        serverManagerFactory: serverManagerFactory,
         userRepository,
-        eventLogger
+        eventLogger,
+        backgroundTaskQueue
     });
 
     initializeExpress({})
