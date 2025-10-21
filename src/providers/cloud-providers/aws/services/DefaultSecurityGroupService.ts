@@ -109,7 +109,7 @@ export class DefaultSecurityGroupService implements SecurityGroupServiceInterfac
         securityGroupId: string,
         serverId: string,
         region: Region,
-        maxRetries: number = 10,
+        maxRetries: number = 30,
         delayMs: number = 5000
     ): Promise<void> {
         let lastError: Error | undefined;
