@@ -137,7 +137,6 @@ export async function startDiscordBot() {
             guildParametersRepository,
             userBanRepository
         }),
-        deleteServerForUser: deleteServerUseCase,
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
             paymentService: adyenPaymentService,
