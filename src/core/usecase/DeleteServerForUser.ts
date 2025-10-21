@@ -39,45 +39,55 @@ export class DeleteServerForUser {
             }
         });
 
-        // Perform actual deletion outside of the transaction
-        await serverRepository.runInTransaction(async (trx) => {
-            const server = await serverRepository.getAllServersByUserId(userId, trx);
-            const terminatingServers = server.filter(s => s.status === "terminating");
+        const server = await serverRepository.getAllServersByUserId(userId);
+        const terminatingServers = server.filter(s => s.status === "terminating");
 
-            const settled = await Promise.allSettled(terminatingServers.map(async (s) => {
-                const { serverId, region } = s;
-                // Get the appropriate server manager for this region
-                const serverManager = serverManagerFactory.createServerManager(region);
-                // Perform server-specific cleanup using ServerManager
-                await serverManager.deleteServer({
-                    region,
-                    serverId
-                });
-                // Delete the server and its activity in the same transaction
-                await serverRepository.deleteServer(serverId, trx);
-                // Also delete server activity to prevent orphaned records
-                await serverActivityRepository.deleteById(serverId, trx);
-                
-                const abortController = serverAbortManager.getOrCreate(serverId);
-                // Abort any ongoing operations for this server
-                abortController.abort();
-                // Remove the abort controller from the manager
-                serverAbortManager.delete(serverId);
-                await eventLogger.log({
-                    eventMessage: `User deleted server with ID ${serverId} in region ${region}.`,
-                    actorId: userId,
-                });
-            }));
+        const settled = await Promise.allSettled(terminatingServers.map(async (s) => {
+            const { serverId, region } = s;
+            const serverManager = serverManagerFactory.createServerManager(region);
+            await serverManager.deleteServer({
+                region,
+                serverId
+            });
+            return s;
+        }));
 
-            const errors = settled.filter(result => result.status === 'rejected');
-            if (errors.length > 0) {
-                const errorMessages = errors.map(error => (error as PromiseRejectedResult).reason.message).join(', ');
-                await eventLogger.log({
-                    eventMessage: `Failed to delete some servers: ${errorMessages}`,
-                    actorId: userId,
-                })
-                throw new UserError(`Failed to delete some servers, please reach out to support.`)
-            }
-        });
+        const successfulDeletions = settled
+            .filter((result) => result.status === 'fulfilled')
+            .map((result) => (result as PromiseFulfilledResult<typeof terminatingServers[0]>).value);
+
+        const failedDeletions = settled
+            .filter((result) => result.status === 'rejected')
+            .map((result) => (result as PromiseRejectedResult).reason.message);
+
+        if (failedDeletions.length > 0) {
+            await eventLogger.log({
+                eventMessage: `Failed to delete some servers: ${failedDeletions.join(', ')}`,
+                actorId: userId,
+            });
+        }
+
+        if (successfulDeletions.length > 0) {
+            await serverRepository.runInTransaction(async (trx) => {
+                for (const s of successfulDeletions) {
+                    const { serverId } = s;
+                    await serverRepository.deleteServer(serverId, trx);
+                    await serverActivityRepository.deleteById(serverId, trx);
+                    
+                    const abortController = serverAbortManager.getOrCreate(serverId);
+                    abortController.abort();
+                    serverAbortManager.delete(serverId);
+                    
+                    await eventLogger.log({
+                        eventMessage: `User deleted server with ID ${serverId} in region ${s.region}.`,
+                        actorId: userId,
+                    });
+                }
+            });
+        }
+
+        if (failedDeletions.length > 0) {
+            throw new UserError(`Failed to delete some servers, please reach out to support.`);
+        }
     }
 }
