@@ -225,14 +225,14 @@ describe("DefaultSecurityGroupService", () => {
             deletePromise.catch(() => {});
             
             // Advance timers for all 10 attempts (9 delays of 5000ms each)
-            for (let i = 0; i < 9; i++) {
+            for (let i = 0; i < 29; i++) {
                 await vi.advanceTimersByTimeAsync(5000);
             }
-            
-            // Then: Should throw after max retries (10 attempts)
-            await expect(deletePromise).rejects.toThrow('Failed to delete security group sg-12345 after 10 attempts');
-            
-            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 10);
+
+            // Then: Should throw after max retries (30 attempts)
+            await expect(deletePromise).rejects.toThrow('Failed to delete security group sg-12345 after 30 attempts');
+
+            expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 30);
         });
 
         it("throws immediately on non-dependency errors without retrying", async () => {
