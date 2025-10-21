@@ -100,7 +100,8 @@ export class CreateServerForUser {
         // so we can delete it later
 
         await serverRepository.runInTransaction(async (trx) => {
-            const runningServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);
+            const allServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);
+            const runningServers = allServers.filter(server => server.status === "ready" || server.status === "pending");
             if (runningServers.length > 0) {
                 throw new UserError('You already have a server running. Please terminate it before creating a new one.');
             }
