@@ -8,6 +8,8 @@ import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
+import { createDeleteServerTaskProcessor } from "../providers/queue/DeleteServerTaskProcessor";
+import { InMemoryBackgroundTaskQueue } from "../providers/queue/InMemoryBackgroundTaskQueue";
 import { CsvUserBanRepository } from "../providers/repository/CsvUserBanRepository";
 import { KnexConnectionManager } from "../providers/repository/KnexConnectionManager";
 import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
@@ -17,24 +19,21 @@ import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepo
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
+import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
-import { DefaultServerManagerFactory } from "../providers/services/ServerManagerFactory";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
 import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
-import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
+import { DefaultServerManagerFactory } from "../providers/services/ServerManagerFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
-import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
-import { InMemoryBackgroundTaskQueue } from "../providers/queue/InMemoryBackgroundTaskQueue";
-import { DeleteServerTaskProcessor } from "../providers/queue/DeleteServerTaskProcessor";
+import { logger } from "../telemetry/otel";
 import { createCommands } from "./commands";
+import { initializeExpress } from "./http/express";
 import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
-import { logger } from "../telemetry/otel";
-import { initializeExpress } from "./http/express";
 
 export async function startDiscordBot() {
 
@@ -124,9 +123,7 @@ export async function startDiscordBot() {
 
     backgroundTaskQueue.registerProcessor(
         'delete-server',
-        new DeleteServerTaskProcessor({
-            deleteServerForUser: deleteServerUseCase,
-        })
+        createDeleteServerTaskProcessor(deleteServerUseCase)
     );
 
     const discordCommands = createCommands({

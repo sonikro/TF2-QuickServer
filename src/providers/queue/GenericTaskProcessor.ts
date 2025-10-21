@@ -1,0 +1,50 @@
+import { logger } from '../../telemetry/otel';
+import { BackgroundTaskProcessor } from '../../core/services/BackgroundTaskQueue';
+
+type UseCase<T> = {
+  execute(data: T): Promise<void>;
+};
+
+type GenericTaskProcessorDependencies<T> = {
+  useCase: UseCase<T>;
+  taskName: string;
+};
+
+export class GenericTaskProcessor<T extends Record<string, unknown>>
+  implements BackgroundTaskProcessor<T>
+{
+  constructor(
+    private readonly dependencies: GenericTaskProcessorDependencies<T>
+  ) {}
+
+  async process(data: T): Promise<void> {
+    const { useCase, taskName } = this.dependencies;
+
+    try {
+      logger.emit({
+        severityText: 'INFO',
+        body: `Starting ${taskName} task`,
+        attributes: { taskName },
+      });
+
+      await useCase.execute(data);
+
+      logger.emit({
+        severityText: 'INFO',
+        body: `${taskName} task completed successfully`,
+        attributes: { taskName },
+      });
+    } catch (error) {
+      logger.emit({
+        severityText: 'ERROR',
+        body: `${taskName} task failed`,
+        attributes: {
+          taskName,
+          error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+        },
+      });
+
+      throw error;
+    }
+  }
+}
