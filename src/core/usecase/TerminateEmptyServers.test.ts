@@ -1,6 +1,4 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { ServerManager } from "../services/ServerManager";
-import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
 import { mock } from "vitest-mock-extended";
 import { ServerRepository } from "../repository/ServerRepository";
 import { ServerActivity } from "../domain/ServerActivity";
@@ -13,48 +11,37 @@ import { ServerCommander } from "../services/ServerCommander";
 import { emptyServerStatus, nonEmptyServerStatus } from "./__tests__/mockStatusStrings";
 import { EventLogger } from "../services/EventLogger";
 import { ConfigManager } from "../utils/ConfigManager";
-import { Client as DiscordClient, User } from "discord.js";
 import { Knex } from "knex";
-
+import { BackgroundTaskQueue } from "../services/BackgroundTaskQueue";
 
 const chance = new Chance();
 
 function createTestEnvironment() {
-    const serverManager = mock<ServerManager>();
-    const serverManagerFactory = mock<ServerManagerFactory>();
     const serverRepository = mock<ServerRepository>();
     const serverActivityRepository = mock<ServerActivityRepository>();
     const serverCommander = mock<ServerCommander>();
     const eventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
-    const discordBot = mock<DiscordClient>({
-        users: mock()
-    });
-
-    // Configure the factory to return the mocked server manager
-    when(serverManagerFactory.createServerManager).calledWith(expect.any(String)).thenReturn(serverManager);
+    const backgroundTaskQueue = mock<BackgroundTaskQueue>();
 
     const sut = new TerminateEmptyServers({
-        serverManagerFactory,
         serverRepository,
         serverActivityRepository,
         serverCommander,
         eventLogger,
         configManager,
-        discordBot
+        backgroundTaskQueue
     });
 
     return {
         sut,
         mocks: {
-            serverManager,
-            serverManagerFactory,
             serverRepository,
             serverActivityRepository,
             serverCommander,
             eventLogger,
             configManager,
-            discordBot
+            backgroundTaskQueue
         }
     };
 }
@@ -89,11 +76,6 @@ describe("TerminateEmptyServers", () => {
         const emptyServerStillWaiting = createServer();
         const serverWithError = createServer();
         const noLongerEmptyServer = createServer();
-
-        const user = mock<User>();
-        when(mocks.discordBot.users.fetch)
-        .calledWith(emptyServerToBeTerminated.createdBy!)
-        .thenResolve(user)
 
         const currentServers: Server[] = [
             emptyServerToBeTerminated,
@@ -175,10 +157,11 @@ describe("TerminateEmptyServers", () => {
         });
 
         it("should terminate the empty server", async () => {
-            expect(mocks.serverManager.deleteServer).toHaveBeenCalledWith({
-                region: emptyServerToBeTerminated.region,
-                serverId: emptyServerToBeTerminated.serverId
-            });
+            expect(mocks.backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
+                'delete-server',
+                { serverId: emptyServerToBeTerminated.serverId },
+                expect.any(Object)
+            );
         });
 
         it("should not terminate any of the other servers", async () => {
@@ -189,15 +172,20 @@ describe("TerminateEmptyServers", () => {
                 noLongerEmptyServer
             ];
             for (const server of notTerminated) {
-                expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith({
-                    region: server.region,
-                    serverId: server.serverId
-                });
+                expect(mocks.backgroundTaskQueue.enqueue).not.toHaveBeenCalledWith(
+                    'delete-server',
+                    { serverId: server.serverId },
+                    expect.any(Object)
+                );
             }
         });
 
         it("should delete the terminated server from the repository", async () => {
-            expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(emptyServerToBeTerminated.serverId, mockTransaction);
+            expect(mocks.backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
+                'delete-server',
+                { serverId: emptyServerToBeTerminated.serverId },
+                expect.any(Object)
+            );
         });
 
         it("should keep the server with activity as emptySince = null", async () => {
@@ -231,12 +219,6 @@ describe("TerminateEmptyServers", () => {
                 lastCheckedAt: expect.any(Date)
             }, mockTransaction);
         });
-
-        it("should message the user about the termination", async () => {
-            expect(user.send).toHaveBeenCalledWith(
-                `Your server ${emptyServerToBeTerminated.serverId} has been terminated due to inactivity for 10 minutes.`
-            );
-        })
     });
 
     describe("Server with repeated status query failures should preserve emptySince timestamp", () => {
@@ -288,10 +270,11 @@ describe("TerminateEmptyServers", () => {
         });
 
         it("should NOT terminate the server since it has only been empty for 5 minutes", async () => {
-            expect(mocks.serverManager.deleteServer).not.toHaveBeenCalledWith({
-                region: serverWithRepeatedFailures.region,
-                serverId: serverWithRepeatedFailures.serverId
-            });
+            expect(mocks.backgroundTaskQueue.enqueue).not.toHaveBeenCalledWith(
+                'delete-server',
+                { serverId: serverWithRepeatedFailures.serverId },
+                expect.any(Object)
+            );
         });
 
         it("should preserve the original emptySince timestamp when status queries fail", async () => {

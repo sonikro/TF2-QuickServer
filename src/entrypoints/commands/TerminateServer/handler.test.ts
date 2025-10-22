@@ -40,7 +40,7 @@ describe("terminateServerCommandHandler", () => {
         // Then
         expect(interaction.deferReply).toHaveBeenCalled();
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
-            "delete-server",
+            "delete-server-for-user",
             { userId },
             expect.objectContaining({
                 onSuccess: expect.any(Function),

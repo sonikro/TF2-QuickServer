@@ -248,7 +248,7 @@ describe("createServerCommandHandler", () => {
         }).thenReject(new Error("Server creation failed"));
 
         when(backgroundTaskQueue.enqueue).calledWith(
-            "delete-server",
+            "delete-server-for-user",
             { userId: interaction.user.id },
             expect.any(Object)
         ).thenResolve("cleanup-task-id");
@@ -266,7 +266,7 @@ describe("createServerCommandHandler", () => {
 
         // Verify that the cleanup task was enqueued
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
-            "delete-server",
+            "delete-server-for-user",
             { userId: interaction.user.id },
             expect.objectContaining({
                 onSuccess: expect.any(Function),

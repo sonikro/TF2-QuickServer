@@ -16,7 +16,7 @@ import { createInteractionStatusUpdater } from "../../../providers/services/Disc
 import { commandErrorHandler } from "../commandErrorHandler";
 import { defaultGracefulShutdownManager } from "../../../providers/services/DefaultGracefulShutdownManager";
 import { BackgroundTaskQueue } from "../../../core/services/BackgroundTaskQueue";
-import { DeleteServerTaskData } from "../../../providers/queue/DeleteServerTaskProcessor";
+import { DeleteServerForUserTaskData } from "../../../providers/queue/DeleteServerForUserTaskProcessor";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
@@ -145,8 +145,8 @@ export function createServerCommandHandlerFactory(dependencies: {
 
                         // Trigger cleanup task to delete all user servers (including the failed one)
                         try {
-                            const taskData: DeleteServerTaskData = { userId: buttonInteraction.user.id };
-                            await backgroundTaskQueue.enqueue('delete-server', taskData, {
+                            const taskData: DeleteServerForUserTaskData = { userId: buttonInteraction.user.id };
+                            await backgroundTaskQueue.enqueue('delete-server-for-user', taskData, {
                                 onSuccess: async () => {
                                     logger.emit({
                                         severityText: 'INFO',
