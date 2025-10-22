@@ -3,11 +3,13 @@ import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCredits
 import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
+import { DeleteServer } from "../core/usecase/DeleteServer";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
+import { createDeleteServerForUserTaskProcessor } from "../providers/queue/DeleteServerForUserTaskProcessor";
 import { createDeleteServerTaskProcessor } from "../providers/queue/DeleteServerTaskProcessor";
 import { InMemoryBackgroundTaskQueue } from "../providers/queue/InMemoryBackgroundTaskQueue";
 import { CsvUserBanRepository } from "../providers/repository/CsvUserBanRepository";
@@ -121,9 +123,22 @@ export async function startDiscordBot() {
         serverAbortManager
     });
 
+    const deleteServerTaskUseCase = new DeleteServer({
+        serverRepository,
+        serverActivityRepository,
+        serverManagerFactory,
+        eventLogger,
+        serverAbortManager
+    });
+
+    backgroundTaskQueue.registerProcessor(
+        'delete-server-for-user',
+        createDeleteServerForUserTaskProcessor(deleteServerUseCase)
+    );
+
     backgroundTaskQueue.registerProcessor(
         'delete-server',
-        createDeleteServerTaskProcessor(deleteServerUseCase)
+        createDeleteServerTaskProcessor(deleteServerTaskUseCase)
     );
 
     const discordCommands = createCommands({
@@ -153,13 +168,12 @@ export async function startDiscordBot() {
     // Schedule jobs
     scheduleServerCleanupRoutine({
         terminateEmptyServers: new TerminateEmptyServers({
-            serverManagerFactory: serverManagerFactory,
             serverRepository,
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander,
             eventLogger,
             configManager: defaultConfigManager,
-            discordBot: client
+            backgroundTaskQueue
         }),
         eventLogger
     })

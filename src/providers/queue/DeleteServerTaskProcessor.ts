@@ -1,15 +1,15 @@
 import { GenericTaskProcessor } from './GenericTaskProcessor';
-import { DeleteServerForUser } from '../../core/usecase/DeleteServerForUser';
+import { DeleteServer } from '../../core/usecase/DeleteServer';
 
 export type DeleteServerTaskData = {
-  userId: string;
+  serverId: string;
 };
 
 export function createDeleteServerTaskProcessor(
-  deleteServerForUser: DeleteServerForUser
+  deleteServer: DeleteServer
 ): GenericTaskProcessor<DeleteServerTaskData> {
   return new GenericTaskProcessor({
-    useCase: deleteServerForUser,
+    useCase: deleteServer,
     taskName: 'delete-server',
   });
 }

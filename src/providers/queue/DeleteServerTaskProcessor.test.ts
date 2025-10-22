@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { DeleteServerForUser } from '../../core/usecase/DeleteServerForUser';
+import { DeleteServer } from '../../core/usecase/DeleteServer';
 import { createDeleteServerTaskProcessor } from './DeleteServerTaskProcessor';
 import { GenericTaskProcessor } from './GenericTaskProcessor';
 
 describe('createDeleteServerTaskProcessor', () => {
   const makeSut = () => {
-    const deleteServerForUser = mock<DeleteServerForUser>();
-    const sut = createDeleteServerTaskProcessor(deleteServerForUser);
-    return { deleteServerForUser, sut };
+    const deleteServer = mock<DeleteServer>();
+    const sut = createDeleteServerTaskProcessor(deleteServer);
+    return { deleteServer, sut };
   };
 
   it('should create a GenericTaskProcessor with correct dependencies', () => {
@@ -19,24 +19,24 @@ describe('createDeleteServerTaskProcessor', () => {
   });
 
   it('should process a delete server task successfully', async () => {
-    const { deleteServerForUser, sut } = makeSut();
-    const userId = 'test-user-id';
+    const { deleteServer, sut } = makeSut();
+    const serverId = 'test-server-id';
 
-    when(deleteServerForUser.execute).calledWith({ userId }).thenResolve(undefined);
+    when(deleteServer.execute).calledWith({ serverId }).thenResolve(undefined);
 
-    await sut.process({ userId });
+    await sut.process({ serverId });
 
-    expect(deleteServerForUser.execute).toHaveBeenCalledWith({ userId });
+    expect(deleteServer.execute).toHaveBeenCalledWith({ serverId });
   });
 
   it('should throw when delete server use case fails', async () => {
-    const { deleteServerForUser, sut } = makeSut();
-    const userId = 'test-user-id';
+    const { deleteServer, sut } = makeSut();
+    const serverId = 'test-server-id';
     const error = new Error('Deletion failed');
 
-    when(deleteServerForUser.execute).calledWith({ userId }).thenReject(error);
+    when(deleteServer.execute).calledWith({ serverId }).thenReject(error);
 
-    await expect(sut.process({ userId })).rejects.toThrow('Deletion failed');
+    await expect(sut.process({ serverId })).rejects.toThrow('Deletion failed');
   });
 });
 

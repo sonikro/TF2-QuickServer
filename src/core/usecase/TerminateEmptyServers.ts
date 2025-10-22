@@ -1,23 +1,21 @@
-import { Client as DiscordClient } from "discord.js";
 import { logger } from '../../telemetry/otel';
 import { ServerStatus } from "../domain/ServerStatus";
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManagerFactory } from "../../providers/services/ServerManagerFactory";
+import { BackgroundTaskQueue } from "../services/BackgroundTaskQueue";
 import { ConfigManager } from "../utils/ConfigManager";
 
 export class TerminateEmptyServers {
 
     constructor(private readonly dependencies: {
-        serverManagerFactory: ServerManagerFactory,
         serverRepository: ServerRepository
         serverActivityRepository: ServerActivityRepository,
         serverCommander: ServerCommander,
         eventLogger: EventLogger,
         configManager: ConfigManager,
-        discordBot: DiscordClient
+        backgroundTaskQueue: BackgroundTaskQueue
     }) { }
 
     /**
@@ -26,9 +24,8 @@ export class TerminateEmptyServers {
      * @param args.minutesEmpty - The duration in minutes after which servers should be terminated.
      */
     public async execute(): Promise<void> {
-        const { serverManagerFactory, serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, discordBot } = this.dependencies;
+        const { serverRepository, serverActivityRepository, serverCommander, eventLogger, configManager, backgroundTaskQueue } = this.dependencies;
 
-        // Use transaction to ensure consistency for fetching data
         const { servers, serverActivities } = await serverRepository.runInTransaction(async (trx) => {
             const servers = await serverRepository.getAllServers("ready", trx);
             const serverActivities = await serverActivityRepository.getAll(trx);
@@ -41,68 +38,44 @@ export class TerminateEmptyServers {
                 ...server,
                 ...serverActivity,
             };
-        })
+        });
 
-        // Delete servers that have been empty for the specified duration (in parallel, allSettled)
-        await Promise.allSettled(
-            mergedServers.map(async (server) => {
-                if (server.emptySince) {
-                    const variantConfig = configManager.getVariantConfig(server.variant);
-                    const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10; // Default to 10 minutes if not specified
-                    const emptyDuration = new Date().getTime() - server.emptySince.getTime();
-                    if (emptyDuration >= minutesEmpty * 60 * 1000) {
-                        logger.emit({ severityText: 'INFO', body: `Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`, attributes: { serverId: server.serverId } });
-                        // Terminate the server
-                        try {
-                            // Use transaction to ensure atomicity of deletion
-                            await serverRepository.runInTransaction(async (trx) => {
-                                // Check if server still exists before deleting
-                                const existingServer = await serverRepository.findById(server.serverId, trx);
-                                if (!existingServer) {
-                                    logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} was already deleted, skipping.`, attributes: { serverId: server.serverId } });
-                                    return;
-                                }
+        const serversToDelete = mergedServers.filter((server) => {
+            if (!server.emptySince) {
+                return false;
+            }
+            const variantConfig = configManager.getVariantConfig(server.variant);
+            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+            const emptyDuration = new Date().getTime() - server.emptySince.getTime();
+            return emptyDuration >= minutesEmpty * 60 * 1000;
+        });
 
-                                const serverManager = serverManagerFactory.createServerManager(server.region);
-                                await serverManager.deleteServer({
-                                    region: server.region,
-                                    serverId: server.serverId,
-                                });
-                                // Delete the server from the repository
-                                await serverRepository.deleteServer(server.serverId, trx);
-                                // Delete server activity to prevent orphaned records
-                                await serverActivityRepository.deleteById(server.serverId, trx);
-                            });
+        for (const server of serversToDelete) {
+            const variantConfig = configManager.getVariantConfig(server.variant);
+            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
 
-                            // Remove the server from the mergedServers array
-                            const index = mergedServers.findIndex((s) => s.serverId === server.serverId);
-                            if (index !== -1) {
-                                mergedServers.splice(index, 1);
-                            }
+            logger.emit({
+                severityText: 'INFO',
+                body: `Terminating server ${server.serverId} due to inactivity for ${minutesEmpty} minutes.`,
+                attributes: { serverId: server.serverId }
+            });
 
-                            // Log the event
-                            await eventLogger.log({
-                                eventMessage: `Server ${server.serverId} terminated due to inactivity for ${minutesEmpty} minutes.`,
-                                actorId: server.createdBy!,
-                            });
-
-                            try {
-                                const user = await discordBot.users.fetch(server.createdBy!)
-                                if (user) {
-                                    await user.send(`Your server ${server.serverId} has been terminated due to inactivity for ${minutesEmpty} minutes.`);
-                                }
-                            } catch (error) {
-                                // Ignore errors when sending the message, since users can block DMs
-                            }
-                        } catch (error) {
-                            logger.emit({ severityText: 'ERROR', body: `Failed to terminate server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
-                        }
-                    }
+            await backgroundTaskQueue.enqueue('delete-server', { serverId: server.serverId }, {
+                onError: async (error) => {
+                    logger.emit({
+                        severityText: 'ERROR',
+                        body: `Failed to delete server ${server.serverId}: ${error.message}`,
+                        attributes: { serverId: server.serverId, error: error.message }
+                    });
                 }
-            })
-        );
+            });
 
-        // For the remaining servers, fetch the current status of each server and update the server activity (in parallel, allSettled)
+            const index = mergedServers.findIndex((s) => s.serverId === server.serverId);
+            if (index !== -1) {
+                mergedServers.splice(index, 1);
+            }
+        }
+
         const statusResults = await Promise.allSettled(
             mergedServers.map(async (server) => {
                 try {
@@ -112,21 +85,34 @@ export class TerminateEmptyServers {
                         password: server.rconPassword,
                         port: 27015,
                         timeout: 5000,
-                    })
+                    });
                     const serverStatus = new ServerStatus(statusOutput);
                     if (serverStatus.numberOfPlayers === 0 && server.emptySince === null) {
-                        logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} is empty.`, attributes: { serverId: server.serverId } });
+                        logger.emit({
+                            severityText: 'INFO',
+                            body: `Server ${server.serverId} is empty.`,
+                            attributes: { serverId: server.serverId }
+                        });
                         server.emptySince = new Date();
                     }
 
                     if ((serverStatus.numberOfPlayers ?? 0) > 0) {
-                        logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} is not empty.`, attributes: { serverId: server.serverId } });
+                        logger.emit({
+                            severityText: 'INFO',
+                            body: `Server ${server.serverId} is not empty.`,
+                            attributes: { serverId: server.serverId }
+                        });
                         server.emptySince = null;
                     }
                 } catch (error) {
-                    // If error happens, assume server is empty to avoid servers running forever
-                    // Only set emptySince if it wasn't already set to preserve the original timestamp
-                    logger.emit({ severityText: 'WARN', body: `Error fetching status for server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
+                    logger.emit({
+                        severityText: 'WARN',
+                        body: `Error fetching status for server ${server.serverId}:`,
+                        attributes: {
+                            serverId: server.serverId,
+                            error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+                        }
+                    });
                     if (server.emptySince === null) {
                         server.emptySince = new Date();
                     }
@@ -134,17 +120,18 @@ export class TerminateEmptyServers {
 
                 server.lastCheckedAt = new Date();
 
-                // Use transaction to ensure consistency when upserting activity
                 try {
                     await serverRepository.runInTransaction(async (trx) => {
-                        // Check if server still exists before upserting activity
                         const existingServer = await serverRepository.findById(server.serverId, trx);
                         if (!existingServer) {
-                            logger.emit({ severityText: 'INFO', body: `Server ${server.serverId} no longer exists, skipping activity update.`, attributes: { serverId: server.serverId } });
+                            logger.emit({
+                                severityText: 'INFO',
+                                body: `Server ${server.serverId} no longer exists, skipping activity update.`,
+                                attributes: { serverId: server.serverId }
+                            });
                             return;
                         }
 
-                        // Update the server activity repository
                         await serverActivityRepository.upsert({
                             serverId: server.serverId,
                             emptySince: server.emptySince!,
@@ -152,11 +139,18 @@ export class TerminateEmptyServers {
                         }, trx);
                     });
                 } catch (error) {
-                    logger.emit({ severityText: 'ERROR', body: `Failed to update activity for server ${server.serverId}:`, attributes: { error: JSON.stringify(error, Object.getOwnPropertyNames(error)), serverId: server.serverId } });
-                    // Don't rethrow this error since it's not critical
+                    logger.emit({
+                        severityText: 'ERROR',
+                        body: `Failed to update activity for server ${server.serverId}:`,
+                        attributes: {
+                            serverId: server.serverId,
+                            error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+                        }
+                    });
                 }
             })
         );
+
         const statusErrors = statusResults.filter(r => r.status === 'rejected');
         if (statusErrors.length > 0) {
             throw new Error(`One or more server status updates failed: ${statusErrors.map(e => (e as PromiseRejectedResult).reason).join('; ')}`);

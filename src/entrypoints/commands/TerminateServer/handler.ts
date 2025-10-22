@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { BackgroundTaskQueue } from "../../../core/services/BackgroundTaskQueue";
-import { DeleteServerTaskData } from "../../../providers/queue/DeleteServerTaskProcessor";
+import { DeleteServerForUserTaskData } from "../../../providers/queue/DeleteServerForUserTaskProcessor";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 export function terminateServerHandlerFactory(dependencies: {
@@ -15,8 +15,8 @@ export function terminateServerHandlerFactory(dependencies: {
         })
 
         try {
-            const taskData: DeleteServerTaskData = { userId };
-            await backgroundTaskQueue.enqueue('delete-server', taskData, {
+            const taskData: DeleteServerForUserTaskData = { userId };
+            await backgroundTaskQueue.enqueue('delete-server-for-user', taskData, {
                 onSuccess: async () => {
                     await interaction.followUp({
                         content: `Server terminated successfully.`,
