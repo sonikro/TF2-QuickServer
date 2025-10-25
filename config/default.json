@@ -239,10 +239,10 @@
             "displayName": "QEL 4v4",
             "hostname": "QEL 4v4 | {region} @ TF2-QuickServer",
             "defaultCfgs": {
+                "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "qel_4s_koth.cfg"
             },
-            "guildId": "1291587765770649656",
-            "map": "koth_product_final"
+            "guildId": "1291587765770649656"
         }
     },
     "discord": {
