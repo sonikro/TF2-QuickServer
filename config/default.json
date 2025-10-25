@@ -234,6 +234,15 @@
                 "koth": "bf_6v6_koth.cfg"
             },
             "guildId": "312687261219160065"
+        },
+        "qel-4v4": {
+            "displayName": "QEL 4v4",
+            "hostname": "QEL 4v4 | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "koth": "qel_4s_koth.cfg"
+            },
+            "guildId": "1291587765770649656",
+            "map": "koth_product_final"
         }
     },
     "discord": {
