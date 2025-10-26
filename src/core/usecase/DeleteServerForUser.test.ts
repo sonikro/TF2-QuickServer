@@ -45,12 +45,10 @@ describe("DeleteServerForUser", () => {
         });
     });
 
-    it("should throw an error if the user has no servers", async () => {
+    it("should return without doing anything if the user has no servers", async () => {
         mockServerRepository.getAllServersByUserId.mockResolvedValue([]);
 
-        await expect(deleteServerForUser.execute({ userId })).rejects.toThrow(
-            "You don't have any servers to terminate."
-        );
+        await deleteServerForUser.execute({ userId });
 
         expect(mockServerRepository.getAllServersByUserId).toHaveBeenCalledWith(userId, mockTransaction);
         expect(mockServerManager.deleteServer).not.toHaveBeenCalled();

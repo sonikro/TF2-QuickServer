@@ -160,7 +160,13 @@ describe("TerminateEmptyServers", () => {
             expect(mocks.backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
                 'delete-server',
                 { serverId: emptyServerToBeTerminated.serverId },
-                expect.any(Object)
+                expect.any(Object),
+                {
+                    maxRetries: 3,
+                    initialDelayMs: 5000,
+                    maxDelayMs: 60000,
+                    backoffMultiplier: 2,
+                }
             );
         });
 
@@ -175,7 +181,13 @@ describe("TerminateEmptyServers", () => {
                 expect(mocks.backgroundTaskQueue.enqueue).not.toHaveBeenCalledWith(
                     'delete-server',
                     { serverId: server.serverId },
-                    expect.any(Object)
+                    expect.any(Object),
+                    {
+                        maxRetries: 3,
+                        initialDelayMs: 5000,
+                        maxDelayMs: 60000,
+                        backoffMultiplier: 2,
+                    }
                 );
             }
         });
@@ -184,7 +196,13 @@ describe("TerminateEmptyServers", () => {
             expect(mocks.backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
                 'delete-server',
                 { serverId: emptyServerToBeTerminated.serverId },
-                expect.any(Object)
+                expect.any(Object),
+                {
+                    maxRetries: 3,
+                    initialDelayMs: 5000,
+                    maxDelayMs: 60000,
+                    backoffMultiplier: 2,
+                }
             );
         });
 

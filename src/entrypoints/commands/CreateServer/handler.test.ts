@@ -271,7 +271,13 @@ describe("createServerCommandHandler", () => {
             expect.objectContaining({
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function)
-            })
+            }),
+            {
+                maxRetries: 3,
+                initialDelayMs: 5000,
+                maxDelayMs: 60000,
+                backoffMultiplier: 2,
+            }
         );
     });
 

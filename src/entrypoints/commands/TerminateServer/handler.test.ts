@@ -45,7 +45,13 @@ describe("terminateServerCommandHandler", () => {
             expect.objectContaining({
                 onSuccess: expect.any(Function),
                 onError: expect.any(Function),
-            })
+            }),
+            {
+                maxRetries: 3,
+                initialDelayMs: 5000,
+                maxDelayMs: 60000,
+                backoffMultiplier: 2,
+            }
         );
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: `Server termination has been initiated.`,

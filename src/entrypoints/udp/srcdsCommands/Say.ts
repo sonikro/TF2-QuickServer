@@ -35,7 +35,12 @@ export const say: SRCDSCommandParser<{ userId: number, steamId3: string, message
                                 timeout: 5000
                             })
 
-                            await services.backgroundTaskQueue.enqueue('delete-server-for-user', { userId: user.id });
+                            await services.backgroundTaskQueue.enqueue('delete-server-for-user', { userId: user.id }, undefined, {
+                                maxRetries: 3,
+                                initialDelayMs: 5000,
+                                maxDelayMs: 60000,
+                                backoffMultiplier: 2,
+                            });
 
                             await eventLogger.log({
                                 eventMessage: `User <@${userId}> initiated server ${server.serverId} termination from inside the game.`,
