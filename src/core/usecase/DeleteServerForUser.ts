@@ -27,7 +27,7 @@ export class DeleteServerForUser {
             const server = await serverRepository.getAllServersByUserId(userId, trx);
 
             if (!server || server.length === 0) {
-                throw new UserError("You don't have any servers to terminate.");
+                return;
             }
 
             // Mark all servers as terminating

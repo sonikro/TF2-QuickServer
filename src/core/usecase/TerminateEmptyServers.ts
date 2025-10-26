@@ -68,6 +68,11 @@ export class TerminateEmptyServers {
                         attributes: { serverId: server.serverId, error: error.message }
                     });
                 }
+            }, {
+                maxRetries: 3,
+                initialDelayMs: 5000,
+                maxDelayMs: 60000,
+                backoffMultiplier: 2,
             });
 
             const index = mergedServers.findIndex((s) => s.serverId === server.serverId);

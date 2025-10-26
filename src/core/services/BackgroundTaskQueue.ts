@@ -1,9 +1,19 @@
+export type BackgroundTaskRetryConfig = {
+  maxRetries: number;
+  initialDelayMs?: number;
+  maxDelayMs?: number;
+  backoffMultiplier?: number;
+};
+
 export interface BackgroundTask {
   id: string;
   type: string;
   data: Record<string, unknown>;
   createdAt: Date;
   callbacks?: BackgroundTaskCallbacks;
+  retryConfig?: BackgroundTaskRetryConfig;
+  currentRetryAttempt?: number;
+  scheduledAt?: Date;
 }
 
 export interface BackgroundTaskProcessor<T = Record<string, unknown>> {
@@ -19,7 +29,8 @@ export interface BackgroundTaskQueue {
   enqueue<T extends Record<string, unknown>>(
     type: string,
     data: T,
-    callbacks?: BackgroundTaskCallbacks
+    callbacks?: BackgroundTaskCallbacks,
+    retryConfig?: BackgroundTaskRetryConfig
   ): Promise<string>;
   registerProcessor<T extends Record<string, unknown>>(
     type: string,

@@ -29,6 +29,11 @@ export function terminateServerHandlerFactory(dependencies: {
                         flags: MessageFlags.Ephemeral
                     });
                 }
+            }, {
+                maxRetries: 3,
+                initialDelayMs: 5000,
+                maxDelayMs: 60000,
+                backoffMultiplier: 2,
             });
 
             await interaction.followUp({
