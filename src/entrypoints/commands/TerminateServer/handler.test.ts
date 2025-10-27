@@ -47,9 +47,9 @@ describe("terminateServerCommandHandler", () => {
                 onError: expect.any(Function),
             }),
             {
-                maxRetries: 3,
-                initialDelayMs: 5000,
-                maxDelayMs: 60000,
+                maxRetries: 10,
+                initialDelayMs: 60000,
+                maxDelayMs: 600000,
                 backoffMultiplier: 2,
             }
         );
