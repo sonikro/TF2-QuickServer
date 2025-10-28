@@ -29,17 +29,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Free up disk space in background to avoid blocking the workflow
-      - name: Free Disk Space (Background)
-        uses: ./.github/actions/free-disk-space-bg
-        with:
-          android: true
-          dotnet: true
-          haskell: true
-          large-packages: true
-          docker-images: false
-          swap-storage: false
-
       # CMake is required for node-bzip2
       - name: Install CMake
         run: sudo apt-get update -y && sudo apt-get install -y cmake
@@ -68,19 +57,8 @@ jobs:
         if: steps.cache-maps.outputs.cache-hit != 'true'
         run: npm run download:maps
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build ${{ inputs.variant-name }} image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ inputs.dockerfile-path }}
-          tags: ${{ inputs.image-name }}:latest
-          push: false
-          load: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: docker build -f ${{ inputs.dockerfile-path }} -t ${{ inputs.image-name }}:latest .
 
       - name: Run container and check health
         run: bash ./scripts/test_image.sh ${{ inputs.image-name }}:latest
@@ -94,12 +72,4 @@ jobs:
 
       - name: Push ${{ inputs.variant-name }} image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ${{ inputs.dockerfile-path }}
-          tags: |
-            ${{ inputs.image-name }}:latest
-          push: true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: docker push ${{ inputs.image-name }}:latest
