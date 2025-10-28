@@ -69,7 +69,7 @@ jobs:
       - name: Update tf2version.txt and create PR
         if: steps.check.outputs.new_version_available == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NEW_VERSION: ${{ steps.check.outputs.new_version }}
           CURRENT_VERSION: ${{ steps.current_version.outputs.current_version }}
         run: |
