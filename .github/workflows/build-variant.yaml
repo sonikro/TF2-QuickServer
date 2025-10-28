@@ -29,14 +29,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Free up disk space to avoid issues with large Docker images
-      - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@v1.3.1
+      # Free up disk space in background to avoid blocking the workflow
+      - name: Free Disk Space (Background)
+        uses: ./.github/actions/free-disk-space-bg
         with:
           android: true
           dotnet: true
-          haskell: false
-          large-packages: false
+          haskell: true
+          large-packages: true
           docker-images: false
           swap-storage: false
 

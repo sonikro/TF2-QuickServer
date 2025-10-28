@@ -1,0 +1,145 @@
+name: "Free Disk Space (Background)"
+description: "Free up disk space on an Ubuntu GitHub Actions runner by running cleanup in the background."
+
+inputs:
+  android:
+    description: "Remove Android runtime"
+    required: false
+    default: "true"
+  dotnet:
+    description: "Remove .NET runtime"
+    required: false
+    default: "true"
+  haskell:
+    description: "Remove Haskell runtime"
+    required: false
+    default: "false"
+  large-packages:
+    description: "Remove large packages"
+    required: false
+    default: "false"
+  docker-images:
+    description: "Remove Docker images"
+    required: false
+    default: "false"
+  tool-cache:
+    description: "Remove image tool cache"
+    required: false
+    default: "false"
+  swap-storage:
+    description: "Remove swap storage"
+    required: false
+    default: "false"
+
+branding:
+  icon: "trash-2"
+  color: "green"
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        # Start cleanup in background to avoid blocking the workflow
+        nohup bash -c '
+          # Give the system a moment to start
+          sleep 5
+          
+          formatByteCount() {
+            echo $(numfmt --to=iec-i --suffix=B --padding=7 $1"000")
+          }
+          
+          getAvailableSpace() {
+            echo $(df -a $1 | awk "NR > 1 {avail+=$4} END {print avail}")
+          }
+          
+          printSavedSpace() {
+            saved=${1}
+            title=${2:-}
+            
+            if [ ! -z "${title}" ]; then
+              echo "Freed space - ${title}: $(formatByteCount $saved)"
+            else
+              echo "Freed space: $(formatByteCount $saved)"
+            fi
+          }
+          
+          # Remove Android library
+          if [[ ${{ inputs.android }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo rm -rf /usr/local/lib/android || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Android library" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove .NET runtime
+          if [[ ${{ inputs.dotnet }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo rm -rf /usr/share/dotnet || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED ".NET runtime" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove Haskell runtime
+          if [[ ${{ inputs.haskell }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo rm -rf /opt/ghc || true
+            sudo rm -rf /usr/local/.ghcup || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Haskell runtime" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove large packages
+          if [[ ${{ inputs.large-packages }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo apt-get remove -y "^aspnetcore-.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y "^dotnet-.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y "^llvm-.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y "php.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y "^mongodb-.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y "^mysql-.*" --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y azure-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y google-cloud-sdk --fix-missing 2>/dev/null || true
+            sudo apt-get remove -y google-cloud-cli --fix-missing 2>/dev/null || true
+            sudo apt-get autoremove -y 2>/dev/null || true
+            sudo apt-get clean 2>/dev/null || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Large misc. packages" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove Docker images
+          if [[ ${{ inputs.docker-images }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo docker image prune --all --force 2>/dev/null || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Docker images" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove tool cache
+          if [[ ${{ inputs.tool-cache }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo rm -rf "$AGENT_TOOLSDIRECTORY" 2>/dev/null || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Tool cache" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          # Remove Swap storage
+          if [[ ${{ inputs.swap-storage }} == "true" ]]; then
+            BEFORE=$(getAvailableSpace)
+            sudo swapoff -a 2>/dev/null || true
+            sudo rm -f /mnt/swapfile 2>/dev/null || true
+            AFTER=$(getAvailableSpace)
+            SAVED=$((AFTER-BEFORE))
+            printSavedSpace $SAVED "Swap storage" >> /tmp/cleanup.log 2>&1
+          fi
+          
+          echo "Cleanup complete" >> /tmp/cleanup.log 2>&1
+        ' > /dev/null 2>&1 &
+        
+        echo "Cleanup started in background..."
