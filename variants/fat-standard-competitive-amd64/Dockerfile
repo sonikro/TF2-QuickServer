@@ -1,4 +1,24 @@
-# Stage 1: Download and extract plugins
+# Stage 1 : Download Sourcemod and Metamod
+FROM ubuntu:22.04 AS sourcemod-metamod
+WORKDIR /download
+ARG INSTALL_DIR=/server/tf
+RUN mkdir -p "${INSTALL_DIR}"
+
+ARG METAMOD_VERSION=1.12.0-git1219
+ARG METAMOD_FILE_NAME=mmsource-${METAMOD_VERSION}-linux.tar.gz
+ARG METAMOD_URL=https://mms.alliedmods.net/mmsdrop/1.12/${METAMOD_FILE_NAME}
+ARG METAMOD_CHECKSUM=f16e67d8de30a46edb2aee8909a885f9f025993284596bb0cfc83b5b32eae05f
+ADD --checksum=sha256:${METAMOD_CHECKSUM} ${METAMOD_URL} .
+RUN tar xf "${METAMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
+
+ARG SOURCEMOD_VERSION=1.12.0-git7210
+ARG SOURCEMOD_FILE_NAME=sourcemod-${SOURCEMOD_VERSION}-linux.tar.gz
+ARG SOURCEMOD_URL=https://sm.alliedmods.net/smdrop/1.12/${SOURCEMOD_FILE_NAME}
+ARG SOURCEMOD_CHECKSUM=86caf2da0b1e9503c01296b175ace4662106880b57123abf88961feeb2fa9278
+ADD --checksum=sha256:${SOURCEMOD_CHECKSUM} ${SOURCEMOD_URL} .
+RUN tar xf "${SOURCEMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
+
+# Stage 2: Download Plugins
 FROM ubuntu:22.04 AS plugins
 
 SHELL ["/bin/bash", "-c"]
@@ -133,38 +153,91 @@ ARG FBTF_CONFIGS_URL=https://fbtf.tf/uploads/cfgs/${FBTF_CONFIGS_FILE_NAME}
 RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
   && unzip -q "${FBTF_CONFIGS_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/cfg/"
 
-# Stage 2: Build final image
-FROM ghcr.io/melkortf/tf2-sourcemod/amd64:latest
+# Stage 3 : Final image
+FROM steamcmd/steamcmd:ubuntu-22
+LABEL maintainer="garrappachc@gmail.com"
 
-LABEL maintainer="TF2-QuickServer"
+RUN export DEBIAN_FRONTEND=noninteractive \
+  && export TZ=Etc/UTC \
+  && apt-get -y update \
+  && apt-get install -y software-properties-common \
+  && add-apt-repository multiverse \
+  && apt-get install -y --no-install-recommends --no-install-suggests \
+  libncurses5 \
+  libbz2-1.0 \
+  libcurl3-gnutls \
+  libcurl4 \
+  wget \
+  unzip \
+  gettext-base \
+  libbsd0 \
+  && rm -rf /var/lib/apt/lists/*
 
-# Install required dependencies for extensions
-USER root
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libcurl4 \
-    && rm -rf /var/lib/apt/lists/*
-USER tf2
+ARG USER=tf2
+ARG HOME=/home/$USER
+ARG SERVER_DIR=$HOME/server
+ARG APP_ID=232250
 
-ARG PLUGIN_INSTALL_DIR=/server/tf
+ENV USER=$USER
+ENV HOME=$HOME
+ENV SERVER_DIR=$SERVER_DIR
+ENV APP_ID=$APP_ID
+ENV SRCDS_EXEC=srcds_run_64
+
+RUN useradd --home-dir $HOME --create-home --shell /bin/bash $USER
+USER $USER
+WORKDIR $HOME
+
+COPY ./variants/base/maps_to_keep ./variants/base/tf2.txt.template $HOME/
+RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
+  && steamcmd +runscript $HOME/tf2.txt \
+  && find $SERVER_DIR/tf/maps -type f | grep -v "$(cat maps_to_keep)" | xargs rm -rf \
+  && rm maps_to_keep \
+  && mkdir $HOME/.steam \
+  && ln -s $HOME/.local/share/Steam/steamcmd/linux64 $HOME/.steam/sdk64
+
+COPY ./variants/base/tf/cfg/server.cfg.template ${SERVER_DIR}/tf/cfg/server.cfg.template
+COPY ./variants/base/rcon ${SERVER_DIR}/rcon
+
+ENV IP=0.0.0.0
+ENV PORT=27015
+ENV CLIENT_PORT=27016
+ENV STEAM_PORT=27018
+ENV STV_PORT=27020
+ENV SERVER_TOKEN=""
+ENV ENABLE_FAKE_IP=0
+
+ENV RCON_PASSWORD="123456"
+ENV SERVER_HOSTNAME="A Team Fortress 2 server"
+ENV SERVER_PASSWORD=
+ENV STV_NAME="Source TV"
+ENV STV_TITLE="A Team Fortress 2 server Source TV"
+ENV STV_PASSWORD=
+ENV DOWNLOAD_URL="https://fastdl.serveme.tf/"
+
+WORKDIR $SERVER_DIR
+COPY ./variants/base/entrypoint.sh .
+COPY ./variants/base/healthcheck.sh .
+
+COPY --from=sourcemod-metamod --chown=tf2 /server/tf/ "${SERVER_DIR}/tf/"
 
 # Copy plugins and configs from build stage
-COPY --from=plugins --chown=tf2 "${PLUGIN_INSTALL_DIR}/" "${SERVER_DIR}/tf/"
+COPY --from=plugins --chown=tf2 /server/tf/ "${SERVER_DIR}/tf/"
 
 # Disable useless (and potentially harmful) plugins
-RUN mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled" \
-  && mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{nextmap,funcommands,funvotes}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
+RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{nextmap,funcommands,funvotes}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
 
 # Environment variables
 ENV DEMOS_TF_APIKEY= \
-    LOGS_TF_APIKEY= \
-    ADMIN_LIST="" \
-    DEFAULT_5CP_CFG="" \
-    DEFAULT_KOTH_CFG="" \
-    DEFAULT_PL_CFG="" \
-    DEFAULT_ULTIDUO_CFG="" \
-    DEFAULT_PASSTIME_CFG="pt_global_pug.cfg" \
-    DEFAULT_TFDB_CFG="dodgeball.cfg" \
-    DEFAULT_MGE_CFG="mge.cfg"
+  LOGS_TF_APIKEY= \
+  ADMIN_LIST="" \
+  DEFAULT_5CP_CFG="" \
+  DEFAULT_KOTH_CFG="" \
+  DEFAULT_PL_CFG="" \
+  DEFAULT_ULTIDUO_CFG="" \
+  DEFAULT_PASSTIME_CFG="pt_global_pug.cfg" \
+  DEFAULT_TFDB_CFG="dodgeball.cfg" \
+  DEFAULT_MGE_CFG="mge.cfg"
 
 USER tf2
 
@@ -187,4 +260,10 @@ COPY --chown=tf2 variants/base/enforced_cvars.cfg $SERVER_DIR/enforced_cvars.cfg
 COPY --chown=tf2 variants/base/custom_entrypoint.sh .
 
 ENTRYPOINT [ "./custom_entrypoint.sh" ]
+CMD ["+sv_pure", "1", "+map", "cp_badlands", "+maxplayers", "24"]
 
+EXPOSE $PORT/tcp
+EXPOSE $PORT/udp
+EXPOSE $STV_PORT/udp
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=20s --retries=3 CMD [ "./healthcheck.sh" ]
