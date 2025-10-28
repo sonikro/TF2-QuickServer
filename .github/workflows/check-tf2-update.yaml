@@ -1,0 +1,103 @@
+name: Check for TF2 Update
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get current TF2 version
+        id: current_version
+        run: |
+          current_version=$(cat ./tf2version.txt)
+          echo "current_version=$current_version" >> $GITHUB_OUTPUT
+
+      - name: Check for new TF2 version
+        id: check
+        env:
+          CURRENT_VERSION: ${{ steps.current_version.outputs.current_version }}
+        run: |
+          api_url="https://api.steampowered.com/ISteamApps/UpToDateCheck/v1/?appid=440&version=${CURRENT_VERSION}&format=json"
+          
+          response=$(curl -fs --connect-timeout 10 --max-time 20 "$api_url")
+          curl_exit_code=$?
+          
+          if [[ $curl_exit_code -ne 0 ]]; then
+            echo "::error::curl command failed with exit code $curl_exit_code"
+            exit 1
+          fi
+          
+          if [[ ! "$response" =~ ^\{ ]]; then
+            echo "::error::Steam API response does not look like valid JSON"
+            echo "$response"
+            exit 1
+          fi
+          
+          if ! jq -e '.response.success' <<< "$response" > /dev/null; then
+            echo "::error::Steam API JSON response is missing expected structure"
+            echo "$response"
+            exit 1
+          fi
+          
+          up_to_date=$(jq -r '.response.up_to_date' <<< "$response")
+          required_version=$(jq -r '.response.required_version' <<< "$response")
+          
+          echo "API Response: up_to_date=$up_to_date, required_version=$required_version"
+          
+          if [[ "$up_to_date" == "true" ]]; then
+            echo "Version $CURRENT_VERSION is up-to-date. No update needed."
+            echo "new_version_available=false" >> $GITHUB_OUTPUT
+          elif [[ "$up_to_date" == "false" ]]; then
+            echo "Version $CURRENT_VERSION is outdated. New version available: $required_version"
+            echo "new_version_available=true" >> $GITHUB_OUTPUT
+            echo "new_version=$required_version" >> $GITHUB_OUTPUT
+          else
+            echo "::error::Unexpected value for 'up_to_date' field: $up_to_date"
+            exit 1
+          fi
+
+      - name: Update tf2version.txt and create PR
+        if: steps.check.outputs.new_version_available == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.check.outputs.new_version }}
+          CURRENT_VERSION: ${{ steps.current_version.outputs.current_version }}
+        run: |
+          branch_name="chore/update-tf2-version-$(date +%s)"
+          
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git checkout -b "$branch_name"
+          
+          echo "$NEW_VERSION" > ./tf2version.txt
+          
+          git add ./tf2version.txt
+          git commit -m "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION"
+          git push origin "$branch_name"
+          
+          pr_response=$(gh pr create \
+            --title "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION" \
+            --body "New TF2 version available: $NEW_VERSION (from $CURRENT_VERSION)" \
+            --head "$branch_name" \
+            --base main)
+          
+          pr_number=$(echo "$pr_response" | grep -oP '(?<=/pull/)\d+' | head -1)
+          
+          if [ -z "$pr_number" ]; then
+            echo "::error::Failed to extract PR number from response: $pr_response"
+            exit 1
+          fi
+          
+          gh pr merge "$pr_number" --auto --merge
+          echo "PR #$pr_number created and automerge enabled"

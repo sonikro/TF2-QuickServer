@@ -159,14 +159,19 @@ LABEL maintainer="garrappachc@gmail.com"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
   && export TZ=Etc/UTC \
+  && dpkg --add-architecture i386 \
   && apt-get -y update \
   && apt-get install -y software-properties-common \
   && add-apt-repository multiverse \
+  && apt-get -y update \
   && apt-get install -y --no-install-recommends --no-install-suggests \
-  libncurses5 \
-  libbz2-1.0 \
-  libcurl3-gnutls \
-  libcurl4 \
+  lib32gcc-s1 \
+  lib32z1 \
+  libncurses5:i386 \
+  libbz2-1.0:i386 \
+  lib32stdc++6 \
+  libtinfo5:i386 \
+  libcurl3-gnutls:i386 \
   wget \
   unzip \
   gettext-base \
@@ -182,7 +187,7 @@ ENV USER=$USER
 ENV HOME=$HOME
 ENV SERVER_DIR=$SERVER_DIR
 ENV APP_ID=$APP_ID
-ENV SRCDS_EXEC=srcds_run_64
+ENV SRCDS_EXEC=srcds_run
 
 RUN useradd --home-dir $HOME --create-home --shell /bin/bash $USER
 USER $USER
@@ -194,8 +199,8 @@ RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
   && steamcmd +runscript $HOME/tf2.txt \
   && find $SERVER_DIR/tf/maps -type f | grep -v "$(cat maps_to_keep)" | xargs rm -rf \
   && rm maps_to_keep \
-  && mkdir $HOME/.steam \
-  && ln -s $HOME/.local/share/Steam/steamcmd/linux64 $HOME/.steam/sdk64
+  && mkdir -p $HOME/.steam \
+  && ln -s $HOME/.local/share/Steam/steamcmd/linux32 $HOME/.steam/sdk32
 
 COPY ./variants/base/tf/cfg/server.cfg.template ${SERVER_DIR}/tf/cfg/server.cfg.template
 COPY ./variants/base/rcon ${SERVER_DIR}/rcon
@@ -244,11 +249,8 @@ USER tf2
 
 # Copy custom configs and plugins from base variant
 COPY --chown=tf2 variants/base/tf/cfg/* "${SERVER_DIR}/tf/cfg/"
-RUN mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/extensions/x64"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions/x64/* "${SERVER_DIR}/tf/addons/sourcemod/extensions/x64/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/* "${SERVER_DIR}/tf/addons/sourcemod/configs/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/x64/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/translations/* "${SERVER_DIR}/tf/addons/sourcemod/translations/"
