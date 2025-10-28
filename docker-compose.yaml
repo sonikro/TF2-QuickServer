@@ -29,10 +29,11 @@ services:
       - "cp_badlands"
     profiles:
       - server
-  fat-server:
+  fat-server-amd64:
     build:
       context: ./
-      dockerfile: ./variants/fat-standard-competitive/Dockerfile
+      dockerfile: ./variants/fat-standard-competitive-amd64/Dockerfile
+    container_name: tf2-fat-server-amd64
     ports:
       - 27015:27015
       - 27015:27015/udp
@@ -48,13 +49,17 @@ services:
       - "24"
       - "+map"
       - "cp_badlands"
+      - +log
+      - on
+      - +logaddress_add
+      - "host.docker.internal:27101"
     profiles:
       - server
-  fat-server-amd64:
+  fat-server-i386:
     build:
       context: ./
-      dockerfile: ./variants/fat-standard-competitive-amd64/Dockerfile
-    container_name: tf2-fat-server-amd64
+      dockerfile: ./variants/fat-standard-competitive-i386/Dockerfile
+    container_name: tf2-fat-server-i386
     ports:
       - 27015:27015
       - 27015:27015/udp

@@ -10,17 +10,18 @@ on:
       - "variants/**"
       - "maps.json"
       - "maps/**"
+      - "tf2version.txt"
   pull_request:
     branches:
       - main
 
 jobs:
-  build-fat-tf2-standard-competitive:
+  build-fat-tf2-standard-competitive-i386:
     uses: ./.github/workflows/build-variant.yaml
     with:
-      variant-name: fat-tf2-standard-competitive
-      dockerfile-path: ./variants/fat-standard-competitive/Dockerfile
-      image-name: sonikro/fat-tf2-standard-competitive
+      variant-name: fat-tf2-standard-competitive-i386
+      dockerfile-path: ./variants/fat-standard-competitive-i386/Dockerfile
+      image-name: sonikro/fat-tf2-standard-competitive-i386
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
