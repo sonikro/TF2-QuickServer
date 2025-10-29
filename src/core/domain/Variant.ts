@@ -36,6 +36,13 @@ export type VariantConfig = {
      * If set, the variant will only be available in that guild.
      */
     guildId?: string;
+
+    /**
+     * Whether the server is managed by an external system.
+     * If true, users will not receive connection details as the server is managed externally.
+     * @default false
+     */
+    managedExternally?: boolean;
 }
 
 export function getVariantConfig(variant: Variant) {
