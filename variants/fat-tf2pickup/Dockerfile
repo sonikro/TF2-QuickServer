@@ -1,4 +1,4 @@
-FROM sonikro/fat-tf2-standard-competitive:latest
+FROM sonikro/fat-tf2-standard-competitive-i386:latest
 
 COPY ./variants/fat-tf2pickup/checksum.md5 .
 
