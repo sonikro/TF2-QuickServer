@@ -66,7 +66,7 @@ describe("createServerCommandHandler", () => {
         return buttonInteraction;
     };
 
-    it("should create a server with the specified region and variant via button interaction", async () => {
+    it("should reply with connect information for variants that support direct connect", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = getTestRegion();
         const variantName = "standard-competitive";
@@ -131,7 +131,7 @@ describe("createServerCommandHandler", () => {
         });
     });
 
-    it("should handle tf2pickup variant differently", async () => {
+    it("should reply with custom message for variants that are managed externally", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = getTestRegion();
         const variantName = "tf2pickup";
@@ -141,9 +141,6 @@ describe("createServerCommandHandler", () => {
             .thenReturn(region);
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
-
-        // Use the message and collector from createHandler
-        // No need to mock createMessageComponentCollector or fetchReply here
 
         const deployedServer = mock<Server>({
             serverId: chance.guid(),
@@ -182,7 +179,7 @@ describe("createServerCommandHandler", () => {
             content: expect.stringContaining(`Creating server in region`),
         });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining("Server Created and Registered"),
+            content: expect.stringContaining("managed by an external system"),
             flags: MessageFlags.Ephemeral,
         });
     });

@@ -152,6 +152,7 @@
             "hostname": "br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
+            "managedExternally": true,
             "admins": [
                 "STEAM_0:0:14581482",
                 "STEAM_0:0:26146577",
@@ -169,6 +170,7 @@
             "hostname": "hl.br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
+            "managedExternally": true,
             "admins": [
                 "STEAM_0:1:433143455",
                 "STEAM_0:1:79008369",

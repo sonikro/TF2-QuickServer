@@ -10,7 +10,7 @@ import {
     Collection,
     PermissionFlagsBits
 } from "discord.js";
-import { getRegionDisplayName, getVariantConfigs, Region } from "../../../core/domain";
+import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region } from "../../../core/domain";
 import { CreateServerForUser } from "../../../core/usecase/CreateServerForUser";
 import { createInteractionStatusUpdater } from "../../../providers/services/DiscordInteractionStatusUpdater";
 import { commandErrorHandler } from "../commandErrorHandler";
@@ -103,11 +103,12 @@ export function createServerCommandHandlerFactory(dependencies: {
                         guildId: buttonInteraction.guildId!,
                         statusUpdater: createInteractionStatusUpdater(buttonInteraction)
                     });
-                    if (variantName.includes("tf2pickup")) {
+                    const variantConfig = getVariantConfig(variantName);
+                    if (variantConfig.managedExternally) {
                         await buttonInteraction.followUp({
                             content: `🎉 **Server Created and Registered!** 🎉\n\n` +
-                                `💻 This server was created and registered to the **tf2pickup.org** instance associated with this Discord Guild.\n` +
-                                `🔒 You will not receive the credentials or connect information, as using the server is managed by the **tf2pickup** instance.\n` +
+                                `💻 This server is managed by an external system.\n` +
+                                `🔒 Therefore, the connect information will not be shared with you.\n` +
                                 `✅ The server is now **available to be used**!`,
                             flags: MessageFlags.Ephemeral
                         });

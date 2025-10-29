@@ -117,7 +117,6 @@ export class OCIServerManager implements ServerManager {
                 const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
                 const finalHostname = `#${uuidPrefix} ${hostname}`;
                 
-                // Determine if this is a pickup variant
                 const environmentVariables: Record<string, string> = {
                     SERVER_HOSTNAME: finalHostname,
                     SERVER_PASSWORD: serverPassword,
