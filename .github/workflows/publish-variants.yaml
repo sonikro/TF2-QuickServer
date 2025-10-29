@@ -35,3 +35,14 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  build-fat-tf2-pickup:
+    needs: build-fat-tf2-standard-competitive-i386
+    uses: ./.github/workflows/build-variant.yaml
+    with:
+      variant-name: fat-tf2-pickup
+      dockerfile-path: ./variants/fat-tf2pickup/Dockerfile
+      image-name: sonikro/fat-tf2-pickup
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
