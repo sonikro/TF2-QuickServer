@@ -66,38 +66,18 @@ jobs:
             exit 1
           fi
 
-      - name: Update tf2version.txt and create PR
+      - name: Update tf2version.txt
         if: steps.check.outputs.new_version_available == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           NEW_VERSION: ${{ steps.check.outputs.new_version }}
           CURRENT_VERSION: ${{ steps.current_version.outputs.current_version }}
         run: |
-          branch_name="chore/update-tf2-version-$(date +%s)"
-          
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          git checkout -b "$branch_name"
           
           echo "$NEW_VERSION" > ./tf2version.txt
           
           git add ./tf2version.txt
           git commit -m "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION"
-          git push origin "$branch_name"
-          
-          pr_response=$(gh pr create \
-            --title "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION" \
-            --body "New TF2 version available: $NEW_VERSION (from $CURRENT_VERSION)" \
-            --head "$branch_name" \
-            --base main)
-          
-          pr_number=$(echo "$pr_response" | grep -oP '(?<=/pull/)\d+' | head -1)
-          
-          if [ -z "$pr_number" ]; then
-            echo "::error::Failed to extract PR number from response: $pr_response"
-            exit 1
-          fi
-          
-          gh pr merge "$pr_number" --auto --merge
-          echo "PR #$pr_number created and automerge enabled"
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} main
