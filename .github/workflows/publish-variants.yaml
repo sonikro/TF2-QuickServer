@@ -46,3 +46,38 @@ jobs:
     secrets:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  publish-release-notes:
+    runs-on: ubuntu-latest
+    needs:
+      - build-fat-tf2-standard-competitive-i386
+      - build-fat-tf2-standard-competitive-amd64
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest commit
+        id: commit
+        run: |
+          LAST_COMMIT=$(git log --oneline -1 --no-decorate)
+          echo "message=$LAST_COMMIT" >> $GITHUB_OUTPUT
+
+      - name: Publish to Discord
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🚀 **TF2-QuickServer Release**
+            
+            New variant images have been published to Docker Hub
+            
+            **Published Images:**
+            • sonikro/fat-tf2-standard-competitive-i386:latest
+            • sonikro/fat-tf2-standard-competitive-amd64:latest
+            
+            **Latest Commit:**
+            `${{ steps.commit.outputs.message }}`
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
