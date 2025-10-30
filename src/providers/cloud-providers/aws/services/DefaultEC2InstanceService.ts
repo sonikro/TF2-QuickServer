@@ -14,7 +14,29 @@ import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces
 import { AWSConfigService } from "./AWSConfigService";
 
 /**
- * Service responsible for managing dedicated EC2 instances for TF2 servers
+ * Service responsible for managing dedicated EC2 instances for TF2 servers.
+ * 
+ * This service handles EC2 instance lifecycle operations including creation and termination.
+ * 
+ * ## Capacity Error Handling
+ * 
+ * AWS Local Zones (like Buenos Aires) can experience insufficient capacity errors.
+ * To mitigate this, the service implements an automatic fallback mechanism:
+ * 
+ * 1. Primary attempt: t3.medium instance type
+ * 2. First fallback: t3a.medium (AMD-based alternative, often has separate capacity pools)
+ * 3. Second fallback: t3.small (smaller instance, usually more available)
+ * 
+ * When all instance types are exhausted, an InsufficientCapacityError is thrown,
+ * which is caught by the command handler and presented to users with a friendly message.
+ * 
+ * ## Logging and Monitoring
+ * 
+ * All capacity errors and fallback attempts are logged to OpenTelemetry for monitoring.
+ * This helps track capacity issues across regions and instance types.
+ * 
+ * @see InsufficientCapacityError for the custom error type
+ * @see getFallbackInstanceTypes for the fallback strategy
  */
 export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
     constructor(

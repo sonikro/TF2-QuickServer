@@ -1,6 +1,18 @@
 import { logger } from '../../telemetry/otel';
 import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
 
+/**
+ * Central error handler for Discord command interactions.
+ * 
+ * Handles different error types and presents appropriate messages to users:
+ * - UserError: User-facing errors with helpful messages (e.g., validation failures)
+ * - AbortError: User-initiated operation cancellations
+ * - InsufficientCapacityError: AWS capacity issues with clear guidance
+ * - Default: Generic errors logged for admin investigation
+ * 
+ * @param interaction The Discord interaction to respond to
+ * @param error The error that occurred during command execution
+ */
 export async function commandErrorHandler(interaction: ChatInputCommandInteraction | MessageComponentInteraction, error: Error) {
     switch (error.name) {
         case 'UserError':
