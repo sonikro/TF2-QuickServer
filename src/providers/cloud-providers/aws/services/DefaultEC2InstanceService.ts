@@ -45,7 +45,7 @@ export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
     ) { }
 
     private getInstanceTypeForVariant(ocpu: number, memory: number): _InstanceType {
-        // Currently only supporting t3_medum;
+        // Currently only supporting t3_medium;
         if (ocpu === 1 && memory === 4) {
             return _InstanceType.t3_medium;
         }
