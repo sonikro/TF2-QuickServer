@@ -14,6 +14,7 @@
     "koth_bagel_rc8",
     "koth_bagel_rc10",
     "koth_bagel_rc11",
+    "koth_bagel_event",
     "koth_product_final",
     "koth_cascade_rc2",
     "cp_badlands",
@@ -113,5 +114,6 @@
     "mge_ammomod",
     "pl_hasslecastle",
     "cp_gorge_event",
-    "mge_glassworks"
+    "mge_glassworks",
+    "cp_holyhell_rc1"
 ]
