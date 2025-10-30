@@ -7,7 +7,9 @@ import {
     waitUntilInstanceRunning
 } from "@aws-sdk/client-ec2";
 import { Region, VariantConfig } from '../../../../core/domain';
+import { InsufficientCapacityError } from '../../../../core/errors/InsufficientCapacityError';
 import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
+import { logger } from '../../../../telemetry/otel';
 import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";
 
@@ -26,6 +28,28 @@ export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
             return _InstanceType.t3_medium;
         }
         throw new Error(`Currently only supporting t3_medium instances`);
+    }
+
+    /**
+     * Get fallback instance types to try when the primary instance type fails
+     * with InsufficientInstanceCapacity error
+     */
+    private getFallbackInstanceTypes(primaryType: _InstanceType): _InstanceType[] {
+        // For t3.medium, try t3a.medium (AMD alternative) and t3.small as fallbacks
+        if (primaryType === _InstanceType.t3_medium) {
+            return [_InstanceType.t3a_medium, _InstanceType.t3_small];
+        }
+        return [];
+    }
+
+    /**
+     * Check if an error is an InsufficientInstanceCapacity error from AWS
+     */
+    private isInsufficientCapacityError(error: any): boolean {
+        return error?.name === 'InsufficientInstanceCapacity' || 
+               error?.Code === 'InsufficientInstanceCapacity' ||
+               error?.__type === 'InsufficientInstanceCapacity' ||
+               (error?.message && error.message.includes('InsufficientInstanceCapacity'));
     }
 
     private async getLatestECSOptimizedAMI(region: Region): Promise<string> {
@@ -64,6 +88,54 @@ export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
         return latestImage.ImageId!;
     }
 
+    /**
+     * Attempt to launch an EC2 instance with the specified parameters
+     */
+    private async launchInstance(args: {
+        ec2Client: any;
+        amiId: string;
+        instanceType: _InstanceType;
+        securityGroupId: string;
+        awsRegionConfig: any;
+        userData: string;
+        serverId: string;
+    }): Promise<string> {
+        const runInstanceResponse = await args.ec2Client.send(new RunInstancesCommand({
+            ImageId: args.amiId,
+            InstanceType: args.instanceType,
+            MinCount: 1,
+            MaxCount: 1,
+            SecurityGroupIds: [args.securityGroupId],
+            SubnetId: args.awsRegionConfig.subnet_id,
+            UserData: args.userData,
+            IamInstanceProfile: {
+                Arn: args.awsRegionConfig.instance_profile_arn,
+            },
+            TagSpecifications: [
+                {
+                    ResourceType: "instance",
+                    Tags: [
+                        {
+                            Key: "Name",
+                            Value: args.serverId,
+                        },
+                        {
+                            Key: "Server",
+                            Value: args.serverId,
+                        },
+                    ],
+                },
+            ],
+        }));
+
+        const instanceId = runInstanceResponse.Instances?.[0]?.InstanceId;
+        if (!instanceId) {
+            throw new Error("Failed to launch EC2 instance");
+        }
+
+        return instanceId;
+    }
+
     async create(args: {
         serverId: string;
         region: Region;
@@ -80,7 +152,10 @@ export class DefaultEC2InstanceService implements EC2InstanceServiceInterface {
                 this.tracingService.logOperationStart('Launching EC2 instance', args.serverId, args.region);
 
                 // Get the appropriate instance type and AMI
-                const instanceType = this.getInstanceTypeForVariant(args.variantConfig.ocpu, args.variantConfig.memory);
+                const primaryInstanceType = this.getInstanceTypeForVariant(args.variantConfig.ocpu, args.variantConfig.memory);
+                const fallbackInstanceTypes = this.getFallbackInstanceTypes(primaryInstanceType);
+                const instanceTypesToTry = [primaryInstanceType, ...fallbackInstanceTypes];
+                
                 const amiId = await this.getLatestECSOptimizedAMI(args.region);
 
                 // User data script to register with ECS cluster
@@ -106,54 +181,88 @@ EOF
 echo "ECS configuration completed"
 `).toString('base64');
 
-                const runInstanceResponse = await ec2Client.send(new RunInstancesCommand({
-                    ImageId: amiId,
-                    InstanceType: instanceType,
-                    MinCount: 1,
-                    MaxCount: 1,
-                    SecurityGroupIds: [args.securityGroupId],
-                    SubnetId: awsRegionConfig.subnet_id,
-                    UserData: userData,
-                    IamInstanceProfile: {
-                        Arn: awsRegionConfig.instance_profile_arn,
-                    },
-                    TagSpecifications: [
-                        {
-                            ResourceType: "instance",
-                            Tags: [
-                                {
-                                    Key: "Name",
-                                    Value: args.serverId,
-                                },
-                                {
-                                    Key: "Server",
-                                    Value: args.serverId,
-                                },
-                            ],
-                        },
-                    ],
-                }));
+                let lastError: any = null;
+                
+                // Try each instance type in order
+                for (const instanceType of instanceTypesToTry) {
+                    try {
+                        logger.emit({
+                            severityText: 'INFO',
+                            body: `Attempting to launch EC2 instance with type ${instanceType}`,
+                            attributes: {
+                                serverId: args.serverId,
+                                region: args.region,
+                                instanceType
+                            }
+                        });
 
-                const instanceId = runInstanceResponse.Instances?.[0]?.InstanceId;
-                if (!instanceId) {
-                    throw new Error("Failed to launch EC2 instance");
+                        const instanceId = await this.launchInstance({
+                            ec2Client,
+                            amiId,
+                            instanceType,
+                            securityGroupId: args.securityGroupId,
+                            awsRegionConfig,
+                            userData,
+                            serverId: args.serverId
+                        });
+
+                        this.tracingService.logOperationSuccess('EC2 instance launched', args.serverId, args.region, {
+                            instanceId,
+                            instanceType
+                        });
+
+                        // Wait for instance to be running
+                        await waitUntilInstanceRunning(
+                            { client: ec2Client, maxWaitTime: 300 },
+                            { InstanceIds: [instanceId] }
+                        );
+
+                        this.tracingService.logOperationSuccess('EC2 instance is running', args.serverId, args.region, {
+                            instanceId,
+                            instanceType
+                        });
+
+                        return instanceId;
+
+                    } catch (error: any) {
+                        lastError = error;
+                        
+                        if (this.isInsufficientCapacityError(error)) {
+                            logger.emit({
+                                severityText: 'WARN',
+                                body: `InsufficientInstanceCapacity error for ${instanceType}, trying next option`,
+                                attributes: {
+                                    serverId: args.serverId,
+                                    region: args.region,
+                                    instanceType,
+                                    error: error.message
+                                }
+                            });
+                            // Continue to next instance type
+                            continue;
+                        } else {
+                            // For other errors, throw immediately
+                            throw error;
+                        }
+                    }
                 }
 
-                this.tracingService.logOperationSuccess('EC2 instance launched', args.serverId, args.region, {
-                    instanceId
+                // If we get here, all instance types failed with capacity errors
+                logger.emit({
+                    severityText: 'ERROR',
+                    body: 'All instance types exhausted due to insufficient capacity',
+                    attributes: {
+                        serverId: args.serverId,
+                        region: args.region,
+                        attemptedTypes: instanceTypesToTry.join(', ')
+                    }
                 });
 
-                // Wait for instance to be running
-                await waitUntilInstanceRunning(
-                    { client: ec2Client, maxWaitTime: 300 },
-                    { InstanceIds: [instanceId] }
+                throw new InsufficientCapacityError(
+                    `Unable to launch EC2 instance in ${args.region}. AWS does not have sufficient capacity for any of the attempted instance types (${instanceTypesToTry.join(', ')}). Please try again later.`,
+                    args.region,
+                    primaryInstanceType
                 );
-
-                this.tracingService.logOperationSuccess('EC2 instance is running', args.serverId, args.region, {
-                    instanceId
-                });
-
-                return instanceId;
             }
         );
     }

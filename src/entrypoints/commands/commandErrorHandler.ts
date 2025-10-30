@@ -15,6 +15,20 @@ export async function commandErrorHandler(interaction: ChatInputCommandInteracti
                 flags: MessageFlags.Ephemeral
             });
             break;
+        case 'InsufficientCapacityError':
+            await interaction.followUp({
+                content: `⚠️ **Insufficient Capacity Available** ⚠️\n\n` +
+                    `${error.message}\n\n` +
+                    `AWS does not currently have enough capacity in this region to create your server. ` +
+                    `This is a temporary issue on AWS's side.\n\n` +
+                    `**What you can do:**\n` +
+                    `• Try again in a few minutes\n` +
+                    `• Try a different region if available\n` +
+                    `• Wait for AWS to add more capacity to this zone\n\n` +
+                    `We apologize for the inconvenience. This issue is beyond our control.`,
+                flags: MessageFlags.Ephemeral
+            });
+            break;
         default:
             logger.emit({
                 severityText: 'ERROR',
