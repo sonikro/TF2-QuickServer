@@ -10,6 +10,7 @@ import {
     _InstanceType
 } from "@aws-sdk/client-ec2";
 import { Region, VariantConfig } from "../../../../core/domain";
+import { InsufficientCapacityError } from "../../../../core/errors/InsufficientCapacityError";
 import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { AWSConfigService } from "./AWSConfigService";
 import { DefaultEC2InstanceService } from "./DefaultEC2InstanceService";
@@ -206,6 +207,205 @@ describe("DefaultEC2InstanceService", () => {
             
             await expect(service.create(createArgs))
                 .rejects.toThrowError("Failed to launch EC2 instance");
+        });
+
+        it("retries with t3a.medium when t3.medium has insufficient capacity", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            // First call fails with InsufficientInstanceCapacity
+            ec2Mock.on(RunInstancesCommand).rejectsOnce({
+                name: 'InsufficientInstanceCapacity',
+                message: 'We currently do not have sufficient t3.medium capacity',
+                $metadata: {}
+            });
+
+            // Second call succeeds with t3a.medium
+            ec2Mock.on(RunInstancesCommand).resolvesOnce({
+                Instances: [{
+                    InstanceId: "i-12345"
+                }]
+            });
+
+            vi.mocked(waitUntilInstanceRunning).mockResolvedValue({ $metadata: {} } as any);
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            const result = await service.create(createArgs);
+            
+            expect(result).toBe("i-12345");
+            
+            // Verify we tried t3.medium first
+            expect(ec2Mock).toHaveReceivedCommandWith(RunInstancesCommand, {
+                InstanceType: _InstanceType.t3_medium
+            });
+            
+            // Verify we fell back to t3a.medium
+            expect(ec2Mock).toHaveReceivedNthCommandWith(2, RunInstancesCommand, {
+                InstanceType: _InstanceType.t3a_medium
+            });
+        });
+
+        it("retries with t3.small when both t3.medium and t3a.medium have insufficient capacity", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            // First two calls fail with InsufficientInstanceCapacity
+            ec2Mock.on(RunInstancesCommand).rejectsOnce({
+                name: 'InsufficientInstanceCapacity',
+                message: 'We currently do not have sufficient t3.medium capacity',
+                $metadata: {}
+            });
+
+            ec2Mock.on(RunInstancesCommand).rejectsOnce({
+                name: 'InsufficientInstanceCapacity',
+                message: 'We currently do not have sufficient t3a.medium capacity',
+                $metadata: {}
+            });
+
+            // Third call succeeds with t3.small
+            ec2Mock.on(RunInstancesCommand).resolvesOnce({
+                Instances: [{
+                    InstanceId: "i-12345"
+                }]
+            });
+
+            vi.mocked(waitUntilInstanceRunning).mockResolvedValue({ $metadata: {} } as any);
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            const result = await service.create(createArgs);
+            
+            expect(result).toBe("i-12345");
+            
+            // Verify we tried all three instance types
+            expect(ec2Mock).toHaveReceivedNthCommandWith(1, RunInstancesCommand, {
+                InstanceType: _InstanceType.t3_medium
+            });
+            expect(ec2Mock).toHaveReceivedNthCommandWith(2, RunInstancesCommand, {
+                InstanceType: _InstanceType.t3a_medium
+            });
+            expect(ec2Mock).toHaveReceivedNthCommandWith(3, RunInstancesCommand, {
+                InstanceType: _InstanceType.t3_small
+            });
+        });
+
+        it("throws InsufficientCapacityError when all instance types exhausted", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            // All instance types fail with InsufficientInstanceCapacity
+            ec2Mock.on(RunInstancesCommand).rejects({
+                name: 'InsufficientInstanceCapacity',
+                message: 'We currently do not have sufficient capacity',
+                $metadata: {}
+            });
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.create(createArgs))
+                .rejects.toThrow(InsufficientCapacityError);
+            
+            // Verify we tried all three instance types
+            expect(ec2Mock).toHaveReceivedCommandTimes(RunInstancesCommand, 3);
+        });
+
+        it("throws InsufficientCapacityError with proper details when capacity exhausted", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            ec2Mock.on(RunInstancesCommand).rejects({
+                name: 'InsufficientInstanceCapacity',
+                message: 'We currently do not have sufficient capacity',
+                $metadata: {}
+            });
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            try {
+                await service.create(createArgs);
+                expect.fail("Should have thrown InsufficientCapacityError");
+            } catch (error: any) {
+                expect(error).toBeInstanceOf(InsufficientCapacityError);
+                expect(error.region).toBe(Region.US_EAST_1_BUE_1A);
+                expect(error.instanceType).toBe(_InstanceType.t3_medium);
+                expect(error.message).toContain("t3.medium");
+                expect(error.message).toContain("t3a.medium");
+                expect(error.message).toContain("t3.small");
+                expect(error.message).toContain("Please try again later");
+            }
+        });
+
+        it("does not retry on non-capacity errors", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            // Fail with a different error (e.g., authorization error)
+            ec2Mock.on(RunInstancesCommand).rejects({
+                name: 'UnauthorizedOperation',
+                message: 'You are not authorized to perform this operation',
+                $metadata: {}
+            });
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.create(createArgs))
+                .rejects.toThrow('You are not authorized to perform this operation');
+            
+            // Verify we only tried once (no retries for non-capacity errors)
+            expect(ec2Mock).toHaveReceivedCommandTimes(RunInstancesCommand, 1);
+        });
+
+        it.each([
+            { errorProp: 'name', value: 'InsufficientInstanceCapacity' },
+            { errorProp: 'Code', value: 'InsufficientInstanceCapacity' },
+            { errorProp: '__type', value: 'InsufficientInstanceCapacity' },
+            { errorProp: 'message', value: 'Error with InsufficientInstanceCapacity in message' }
+        ])("detects capacity error with $errorProp = $value", async ({ errorProp, value }) => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            const error: any = { $metadata: {} };
+            error[errorProp] = value;
+
+            ec2Mock.on(RunInstancesCommand).rejectsOnce(error);
+            ec2Mock.on(RunInstancesCommand).resolvesOnce({
+                Instances: [{ InstanceId: "i-12345" }]
+            });
+
+            vi.mocked(waitUntilInstanceRunning).mockResolvedValue({ $metadata: {} } as any);
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            const result = await service.create(createArgs);
+            
+            expect(result).toBe("i-12345");
+            // Should have retried
+            expect(ec2Mock).toHaveReceivedCommandTimes(RunInstancesCommand, 2);
         });
     });
 
