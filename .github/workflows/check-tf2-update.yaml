@@ -76,8 +76,10 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git
+          
           echo "$NEW_VERSION" > ./tf2version.txt
           
           git add ./tf2version.txt
           git commit -m "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION"
-          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} main
+          git push
