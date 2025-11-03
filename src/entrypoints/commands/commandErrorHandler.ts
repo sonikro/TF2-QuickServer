@@ -15,6 +15,12 @@ export async function commandErrorHandler(interaction: ChatInputCommandInteracti
                 flags: MessageFlags.Ephemeral
             });
             break;
+        case 'InsufficientCapacityError':
+            await interaction.followUp({
+                content: error.message,
+                flags: MessageFlags.Ephemeral
+            });
+            break;
         default:
             logger.emit({
                 severityText: 'ERROR',
