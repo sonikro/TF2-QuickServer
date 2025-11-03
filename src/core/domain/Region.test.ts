@@ -20,6 +20,7 @@ describe('Region utilities', () => {
                 Region.US_CHICAGO_1,
                 Region.SA_SANTIAGO_1,
                 Region.EU_FRANKFURT_1,
+                Region.AP_SYDNEY_1
             ]);
 
             // Total should match enum size
