@@ -110,6 +110,27 @@ output "frankfurt_secret_id" {
   sensitive = true
 }
 
+# Sydney Region
+output "sydney_compartment_id" {
+  value = var.santiago_compartment_ocid
+}
+output "sydney_subnet_id" {
+  value = module.oci-network-ap-sydney-1.subnet_id
+}
+output "sydney_availability_domain" {
+  value = module.oci-network-ap-sydney-1.availability_domain
+}
+output "sydney_nsg_id" {
+  value = module.oci-network-ap-sydney-1.nsg_id
+}
+output "sydney_vnc_id" {
+  value = module.oci-network-ap-sydney-1.vnc_id
+}
+output "sydney_secret_id" {
+  value     = module.oci-vault-ap-sydney-1.secret_id
+  sensitive = true
+}
+
 # ===========================================
 # AWS OUTPUTS
 # ===========================================

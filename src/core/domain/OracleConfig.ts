@@ -54,6 +54,14 @@ export function getOracleConfig(): OracleConfig {
                 compartment_id: config.get<string>(`santiago_compartment_id.value`),
                 vnc_id: config.get<string>(`frankfurt_vnc_id.value`),
                 secret_id: config.get<string>(`frankfurt_secret_id.value`),
+            },
+            "ap-sydney-1": {
+                availability_domain: config.get<string>(`sydney_availability_domain.value`),
+                nsg_id: config.get<string>(`sydney_nsg_id.value`),
+                subnet_id: config.get<string>(`sydney_subnet_id.value`),
+                compartment_id: config.get<string>(`santiago_compartment_id.value`),
+                vnc_id: config.get<string>(`sydney_vnc_id.value`),
+                secret_id: config.get<string>(`sydney_secret_id.value`),
             }
         },
     }

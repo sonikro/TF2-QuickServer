@@ -30,6 +30,12 @@
             "tvHostname": "TF2-QuickServer TV | Frankfurt",
             "cloudProvider": "oracle"
         },
+        "ap-sydney-1": {
+            "displayName": "Sydney",
+            "srcdsHostname": "TF2-QuickServer | Sydney",
+            "tvHostname": "TF2-QuickServer TV | Sydney",
+            "cloudProvider": "oracle"
+        },
         "us-east-1-bue-1a": {
             "displayName": "Buenos Aires (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Buenos Aires",
