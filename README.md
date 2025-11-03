@@ -77,6 +77,7 @@ The main TF2-QuickServer app currently supports the following regions for instan
 - 🇨🇴 Bogotá
 - 🇺🇸 Chicago
 - 🇩🇪 Frankfurt
+- 🇦🇺 Sydney
 
 ### AWS Local Zones
 - 🇦🇷 **Buenos Aires (Experimental)** – Ultra-low latency deployment using AWS Local Zone

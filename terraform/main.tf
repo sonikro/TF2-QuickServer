@@ -50,6 +50,12 @@ provider "oci" {
   config_file_profile = "eu-frankfurt-1"
 }
 
+provider "oci" {
+  alias               = "ap-sydney-1"
+  region              = "ap-sydney-1"
+  config_file_profile = "ap-sydney-1"
+}
+
 # ===========================================
 # AWS PROVIDERS
 # ===========================================
@@ -111,6 +117,15 @@ module "oci-network-eu-frankfurt-1" {
   }
 }
 
+module "oci-network-ap-sydney-1" {
+  source           = "./modules/oci/network"
+  compartment_ocid = var.santiago_compartment_ocid
+
+  providers = {
+    oci = oci.ap-sydney-1
+  }
+}
+
 # Create Vault modules for each region to store Docker Hub credentials
 module "oci-vault-sa-saopaulo-1" {
   source           = "./modules/oci/vault"
@@ -164,6 +179,17 @@ module "oci-vault-eu-frankfurt-1" {
 
   providers = {
     oci = oci.eu-frankfurt-1
+  }
+}
+
+module "oci-vault-ap-sydney-1" {
+  source           = "./modules/oci/vault"
+  compartment_ocid = var.santiago_compartment_ocid
+  docker_username  = var.docker_username
+  docker_password  = var.docker_password
+
+  providers = {
+    oci = oci.ap-sydney-1
   }
 }
 
