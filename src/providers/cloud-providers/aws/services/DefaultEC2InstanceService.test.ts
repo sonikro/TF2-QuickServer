@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
     EC2Client,
+    EC2ServiceException,
     DescribeImagesCommand,
     DescribeInstancesCommand,
     RunInstancesCommand,
@@ -10,6 +11,7 @@ import {
     _InstanceType
 } from "@aws-sdk/client-ec2";
 import { Region, VariantConfig } from "../../../../core/domain";
+import { InsufficientCapacityError } from "../../../../core/errors/InsufficientCapacityError";
 import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { AWSConfigService } from "./AWSConfigService";
 import { DefaultEC2InstanceService } from "./DefaultEC2InstanceService";
@@ -207,6 +209,30 @@ describe("DefaultEC2InstanceService", () => {
             await expect(service.create(createArgs))
                 .rejects.toThrowError("Failed to launch EC2 instance");
         });
+
+        it("throws InsufficientCapacityError when AWS returns insufficient capacity error", async () => {
+            ec2Mock.on(DescribeImagesCommand).resolves({
+                Images: [{
+                    ImageId: "ami-12345",
+                    CreationDate: "2023-01-01T00:00:00.000Z"
+                }]
+            });
+
+            const awsError = new EC2ServiceException({
+                message: "InsufficientInstanceCapacity",
+                $fault: "client",
+                $metadata: {},
+                name: "InsufficientInstanceCapacity"
+            });
+
+            ec2Mock.on(RunInstancesCommand).rejects(awsError);
+
+            const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
+            
+            await expect(service.create(createArgs))
+                .rejects.toThrow(InsufficientCapacityError);
+        });
+
     });
 
     describe("terminate", () => {

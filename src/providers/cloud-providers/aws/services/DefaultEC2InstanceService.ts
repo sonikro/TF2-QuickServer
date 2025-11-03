@@ -2,11 +2,13 @@ import {
     _InstanceType,
     DescribeImagesCommand,
     DescribeInstancesCommand,
+    EC2ServiceException,
     RunInstancesCommand,
     TerminateInstancesCommand,
     waitUntilInstanceRunning
 } from "@aws-sdk/client-ec2";
 import { Region, VariantConfig } from '../../../../core/domain';
+import { InsufficientCapacityError } from '../../../../core/errors/InsufficientCapacityError';
 import { OperationTracingService } from "../../../../telemetry/OperationTracingService";
 import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";
@@ -106,54 +108,61 @@ EOF
 echo "ECS configuration completed"
 `).toString('base64');
 
-                const runInstanceResponse = await ec2Client.send(new RunInstancesCommand({
-                    ImageId: amiId,
-                    InstanceType: instanceType,
-                    MinCount: 1,
-                    MaxCount: 1,
-                    SecurityGroupIds: [args.securityGroupId],
-                    SubnetId: awsRegionConfig.subnet_id,
-                    UserData: userData,
-                    IamInstanceProfile: {
-                        Arn: awsRegionConfig.instance_profile_arn,
-                    },
-                    TagSpecifications: [
-                        {
-                            ResourceType: "instance",
-                            Tags: [
-                                {
-                                    Key: "Name",
-                                    Value: args.serverId,
-                                },
-                                {
-                                    Key: "Server",
-                                    Value: args.serverId,
-                                },
-                            ],
+                try {
+                    const runInstanceResponse = await ec2Client.send(new RunInstancesCommand({
+                        ImageId: amiId,
+                        InstanceType: instanceType,
+                        MinCount: 1,
+                        MaxCount: 1,
+                        SecurityGroupIds: [args.securityGroupId],
+                        SubnetId: awsRegionConfig.subnet_id,
+                        UserData: userData,
+                        IamInstanceProfile: {
+                            Arn: awsRegionConfig.instance_profile_arn,
                         },
-                    ],
-                }));
+                        TagSpecifications: [
+                            {
+                                ResourceType: "instance",
+                                Tags: [
+                                    {
+                                        Key: "Name",
+                                        Value: args.serverId,
+                                    },
+                                    {
+                                        Key: "Server",
+                                        Value: args.serverId,
+                                    },
+                                ],
+                            },
+                        ],
+                    }));
 
-                const instanceId = runInstanceResponse.Instances?.[0]?.InstanceId;
-                if (!instanceId) {
-                    throw new Error("Failed to launch EC2 instance");
+                    const instanceId = runInstanceResponse.Instances?.[0]?.InstanceId;
+                    if (!instanceId) {
+                        throw new Error("Failed to launch EC2 instance");
+                    }
+
+                    this.tracingService.logOperationSuccess('EC2 instance launched', args.serverId, args.region, {
+                        instanceId
+                    });
+
+                    // Wait for instance to be running
+                    await waitUntilInstanceRunning(
+                        { client: ec2Client, maxWaitTime: 300 },
+                        { InstanceIds: [instanceId] }
+                    );
+
+                    this.tracingService.logOperationSuccess('EC2 instance is running', args.serverId, args.region, {
+                        instanceId
+                    });
+
+                    return instanceId;
+                } catch (error) {
+                    if (error instanceof EC2ServiceException && error.name === 'InsufficientInstanceCapacity') {
+                        throw new InsufficientCapacityError();
+                    }
+                    throw error;
                 }
-
-                this.tracingService.logOperationSuccess('EC2 instance launched', args.serverId, args.region, {
-                    instanceId
-                });
-
-                // Wait for instance to be running
-                await waitUntilInstanceRunning(
-                    { client: ec2Client, maxWaitTime: 300 },
-                    { InstanceIds: [instanceId] }
-                );
-
-                this.tracingService.logOperationSuccess('EC2 instance is running', args.serverId, args.region, {
-                    instanceId
-                });
-
-                return instanceId;
             }
         );
     }

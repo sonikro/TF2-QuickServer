@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
+import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { MessageFlags, ChatInputCommandInteraction, MessageComponentInteraction } from "discord.js";
+import { InsufficientCapacityError } from "../../core/errors/InsufficientCapacityError";
 import { commandErrorHandler } from "./commandErrorHandler";
 
 describe("commandErrorHandler", () => {
@@ -29,6 +30,16 @@ describe("commandErrorHandler", () => {
         await commandErrorHandler(interaction, error);
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: "Operation was aborted by the user.",
+            flags: MessageFlags.Ephemeral,
+        });
+    });
+
+    it("handles InsufficientCapacityError with capacity message", async () => {
+        const interaction = createMockInteraction();
+        const error = new InsufficientCapacityError()
+        await commandErrorHandler(interaction, error);
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: error.message,
             flags: MessageFlags.Ephemeral,
         });
     });
