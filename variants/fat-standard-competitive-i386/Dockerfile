@@ -96,6 +96,10 @@ RUN curl -L "${ULTITRIO_CONFIGS_URL}" -o "${ULTITRIO_CONFIGS_FILE_NAME}" \
   && unzip -q "${ULTITRIO_CONFIGS_FILE_NAME}" \
   && cp "Ultitrio-${ULTITRIO_CONFIGS_VERSION}/ultitrio_"*.{cfg,txt} "${PLUGIN_INSTALL_DIR}/cfg/"
 
+# MapDownloader plugin
+RUN curl -L "https://github.com/spiretf/mapdownloader/raw/refs/heads/master/plugin/mapdownloader.smx" \
+  -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/mapdownloader.smx"
+
 # demos.tf plugin
 RUN curl -L "https://github.com/demostf/plugin/raw/master/demostf.smx" \
   -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/demostf.smx"
@@ -107,13 +111,9 @@ ARG TF2RUE_URL=https://github.com/sapphonie/tf2rue/releases/download/${TF2RUE_VE
 RUN curl -L "${TF2RUE_URL}" -o "${TF2RUE_FILE_NAME}" \
   && unzip -q -n "${TF2RUE_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
-# Improved Match Timer
-ARG IMPROVED_MATCH_TIMER_FILE_NAME=Improved-Match-Timer-main.zip
-ARG IMPROVED_MATCH_TIMER_URL=https://github.com/dewbsku/Improved-Match-Timer/archive/refs/heads/main.zip
-RUN curl -L "${IMPROVED_MATCH_TIMER_URL}" -o "${IMPROVED_MATCH_TIMER_FILE_NAME}" \
-  && unzip -q "${IMPROVED_MATCH_TIMER_FILE_NAME}" \
-  && cp "Improved-Match-Timer-main/addons/sourcemod/plugins/"*.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/" \
-  && cp "Improved-Match-Timer-main/addons/sourcemod/scripting/"*.sp "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/"
+# Enhanced Match Timer
+RUN curl -L "https://github.com/H20Gamez/Enhanced-Match-Timer/releases/download/Release/enhanced_match_timer.smx" \
+  -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/enhanced_match_timer.smx"
 
 # Updated Pause Plugin
 ARG UPDATED_PAUSE_FILE_NAME=updated-pause-plugin.zip
@@ -137,14 +137,18 @@ RUN curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PL
   -o "${PLUGIN_INSTALL_DIR}/addons/srctvplus.vdf"
 
 # Dodgeball plugin
-ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Unified-main.zip
-ARG DODGEBALL_PLUGIN_URL=https://github.com/Mikah31/TF2-Dodgeball-Unified/archive/refs/heads/main.zip
+ARG DODGEBALL_PLUGIN_VERSION_NUMBER=1.9.6
+ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
+ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball-Modified/archive/refs/tags/v${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
 RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" \
-  && cp -r TF2-Dodgeball-Unified-main/TF2DodgeballUnified/* "${PLUGIN_INSTALL_DIR}/" \
-  && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" TF2-Dodgeball-Unified-main \
-  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" \
-  && mv "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/TF2DodgeballUnified.smx" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/TF2DodgeballUnified.smx"
+  && cp -r "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
+  && if [ -d "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix" ] && [ "$(ls -A "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix")" ]; then \
+       cp -r "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix/"* "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"; \
+    else \
+       echo "Error: Dodgeball EventFix subplugin directory missing or empty" >&2; exit 1; \
+    fi \
+  && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}"
 
 # FBTF configs (latest version)
 ARG FBTF_CONFIGS_VERSION=23

@@ -83,6 +83,10 @@
     "pass_ufo_a14b",
     "pass_greenhouse_a24",
     "pass_ruin_a14",
+    "tfdb_box_space_a6",
+    "tfdb_octagon_odb_a1",
+    "tfdb_rocketbucks_v2",
+    "tfdb_spacebox_a2",
     {
         "name": "tfdb_catland_v1",
         "url": "https://mirror.shana.sg/tf/maps/tfdb_catland_v1.bsp.bz2"
