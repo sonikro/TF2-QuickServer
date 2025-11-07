@@ -7,12 +7,6 @@ const statusIcons = {
     terminating: "🔴",
 };
 
-const statusLabels = {
-    ready: "Running",
-    pending: "Creating",
-    terminating: "Terminating",
-};
-
 function formatServerLine(displayName: string, summary: { ready: number; pending: number; terminating: number; total: number }): string {
     const region = displayName.padEnd(30);
     const running = `${statusIcons.ready} ${summary.ready}`.padEnd(9);
