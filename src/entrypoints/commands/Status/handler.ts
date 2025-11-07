@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { GetServerStatus } from "../../../core/usecase/GetServerStatus";
+import { commandErrorHandler } from "../commandErrorHandler";
 
 const statusIcons = {
     ready: "✅",
@@ -30,13 +31,17 @@ export function createStatusCommandHandlerFactory(dependencies: {
     return async function statusCommandHandler(interaction: ChatInputCommandInteraction) {
         const { getServerStatus } = dependencies;
 
-        const serverStatusSummary = await getServerStatus.execute();
+        try {
+            const serverStatusSummary = await getServerStatus.execute();
 
-        const table = formatStatusTable(serverStatusSummary);
+            const table = formatStatusTable(serverStatusSummary);
 
-        await interaction.reply({
-            content: `🖥️ **TF2-QuickServer Status**\n\`\`\`\n${table}\n\`\`\``,
-            flags: MessageFlags.Ephemeral
-        });
+            await interaction.reply({
+                content: `🖥️ **TF2-QuickServer Status**\n\`\`\`\n${table}\n\`\`\``,
+                flags: MessageFlags.Ephemeral
+            });
+        } catch (error: Error | any) {
+            await commandErrorHandler(interaction, error);
+        }
     };
 }
