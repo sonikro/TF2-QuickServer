@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "dis
 import { UserCreditsRepository } from "../../core/repository/UserCreditsRepository";
 import { CreateCreditsPurchaseOrder } from "../../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../../core/usecase/CreateServerForUser";
+import { GetServerStatus } from "../../core/usecase/GetServerStatus";
 import { BackgroundTaskQueue } from "../../core/services/BackgroundTaskQueue";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
@@ -10,6 +11,7 @@ import { terminateServerCommandDefinition, terminateServerHandlerFactory } from 
 import { ConfigManager } from "../../core/utils/ConfigManager";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "../../core/usecase/SetUserData";
+import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -18,6 +20,7 @@ export type CommandDependencies = {
     configManager: ConfigManager;
     setUserData: SetUserData;
     backgroundTaskQueue: BackgroundTaskQueue;
+    getServerStatus: GetServerStatus;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -42,6 +45,13 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: setUserDataDefinition,
             handler: setUserDataHandlerFactory({
                 setUserData: dependencies.setUserData,
+            })
+        },
+        status: {
+            name: "status",
+            definition: statusCommandDefinition,
+            handler: createStatusCommandHandlerFactory({
+                getServerStatus: dependencies.getServerStatus,
             })
         },
         ...(dependencies.configManager.getCreditsConfig().enabled ? {

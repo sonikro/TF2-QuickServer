@@ -4,6 +4,7 @@ import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchas
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
 import { DeleteServer } from "../core/usecase/DeleteServer";
+import { GetServerStatus } from "../core/usecase/GetServerStatus";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
@@ -159,6 +160,9 @@ export async function startDiscordBot() {
         }),
         setUserData: new SetUserData({
             userRepository
+        }),
+        getServerStatus: new GetServerStatus({
+            serverRepository
         }),
         userCreditsRepository,
         configManager: defaultConfigManager,
