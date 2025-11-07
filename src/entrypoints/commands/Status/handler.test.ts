@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { GetServerStatus, ServerStatusSummary } from "../../../core/usecase/GetServerStatus";
