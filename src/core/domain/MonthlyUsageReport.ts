@@ -8,6 +8,12 @@ export type RegionMetrics = {
   timePlayedMinutes: number;
 };
 
+export type RegionCost = {
+  region: string;
+  cost: number;
+  currency: string;
+};
+
 export type LongestServerRun = {
   serverId: string;
   createdBy: string;
@@ -27,6 +33,7 @@ export type MonthlyUsageReport = {
   topUsers: TopUserMetric[];
   totalServersCreated: number;
   regionMetrics: RegionMetrics[];
+  regionCosts: RegionCost[];
   averageServerDurationMinutes: number;
   totalTimePlayedMinutes: number;
   peakConcurrentServers: PeakConcurrentServer;

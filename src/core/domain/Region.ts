@@ -17,6 +17,7 @@ export type RegionConfig = {
     srcdsHostname: string;
     tvHostname: string;
     cloudProvider: CloudProvider;
+    homeRegion?: Region;
 }
 
 export function isValidRegion(region: string): region is Region {

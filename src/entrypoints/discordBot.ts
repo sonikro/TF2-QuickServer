@@ -29,10 +29,12 @@ import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../prov
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
+import { OracleCostProvider } from "../providers/cloud-providers/oracle/OracleCostProvider";
 import { PaypalPaymentService } from "../providers/services/PaypalPaymentService";
 import { RCONServerCommander } from "../providers/services/RCONServerCommander";
 import { DefaultServerManagerFactory } from "../providers/services/ServerManagerFactory";
 import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
+import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
 import { logger } from "../telemetry/otel";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
@@ -229,9 +231,15 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client,
     })
 
+    const oracleCostProvider = new OracleCostProvider({
+        ociClientFactory: defaultOracleServiceFactory,
+        configManager: defaultConfigManager,
+    })
+
     scheduleMonthlyUsageReportRoutine({
         generateMonthlyUsageReport: new GenerateMonthlyUsageReport({
             reportRepository,
+            costProvider: oracleCostProvider,
         }),
         configManager: defaultConfigManager,
         eventLogger,

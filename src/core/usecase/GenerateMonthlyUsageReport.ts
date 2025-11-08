@@ -1,8 +1,12 @@
 import { MonthlyUsageReport } from "../domain/MonthlyUsageReport";
 import { ReportRepository } from "../repository/ReportRepository";
+import { CostProvider } from "../services/CostProvider";
+import { Region, getCloudProvider, getRegions } from "../domain/Region";
+import { CloudProvider } from "../domain/CloudProvider";
 
 type GenerateMonthlyUsageReportDependencies = {
   reportRepository: ReportRepository;
+  costProvider: CostProvider;
 };
 
 type GenerateMonthlyUsageReportExecuteParams = {
@@ -13,11 +17,28 @@ export class GenerateMonthlyUsageReport {
   constructor(private readonly dependencies: GenerateMonthlyUsageReportDependencies) {}
 
   async execute(params: GenerateMonthlyUsageReportExecuteParams): Promise<MonthlyUsageReport> {
-    const { reportRepository } = this.dependencies;
+    const { reportRepository, costProvider } = this.dependencies;
     const { date } = params;
 
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
+
+    const oracleRegions = getRegions().filter(region => 
+      getCloudProvider(region) === CloudProvider.ORACLE
+    );
+
+    const dateRange = {
+      startDate: new Date(year, month - 1, 1),
+      endDate: new Date(year, month, 0),
+    };
+
+    const costPromises = oracleRegions.map(region =>
+      costProvider.fetchCost({ region, dateRange }).then(cost => ({
+        region,
+        cost: cost.value,
+        currency: cost.currency,
+      }))
+    );
 
     const [
       topUsers,
@@ -28,6 +49,7 @@ export class GenerateMonthlyUsageReport {
       peakConcurrentServers,
       longestServerRun,
       uniqueUsersCount,
+      ...regionCosts
     ] = await Promise.all([
       reportRepository.getTopUsersByMinutesPlayed({ month, year, limit: 5 }),
       reportRepository.getTotalServersCreated({ month, year }),
@@ -37,6 +59,7 @@ export class GenerateMonthlyUsageReport {
       reportRepository.getPeakConcurrentServers({ month, year }),
       reportRepository.getLongestServerRun({ month, year }),
       reportRepository.getUniqueUsersCount({ month, year }),
+      ...costPromises,
     ]);
 
     return {
@@ -45,6 +68,7 @@ export class GenerateMonthlyUsageReport {
       topUsers,
       totalServersCreated,
       regionMetrics,
+      regionCosts,
       averageServerDurationMinutes: averageServerDuration,
       totalTimePlayedMinutes,
       peakConcurrentServers,

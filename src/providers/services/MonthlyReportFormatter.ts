@@ -9,12 +9,13 @@ export class MonthlyReportFormatter {
     const topUsersSection = this.formatTopUsers(report.topUsers);
     const regionMetricsSection = this.formatRegionMetrics(report.regionMetrics, regions);
     const generalStatsSection = this.formatGeneralStats(report);
+    const costsSection = this.formatCostsSection(report.regionCosts);
 
     return `@everyone
 📊 **TF2-QuickServer | ${monthName} ${report.year} Metrics & Costs**
 ---
 💸 **Usage Costs**
-${this.formatCostsSection()}
+${costsSection}
 ---
 🏆 **Top 5 Users**
 ${topUsersSection}
@@ -27,15 +28,44 @@ ${generalStatsSection}
 See <#1365408843676520508> to help!`;
   }
 
-  private formatCostsSection(): string {
-    return `* 🇦🇷 Buenos Aires: **TBD**
-* 🇧🇷 São Paulo: **TBD**
-* 🇨🇱 Santiago: **TBD**
-* 🇩🇪 Frankfurt: **TBD**
-* 🇺🇸 Chicago: **TBD**
-* 🇵🇪 Lima: **TBD**
-🤖 Bot Infrastructure: **$5.05 USD**
-**💰 Total:** **TBD**`;
+  private formatCostsSection(regionCosts: Array<{ region: string; cost: number; currency: string }>): string {
+    const costMap = new Map(regionCosts.map(rc => [rc.region, { cost: rc.cost, currency: rc.currency }]));
+    
+    // Group costs by currency
+    const costsByCurrency = new Map<string, number>();
+
+    const formattedRegions = [
+      { id: 'us-east-1-bue-1a', emoji: '🇦🇷', name: 'Buenos Aires' },
+      { id: 'sa-saopaulo-1', emoji: '🇧🇷', name: 'São Paulo' },
+      { id: 'sa-santiago-1', emoji: '🇨🇱', name: 'Santiago' },
+      { id: 'eu-frankfurt-1', emoji: '🇩🇪', name: 'Frankfurt' },
+      { id: 'us-chicago-1', emoji: '🇺🇸', name: 'Chicago' },
+      { id: 'us-east-1-lim-1a', emoji: '🇵🇪', name: 'Lima' },
+    ]
+      .map(region => {
+        const costData = costMap.get(region.id);
+        if (costData) {
+          const currentTotal = costsByCurrency.get(costData.currency) || 0;
+          costsByCurrency.set(costData.currency, currentTotal + costData.cost);
+          return `* ${region.emoji} ${region.name}: **${costData.cost.toFixed(2)} ${costData.currency}**`;
+        }
+        return `* ${region.emoji} ${region.name}: **$0.00**`;
+      })
+      .join("\n");
+
+    const botInfrastructureCost = 5.05;
+    const botInfrastructureCurrency = 'USD';
+    const botInfrastructureTotal = (costsByCurrency.get(botInfrastructureCurrency) || 0) + botInfrastructureCost;
+    costsByCurrency.set(botInfrastructureCurrency, botInfrastructureTotal);
+
+    // Format totals by currency
+    const totalsSection = Array.from(costsByCurrency.entries())
+      .map(([currency, total]) => `**${currency}:** **$${total.toFixed(2)} ${currency}**`)
+      .join(" | ");
+
+    return `${formattedRegions}
+🤖 Bot Infrastructure: **$${botInfrastructureCost.toFixed(2)} ${botInfrastructureCurrency}**
+**💰 Total:** ${totalsSection}`;
   }
 
   private formatTopUsers(topUsers: Array<{ userId: string; totalTimePlayedMinutes: number }>): string {
