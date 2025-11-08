@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { ReportRepository } from "../repository/ReportRepository";
@@ -19,7 +19,7 @@ describe("GenerateMonthlyUsageReport", () => {
     // Given
     const { sut, reportRepository } = makeSut();
 
-    vi.setSystemTime(new Date("2025-10-15"));
+    const date = new Date("2025-10-15");
 
     const topUsers = [
       { userId: "user-1", totalTimePlayedMinutes: 3853 },
@@ -71,7 +71,7 @@ describe("GenerateMonthlyUsageReport", () => {
       .thenResolve(100);
 
     // When
-    const result = await sut.execute();
+    const result = await sut.execute({ date });
 
     // Then
     expect(result).toBeDefined();
@@ -87,56 +87,56 @@ describe("GenerateMonthlyUsageReport", () => {
     expect(result.uniqueUsersCount).toBe(100);
   });
 
-  it("should use current month and year when executing", async () => {
+  it.each([
+    { date: new Date("2025-10-15"), month: 10, year: 2025 },
+    { date: new Date("2025-11-20"), month: 11, year: 2025 },
+    { date: new Date("2025-12-01"), month: 12, year: 2025 },
+  ])("should accept and use the provided date for report generation with date $date", async ({ date, month, year }) => {
     // Given
     const { sut, reportRepository } = makeSut();
 
-    vi.setSystemTime(new Date("2025-10-15"));
-
     when(reportRepository.getTopUsersByMinutesPlayed)
-      .calledWith({ month: 10, year: 2025, limit: 5 })
+      .calledWith({ month, year, limit: 5 })
       .thenResolve([]);
 
     when(reportRepository.getTotalServersCreated)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve(0);
 
     when(reportRepository.getServerMinutesByRegion)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve([]);
 
     when(reportRepository.getAverageServerDuration)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve(0);
 
     when(reportRepository.getTotalMinutesPlayed)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve(0);
 
     when(reportRepository.getPeakConcurrentServers)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve({ eventTime: 0, maxServersRunning: 0 });
 
     when(reportRepository.getLongestServerRun)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve(null);
 
     when(reportRepository.getUniqueUsersCount)
-      .calledWith({ month: 10, year: 2025 })
+      .calledWith({ month, year })
       .thenResolve(0);
 
     // When
-    await sut.execute();
+    const result = await sut.execute({ date });
 
     // Then
+    expect(result.month).toBe(month);
+    expect(result.year).toBe(year);
     expect(reportRepository.getTopUsersByMinutesPlayed).toHaveBeenCalledWith({
-      month: 10,
-      year: 2025,
+      month,
+      year,
       limit: 5,
-    });
-    expect(reportRepository.getTotalServersCreated).toHaveBeenCalledWith({
-      month: 10,
-      year: 2025,
     });
   });
 
@@ -144,7 +144,7 @@ describe("GenerateMonthlyUsageReport", () => {
     // Given
     const { sut, reportRepository } = makeSut();
 
-    vi.setSystemTime(new Date("2025-11-15"));
+    const date = new Date("2025-11-15");
 
     when(reportRepository.getTopUsersByMinutesPlayed)
       .calledWith({ month: 11, year: 2025, limit: 5 })
@@ -179,7 +179,7 @@ describe("GenerateMonthlyUsageReport", () => {
       .thenResolve(0);
 
     // When
-    const result = await sut.execute();
+    const result = await sut.execute({ date });
 
     // Then
     expect(result.longestServerRun).toEqual({
@@ -191,57 +191,11 @@ describe("GenerateMonthlyUsageReport", () => {
     });
   });
 
-  it("should return report with month and year", async () => {
-    // Given
-    const { sut, reportRepository } = makeSut();
-
-    vi.setSystemTime(new Date("2025-12-20"));
-
-    when(reportRepository.getTopUsersByMinutesPlayed)
-      .calledWith({ month: 12, year: 2025, limit: 5 })
-      .thenResolve([]);
-
-    when(reportRepository.getTotalServersCreated)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve(0);
-
-    when(reportRepository.getServerMinutesByRegion)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve([]);
-
-    when(reportRepository.getAverageServerDuration)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve(0);
-
-    when(reportRepository.getTotalMinutesPlayed)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve(0);
-
-    when(reportRepository.getPeakConcurrentServers)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve({ eventTime: 0, maxServersRunning: 0 });
-
-    when(reportRepository.getLongestServerRun)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve(null);
-
-    when(reportRepository.getUniqueUsersCount)
-      .calledWith({ month: 12, year: 2025 })
-      .thenResolve(0);
-
-    // When
-    const result = await sut.execute();
-
-    // Then
-    expect(result.month).toBe(12);
-    expect(result.year).toBe(2025);
-  });
-
   it("should call all repository methods exactly once", async () => {
     // Given
     const { sut, reportRepository } = makeSut();
 
-    vi.setSystemTime(new Date("2025-09-10"));
+    const date = new Date("2025-09-10");
 
     when(reportRepository.getTopUsersByMinutesPlayed)
       .calledWith({ month: 9, year: 2025, limit: 5 })
@@ -276,7 +230,7 @@ describe("GenerateMonthlyUsageReport", () => {
       .thenResolve(0);
 
     // When
-    await sut.execute();
+    await sut.execute({ date });
 
     // Then
     expect(reportRepository.getTopUsersByMinutesPlayed).toHaveBeenCalledTimes(1);

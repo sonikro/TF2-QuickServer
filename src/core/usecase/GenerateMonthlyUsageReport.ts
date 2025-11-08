@@ -5,15 +5,19 @@ type GenerateMonthlyUsageReportDependencies = {
   reportRepository: ReportRepository;
 };
 
+type GenerateMonthlyUsageReportExecuteParams = {
+  date: Date;
+};
+
 export class GenerateMonthlyUsageReport {
   constructor(private readonly dependencies: GenerateMonthlyUsageReportDependencies) {}
 
-  async execute(): Promise<MonthlyUsageReport> {
+  async execute(params: GenerateMonthlyUsageReportExecuteParams): Promise<MonthlyUsageReport> {
     const { reportRepository } = this.dependencies;
+    const { date } = params;
 
-    const now = new Date();
-    const month = now.getMonth() + 1;
-    const year = now.getFullYear();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
 
     const [
       topUsers,

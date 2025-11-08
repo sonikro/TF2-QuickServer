@@ -254,7 +254,8 @@
         }
     },
     "discord": {
-        "logChannelId": "1360789887208394851"
+        "logChannelId": "1360789887208394851",
+        "reportDiscordChannelId": "1359697049427378236"
     },
     "credits": {
         "enabled": false

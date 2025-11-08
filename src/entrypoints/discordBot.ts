@@ -4,6 +4,7 @@ import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchas
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
 import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
 import { DeleteServer } from "../core/usecase/DeleteServer";
+import { GenerateMonthlyUsageReport } from "../core/usecase/GenerateMonthlyUsageReport";
 import { GetServerStatus } from "../core/usecase/GetServerStatus";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
@@ -21,6 +22,7 @@ import { SQliteServerActivityRepository } from "../providers/repository/SQliteSe
 import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
+import { SQLiteReportRepository } from "../providers/repository/SQLiteReportRepository";
 import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
 import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
@@ -34,7 +36,7 @@ import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { logger } from "../telemetry/otel";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine, scheduleMonthlyUsageReportRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
@@ -221,6 +223,19 @@ export async function startDiscordBot() {
             eventLogger
         }),
         eventLogger
+    })
+
+    const reportRepository = new SQLiteReportRepository({
+        knex: KnexConnectionManager.client,
+    })
+
+    scheduleMonthlyUsageReportRoutine({
+        generateMonthlyUsageReport: new GenerateMonthlyUsageReport({
+            reportRepository,
+        }),
+        configManager: defaultConfigManager,
+        eventLogger,
+        discordClient: client,
     })
 
     // Slash commands

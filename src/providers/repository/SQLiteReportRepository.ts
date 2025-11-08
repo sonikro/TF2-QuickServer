@@ -105,10 +105,9 @@ export class SQLiteReportRepository implements ReportRepository {
 
     const query = this.dependencies
       .knex("server_history")
-      .avg("duration as avgDuration")
       .select(
         this.dependencies.knex.raw(
-          "AVG(((terminatedAt / 1000) - (createdAt / 1000)) / 60) AS avgDuration"
+          "AVG(((terminatedAt / 1000) - (createdAt / 1000)) / 60) AS avg_duration_minutes"
         )
       )
       .where(this.dependencies.knex.raw("terminatedAt IS NOT NULL"))
@@ -121,7 +120,7 @@ export class SQLiteReportRepository implements ReportRepository {
     }
 
     const result = await query;
-    return result?.avgDuration ?? 0;
+    return result?.avg_duration_minutes ?? 0;
   }
 
   async getTotalMinutesPlayed(
@@ -134,10 +133,9 @@ export class SQLiteReportRepository implements ReportRepository {
 
     const query = this.dependencies
       .knex("server_history")
-      .sum("minutes as totalMinutes")
       .select(
         this.dependencies.knex.raw(
-          "SUM(((terminatedAt / 1000) - (createdAt / 1000)) / 60) AS totalMinutes"
+          "SUM(((terminatedAt / 1000) - (createdAt / 1000)) / 60) AS total_time_played_minutes"
         )
       )
       .where(this.dependencies.knex.raw("terminatedAt IS NOT NULL"))
@@ -150,7 +148,7 @@ export class SQLiteReportRepository implements ReportRepository {
     }
 
     const result = await query;
-    return result?.totalMinutes ?? 0;
+    return result?.total_time_played_minutes ?? 0;
   }
 
   async getPeakConcurrentServers(
