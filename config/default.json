@@ -42,14 +42,14 @@
             "cloudProvider": "oracle",
             "homeRegion": "sa-santiago-1"
         },
-        "us-east-1-bue-1a": {
+        "us-east-1-bue-1": {
             "displayName": "Buenos Aires (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Buenos Aires",
             "tvHostname": "TF2-QuickServer TV | Buenos Aires",
             "cloudProvider": "aws",
             "homeRegion": "us-east-1"
         },
-        "us-east-1-lim-1a": {
+        "us-east-1-lim-1": {
             "displayName": "Lima (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Lima",
             "tvHostname": "TF2-QuickServer TV | Lima",

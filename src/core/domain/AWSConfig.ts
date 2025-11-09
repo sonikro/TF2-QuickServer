@@ -18,7 +18,7 @@ export interface AWSRegionSettings {
 export function getAWSConfig(): AWSConfig {
     return {
         regions: {
-            "us-east-1-bue-1a": {
+            "us-east-1-bue-1": {
                 cluster_name: config.get<string>(`buenos_aires_cluster_name.value`),
                 subnet_id: config.get<string>(`buenos_aires_subnet_id.value`),
                 vpc_id: config.get<string>(`buenos_aires_vpc_id.value`),
@@ -28,7 +28,7 @@ export function getAWSConfig(): AWSConfig {
                 log_group_name: config.get<string>(`buenos_aires_log_group_name.value`),
                 rootRegion: "us-east-1",
             },
-            "us-east-1-lim-1a": {
+            "us-east-1-lim-1": {
                 cluster_name: config.get<string>(`lima_cluster_name.value`),
                 subnet_id: config.get<string>(`lima_subnet_id.value`),
                 vpc_id: config.get<string>(`lima_vpc_id.value`),

@@ -1,9 +1,11 @@
 import { EC2Client } from "@aws-sdk/client-ec2";
 import { ECSClient } from "@aws-sdk/client-ecs";
+import { CostExplorerClient } from "@aws-sdk/client-cost-explorer";
 
 export interface AWSClients {
     ecsClient: ECSClient;
     ec2Client: EC2Client;
+    ceClient: CostExplorerClient;
 }
 
 export type AWSClientFactory = (rootRegion: string) => AWSClients;
@@ -19,6 +21,9 @@ export function defaultAWSServiceFactory(rootRegion: string): AWSClients {
             region: rootRegion,
         }),
         ec2Client: new EC2Client({
+            region: rootRegion,
+        }),
+        ceClient: new CostExplorerClient({
             region: rootRegion,
         }),
     };

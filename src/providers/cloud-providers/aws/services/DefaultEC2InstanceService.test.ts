@@ -65,7 +65,7 @@ describe("DefaultEC2InstanceService", () => {
     describe("create", () => {
         const createArgs = {
             serverId: "test-server-123",
-            region: Region.US_EAST_1_BUE_1A,
+            region: Region.US_EAST_1_BUE_1,
             variantConfig: { ocpu: 1, memory: 4 } as VariantConfig,
             securityGroupId: "sg-12345"
         };
@@ -249,7 +249,7 @@ describe("DefaultEC2InstanceService", () => {
 
             const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
             
-            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ec2Mock).toHaveReceivedCommandWith(DescribeInstancesCommand, {
                 Filters: [
@@ -269,14 +269,14 @@ describe("DefaultEC2InstanceService", () => {
 
             const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
             
-            await expect(service.terminate("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
+            await expect(service.terminate("test-server-123", Region.US_EAST_1_BUE_1)).resolves.not.toThrow();
             
             expect(ec2Mock).toHaveReceivedCommand(DescribeInstancesCommand);
             expect(ec2Mock).not.toHaveReceivedCommand(TerminateInstancesCommand);
             expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
                 expect.stringContaining("already terminated"),
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A
+                Region.US_EAST_1_BUE_1
             );
         });
 
@@ -293,7 +293,7 @@ describe("DefaultEC2InstanceService", () => {
 
             const service = new DefaultEC2InstanceService(mockAWSConfigService, mockTracingService);
             
-            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.terminate("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ec2Mock).toHaveReceivedCommandWith(TerminateInstancesCommand, {
                 InstanceIds: ["i-12345", "i-67890"]

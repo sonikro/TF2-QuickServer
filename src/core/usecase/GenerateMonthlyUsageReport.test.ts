@@ -1,23 +1,38 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { ReportRepository } from "../repository/ReportRepository";
+import { CostProvider } from "../services/CostProvider";
 import { GenerateMonthlyUsageReport } from "./GenerateMonthlyUsageReport";
+import { Region } from "../domain/Region";
+
+vi.mock("../domain/Region", async () => {
+  const actual = await vi.importActual("../domain/Region");
+  return {
+    ...actual,
+    getRegions: vi.fn(() => [
+      Region.SA_SAOPAULO_1,
+      Region.US_CHICAGO_1,
+    ]),
+  };
+});
 
 describe("GenerateMonthlyUsageReport", () => {
   function makeSut() {
     const reportRepository = mock<ReportRepository>();
-    const sut = new GenerateMonthlyUsageReport({ reportRepository });
+    const costProvider = mock<CostProvider>();
+    const sut = new GenerateMonthlyUsageReport({ reportRepository, costProvider });
 
     return {
       sut,
       reportRepository,
+      costProvider,
     };
   }
 
   it("should generate monthly usage report with all metrics", async () => {
     // Given
-    const { sut, reportRepository } = makeSut();
+    const { sut, reportRepository, costProvider } = makeSut();
 
     const date = new Date("2025-10-15");
 
@@ -70,6 +85,20 @@ describe("GenerateMonthlyUsageReport", () => {
       .calledWith({ month: 10, year: 2025 })
       .thenResolve(100);
 
+    when(costProvider.fetchCost)
+      .calledWith({
+        region: Region.SA_SAOPAULO_1,
+        dateRange: { startDate: new Date(2025, 9, 1), endDate: new Date(2025, 9, 31) },
+      })
+      .thenResolve({ value: 150.5, currency: "USD" });
+
+    when(costProvider.fetchCost)
+      .calledWith({
+        region: Region.US_CHICAGO_1,
+        dateRange: { startDate: new Date(2025, 9, 1), endDate: new Date(2025, 9, 31) },
+      })
+      .thenResolve({ value: 200.75, currency: "USD" });
+
     // When
     const result = await sut.execute({ date });
 
@@ -85,6 +114,17 @@ describe("GenerateMonthlyUsageReport", () => {
     expect(result.peakConcurrentServers).toEqual(peakConcurrentServers);
     expect(result.longestServerRun).toEqual(longestServerRun);
     expect(result.uniqueUsersCount).toBe(100);
+    expect(result.regionCosts).toHaveLength(2);
+    expect(result.regionCosts).toContainEqual({
+      region: Region.SA_SAOPAULO_1,
+      cost: 150.5,
+      currency: "USD",
+    });
+    expect(result.regionCosts).toContainEqual({
+      region: Region.US_CHICAGO_1,
+      cost: 200.75,
+      currency: "USD",
+    });
   });
 
   it.each([
@@ -93,7 +133,7 @@ describe("GenerateMonthlyUsageReport", () => {
     { date: new Date("2025-12-01"), month: 12, year: 2025 },
   ])("should accept and use the provided date for report generation with date $date", async ({ date, month, year }) => {
     // Given
-    const { sut, reportRepository } = makeSut();
+    const { sut, reportRepository, costProvider } = makeSut();
 
     when(reportRepository.getTopUsersByMinutesPlayed)
       .calledWith({ month, year, limit: 5 })
@@ -127,6 +167,8 @@ describe("GenerateMonthlyUsageReport", () => {
       .calledWith({ month, year })
       .thenResolve(0);
 
+    costProvider.fetchCost.mockResolvedValue({ value: 100, currency: "USD" });
+
     // When
     const result = await sut.execute({ date });
 
@@ -142,7 +184,7 @@ describe("GenerateMonthlyUsageReport", () => {
 
   it("should handle no data for longest server run", async () => {
     // Given
-    const { sut, reportRepository } = makeSut();
+    const { sut, reportRepository, costProvider } = makeSut();
 
     const date = new Date("2025-11-15");
 
@@ -178,6 +220,8 @@ describe("GenerateMonthlyUsageReport", () => {
       .calledWith({ month: 11, year: 2025 })
       .thenResolve(0);
 
+    costProvider.fetchCost.mockResolvedValue({ value: 50, currency: "USD" });
+
     // When
     const result = await sut.execute({ date });
 
@@ -193,7 +237,7 @@ describe("GenerateMonthlyUsageReport", () => {
 
   it("should call all repository methods exactly once", async () => {
     // Given
-    const { sut, reportRepository } = makeSut();
+    const { sut, reportRepository, costProvider } = makeSut();
 
     const date = new Date("2025-09-10");
 
@@ -229,6 +273,8 @@ describe("GenerateMonthlyUsageReport", () => {
       .calledWith({ month: 9, year: 2025 })
       .thenResolve(0);
 
+    costProvider.fetchCost.mockResolvedValue({ value: 75, currency: "USD" });
+
     // When
     await sut.execute({ date });
 
@@ -241,5 +287,6 @@ describe("GenerateMonthlyUsageReport", () => {
     expect(reportRepository.getPeakConcurrentServers).toHaveBeenCalledTimes(1);
     expect(reportRepository.getLongestServerRun).toHaveBeenCalledTimes(1);
     expect(reportRepository.getUniqueUsersCount).toHaveBeenCalledTimes(1);
+    expect(costProvider.fetchCost).toHaveBeenCalledTimes(2);
   });
 });

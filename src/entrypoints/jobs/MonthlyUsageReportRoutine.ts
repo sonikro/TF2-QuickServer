@@ -94,7 +94,4 @@ export const scheduleMonthlyUsageReportRoutine = (
     }
   });
 
-  setTimeout(() => {
-      job.invoke();
-  }, 10 * 1000); // 10 seconds delay to allow system to initialize
 };

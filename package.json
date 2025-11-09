@@ -61,6 +61,7 @@
   },
   "dependencies": {
     "@adyen/api-library": "^26.1.0",
+    "@aws-sdk/client-cost-explorer": "^3.927.0",
     "@aws-sdk/client-ec2": "^3.888.0",
     "@aws-sdk/client-ecs": "^3.888.0",
     "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",

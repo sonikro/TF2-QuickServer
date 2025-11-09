@@ -30,7 +30,7 @@ describe("DefaultEnvironmentBuilderService", () => {
 
         const deploymentContext = new DeploymentContext({
             serverId: `${chance.guid()}-${chance.guid()}`,
-            region: Region.US_EAST_1_BUE_1A,
+            region: Region.US_EAST_1_BUE_1,
             variantName: "test-variant",
             statusUpdater: vi.fn(),
             sourcemodAdminSteamId: chance.string({ length: 17, pool: "0123456789" }),
@@ -226,7 +226,7 @@ describe("DefaultEnvironmentBuilderService", () => {
             const testServerId = "abc123-def456-ghi789";
             const deploymentContext = new DeploymentContext({
                 serverId: testServerId,
-                region: Region.US_EAST_1_BUE_1A,
+                region: Region.US_EAST_1_BUE_1,
                 variantName: "test-variant",
                 statusUpdater: vi.fn(),
                 sourcemodAdminSteamId: "12345",

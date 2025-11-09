@@ -1,13 +1,12 @@
 import { MonthlyUsageReport } from "../../core/domain/MonthlyUsageReport";
-import { getRegionConfig, getRegions, Region } from "../../core/domain/Region";
+import { getRegionConfig, Region } from "../../core/domain/Region";
 
 export class MonthlyReportFormatter {
   format(report: MonthlyUsageReport): string {
     const monthName = this.getMonthName(report.month);
-    const regions = getRegions();
 
     const topUsersSection = this.formatTopUsers(report.topUsers);
-    const regionMetricsSection = this.formatRegionMetrics(report.regionMetrics, regions);
+    const regionMetricsSection = this.formatRegionMetrics(report.regionMetrics);
     const generalStatsSection = this.formatGeneralStats(report);
     const costsSection = this.formatCostsSection(report.regionCosts);
 
@@ -35,12 +34,13 @@ See <#1365408843676520508> to help!`;
     const costsByCurrency = new Map<string, number>();
 
     const formattedRegions = [
-      { id: 'us-east-1-bue-1a', emoji: '🇦🇷', name: 'Buenos Aires' },
+      { id: 'us-east-1-bue-1', emoji: '🇦🇷', name: 'Buenos Aires' },
       { id: 'sa-saopaulo-1', emoji: '🇧🇷', name: 'São Paulo' },
       { id: 'sa-santiago-1', emoji: '🇨🇱', name: 'Santiago' },
       { id: 'eu-frankfurt-1', emoji: '🇩🇪', name: 'Frankfurt' },
       { id: 'us-chicago-1', emoji: '🇺🇸', name: 'Chicago' },
-      { id: 'us-east-1-lim-1a', emoji: '🇵🇪', name: 'Lima' },
+      { id: 'us-east-1-lim-1', emoji: '🇵🇪', name: 'Lima' },
+      { id: 'ap-sydney-1', emoji: '🇦🇺', name: 'Sydney' },
     ]
       .map(region => {
         const costData = costMap.get(region.id);
@@ -61,7 +61,7 @@ See <#1365408843676520508> to help!`;
     // Format totals by currency
     const totalsSection = Array.from(costsByCurrency.entries())
       .map(([currency, total]) => `**${currency}:** **$${total.toFixed(2)} ${currency}**`)
-      .join(" | ");
+      .join(" + ");
 
     return `${formattedRegions}
 🤖 Bot Infrastructure: **$${botInfrastructureCost.toFixed(2)} ${botInfrastructureCurrency}**
@@ -85,7 +85,6 @@ See <#1365408843676520508> to help!`;
 
   private formatRegionMetrics(
     regionMetrics: Array<{ region: string; timePlayedMinutes: number }>,
-    regions: any[]
   ): string {
     if (regionMetrics.length === 0) {
       return "No data available";
@@ -134,8 +133,8 @@ See <#1365408843676520508> to help!`;
       "us-chicago-1": "🇺🇸",
       "eu-frankfurt-1": "🇩🇪",
       "ap-sydney-1": "🇦🇺",
-      "us-east-1-bue-1a": "🇦🇷",
-      "us-east-1-lim-1a": "🇵🇪",
+      "us-east-1-bue-1": "🇦🇷",
+      "us-east-1-lim-1": "🇵🇪",
     };
     return flags[region] || "🌍";
   }

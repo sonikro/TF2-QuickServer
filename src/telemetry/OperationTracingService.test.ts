@@ -80,27 +80,27 @@ describe("OperationTracingService", () => {
 
     describe("logOperationStart", () => {
         it("should log operation start", () => {
-            service.logOperationStart("create", "server-123", Region.US_EAST_1_BUE_1A);
+            service.logOperationStart("create", "server-123", Region.US_EAST_1_BUE_1);
             
             expect(logger.emit).toHaveBeenCalledWith({
                 severityText: "INFO",
                 body: "create for entity: server-123",
                 attributes: {
                     entityId: "server-123",
-                    region: Region.US_EAST_1_BUE_1A
+                    region: Region.US_EAST_1_BUE_1
                 }
             });
         });
 
         it("should log with additional attributes", () => {
-            service.logOperationStart("create", "server-123", Region.US_EAST_1_BUE_1A, { variant: "test" });
+            service.logOperationStart("create", "server-123", Region.US_EAST_1_BUE_1, { variant: "test" });
             
             expect(logger.emit).toHaveBeenCalledWith({
                 severityText: "INFO",
                 body: "create for entity: server-123",
                 attributes: {
                     entityId: "server-123",
-                    region: Region.US_EAST_1_BUE_1A,
+                    region: Region.US_EAST_1_BUE_1,
                     variant: "test"
                 }
             });

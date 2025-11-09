@@ -1,8 +1,7 @@
 import { MonthlyUsageReport } from "../domain/MonthlyUsageReport";
 import { ReportRepository } from "../repository/ReportRepository";
 import { CostProvider } from "../services/CostProvider";
-import { Region, getCloudProvider, getRegions } from "../domain/Region";
-import { CloudProvider } from "../domain/CloudProvider";
+import { Region, getRegions } from "../domain/Region";
 
 type GenerateMonthlyUsageReportDependencies = {
   reportRepository: ReportRepository;
@@ -23,16 +22,14 @@ export class GenerateMonthlyUsageReport {
     const month = date.getMonth() + 1;
     const year = date.getFullYear();
 
-    const oracleRegions = getRegions().filter(region => 
-      getCloudProvider(region) === CloudProvider.ORACLE
-    );
+    const allRegions = getRegions();
 
     const dateRange = {
       startDate: new Date(year, month - 1, 1),
       endDate: new Date(year, month, 0),
     };
 
-    const costPromises = oracleRegions.map(region =>
+    const costPromises = allRegions.map(region =>
       costProvider.fetchCost({ region, dateRange }).then(cost => ({
         region,
         cost: cost.value,

@@ -77,7 +77,7 @@ describe("DefaultECSServiceManager", () => {
             
             const result = await service.create(
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 "arn:aws:ecs:us-east-1:123456789012:task-definition/test-task:1"
             );
             
@@ -104,7 +104,7 @@ describe("DefaultECSServiceManager", () => {
             
             await expect(service.create(
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 "arn:aws:ecs:us-east-1:123456789012:task-definition/test-task:1"
             )).rejects.toThrowError("Failed to create ECS service");
         });
@@ -118,7 +118,7 @@ describe("DefaultECSServiceManager", () => {
             
             await service.waitForStable(
                 "arn:aws:ecs:us-east-1:123456789012:service/test-cluster/test-server-123",
-                Region.US_EAST_1_BUE_1A
+                Region.US_EAST_1_BUE_1
             );
             
             expect(waitUntilServicesStable).toHaveBeenCalledWith(
@@ -144,7 +144,7 @@ describe("DefaultECSServiceManager", () => {
             
             await service.waitForStable(
                 "arn:aws:ecs:us-east-1:123456789012:service/test-cluster/test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 abortController.signal
             );
             
@@ -173,7 +173,7 @@ describe("DefaultECSServiceManager", () => {
 
             const service = new DefaultECSServiceManager(mockAWSConfigService, mockTracingService);
             
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ecsClientMock).toHaveReceivedCommandWith(DeleteServiceCommand, {
                 cluster: "test-cluster",
@@ -193,12 +193,12 @@ describe("DefaultECSServiceManager", () => {
 
             const service = new DefaultECSServiceManager(mockAWSConfigService, mockTracingService);
             
-            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1)).resolves.not.toThrow();
             
             expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
                 expect.stringContaining("ECS service not found"),
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A
+                Region.US_EAST_1_BUE_1
             );
         });
 
@@ -208,7 +208,7 @@ describe("DefaultECSServiceManager", () => {
 
             const service = new DefaultECSServiceManager(mockAWSConfigService, mockTracingService);
             
-            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).rejects.toThrow("Some other error");
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1)).rejects.toThrow("Some other error");
         });
     });
 });
