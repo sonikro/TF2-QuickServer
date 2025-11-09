@@ -1,7 +1,7 @@
 import { MonthlyUsageReport } from "../domain/MonthlyUsageReport";
+import { getRegions } from "../domain/Region";
 import { ReportRepository } from "../repository/ReportRepository";
 import { CostProvider } from "../services/CostProvider";
-import { Region, getRegions } from "../domain/Region";
 
 type GenerateMonthlyUsageReportDependencies = {
   reportRepository: ReportRepository;

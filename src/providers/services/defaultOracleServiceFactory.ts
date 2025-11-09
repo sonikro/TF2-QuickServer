@@ -1,5 +1,4 @@
 import * as oci from 'oci-sdk';
-import { UsageapiClient } from 'oci-usageapi';
 import { getRegionConfig, Region } from '../../core/domain/Region';
 
 /**

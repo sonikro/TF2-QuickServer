@@ -1,12 +1,12 @@
+import { models, UsageapiClient } from 'oci-usageapi';
 import { describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { Region } from '../../../core/domain/Region';
 import { OracleConfig } from '../../../core/domain/OracleConfig';
+import { Region } from '../../../core/domain/Region';
 import { ConfigManager } from '../../../core/utils/ConfigManager';
-import { OracleCostProvider } from './OracleCostProvider';
-import { models, UsageapiClient, requests } from 'oci-usageapi';
 import { logger } from '../../../telemetry/otel';
+import { OracleCostProvider } from './OracleCostProvider';
 
 vi.mock('../../../telemetry/otel', async () => {
   const actual = await vi.importActual('../../../telemetry/otel');

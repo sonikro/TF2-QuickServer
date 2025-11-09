@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
+import { Region } from "../domain/Region";
 import { ReportRepository } from "../repository/ReportRepository";
 import { CostProvider } from "../services/CostProvider";
 import { GenerateMonthlyUsageReport } from "./GenerateMonthlyUsageReport";
-import { Region } from "../domain/Region";
 
 vi.mock("../domain/Region", async () => {
   const actual = await vi.importActual("../domain/Region");

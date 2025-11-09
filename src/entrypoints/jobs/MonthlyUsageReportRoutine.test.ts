@@ -1,11 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
-import { scheduleMonthlyUsageReportRoutine, ScheduleMonthlyUsageReportRoutineDependencies } from "./MonthlyUsageReportRoutine";
-import schedule from "node-schedule";
-import { mock } from "vitest-mock-extended";
-import { ConfigManager } from "../../core/utils/ConfigManager";
 import { Client } from "discord.js";
+import schedule from "node-schedule";
+import { describe, expect, it, vi } from "vitest";
+import { mock } from "vitest-mock-extended";
 import { EventLogger } from "../../core/services/EventLogger";
 import { GenerateMonthlyUsageReport } from "../../core/usecase/GenerateMonthlyUsageReport";
+import { ConfigManager } from "../../core/utils/ConfigManager";
+import { scheduleMonthlyUsageReportRoutine } from "./MonthlyUsageReportRoutine";
 
 vi.mock("node-schedule")
 
