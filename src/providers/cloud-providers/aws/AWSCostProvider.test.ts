@@ -34,132 +34,157 @@ describe("AWSCostProvider", () => {
     };
   }
 
-  it("should fetch cost for a region within date range", async () => {
+  it.each([
+    {
+      description: "with single group",
+      region: Region.US_EAST_1_BUE_1,
+      mockResponse: {
+        ResultsByTime: [
+          {
+            Groups: [
+              {
+                Metrics: {
+                  NetUnblendedCost: {
+                    Amount: "150.50",
+                    Unit: "USD",
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      expectedValue: 150.5,
+    },
+    {
+      description: "with multiple groups",
+      region: Region.US_EAST_1_LIM_1,
+      mockResponse: {
+        ResultsByTime: [
+          {
+            Groups: [
+              {
+                Metrics: {
+                  NetUnblendedCost: {
+                    Amount: "100.00",
+                    Unit: "USD",
+                  },
+                },
+              },
+              {
+                Metrics: {
+                  NetUnblendedCost: {
+                    Amount: "50.50",
+                    Unit: "USD",
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      expectedValue: 150.5,
+    },
+    {
+      description: "with total instead of groups",
+      region: Region.US_EAST_1_BUE_1,
+      mockResponse: {
+        ResultsByTime: [
+          {
+            Total: {
+              NetUnblendedCost: {
+                Amount: "200.75",
+                Unit: "USD",
+              },
+            },
+          },
+        ],
+      },
+      expectedValue: 200.75,
+    },
+    {
+      description: "with multiple time periods",
+      region: Region.US_EAST_1_LIM_1,
+      mockResponse: {
+        ResultsByTime: [
+          {
+            Total: {
+              NetUnblendedCost: {
+                Amount: "100.00",
+                Unit: "USD",
+              },
+            },
+          },
+          {
+            Total: {
+              NetUnblendedCost: {
+                Amount: "50.50",
+                Unit: "USD",
+              },
+            },
+          },
+        ],
+      },
+      expectedValue: 150.5,
+    },
+  ])(
+    "should fetch cost $description",
+    async ({ region, mockResponse, expectedValue }) => {
+      // Given
+      const { sut, ceClient } = makeSut();
+      const dateRange = {
+        startDate: new Date("2025-10-01"),
+        endDate: new Date("2025-10-31"),
+      };
+
+      ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
+
+      // When
+      const result = await sut.fetchCost({ region, dateRange });
+
+      // Then
+      expect(result.currency).toBe("USD");
+      expect(result.value).toBe(expectedValue);
+      expect(ceClient).toHaveReceivedCommandTimes(GetCostAndUsageCommand, 1);
+    }
+  );
+
+  it.each([
+    {
+      description: "when no results",
+      mockResponse: { ResultsByTime: undefined },
+    },
+    {
+      description: "when ResultsByTime is empty",
+      mockResponse: { ResultsByTime: [] },
+    },
+    {
+      description: "when Amount field is missing",
+      mockResponse: {
+        ResultsByTime: [
+          {
+            Groups: [
+              {
+                Metrics: {
+                  NetUnblendedCost: {
+                    Unit: "USD",
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ])("should return zero cost $description", async ({ mockResponse }) => {
     // Given
     const { sut, ceClient } = makeSut();
-    const region = Region.US_CHICAGO_1;
+    const region = Region.US_EAST_1_BUE_1;
     const dateRange = {
       startDate: new Date("2025-10-01"),
       endDate: new Date("2025-10-31"),
     };
 
-    const mockResponse = {
-      ResultsByTime: [
-        {
-          Groups: [
-            {
-              Metrics: {
-                NetUnblendedCost: {
-                  Amount: "150.50",
-                  Unit: "USD",
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result).toEqual({
-      currency: "USD",
-      value: 150.5,
-    });
-    expect(ceClient).toHaveReceivedCommandTimes(GetCostAndUsageCommand, 1);
-  });
-
-  it("should handle multiple cost groups", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.SA_SAOPAULO_1;
-    const dateRange = {
-      startDate: new Date("2025-09-01"),
-      endDate: new Date("2025-09-30"),
-    };
-
-    const mockResponse = {
-      ResultsByTime: [
-        {
-          Groups: [
-            {
-              Metrics: {
-                NetUnblendedCost: {
-                  Amount: "100.00",
-                  Unit: "USD",
-                },
-              },
-            },
-            {
-              Metrics: {
-                NetUnblendedCost: {
-                  Amount: "50.50",
-                  Unit: "USD",
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.value).toBe(150.5);
-  });
-
-  it("should handle total cost when no groups present", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.EU_FRANKFURT_1;
-    const dateRange = {
-      startDate: new Date("2025-08-01"),
-      endDate: new Date("2025-08-31"),
-    };
-
-    const mockResponse = {
-      ResultsByTime: [
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "200.75",
-              Unit: "USD",
-            },
-          },
-        },
-      ],
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.value).toBe(200.75);
-  });
-
-  it("should return zero cost when no results", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.AP_SYDNEY_1;
-    const dateRange = {
-      startDate: new Date("2025-07-01"),
-      endDate: new Date("2025-07-31"),
-    };
-
-    const mockResponse = {
-      ResultsByTime: undefined,
-    };
-
     ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
 
     // When
@@ -169,64 +194,10 @@ describe("AWSCostProvider", () => {
     expect(result.value).toBe(0);
   });
 
-  it("should return zero cost when ResultsByTime is empty array", async () => {
+  it("should format date range and filter correctly for AWS API", async () => {
     // Given
-    const { sut, ceClient } = makeSut();
+    const { sut, ceClient, clientFactory } = makeSut();
     const region = Region.US_EAST_1_BUE_1;
-    const dateRange = {
-      startDate: new Date("2025-06-01"),
-      endDate: new Date("2025-06-30"),
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves({
-      ResultsByTime: [],
-    });
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.value).toBe(0);
-  });
-
-  it("should handle missing Amount field gracefully", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.US_EAST_1_LIM_1;
-    const dateRange = {
-      startDate: new Date("2025-05-01"),
-      endDate: new Date("2025-05-31"),
-    };
-
-    const mockResponse = {
-      ResultsByTime: [
-        {
-          Groups: [
-            {
-              Metrics: {
-                NetUnblendedCost: {
-                  Unit: "USD",
-                },
-              },
-            },
-          ],
-        },
-      ],
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.value).toBe(0);
-  });
-
-  it("should format date range correctly for AWS API", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.SA_SANTIAGO_1;
     const dateRange = {
       startDate: new Date("2025-10-15"),
       endDate: new Date("2025-10-20"),
@@ -249,6 +220,7 @@ describe("AWSCostProvider", () => {
     await sut.fetchCost({ region, dateRange });
 
     // Then
+    expect(clientFactory).toHaveBeenCalledWith("us-east-1");
     expect(ceClient).toHaveReceivedCommandWith(GetCostAndUsageCommand, {
       TimePeriod: {
         Start: "2025-10-15",
@@ -271,87 +243,10 @@ describe("AWSCostProvider", () => {
     });
   });
 
-  it("should call clientFactory with us-east-1", async () => {
-    // Given
-    const { sut, clientFactory, ceClient } = makeSut();
-    const region = Region.SA_BOGOTA_1;
-    const dateRange = {
-      startDate: new Date("2025-04-01"),
-      endDate: new Date("2025-04-30"),
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves({
-      ResultsByTime: [
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "50.00",
-              Unit: "USD",
-            },
-          },
-        },
-      ],
-    });
-
-    // When
-    await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(clientFactory).toHaveBeenCalledWith("us-east-1");
-  });
-
-  it("should include region in filter", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.EU_FRANKFURT_1;
-    const dateRange = {
-      startDate: new Date("2025-03-01"),
-      endDate: new Date("2025-03-31"),
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves({
-      ResultsByTime: [
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "100.00",
-              Unit: "USD",
-            },
-          },
-        },
-      ],
-    });
-
-    // When
-    await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(ceClient).toHaveReceivedCommandWith(GetCostAndUsageCommand, {
-      TimePeriod: {
-        Start: "2025-03-01",
-        End: "2025-04-01",
-      },
-      Granularity: "MONTHLY",
-      Metrics: ["NetUnblendedCost"],
-      GroupBy: [
-        {
-          Key: "REGION",
-          Type: "DIMENSION",
-        },
-      ],
-      Filter: {
-        Dimensions: {
-          Key: "REGION",
-          Values: [region],
-        },
-      },
-    });
-  });
-
   it("should throw error when AWS API fails", async () => {
     // Given
     const { sut, ceClient } = makeSut();
-    const region = Region.US_CHICAGO_1;
+    const region = Region.US_EAST_1_LIM_1;
     const dateRange = {
       startDate: new Date("2025-02-01"),
       endDate: new Date("2025-02-28"),
@@ -362,79 +257,5 @@ describe("AWSCostProvider", () => {
 
     // When & Then
     await expect(sut.fetchCost({ region, dateRange })).rejects.toThrow("AWS API Error");
-  });
-
-  it.each([
-    { region: Region.SA_SAOPAULO_1 },
-    { region: Region.SA_SANTIAGO_1 },
-    { region: Region.US_CHICAGO_1 },
-    { region: Region.EU_FRANKFURT_1 },
-    { region: Region.AP_SYDNEY_1 },
-  ])("should work with different regions", async ({ region }) => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const dateRange = {
-      startDate: new Date("2025-01-01"),
-      endDate: new Date("2025-01-31"),
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves({
-      ResultsByTime: [
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "123.45",
-              Unit: "USD",
-            },
-          },
-        },
-      ],
-    });
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.currency).toBe("USD");
-    expect(result.value).toBe(123.45);
-  });
-
-  it("should sum costs from multiple time periods", async () => {
-    // Given
-    const { sut, ceClient } = makeSut();
-    const region = Region.SA_BOGOTA_1;
-    const dateRange = {
-      startDate: new Date("2025-01-01"),
-      endDate: new Date("2025-01-31"),
-    };
-
-    const mockResponse = {
-      ResultsByTime: [
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "100.00",
-              Unit: "USD",
-            },
-          },
-        },
-        {
-          Total: {
-            NetUnblendedCost: {
-              Amount: "50.50",
-              Unit: "USD",
-            },
-          },
-        },
-      ],
-    };
-
-    ceClient.on(GetCostAndUsageCommand).resolves(mockResponse);
-
-    // When
-    const result = await sut.fetchCost({ region, dateRange });
-
-    // Then
-    expect(result.value).toBe(150.5);
   });
 });
