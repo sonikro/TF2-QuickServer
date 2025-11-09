@@ -45,7 +45,8 @@ describe("DefaultEC2InstanceService", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ec2Client: ec2Mock as unknown as EC2Client,
-            ecsClient: {} as any
+            ecsClient: {} as any,
+            ceClient: {} as any
         });
 
         vi.mocked(mockAWSConfigService.getRegionConfig).mockReturnValue({

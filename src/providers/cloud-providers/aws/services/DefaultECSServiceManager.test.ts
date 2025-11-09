@@ -46,7 +46,8 @@ describe("DefaultECSServiceManager", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ecsClient: ecsClientMock as unknown as ECSClient,
-            ec2Client: {} as any
+            ec2Client: {} as any,
+            ceClient: {} as any
         });
 
         vi.mocked(mockAWSConfigService.getRegionConfig).mockReturnValue({

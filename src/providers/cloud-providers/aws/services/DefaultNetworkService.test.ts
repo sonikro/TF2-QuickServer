@@ -27,7 +27,8 @@ describe("DefaultNetworkService", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ec2Client: ec2ClientMock as unknown as EC2Client,
-            ecsClient: {} as any
+            ecsClient: {} as any,
+            ceClient: {} as any,
         });
 
         vi.mocked(mockTracingService.executeWithTracing).mockImplementation(async (_, __, fn) => await fn({} as any));
