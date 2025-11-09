@@ -40,192 +40,162 @@ describe('OracleCostProvider', () => {
   };
 
   describe('fetchCost', () => {
-    it('should fetch cost data successfully', async () => {
-      // Given
-      const { sut, configManager, usageClient } = makeSut();
-      const region = Region.SA_SAOPAULO_1;
-      const startDate = new Date('2025-01-01');
-      const endDate = new Date('2025-01-31');
-      const dateRange = { startDate, endDate };
-
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
-          },
+    const createOracleConfig = (region: Region): OracleConfig => ({
+      regions: {
+        [region]: {
+          compartment_id: 'ocid1.compartment.oc1..test123',
+          availability_domain: 'AD-1',
+          subnet_id: 'subnet123',
+          nsg_id: 'nsg123',
+          vnc_id: 'vnc123',
+          secret_id: 'secret123',
         },
-      };
+      },
+    });
 
-      when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
+    const createUsageSummary = (
+      params: Partial<models.UsageSummary> & {
+        startDate: Date;
+        endDate: Date;
+        region: Region;
+      }
+    ): models.UsageSummary => ({
+      tenantId: 'ocid1.compartment.oc1..test123',
+      timeUsageStarted: params.startDate,
+      timeUsageEnded: params.endDate,
+      region: params.region,
+      computedAmount: params.computedAmount ?? 0,
+      currency: params.currency ?? 'USD',
+    });
 
-      const usageSummary: models.UsageSummary = {
-        tenantId: 'ocid1.compartment.oc1..test123',
-        timeUsageStarted: startDate,
-        timeUsageEnded: endDate,
-        region: region,
-        computedAmount: 150.5,
-        currency: 'USD',
-      };
+    it.each([
+      {
+        description: 'with single summary',
+        summaries: [{ computedAmount: 150.5, currency: 'USD' }],
+        expectedValue: 150.5,
+        shouldLogSuccess: true,
+      },
+      {
+        description: 'with multiple summaries same region',
+        summaries: [
+          { computedAmount: 100, currency: 'USD' },
+          { computedAmount: 75.5, currency: 'USD' },
+        ],
+        expectedValue: 175.5,
+      },
+      {
+        description: 'with zero cost',
+        summaries: [{ computedAmount: 0, currency: 'USD' }],
+        expectedValue: 0,
+      },
+      {
+        description: 'with null computedAmount',
+        summaries: [{ computedAmount: undefined, currency: 'USD' }],
+        expectedValue: 0,
+      },
+      {
+        description: 'with mixed null and valid amounts',
+        summaries: [
+          { computedAmount: 100, currency: 'USD' },
+          { computedAmount: undefined, currency: 'USD' },
+        ],
+        expectedValue: 100,
+      },
+    ])(
+      'should fetch cost successfully $description',
+      async ({ summaries, expectedValue, shouldLogSuccess }) => {
+        // Given
+        const { sut, configManager, usageClient } = makeSut();
+        const region = Region.SA_SAOPAULO_1;
+        const startDate = new Date('2025-01-01');
+        const endDate = new Date('2025-01-31');
+        const dateRange = { startDate, endDate };
 
-      const response = {
-        usageAggregation: {
-          items: [usageSummary],
-        },
-        opcRequestId: 'test-request-id',
-      };
+        const oracleConfig = createOracleConfig(region);
+        when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
 
-      when(usageClient.requestSummarizedUsages)
-        .calledWith({
-          requestSummarizedUsagesDetails: {
-            tenantId: 'ocid1.compartment.oc1..test123',
-            timeUsageStarted: startDate,
-            timeUsageEnded: endDate,
-            granularity: models.RequestSummarizedUsagesDetails.Granularity.Monthly,
-            queryType: models.RequestSummarizedUsagesDetails.QueryType.Cost,
-            groupBy: ['region'],
-          },
-        })
-        .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
-
-      // When
-      const result = await sut.fetchCost({ region, dateRange });
-
-      // Then
-      expect(result).toEqual({
-        currency: 'USD',
-        value: 150.5,
-      });
-      expect(logger.emit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          severityText: 'INFO',
-          body: 'Successfully fetched cost data from Oracle Cloud',
-          attributes: expect.objectContaining({
+        const usageSummaryList = summaries.map((summary) =>
+          createUsageSummary({
+            startDate,
+            endDate,
             region,
-            totalCost: 150.5,
-            currency: 'USD',
-            dateRangeStart: startDate.toISOString(),
-            dateRangeEnd: endDate.toISOString(),
-          }),
-        })
-      );
-    });
+            ...summary,
+          })
+        );
 
-    it('should sum multiple cost summaries for the same region', async () => {
-      // Given
-      const { sut, configManager, usageClient } = makeSut();
-      const region = Region.SA_SAOPAULO_1;
-      const startDate = new Date('2025-01-01');
-      const endDate = new Date('2025-01-31');
-      const dateRange = { startDate, endDate };
-
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
+        const response = {
+          usageAggregation: {
+            items: usageSummaryList,
           },
-        },
-      };
+        };
 
-      when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
+        when(usageClient.requestSummarizedUsages)
+          .calledWith({
+            requestSummarizedUsagesDetails: {
+              tenantId: 'ocid1.compartment.oc1..test123',
+              timeUsageStarted: startDate,
+              timeUsageEnded: endDate,
+              granularity: models.RequestSummarizedUsagesDetails.Granularity.Monthly,
+              queryType: models.RequestSummarizedUsagesDetails.QueryType.Cost,
+              groupBy: ['region'],
+            },
+          })
+          .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
 
-      const usageSummaries: models.UsageSummary[] = [
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: region,
-          computedAmount: 100,
+        // When
+        const result = await sut.fetchCost({ region, dateRange });
+
+        // Then
+        expect(result).toEqual({
           currency: 'USD',
-        },
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: region,
-          computedAmount: 75.5,
-          currency: 'USD',
-        },
-      ];
+          value: expectedValue,
+        });
 
-      const response = {
-        usageAggregation: {
-          items: usageSummaries,
-        },
-      };
-
-      when(usageClient.requestSummarizedUsages)
-        .calledWith({
-          requestSummarizedUsagesDetails: {
-            tenantId: 'ocid1.compartment.oc1..test123',
-            timeUsageStarted: startDate,
-            timeUsageEnded: endDate,
-            granularity: models.RequestSummarizedUsagesDetails.Granularity.Monthly,
-            queryType: models.RequestSummarizedUsagesDetails.QueryType.Cost,
-            groupBy: ['region'],
-          },
-        })
-        .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
-
-      // When
-      const result = await sut.fetchCost({ region, dateRange });
-
-      // Then
-      expect(result).toEqual({
-        currency: 'USD',
-        value: 175.5,
-      });
-    });
+        if (shouldLogSuccess) {
+          expect(logger.emit).toHaveBeenCalledWith(
+            expect.objectContaining({
+              severityText: 'INFO',
+              body: 'Successfully fetched cost data from Oracle Cloud',
+              attributes: expect.objectContaining({
+                region,
+                totalCost: expectedValue,
+                currency: 'USD',
+                dateRangeStart: startDate.toISOString(),
+                dateRangeEnd: endDate.toISOString(),
+              }),
+            })
+          );
+        }
+      }
+    );
 
     it('should filter summaries by region', async () => {
       // Given
       const { sut, configManager, usageClient } = makeSut();
-      const region = Region.SA_SAOPAULO_1;
+      const requestedRegion = Region.SA_SAOPAULO_1;
+      const otherRegion = Region.US_CHICAGO_1;
       const startDate = new Date('2025-01-01');
       const endDate = new Date('2025-01-31');
       const dateRange = { startDate, endDate };
 
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
-          },
-        },
-      };
-
+      const oracleConfig = createOracleConfig(requestedRegion);
       when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
 
       const usageSummaries: models.UsageSummary[] = [
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: region,
+        createUsageSummary({
+          startDate,
+          endDate,
+          region: requestedRegion,
           computedAmount: 100,
           currency: 'USD',
-        },
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: Region.US_CHICAGO_1,
+        }),
+        createUsageSummary({
+          startDate,
+          endDate,
+          region: otherRegion,
           computedAmount: 50,
           currency: 'USD',
-        },
+        }),
       ];
 
       const response = {
@@ -248,134 +218,12 @@ describe('OracleCostProvider', () => {
         .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
 
       // When
-      const result = await sut.fetchCost({ region, dateRange });
+      const result = await sut.fetchCost({ region: requestedRegion, dateRange });
 
       // Then
       expect(result).toEqual({
         currency: 'USD',
         value: 100,
-      });
-    });
-
-    it('should handle zero cost', async () => {
-      // Given
-      const { sut, configManager, usageClient } = makeSut();
-      const region = Region.SA_SAOPAULO_1;
-      const startDate = new Date('2025-01-01');
-      const endDate = new Date('2025-01-31');
-      const dateRange = { startDate, endDate };
-
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
-          },
-        },
-      };
-
-      when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
-
-      const usageSummary: models.UsageSummary = {
-        tenantId: 'ocid1.compartment.oc1..test123',
-        timeUsageStarted: startDate,
-        timeUsageEnded: endDate,
-        region: region,
-        computedAmount: 0,
-        currency: 'USD',
-      };
-
-      const response = {
-        usageAggregation: {
-          items: [usageSummary],
-        },
-      };
-
-      when(usageClient.requestSummarizedUsages)
-        .calledWith({
-          requestSummarizedUsagesDetails: {
-            tenantId: 'ocid1.compartment.oc1..test123',
-            timeUsageStarted: startDate,
-            timeUsageEnded: endDate,
-            granularity: models.RequestSummarizedUsagesDetails.Granularity.Monthly,
-            queryType: models.RequestSummarizedUsagesDetails.QueryType.Cost,
-            groupBy: ['region'],
-          },
-        })
-        .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
-
-      // When
-      const result = await sut.fetchCost({ region, dateRange });
-
-      // Then
-      expect(result).toEqual({
-        currency: 'USD',
-        value: 0,
-      });
-    });
-
-    it('should handle null computedAmount by treating as zero', async () => {
-      // Given
-      const { sut, configManager, usageClient } = makeSut();
-      const region = Region.SA_SAOPAULO_1;
-      const startDate = new Date('2025-01-01');
-      const endDate = new Date('2025-01-31');
-      const dateRange = { startDate, endDate };
-
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
-          },
-        },
-      };
-
-      when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
-
-      const usageSummary: models.UsageSummary = {
-        tenantId: 'ocid1.compartment.oc1..test123',
-        timeUsageStarted: startDate,
-        timeUsageEnded: endDate,
-        region: region,
-        computedAmount: undefined,
-        currency: 'USD',
-      };
-
-      const response = {
-        usageAggregation: {
-          items: [usageSummary],
-        },
-      };
-
-      when(usageClient.requestSummarizedUsages)
-        .calledWith({
-          requestSummarizedUsagesDetails: {
-            tenantId: 'ocid1.compartment.oc1..test123',
-            timeUsageStarted: startDate,
-            timeUsageEnded: endDate,
-            granularity: models.RequestSummarizedUsagesDetails.Granularity.Monthly,
-            queryType: models.RequestSummarizedUsagesDetails.QueryType.Cost,
-            groupBy: ['region'],
-          },
-        })
-        .thenResolve(response as Awaited<ReturnType<typeof usageClient.requestSummarizedUsages>>);
-
-      // When
-      const result = await sut.fetchCost({ region, dateRange });
-
-      // Then
-      expect(result).toEqual({
-        currency: 'USD',
-        value: 0,
       });
     });
 
@@ -387,38 +235,24 @@ describe('OracleCostProvider', () => {
       const endDate = new Date('2025-01-31');
       const dateRange = { startDate, endDate };
 
-      const oracleConfig: OracleConfig = {
-        regions: {
-          [region]: {
-            compartment_id: 'ocid1.compartment.oc1..test123',
-            availability_domain: 'AD-1',
-            subnet_id: 'subnet123',
-            nsg_id: 'nsg123',
-            vnc_id: 'vnc123',
-            secret_id: 'secret123',
-          },
-        },
-      };
-
+      const oracleConfig = createOracleConfig(region);
       when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
 
       const usageSummaries: models.UsageSummary[] = [
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: region,
+        createUsageSummary({
+          startDate,
+          endDate,
+          region,
           computedAmount: 100,
           currency: 'USD',
-        },
-        {
-          tenantId: 'ocid1.compartment.oc1..test123',
-          timeUsageStarted: startDate,
-          timeUsageEnded: endDate,
-          region: region,
+        }),
+        createUsageSummary({
+          startDate,
+          endDate,
+          region,
           computedAmount: 50,
           currency: '   ',
-        },
+        }),
       ];
 
       const response = {
@@ -458,10 +292,7 @@ describe('OracleCostProvider', () => {
       const endDate = new Date('2025-01-31');
       const dateRange = { startDate, endDate };
 
-      const oracleConfig: OracleConfig = {
-        regions: {},
-      };
-
+      const oracleConfig: OracleConfig = { regions: {} };
       when(configManager.getOracleConfig).calledWith().thenReturn(oracleConfig);
 
       // When & Then
@@ -475,6 +306,5 @@ describe('OracleCostProvider', () => {
         })
       );
     });
-
   });
 });
