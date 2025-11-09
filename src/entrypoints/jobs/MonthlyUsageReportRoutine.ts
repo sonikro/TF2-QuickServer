@@ -6,7 +6,7 @@ import { EventLogger } from "../../core/services/EventLogger";
 import { logger } from "../../telemetry/otel";
 import { MonthlyReportFormatter } from "../../providers/services/MonthlyReportFormatter";
 
-type ScheduleMonthlyUsageReportRoutineDependencies = {
+export type ScheduleMonthlyUsageReportRoutineDependencies = {
   generateMonthlyUsageReport: GenerateMonthlyUsageReport;
   configManager: ConfigManager;
   eventLogger: EventLogger;
@@ -18,17 +18,17 @@ export const scheduleMonthlyUsageReportRoutine = (
 ) => {
   const { generateMonthlyUsageReport, configManager, eventLogger, discordClient } = dependencies;
 
-  const job = schedule.scheduleJob("0 12 1 * *", async () => {
+  schedule.scheduleJob("0 15 1 * *", async () => {
     try {
       logger.emit({
         severityText: "INFO",
         body: "Running Monthly Usage Report Routine...",
       });
 
-      const lastMonthDate = new Date();
-      lastMonthDate.setDate(lastMonthDate.getDate() - 1);
+      const now = new Date();
+      const previousMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-      const report = await generateMonthlyUsageReport.execute({ date: new Date('2025-10-31') });
+      const report = await generateMonthlyUsageReport.execute({ date: previousMonthDate });
 
       const discordConfig = configManager.getDiscordConfig();
       const reportChannelId = discordConfig.reportDiscordChannelId;
