@@ -48,7 +48,7 @@ describe('DefaultServerManagerFactory', () => {
     describe('createServerManager', () => {
         describe('AWS regions', () => {
             it.each([
-                { region: Region.US_EAST_1_BUE_1A, expectedClass: AWSServerManager },
+                { region: Region.US_EAST_1_BUE_1, expectedClass: AWSServerManager },
                 { region: Region.EU_FRANKFURT_1, expectedClass: OCIServerManager },
                 { region: Region.SA_BOGOTA_1, expectedClass: OCIServerManager },
                 { region: Region.SA_SANTIAGO_1, expectedClass: OCIServerManager },

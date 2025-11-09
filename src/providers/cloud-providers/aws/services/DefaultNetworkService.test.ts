@@ -27,7 +27,8 @@ describe("DefaultNetworkService", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ec2Client: ec2ClientMock as unknown as EC2Client,
-            ecsClient: {} as any
+            ecsClient: {} as any,
+            ceClient: {} as any,
         });
 
         vi.mocked(mockTracingService.executeWithTracing).mockImplementation(async (_, __, fn) => await fn({} as any));
@@ -45,7 +46,7 @@ describe("DefaultNetworkService", () => {
 
             const service = new DefaultNetworkService(mockAWSConfigService, mockTracingService);
             
-            const result = await service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1A);
+            const result = await service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1);
             
             expect(result).toBe("1.2.3.4");
             expect(ec2ClientMock).toHaveReceivedCommandWith(DescribeInstancesCommand, {
@@ -60,7 +61,7 @@ describe("DefaultNetworkService", () => {
 
             const service = new DefaultNetworkService(mockAWSConfigService, mockTracingService);
             
-            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1A))
+            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1))
                 .rejects.toThrowError("EC2 instance not found");
         });
 
@@ -75,7 +76,7 @@ describe("DefaultNetworkService", () => {
 
             const service = new DefaultNetworkService(mockAWSConfigService, mockTracingService);
             
-            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1A))
+            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1))
                 .rejects.toThrowError("Failed to retrieve public IP from EC2 instance. Instance may not be in a public subnet or may not have a public IP assigned.");
         });
 
@@ -88,7 +89,7 @@ describe("DefaultNetworkService", () => {
 
             const service = new DefaultNetworkService(mockAWSConfigService, mockTracingService);
             
-            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1A))
+            await expect(service.getPublicIp("i-12345", Region.US_EAST_1_BUE_1))
                 .rejects.toThrowError("EC2 instance not found");
         });
     });

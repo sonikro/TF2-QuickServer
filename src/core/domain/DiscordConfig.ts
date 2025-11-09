@@ -2,6 +2,7 @@ import config from "config";
 
 export type DiscordConfig = {
     logChannelId: string;
+    reportDiscordChannelId: string;
 }
 
 export const getDiscordConfig = () => {

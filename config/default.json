@@ -4,49 +4,57 @@
             "displayName": "São Paulo",
             "srcdsHostname": "TF2-QuickServer | São Paulo",
             "tvHostname": "TF2-QuickServer TV | São Paulo",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "us-chicago-1"
         },
         "sa-santiago-1": {
             "displayName": "Santiago",
             "srcdsHostname": "TF2-QuickServer | Santiago",
             "tvHostname": "TF2-QuickServer TV | Santiago",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "sa-santiago-1"
         },
         "sa-bogota-1": {
             "displayName": "Bogotá",
             "srcdsHostname": "TF2-QuickServer | Bogotá",
             "tvHostname": "TF2-QuickServer TV | Bogotá",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "us-chicago-1"
         },
         "us-chicago-1": {
             "displayName": "Chicago",
             "srcdsHostname": "TF2-QuickServer | Chicago",
             "tvHostname": "TF2-QuickServer TV | Chicago",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "us-chicago-1"
         },
         "eu-frankfurt-1": {
             "displayName": "Frankfurt",
             "srcdsHostname": "TF2-QuickServer | Frankfurt",
             "tvHostname": "TF2-QuickServer TV | Frankfurt",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "sa-santiago-1"
         },
         "ap-sydney-1": {
             "displayName": "Sydney",
             "srcdsHostname": "TF2-QuickServer | Sydney",
             "tvHostname": "TF2-QuickServer TV | Sydney",
-            "cloudProvider": "oracle"
+            "cloudProvider": "oracle",
+            "homeRegion": "sa-santiago-1"
         },
-        "us-east-1-bue-1a": {
+        "us-east-1-bue-1": {
             "displayName": "Buenos Aires (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Buenos Aires",
             "tvHostname": "TF2-QuickServer TV | Buenos Aires",
-            "cloudProvider": "aws"
+            "cloudProvider": "aws",
+            "homeRegion": "us-east-1"
         },
-        "us-east-1-lim-1a": {
+        "us-east-1-lim-1": {
             "displayName": "Lima (Experimental)",
             "srcdsHostname": "TF2-QuickServer | Lima",
             "tvHostname": "TF2-QuickServer TV | Lima",
-            "cloudProvider": "aws"
+            "cloudProvider": "aws",
+            "homeRegion": "us-east-1"
         }
     },
     "variants": {
@@ -254,7 +262,8 @@
         }
     },
     "discord": {
-        "logChannelId": "1360789887208394851"
+        "logChannelId": "1360789887208394851",
+        "reportDiscordChannelId": "1378761634889076926"
     },
     "credits": {
         "enabled": false

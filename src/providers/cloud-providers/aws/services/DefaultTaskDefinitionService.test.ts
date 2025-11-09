@@ -43,7 +43,8 @@ describe("DefaultTaskDefinitionService", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ecsClient: ecsClientMock as unknown as ECSClient,
-            ec2Client: {} as any
+            ec2Client: {} as any,
+            ceClient: {} as any
         });
 
         vi.mocked(mockAWSConfigService.getRegionConfig).mockReturnValue({
@@ -75,7 +76,7 @@ describe("DefaultTaskDefinitionService", () => {
     describe("create", () => {
         const context = {
             serverId: "test-server-123",
-            region: Region.US_EAST_1_BUE_1A,
+            region: Region.US_EAST_1_BUE_1,
             variantName: "standard-competitive"
         } as DeploymentContext;
 
@@ -200,9 +201,9 @@ describe("DefaultTaskDefinitionService", () => {
                         memory: 256,
                         environment: [
                             { name: "NRIA_LICENSE_KEY", value: "test-license-key" },
-                            { name: "NRIA_DISPLAY_NAME", value: "TF2-Server-us-east-1-bue-1a-test-server-123" },
-                            { name: "NRIA_OVERRIDE_HOSTNAME", value: "tf2-server-us-east-1-bue-1a-test-server-123" },
-                            { name: "NRIA_CUSTOM_ATTRIBUTES", value: "region=us-east-1-bue-1a,serverId=test-server-123,variant=standard-competitive" }
+                            { name: "NRIA_DISPLAY_NAME", value: "TF2-Server-us-east-1-bue-1-test-server-123" },
+                            { name: "NRIA_OVERRIDE_HOSTNAME", value: "tf2-server-us-east-1-bue-1-test-server-123" },
+                            { name: "NRIA_CUSTOM_ATTRIBUTES", value: "region=us-east-1-bue-1,serverId=test-server-123,variant=standard-competitive" }
                         ]
                     }
                 ]
@@ -259,7 +260,7 @@ describe("DefaultTaskDefinitionService", () => {
 
             const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
             
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ecsClientMock).toHaveReceivedCommandWith(ListTaskDefinitionsCommand, {
                 familyPrefix: "test-server-123",
@@ -278,7 +279,7 @@ describe("DefaultTaskDefinitionService", () => {
 
             const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
             
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ecsClientMock).toHaveReceivedCommand(ListTaskDefinitionsCommand);
             expect(ecsClientMock).not.toHaveReceivedCommand(DeleteTaskDefinitionsCommand);
@@ -295,7 +296,7 @@ describe("DefaultTaskDefinitionService", () => {
 
             const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
             
-            const result = await service.findTaskDefinitionArn("test-server-123", Region.US_EAST_1_BUE_1A);
+            const result = await service.findTaskDefinitionArn("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(result).toBe(taskDefinitionArn);
         });
@@ -307,7 +308,7 @@ describe("DefaultTaskDefinitionService", () => {
 
             const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
             
-            const result = await service.findTaskDefinitionArn("test-server-123", Region.US_EAST_1_BUE_1A);
+            const result = await service.findTaskDefinitionArn("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(result).toBeUndefined();
         });

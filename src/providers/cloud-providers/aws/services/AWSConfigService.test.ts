@@ -44,14 +44,14 @@ describe("AWSConfigService", () => {
             };
             const mockAWSConfig = {
                 regions: {
-                    [Region.US_EAST_1_BUE_1A]: mockRegionConfig
+                    [Region.US_EAST_1_BUE_1]: mockRegionConfig
                 }
             } as any;
             vi.mocked(mockConfigManager.getAWSConfig).mockReturnValue(mockAWSConfig);
 
             const service = new AWSConfigService(mockConfigManager, mockAWSClientFactory);
             
-            const result = service.getRegionConfig(Region.US_EAST_1_BUE_1A);
+            const result = service.getRegionConfig(Region.US_EAST_1_BUE_1);
             
             expect(result).toBe(mockRegionConfig);
             expect(mockConfigManager.getAWSConfig).toHaveBeenCalledTimes(1);
@@ -65,8 +65,8 @@ describe("AWSConfigService", () => {
 
             const service = new AWSConfigService(mockConfigManager, mockAWSClientFactory);
             
-            expect(() => service.getRegionConfig(Region.US_EAST_1_BUE_1A))
-                .toThrowError("Region us-east-1-bue-1a is not configured in AWS config");
+            expect(() => service.getRegionConfig(Region.US_EAST_1_BUE_1))
+                .toThrowError("Region us-east-1-bue-1 is not configured in AWS config");
         });
     });
 
@@ -84,14 +84,14 @@ describe("AWSConfigService", () => {
             };
             const mockAWSConfig = {
                 regions: {
-                    [Region.US_EAST_1_BUE_1A]: mockRegionConfig
+                    [Region.US_EAST_1_BUE_1]: mockRegionConfig
                 }
             } as any;
             vi.mocked(mockConfigManager.getAWSConfig).mockReturnValue(mockAWSConfig);
 
             const service = new AWSConfigService(mockConfigManager, mockAWSClientFactory);
             
-            const result = service.getClients(Region.US_EAST_1_BUE_1A);
+            const result = service.getClients(Region.US_EAST_1_BUE_1);
             
             expect(result).toBe(mockAWSClients);
             expect(mockAWSClientFactory).toHaveBeenCalledWith("us-east-1");
@@ -105,8 +105,8 @@ describe("AWSConfigService", () => {
 
             const service = new AWSConfigService(mockConfigManager, mockAWSClientFactory);
             
-            expect(() => service.getClients(Region.US_EAST_1_BUE_1A))
-                .toThrowError("Region us-east-1-bue-1a is not configured in AWS config");
+            expect(() => service.getClients(Region.US_EAST_1_BUE_1))
+                .toThrowError("Region us-east-1-bue-1 is not configured in AWS config");
         });
     });
 });

@@ -33,7 +33,8 @@ describe("DefaultSecurityGroupService", () => {
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
             ec2Client: ec2ClientMock as unknown as EC2Client,
-            ecsClient: {} as any
+            ecsClient: {} as any,
+            ceClient: {} as any
         });
 
         vi.mocked(mockAWSConfigService.getRegionConfig).mockReturnValue({
@@ -64,7 +65,7 @@ describe("DefaultSecurityGroupService", () => {
 
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
-            const result = await service.create("test-server-123", Region.US_EAST_1_BUE_1A);
+            const result = await service.create("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(result).toBe("sg-12345");
             expect(ec2ClientMock).toHaveReceivedCommandWith(CreateSecurityGroupCommand, {
@@ -104,7 +105,7 @@ describe("DefaultSecurityGroupService", () => {
 
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ec2ClientMock).toHaveReceivedCommandWith(DescribeSecurityGroupsCommand, {
                 Filters: [
@@ -124,7 +125,7 @@ describe("DefaultSecurityGroupService", () => {
 
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             expect(ec2ClientMock).toHaveReceivedCommand(DescribeSecurityGroupsCommand);
             expect(ec2ClientMock).not.toHaveReceivedCommand(DeleteSecurityGroupCommand);
@@ -145,12 +146,12 @@ describe("DefaultSecurityGroupService", () => {
 
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
-            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A)).resolves.not.toThrow();
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1)).resolves.not.toThrow();
             
             expect(vi.mocked(mockTracingService.logOperationSuccess)).toHaveBeenCalledWith(
                 expect.stringContaining('Security group not found during deletion'),
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 expect.objectContaining({ securityGroupId: "sg-12345" })
             );
         });
@@ -183,7 +184,7 @@ describe("DefaultSecurityGroupService", () => {
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
             // When: Start the deletion and advance timers
-            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             // Advance timers to trigger retries (5000ms delay between attempts)
             await vi.advanceTimersByTimeAsync(5000);
@@ -196,7 +197,7 @@ describe("DefaultSecurityGroupService", () => {
             expect(mockTracingService.logOperationStart).toHaveBeenCalledWith(
                 expect.stringContaining('Security group deletion failed due to dependency'),
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 expect.objectContaining({
                     securityGroupId: "sg-12345",
                     errorMessage: expect.any(String)
@@ -217,7 +218,7 @@ describe("DefaultSecurityGroupService", () => {
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
             // When
-            await service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            await service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             // Then: Should have attempted delete only once
             expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 1);
@@ -244,7 +245,7 @@ describe("DefaultSecurityGroupService", () => {
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
             // When: Start the deletion and set up the expectation before advancing timers
-            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             // Catch the rejection to prevent unhandled promise rejection
             deletePromise.catch(() => {});
@@ -277,7 +278,7 @@ describe("DefaultSecurityGroupService", () => {
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
             // When/Then: Should throw immediately without retrying
-            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1A))
+            await expect(service.delete("test-server-123", Region.US_EAST_1_BUE_1))
                 .rejects.toThrow('User is not authorized to perform DeleteSecurityGroup');
             
             expect(ec2ClientMock).toHaveReceivedCommandTimes(DeleteSecurityGroupCommand, 1);
@@ -312,7 +313,7 @@ describe("DefaultSecurityGroupService", () => {
             const service = new DefaultSecurityGroupService(mockAWSConfigService, mockTracingService);
             
             // When: Start the deletion and advance timers
-            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1A);
+            const deletePromise = service.delete("test-server-123", Region.US_EAST_1_BUE_1);
             
             // Advance timers for 3 retry delays
             await vi.advanceTimersByTimeAsync(5000);

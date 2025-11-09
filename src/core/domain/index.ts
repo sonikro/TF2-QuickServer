@@ -6,3 +6,4 @@ export * from "./OracleConfig";
 export * from "./AWSConfig";
 export * from "./CreditsConfig";
 export * from "./CloudProvider";
+export * from "./MonthlyUsageReport";

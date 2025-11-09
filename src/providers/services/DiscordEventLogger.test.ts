@@ -11,7 +11,7 @@ describe("DiscordEventLogger", () => {
         const mockTextChannel = mockDeep<TextChannel>();
         const mockConfigManager = mockDeep<ConfigManager>();
 
-        mockConfigManager.getDiscordConfig.mockReturnValue({ logChannelId: "1234567890" });
+        mockConfigManager.getDiscordConfig.mockReturnValue({ logChannelId: "1234567890", reportDiscordChannelId: "report-channel-id" });
 
         const discordEventLogger = new DiscordEventLogger({
             discordClient: mockClient,

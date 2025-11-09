@@ -114,7 +114,7 @@ describe("AWSServerManager", () => {
     describe("deployServer", () => {
         const deployArgs = {
             serverId: "test-server-123",
-            region: Region.US_EAST_1_BUE_1A,
+            region: Region.US_EAST_1_BUE_1,
             variantName: "standard-competitive" as Variant,
             statusUpdater: mockStatusUpdater,
             sourcemodAdminSteamId: "STEAM_1:1:123456789",
@@ -138,12 +138,12 @@ describe("AWSServerManager", () => {
 
             // Verify the orchestration order and calls
             expect(mockConfigManager.getVariantConfig).toHaveBeenCalledWith("standard-competitive");
-            expect(mockConfigManager.getRegionConfig).toHaveBeenCalledWith(Region.US_EAST_1_BUE_1A);
+            expect(mockConfigManager.getRegionConfig).toHaveBeenCalledWith(Region.US_EAST_1_BUE_1);
 
             expect(mockEnvironmentBuilderService.build).toHaveBeenCalledWith(
                 expect.objectContaining({
                     serverId: "test-server-123",
-                    region: Region.US_EAST_1_BUE_1A,
+                    region: Region.US_EAST_1_BUE_1,
                     variantName: "standard-competitive",
                     sourcemodAdminSteamId: "STEAM_1:1:123456789",
                     extraEnvs: { "CUSTOM_VAR": "custom_value" }
@@ -159,12 +159,12 @@ describe("AWSServerManager", () => {
             );
 
             // Verify deployment steps are called in correct order
-            expect(mockSecurityGroupService.create).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
+            expect(mockSecurityGroupService.create).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
 
             expect(mockTaskDefinitionService.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     serverId: "test-server-123",
-                    region: Region.US_EAST_1_BUE_1A,
+                    region: Region.US_EAST_1_BUE_1,
                     variantName: "standard-competitive",
                     sourcemodAdminSteamId: "STEAM_1:1:123456789",
                     extraEnvs: { "CUSTOM_VAR": "custom_value" }
@@ -175,23 +175,23 @@ describe("AWSServerManager", () => {
 
             expect(mockEC2InstanceService.create).toHaveBeenCalledWith({
                 serverId: "test-server-123",
-                region: Region.US_EAST_1_BUE_1A,
+                region: Region.US_EAST_1_BUE_1,
                 variantConfig: mockVariantConfig,
                 securityGroupId: "sg-12345"
             });
 
             expect(mockECSServiceManager.create).toHaveBeenCalledWith(
                 "test-server-123",
-                Region.US_EAST_1_BUE_1A,
+                Region.US_EAST_1_BUE_1,
                 "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1"
             );
 
             expect(mockECSServiceManager.waitForStable).toHaveBeenCalledWith(
                 "arn:aws:ecs:us-east-1:123456789012:service/test-cluster/test-server-123",
-                Region.US_EAST_1_BUE_1A
+                Region.US_EAST_1_BUE_1
             );
 
-            expect(mockNetworkService.getPublicIp).toHaveBeenCalledWith("i-12345", Region.US_EAST_1_BUE_1A);
+            expect(mockNetworkService.getPublicIp).toHaveBeenCalledWith("i-12345", Region.US_EAST_1_BUE_1);
 
             expect(mockTF2ServerReadinessService.waitForReady).toHaveBeenCalledWith(
                 "1.2.3.4",
@@ -212,7 +212,7 @@ describe("AWSServerManager", () => {
             // Verify result structure
             expect(result).toEqual({
                 serverId: "test-server-123",
-                region: Region.US_EAST_1_BUE_1A,
+                region: Region.US_EAST_1_BUE_1,
                 variant: "standard-competitive",
                 hostIp: "169.254.1.1",
                 hostPort: 27015,
@@ -254,7 +254,7 @@ describe("AWSServerManager", () => {
     describe("deleteServer", () => {
         const deleteArgs = {
             serverId: "test-server-123",
-            region: Region.US_EAST_1_BUE_1A
+            region: Region.US_EAST_1_BUE_1
         };
 
         it("orchestrates deletion workflow correctly", async () => {
@@ -279,10 +279,10 @@ describe("AWSServerManager", () => {
 
             // Verify deletion steps are called in correct order:
             // 1. ECS Service, 2. EC2 Instance, 3. Task Definition, 4. Security Group
-            expect(mockECSServiceManager.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
-            expect(mockEC2InstanceService.terminate).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
-            expect(mockTaskDefinitionService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
-            expect(mockSecurityGroupService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
+            expect(mockECSServiceManager.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
+            expect(mockEC2InstanceService.terminate).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
+            expect(mockTaskDefinitionService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
+            expect(mockSecurityGroupService.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
 
             // Verify call order by checking mock call counts at each verification
             const ecsCallOrder = vi.mocked(mockECSServiceManager.delete).mock.invocationCallOrder[0];
@@ -315,7 +315,7 @@ describe("AWSServerManager", () => {
                 .rejects.toThrowError("ECS service deletion failed");
 
             // Verify that deletion was attempted
-            expect(mockECSServiceManager.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1A);
+            expect(mockECSServiceManager.delete).toHaveBeenCalledWith("test-server-123", Region.US_EAST_1_BUE_1);
         });
     });
 

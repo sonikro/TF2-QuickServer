@@ -2,14 +2,18 @@ import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, R
 import { ConsumeCreditsFromRunningServers } from "../core/usecase/ConsumeCreditsFromRunningServers";
 import { CreateCreditsPurchaseOrder } from "../core/usecase/CreateCreditsPurchaseOrder";
 import { CreateServerForUser } from "../core/usecase/CreateServerForUser";
-import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
 import { DeleteServer } from "../core/usecase/DeleteServer";
+import { DeleteServerForUser } from "../core/usecase/DeleteServerForUser";
+import { GenerateMonthlyUsageReport } from "../core/usecase/GenerateMonthlyUsageReport";
 import { GetServerStatus } from "../core/usecase/GetServerStatus";
 import { SetUserData } from "../core/usecase/SetUserData";
 import { TerminateEmptyServers } from "../core/usecase/TerminateEmptyServers";
 import { TerminateLongRunningServers } from "../core/usecase/TerminateLongRunningServers";
 import { TerminatePendingServers } from "../core/usecase/TerminatePendingServers";
 import { TerminateServersWithoutCredit } from "../core/usecase/TerminateServersWithoutCredit";
+import { AWSCostProvider } from "../providers/cloud-providers/aws/AWSCostProvider";
+import { OracleCostProvider } from "../providers/cloud-providers/oracle/OracleCostProvider";
+import { DefaultCostProvider } from "../providers/cost-providers/DefaultCostProvider";
 import { createDeleteServerForUserTaskProcessor } from "../providers/queue/DeleteServerForUserTaskProcessor";
 import { createDeleteServerTaskProcessor } from "../providers/queue/DeleteServerTaskProcessor";
 import { InMemoryBackgroundTaskQueue } from "../providers/queue/InMemoryBackgroundTaskQueue";
@@ -17,13 +21,16 @@ import { CsvUserBanRepository } from "../providers/repository/CsvUserBanReposito
 import { KnexConnectionManager } from "../providers/repository/KnexConnectionManager";
 import { SQliteCreditOrdersRepository } from "../providers/repository/SQliteCreditOrdersRepository";
 import { SQliteGuildParametersRepository } from "../providers/repository/SQliteGuildParametersRepository";
+import { SQLiteReportRepository } from "../providers/repository/SQLiteReportRepository";
 import { SQliteServerActivityRepository } from "../providers/repository/SQliteServerActivityRepository";
 import { SQLiteServerRepository } from "../providers/repository/SQliteServerRepository";
 import { SQliteUserCreditsRepository } from "../providers/repository/SQliteUserCreditsRepository";
 import { SQliteUserRepository } from "../providers/repository/SQliteUserRepository";
 import { AdyenPaymentService } from "../providers/services/AdyenPaymentService";
 import { ChancePasswordGeneratorService } from "../providers/services/ChancePasswordGeneratorService";
+import { defaultAWSServiceFactory } from "../providers/services/defaultAWSServiceFactory";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "../providers/services/DefaultGracefulShutdownManager";
+import { defaultOracleServiceFactory } from "../providers/services/defaultOracleServiceFactory";
 import { DefaultServerAbortManager } from "../providers/services/DefaultServerAbortManager";
 import { DiscordEventLogger } from "../providers/services/DiscordEventLogger";
 import { FileSystemOCICredentialsFactory } from "../providers/services/FileSystemOCICredentialsFactory";
@@ -34,7 +41,7 @@ import { defaultConfigManager } from "../providers/utils/DefaultConfigManager";
 import { logger } from "../telemetry/otel";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
@@ -221,6 +228,34 @@ export async function startDiscordBot() {
             eventLogger
         }),
         eventLogger
+    })
+
+    const reportRepository = new SQLiteReportRepository({
+        knex: KnexConnectionManager.client,
+    })
+
+    const oracleCostProvider = new OracleCostProvider({
+        ociClientFactory: defaultOracleServiceFactory,
+        configManager: defaultConfigManager,
+    })
+
+    const awsCostProvider = new AWSCostProvider({
+        clientFactory: defaultAWSServiceFactory,
+    })
+
+    const defaultCostProvider = new DefaultCostProvider({
+        oracleCostProvider,
+        awsCostProvider,
+    })
+
+    scheduleMonthlyUsageReportRoutine({
+        generateMonthlyUsageReport: new GenerateMonthlyUsageReport({
+            reportRepository,
+            costProvider: defaultCostProvider,
+        }),
+        configManager: defaultConfigManager,
+        eventLogger,
+        discordClient: client,
     })
 
     // Slash commands
