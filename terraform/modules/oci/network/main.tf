@@ -37,12 +37,12 @@ resource "oci_core_route_table" "public_rt" {
 }
 
 resource "oci_core_subnet" "public_subnet" {
-  compartment_id      = var.compartment_ocid
-  availability_domain = data.oci_identity_availability_domains.ads.availability_domains[0].name
-  cidr_block          = "10.0.1.0/24"
-  display_name        = "TF2-QuickServer-public-subnet"
-  vcn_id              = oci_core_virtual_network.vcn.id
-  route_table_id      = oci_core_route_table.public_rt.id
+  compartment_id             = var.compartment_ocid
+  availability_domain        = data.oci_identity_availability_domains.ads.availability_domains[0].name
+  cidr_block                 = "10.0.1.0/24"
+  display_name               = "TF2-QuickServer-public-subnet"
+  vcn_id                     = oci_core_virtual_network.vcn.id
+  route_table_id             = oci_core_route_table.public_rt.id
   prohibit_public_ip_on_vnic = false
 }
 

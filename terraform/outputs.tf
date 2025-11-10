@@ -178,7 +178,7 @@ output "buenos_aires_task_execution_role_arn" {
 }
 
 output "buenos_aires_task_role_arn" {
-  description = "ECS task role ARN in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"  
+  description = "ECS task role ARN in us-east-1 (N. Virginia) for Buenos Aires Local Zone deployment"
   value       = module.aws-ecs-us-east-1.task_role_arn
 }
 
@@ -247,4 +247,28 @@ output "lima_instance_profile_arn" {
 output "lima_log_group_name" {
   description = "CloudWatch log group name for ECS containers in us-east-1 (N. Virginia) for Lima Local Zone deployment"
   value       = module.aws-ecs-us-east-1.log_group_name
+}
+
+# ===========================================
+# FASTDL OUTPUTS
+# ===========================================
+
+output "fastdl_bucket_name" {
+  description = "Name of the S3 bucket for FastDL"
+  value       = module.aws-fastdl-us-east-1.bucket_name
+}
+
+output "fastdl_bucket_arn" {
+  description = "ARN of the S3 bucket for FastDL"
+  value       = module.aws-fastdl-us-east-1.bucket_arn
+}
+
+output "fastdl_website_endpoint" {
+  description = "Website endpoint URL for the S3 bucket"
+  value       = module.aws-fastdl-us-east-1.website_endpoint
+}
+
+output "fastdl_url" {
+  description = "Full FastDL URL to be used in server configuration"
+  value       = module.aws-fastdl-us-east-1.fastdl_url
 }
