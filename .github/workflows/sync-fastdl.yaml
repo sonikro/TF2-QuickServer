@@ -1,3 +1,4 @@
+---
 name: Sync Maps to FastDL S3
 
 on:
@@ -56,7 +57,7 @@ jobs:
       - name: Prepare maps for FastDL
         run: |
           mkdir -p fastdl/maps
-          
+
           for map in maps/*.bsp; do
             if [ -f "$map" ]; then
               map_name=$(basename "$map")
@@ -65,12 +66,13 @@ jobs:
               bzip2 -9 "fastdl/maps/$map_name"
             fi
           done
-          
+
           ls -lh fastdl/maps/
 
       - name: Sync maps to S3
         run: |
-          aws s3 sync fastdl/ s3://${{ secrets.FASTDL_BUCKET_NAME }}/fastdl/ \
+          bucket_name="${{ secrets.FASTDL_BUCKET_NAME }}"
+          aws s3 sync fastdl/ s3://${bucket_name}/fastdl/ \
             --delete \
             --cache-control "public, max-age=31536000, immutable" \
             --content-type "application/octet-stream" \
@@ -78,8 +80,10 @@ jobs:
 
       - name: Verify S3 sync
         run: |
+          bucket_name="${{ secrets.FASTDL_BUCKET_NAME }}"
           echo "Listing files in S3 bucket..."
-          aws s3 ls s3://${{ secrets.FASTDL_BUCKET_NAME }}/fastdl/maps/ --recursive --human-readable
+          aws s3 ls s3://${bucket_name}/fastdl/maps/ \
+            --recursive --human-readable
 
       - name: Publish to Discord
         if: success()
@@ -87,7 +91,7 @@ jobs:
         with:
           args: |
             🗺️ **FastDL Maps Sync Complete**
-            
+
             Maps from maps.json have been synced to S3 FastDL.
             FastDL URL: http://maps.sonikro.com/fastdl/
         env:
