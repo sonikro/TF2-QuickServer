@@ -245,3 +245,17 @@ module "aws-ecs-us-east-1" {
     aws = aws.us-east-1
   }
 }
+
+# Create FastDL S3 bucket for map distribution
+module "aws-fastdl-us-east-1" {
+  source = "./modules/aws/fastdl"
+
+  bucket_name            = var.fastdl_bucket_name
+  domain_name            = var.fastdl_domain_name
+  hosted_zone_id         = var.route53_hosted_zone_id
+  acm_certificate_arn    = var.fastdl_acm_certificate_arn
+
+  providers = {
+    aws = aws.us-east-1
+  }
+}

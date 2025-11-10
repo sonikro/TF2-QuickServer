@@ -172,6 +172,9 @@ cdk.context.json
 *.sqlite3
 *.sqlite3-journal
 
+# FastDL build directory
+fastdl/
+
 keys/*
 config/development.json
 

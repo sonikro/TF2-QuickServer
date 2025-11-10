@@ -1,0 +1,70 @@
+---
+name: Sync Maps to FastDL S3
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "maps.json"
+      - ".github/workflows/sync-fastdl.yaml"
+  workflow_dispatch:
+
+jobs:
+  sync-maps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install CMake
+        run: sudo apt-get update -y && sudo apt-get install -y cmake
+
+      - name: Cache maps directory
+        id: cache-maps
+        uses: actions/cache@v4
+        with:
+          path: maps/
+          key: maps-${{ hashFiles('maps.json') }}
+          restore-keys: |
+            maps-
+
+      - name: Cache fastdl directory
+        id: cache-fastdl
+        uses: actions/cache@v4
+        with:
+          path: fastdl/
+          key: fastdl-${{ hashFiles('maps.json') }}
+          restore-keys: |
+            fastdl-
+
+      - name: Use Node.js from .nvmrc
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Download maps
+        if: steps.cache-maps.outputs.cache-hit != 'true'
+        run: npm run download:maps
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Sync maps to S3
+        run: npm run sync:fastdl
+        env:
+          FASTDL_BUCKET_NAME: ${{ secrets.FASTDL_BUCKET_NAME }}
+          AWS_REGION: us-east-1

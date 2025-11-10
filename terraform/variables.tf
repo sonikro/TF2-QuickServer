@@ -28,5 +28,23 @@ variable "docker_password" {
 # AWS VARIABLES
 # ===========================================
 
-# No specific variables needed for AWS deployment
-# All configuration is done directly in the modules
+variable "fastdl_bucket_name" {
+  description = "Name of the S3 bucket for FastDL"
+  type        = string
+}
+
+variable "fastdl_domain_name" {
+  description = "Domain name for the FastDL endpoint"
+  type        = string
+  default     = "maps.sonikro.com"
+}
+
+variable "route53_hosted_zone_id" {
+  description = "Route53 hosted zone ID for sonikro.com domain"
+  type        = string
+}
+
+variable "fastdl_acm_certificate_arn" {
+  description = "ARN of the ACM certificate for FastDL HTTPS (must be in us-east-1)"
+  type        = string
+}
