@@ -63,6 +63,22 @@ resource "aws_s3_bucket_cors_configuration" "fastdl" {
   }
 }
 
+resource "aws_s3_bucket_lifecycle_configuration" "fastdl" {
+  bucket = aws_s3_bucket.fastdl.id
+
+  rule {
+    id     = "intelligent-tiering"
+    status = "Enabled"
+
+    filter {}
+
+    transition {
+      days          = 0
+      storage_class = "INTELLIGENT_TIERING"
+    }
+  }
+}
+
 resource "aws_route53_record" "fastdl" {
   zone_id = var.hosted_zone_id
   name    = var.domain_name
