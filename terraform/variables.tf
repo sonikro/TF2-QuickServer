@@ -31,7 +31,6 @@ variable "docker_password" {
 variable "fastdl_bucket_name" {
   description = "Name of the S3 bucket for FastDL"
   type        = string
-  default     = "tf2-quickserver-fastdl"
 }
 
 variable "fastdl_domain_name" {
