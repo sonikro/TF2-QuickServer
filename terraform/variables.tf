@@ -44,3 +44,8 @@ variable "route53_hosted_zone_id" {
   description = "Route53 hosted zone ID for sonikro.com domain"
   type        = string
 }
+
+variable "fastdl_acm_certificate_arn" {
+  description = "ARN of the ACM certificate for FastDL HTTPS (must be in us-east-1)"
+  type        = string
+}

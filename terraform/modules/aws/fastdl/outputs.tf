@@ -18,7 +18,17 @@ output "website_domain" {
   value       = aws_s3_bucket_website_configuration.fastdl.website_domain
 }
 
+output "cloudfront_domain_name" {
+  description = "CloudFront distribution domain name"
+  value       = aws_cloudfront_distribution.fastdl.domain_name
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID"
+  value       = aws_cloudfront_distribution.fastdl.id
+}
+
 output "fastdl_url" {
   description = "Full FastDL URL to be used in server configuration"
-  value       = "http://${var.domain_name}/fastdl/"
+  value       = "https://${var.domain_name}/fastdl/"
 }

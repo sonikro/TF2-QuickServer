@@ -223,7 +223,7 @@ ENV SERVER_PASSWORD=
 ENV STV_NAME="Source TV"
 ENV STV_TITLE="A Team Fortress 2 server Source TV"
 ENV STV_PASSWORD=
-ENV DOWNLOAD_URL="http://maps.sonikro.com/fastdl/"
+ENV DOWNLOAD_URL="https://maps.sonikro.com/fastdl/"
 
 WORKDIR $SERVER_DIR
 COPY ./variants/base/entrypoint.sh .
