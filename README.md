@@ -132,8 +132,6 @@ npm install
 
 Oracle Container Instances do **not** support NFS or shared file systems like FSS. Instead, this project uses Docker **fat images** that bake in all TF2 maps directly.
 
-TF2-QuickServer also provides a custom **FastDL server** hosted on AWS S3 at `http://maps.sonikro.com/fastdl/` to ensure players can download maps quickly and reliably. All maps defined in `maps.json` are automatically synced to S3.
-
 ### Download maps:
 
 ```bash
@@ -143,9 +141,7 @@ npm run download:maps
 This will create the `maps/` folder and download all maps listed in `maps.json`.
 
 > 📝 Maps are gitignored and stored in a local `maps` folder.  
-> Players will automatically download missing maps from the FastDL server at `http://maps.sonikro.com/fastdl/` when they join a server.
-
-For more information about FastDL setup and configuration, see [docs/FASTDL.md](docs/FASTDL.md).
+> The [mapdownloader plugin](https://github.com/spiretf/mapdownloader) is also included and will attempt to fetch missing maps dynamically if needed.
 
 ---
 
