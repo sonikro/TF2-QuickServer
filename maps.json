@@ -107,6 +107,18 @@
         "name": "koth_berry_b3a",
         "url": "https://tf2maps.net/downloads/borgville.19389/download"
     },
+    {
+        "name": "arenares_well_rc2b",
+        "url": "https://tf2maps.net/downloads/arena-respawn-well.19729/download"
+    },
+    {
+        "name": "arenares_granary_pro_rc5",
+        "url": "https://tf2maps.net/downloads/arena-respawn-granary.15422/download"
+    },
+    {
+        "name": "arenares_ravine_rc2",
+        "url": "https://tf2maps.net/downloads/arena-respawn-ravine.15430/download"
+    },
     "tow_dynamite",
     "pl_terror_event",
     "koth_los_muertos",
