@@ -86,6 +86,8 @@ find "$SERVER_DIR/tf/maps" -type f -name "*.bsp" | while read -r map_file; do
             default_cfg="$DEFAULT_TFDB_CFG"
         elif [[ "$map_name" == mge_* ]]; then
             default_cfg="$DEFAULT_MGE_CFG"
+        elif [[ "$map_name" == arena* ]]; then
+            default_cfg="$DEFAULT_ARENA_CFG"
         else
             default_cfg=""
         fi

@@ -9,6 +9,7 @@ ENV DEFAULT_ULTIDUO_CFG=""
 ENV DEFAULT_PASSTIME_CFG="pt_global_pug.cfg"
 ENV DEFAULT_TFDB_CFG="dodgeball.cfg"
 ENV DEFAULT_MGE_CFG="mge.cfg"
+ENV DEFAULT_ARENA_CFG="tfarena_arena.cfg"
 
 USER tf2
 

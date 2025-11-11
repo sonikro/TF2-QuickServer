@@ -242,7 +242,8 @@ ENV DEMOS_TF_APIKEY= \
   DEFAULT_ULTIDUO_CFG="" \
   DEFAULT_PASSTIME_CFG="pt_global_pug.cfg" \
   DEFAULT_TFDB_CFG="dodgeball.cfg" \
-  DEFAULT_MGE_CFG="mge.cfg"
+  DEFAULT_MGE_CFG="mge.cfg" \
+  DEFAULT_ARENA_CFG="tfarena_arena.cfg"
 
 USER tf2
 

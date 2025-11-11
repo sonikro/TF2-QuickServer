@@ -81,6 +81,7 @@ These environment variables are specific to TF2-QuickServer and control default 
 | `DEFAULT_PASSTIME_CFG` | `pt_global_pug.cfg` | Config executed for Passtime maps (e.g., `pass_*`) |
 | `DEFAULT_TFDB_CFG` | `dodgeball.cfg` | Config executed for Dodgeball maps (e.g., `tfdb_*`) |
 | `DEFAULT_MGE_CFG` | `mge.cfg` | Config executed for MGE maps (e.g., `mge_*`) |
+| `DEFAULT_ARENA_CFG` | `tfarena_arena.cfg` | Config executed for Arena maps (e.g., `arena*`) |
 
 ---
 
