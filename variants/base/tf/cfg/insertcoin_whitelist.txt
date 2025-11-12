@@ -34,6 +34,12 @@
 // - Melee
 //  * Disciplinary Action
 
+// Blocked weapons for Demoman
+// - Primary
+//  * Loch-n-Load
+// - Secondary
+//  * Quickiebomb Launcher
+
 // Blocked weapons for Pyro
 // - Secondary
 //  * Scorch Shot
@@ -67,7 +73,7 @@
 {
 	"unlisted_items_default_to"		"1"
 
-	//------------- Blocked weapons/reskins (Total: 25) -------------\\
+	//------------- Blocked weapons/reskins (Total: 27) -------------\\
 	//______________________ Multiple classes _______________________\\
 	"The B.A.S.E. Jumper"						"0"
 	"The Reserve Shooter"						"0"
@@ -82,7 +88,8 @@
 	//____________________________ Pyro _____________________________\\
 	"The Scorch Shot"						"0"
 	//___________________________ Demoman ___________________________\\
- 	"Quickiebomb Launcher"					"0"
+	"The Loch-n-Load"						"0"
+	"The Quickiebomb Launcher"					"0"
 	//____________________________ Heavy ____________________________\\
 	"Deflector"							"0"
 	"Fists of Steel"						"0"
