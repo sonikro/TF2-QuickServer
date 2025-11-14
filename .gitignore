@@ -248,3 +248,4 @@ shield/bin
 # End of https://www.toptal.com/developers/gitignore/api/go
 
 !maps/cp_sunshine_pro3.bsp
+!maps/mge_qel2_a6.bsp
