@@ -8,6 +8,7 @@ on:
     paths:
       - "maps.json"
       - ".github/workflows/sync-fastdl.yaml"
+      - "maps/**"
   workflow_dispatch:
 
 jobs:
