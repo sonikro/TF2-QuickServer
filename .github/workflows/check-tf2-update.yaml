@@ -85,3 +85,18 @@ jobs:
           git add ./tf2version.txt
           git commit -m "chore: update TF2 version from $CURRENT_VERSION to $NEW_VERSION"
           git push
+
+      - name: Notify Discord - Update Detected
+        if: steps.check.outputs.new_version_available == 'true'
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            🔔 **TF2 Update Detected**
+            
+            A new TF2 update has been detected. The auto-update process has started.
+            
+            **Version:** ${{ steps.check.outputs.new_version }}
+            
+            A completion notification will be posted once the process finishes.
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
