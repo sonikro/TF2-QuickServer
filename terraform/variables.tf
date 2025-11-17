@@ -48,3 +48,23 @@ variable "fastdl_acm_certificate_arn" {
   description = "ARN of the ACM certificate for FastDL HTTPS (must be in us-east-1)"
   type        = string
 }
+
+# ===========================================
+# API GATEWAY VARIABLES
+# ===========================================
+
+variable "backend_api_endpoint" {
+  description = "The backend API endpoint URL"
+  type        = string
+  sensitive   = true
+}
+
+variable "api_gateway_domain_name" {
+  description = "Custom domain name for the API Gateway"
+  type        = string
+}
+
+variable "api_gateway_acm_certificate_arn" {
+  description = "ARN of the ACM certificate for API Gateway HTTPS (must be in us-east-1)"
+  type        = string
+}

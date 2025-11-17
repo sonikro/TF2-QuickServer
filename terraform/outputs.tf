@@ -272,3 +272,22 @@ output "fastdl_url" {
   description = "Full FastDL URL to be used in server configuration"
   value       = module.aws-fastdl-us-east-1.fastdl_url
 }
+
+# ===========================================
+# API GATEWAY OUTPUTS
+# ===========================================
+
+output "api_gateway_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = aws_apigatewayv2_api.quickserver_api.api_endpoint
+}
+
+output "api_gateway_custom_domain" {
+  description = "Custom domain name for the API Gateway"
+  value       = aws_apigatewayv2_domain_name.api_domain.domain_name
+}
+
+output "api_gateway_id" {
+  description = "API Gateway ID"
+  value       = aws_apigatewayv2_api.quickserver_api.id
+}
