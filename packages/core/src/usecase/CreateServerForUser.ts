@@ -6,7 +6,7 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";

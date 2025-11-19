@@ -1,7 +1,7 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { Client, TextChannel } from "discord.js";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { EventLogger } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 
 export class DiscordEventLogger implements EventLogger {
 

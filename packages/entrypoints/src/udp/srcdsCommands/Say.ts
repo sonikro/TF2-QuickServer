@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import SteamID from "steamid";
 import { SRCDSCommandParser } from "./SRCDSCommand";
 

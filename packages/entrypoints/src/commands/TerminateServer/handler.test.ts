@@ -2,7 +2,7 @@ import { Chance } from "chance";
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { BackgroundTaskQueue } from "@tf2qs/core/src/services/BackgroundTaskQueue";
+import { BackgroundTaskQueue } from "@tf2qs/core";
 import { terminateServerHandlerFactory } from "./handler";
 
 describe("terminateServerCommandHandler", () => {

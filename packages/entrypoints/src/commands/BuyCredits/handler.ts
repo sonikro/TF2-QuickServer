@@ -5,7 +5,7 @@ import {
     ButtonStyle,
     MessageFlags,
 } from "discord.js";
-import { CreateCreditsPurchaseOrder } from "@tf2qs/core/src/usecase/CreateCreditsPurchaseOrder";
+import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 
 export function createBuyCreditsCommandHandlerFactory(dependencies: {
     createCreditsPurchaseOrder: CreateCreditsPurchaseOrder

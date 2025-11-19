@@ -1,4 +1,4 @@
-import { ServerAbortManager } from "@tf2qs/core/src/services/ServerAbortManager";
+import { ServerAbortManager } from "@tf2qs/core";
 
 export class DefaultServerAbortManager implements ServerAbortManager 
 {

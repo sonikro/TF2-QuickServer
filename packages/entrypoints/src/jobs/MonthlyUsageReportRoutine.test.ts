@@ -2,9 +2,9 @@ import { Client } from "discord.js";
 import schedule from "node-schedule";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
-import { GenerateMonthlyUsageReport } from "@tf2qs/core/src/usecase/GenerateMonthlyUsageReport";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { EventLogger } from "@tf2qs/core";
+import { GenerateMonthlyUsageReport } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 import { scheduleMonthlyUsageReportRoutine } from "./MonthlyUsageReportRoutine";
 
 vi.mock("node-schedule")

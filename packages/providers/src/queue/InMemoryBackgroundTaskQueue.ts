@@ -1,6 +1,6 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
-import { BackgroundTask, BackgroundTaskQueue, BackgroundTaskProcessor, BackgroundTaskCallbacks, BackgroundTaskRetryConfig } from '@tf2qs/core/src/services/BackgroundTaskQueue';
-import { GracefulShutdownManager } from '@tf2qs/core/src/services/GracefulShutdownManager';
+import { logger } from '@tf2qs/telemetry';
+import { BackgroundTask, BackgroundTaskQueue, BackgroundTaskProcessor, BackgroundTaskCallbacks, BackgroundTaskRetryConfig } from '@tf2qs/core';
+import { GracefulShutdownManager } from '@tf2qs/core';
 
 export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
   private tasks: BackgroundTask[] = [];

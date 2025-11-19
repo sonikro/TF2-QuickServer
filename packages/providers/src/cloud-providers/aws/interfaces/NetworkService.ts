@@ -1,4 +1,4 @@
-import { Region } from "@tf2qs/core/src/domain";
+import { Region } from "@tf2qs/core";
 
 export interface NetworkService {
     /**

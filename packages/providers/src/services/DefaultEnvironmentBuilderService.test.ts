@@ -1,13 +1,13 @@
 import { Chance } from "chance";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { Region, RegionConfig, VariantConfig, getRegionDisplayName } from "@tf2qs/core/src/domain";
-import { DeploymentContext } from "@tf2qs/core/src/models/DeploymentContext";
-import { ServerCredentials } from "@tf2qs/core/src/models/ServerCredentials";
+import { Region, RegionConfig, VariantConfig, getRegionDisplayName } from "@tf2qs/core";
+import { DeploymentContext } from "@tf2qs/core";
+import { ServerCredentials } from "@tf2qs/core";
 import { DefaultEnvironmentBuilderService } from "./DefaultEnvironmentBuilderService";
 
 // Mock the getRegionDisplayName function
-vi.mock("@tf2qs/core/src/domain", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("@tf2qs/core/src/domain")>();
+vi.mock("@tf2qs/core", async (importOriginal) => {
+    const actual = await importOriginal<typeof import("@tf2qs/core")>();
     return {
         ...actual,
         getRegionDisplayName: vi.fn()

@@ -6,7 +6,7 @@ import { Server } from "../domain/DeployedServer";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManager } from "../services/ServerManager";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { TerminatePendingServers } from "./TerminatePendingServers";
 
 function createServer(overrides: Partial<Server> = {}): Server {

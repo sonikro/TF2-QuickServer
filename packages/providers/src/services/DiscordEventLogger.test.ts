@@ -3,7 +3,7 @@ import { mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { Client, TextChannel } from "discord.js";
 import { DiscordEventLogger } from "./DiscordEventLogger";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { ConfigManager } from "@tf2qs/core";
 
 describe("DiscordEventLogger", () => {
     function createTestEnvironment() {

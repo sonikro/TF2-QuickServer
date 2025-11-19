@@ -1,6 +1,6 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { MessageComponentInteraction } from "discord.js";
-import { StatusUpdater } from "@tf2qs/core/src/services/StatusUpdater";
+import { StatusUpdater } from "@tf2qs/core";
 
 export const createInteractionStatusUpdater = (interaction: MessageComponentInteraction): StatusUpdater => {
     return async (message: string) => {

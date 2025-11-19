@@ -1,7 +1,7 @@
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 
 export class TerminateLongRunningServers {
     private readonly warningThresholdMs = 9 * 60 * 60 * 1000; // 9 hours

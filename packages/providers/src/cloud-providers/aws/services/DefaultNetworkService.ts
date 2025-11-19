@@ -1,6 +1,6 @@
 import { DescribeInstancesCommand } from "@aws-sdk/client-ec2";
-import { Region } from '@tf2qs/core/src/domain';
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region } from '@tf2qs/core';
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { NetworkService as NetworkServiceInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";
 

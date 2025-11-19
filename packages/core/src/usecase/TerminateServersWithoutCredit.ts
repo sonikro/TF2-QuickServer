@@ -2,7 +2,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 
 export class TerminateServersWithoutCredit {
 

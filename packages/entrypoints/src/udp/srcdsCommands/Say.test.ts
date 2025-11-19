@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
-import { Server } from "@tf2qs/core/src/domain/DeployedServer";
-import { User } from "@tf2qs/core/src/domain/User";
-import { ServerManager } from "@tf2qs/core/src/services/ServerManager";
+import { Server } from "@tf2qs/core";
+import { User } from "@tf2qs/core";
+import { ServerManager } from "@tf2qs/core";
 import { say } from "./Say";
 import { UDPCommandsServices } from "./UDPCommandServices";
 

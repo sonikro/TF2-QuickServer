@@ -1,6 +1,6 @@
 import { logger, tracer } from './otel';
 import { Span } from '@opentelemetry/api';
-import { Region } from '@tf2qs/core/src/domain';
+import { Region } from '@tf2qs/core';
 
 /**
  * Service for adding standardized tracing and logging to operations across all cloud providers

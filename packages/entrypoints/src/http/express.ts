@@ -1,5 +1,5 @@
 import express, { Express } from 'express';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { registerHealthCheckMiddleware } from './middlewares/healthCheck';
 import { createValidateJwtMiddleware } from './middlewares/validateJwt';
 import { registerApiRoutes } from './routes/api';

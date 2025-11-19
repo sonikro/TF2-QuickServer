@@ -1,6 +1,6 @@
 import { auth, UnauthorizedError } from 'express-oauth2-jwt-bearer';
 import { NextFunction, Request, Response } from 'express';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 
 export type ValidateJwtDependencies = {
     auth0Domain: string;

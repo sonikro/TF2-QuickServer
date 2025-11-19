@@ -1,8 +1,8 @@
-import { TF2ServerReadinessService } from '@tf2qs/core/src/services/TF2ServerReadinessService';
-import { ServerCommander } from '@tf2qs/core/src/services/ServerCommander';
-import { ServerStatus } from '@tf2qs/core/src/domain/ServerStatus';
+import { TF2ServerReadinessService } from '@tf2qs/core';
+import { ServerCommander } from '@tf2qs/core';
+import { ServerStatusParser } from '@tf2qs/core';
 import { waitUntil } from "../utils/waitUntil";
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 
 /**
  * Default implementation of TF2ServerReadinessService
@@ -33,7 +33,7 @@ export class DefaultTF2ServerReadinessService implements TF2ServerReadinessServi
                     timeout: 5000,
                 });
 
-                const serverStatus = new ServerStatus(result);
+                const serverStatus = new ServerStatusParser(result);
 
                 if (!serverStatus.sourceTVIp) {
                     throw new Error("Server is not ready yet");

@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { ResilientLogReceiver } from "./ResilientLogReceiver";
 import { UDPCommandsServices } from "./srcdsCommands/UDPCommandServices";
 

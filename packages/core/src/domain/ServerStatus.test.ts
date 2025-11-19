@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { ServerStatus } from "./ServerStatus";
+import { ServerStatusParser } from "./ServerStatus";
 
-describe("ServerStatus", () => {
+describe("ServerStatusParser", () => {
 
     const serverStatusString = `hostname: TF2-QuickServer | Virginia
 version : 9543365/24 9543365 secure
@@ -18,7 +18,7 @@ edicts  : 426 used of 2048 max
 #      3 "sonikro"           [U:1:29162964]      00:20       60    0 active 169.254.249.16:18930
 `
 
-    const sut = new ServerStatus(serverStatusString);
+    const sut = new ServerStatusParser(serverStatusString);
 
     it("should parse server IP and port", () => {
         expect(sut.serverIp).toBe("169.254.173.35")

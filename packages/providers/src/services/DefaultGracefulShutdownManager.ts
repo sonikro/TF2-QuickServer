@@ -1,5 +1,5 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
-import { GracefulShutdownManager } from "@tf2qs/core/src/services/GracefulShutdownManager";
+import { logger } from '@tf2qs/telemetry';
+import { GracefulShutdownManager } from "@tf2qs/core";
 
 // Define a custom error type for shutdown exceptions
 export class ShutdownInProgressError extends Error {

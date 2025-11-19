@@ -1,16 +1,16 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import { UserCreditsRepository } from "@tf2qs/core/src/repository/UserCreditsRepository";
-import { CreateCreditsPurchaseOrder } from "@tf2qs/core/src/usecase/CreateCreditsPurchaseOrder";
-import { CreateServerForUser } from "@tf2qs/core/src/usecase/CreateServerForUser";
-import { GetServerStatus } from "@tf2qs/core/src/usecase/GetServerStatus";
-import { BackgroundTaskQueue } from "@tf2qs/core/src/services/BackgroundTaskQueue";
+import { UserCreditsRepository } from "@tf2qs/core";
+import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
+import { CreateServerForUser } from "@tf2qs/core";
+import { GetServerStatus } from "@tf2qs/core";
+import { BackgroundTaskQueue } from "@tf2qs/core";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { ConfigManager } from "@tf2qs/core";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
-import { SetUserData } from "@tf2qs/core/src/usecase/SetUserData";
+import { SetUserData } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
 
 export type CommandDependencies = {

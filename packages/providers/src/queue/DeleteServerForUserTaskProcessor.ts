@@ -1,5 +1,5 @@
 import { GenericTaskProcessor } from './GenericTaskProcessor';
-import { DeleteServerForUser } from '@tf2qs/core/src/usecase/DeleteServerForUser';
+import { DeleteServerForUser } from '@tf2qs/core';
 
 export type DeleteServerForUserTaskData = {
   userId: string;

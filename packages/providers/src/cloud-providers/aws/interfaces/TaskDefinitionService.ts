@@ -1,5 +1,5 @@
-import { Region } from "@tf2qs/core/src/domain";
-import { DeploymentContext, ServerCredentials } from "@tf2qs/core/src/models";
+import { Region } from "@tf2qs/core";
+import { DeploymentContext, ServerCredentials } from "@tf2qs/core";
 
 export interface TaskDefinitionService {
     /**

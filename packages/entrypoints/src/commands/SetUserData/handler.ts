@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { SetUserData } from "@tf2qs/core/src/usecase/SetUserData";
+import { SetUserData } from "@tf2qs/core";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 export function setUserDataHandlerFactory(dependencies: {

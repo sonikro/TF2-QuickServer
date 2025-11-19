@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Region } from "@tf2qs/core/src/domain";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { Region } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 import { AWSClients } from "../../../services/defaultAWSServiceFactory";
 import { AWSConfigService } from "./AWSConfigService";
 

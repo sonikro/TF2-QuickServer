@@ -1,7 +1,7 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import schedule from 'node-schedule';
-import { TerminateLongRunningServers } from '@tf2qs/core/src/usecase/TerminateLongRunningServers';
-import { EventLogger } from '@tf2qs/core/src/services/EventLogger';
+import { TerminateLongRunningServers } from '@tf2qs/core';
+import { EventLogger } from '@tf2qs/core';
 
 export const scheduleTerminateLongRunningServerRoutine = (dependencies: {
     terminateLongRunningServers: TerminateLongRunningServers,

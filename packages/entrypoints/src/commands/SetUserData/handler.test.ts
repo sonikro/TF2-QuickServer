@@ -3,7 +3,7 @@ import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { SetUserData } from "@tf2qs/core/src/usecase/SetUserData";
+import { SetUserData } from "@tf2qs/core";
 import { setUserDataHandlerFactory } from "./handler";
 
 describe("setUserDataCommandHandler", () => {

@@ -1,7 +1,7 @@
 import { hmacValidator } from "@adyen/api-library";
-import { CreditOrder } from "@tf2qs/core/src/domain/CreditOrder";
-import { CreditOrderRequest } from "@tf2qs/core/src/domain/CreditOrderRequest";
-import { PaymentService } from "@tf2qs/core/src/services/PaymentService";
+import { CreditOrder } from "@tf2qs/core";
+import { CreditOrderRequest } from "@tf2qs/core";
+import { PaymentService } from "@tf2qs/core";
 import { NotificationRequestItem } from "@adyen/api-library/lib/src/typings/notification/notificationRequestItem";
 import { PaymentLinkRequest } from "@adyen/api-library/lib/src/typings/checkout/paymentLinkRequest"
 import { PaymentLinkResponse } from "@adyen/api-library/lib/src/typings/checkout/paymentLinkResponse";

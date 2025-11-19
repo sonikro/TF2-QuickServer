@@ -2,13 +2,13 @@ import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { mockDeep } from "vitest-mock-extended";
 import { rcon } from "./Rcon";
 import { publicIpv4 } from "public-ip";
-import { logger } from "@tf2qs/telemetry/src/otel";
+import { logger } from "@tf2qs/telemetry";
 
 vi.mock("public-ip", () => ({
     publicIpv4: vi.fn()
 }));
 
-vi.mock("@tf2qs/telemetry/src/otel", () => ({
+vi.mock("@tf2qs/telemetry", () => ({
     logger: {
         emit: vi.fn()
     }

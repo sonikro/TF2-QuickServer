@@ -1,9 +1,9 @@
 import { Express, Request, Response } from 'express';
 import { PayPalOrderApprovedWebhookPayload } from './PayPalOrderApprovedWebhookPayload';
-import { HandleOrderPaid } from '@tf2qs/core/src/usecase/HandleOrderPaid';
-import { PaypalPaymentService } from '@tf2qs/providers/src/services/PaypalPaymentService';
+import { HandleOrderPaid } from '@tf2qs/core';
+import { PaypalPaymentService } from '@tf2qs/providers';
 import { Client as DiscordClient } from 'discord.js';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 
 export function registerPaypalMiddleware(args: {
     app: Express,

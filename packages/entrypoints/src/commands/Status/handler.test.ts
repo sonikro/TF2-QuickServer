@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { GetServerStatus, ServerStatusSummary } from "@tf2qs/core/src/usecase/GetServerStatus";
+import { GetServerStatus, ServerStatusSummary } from "@tf2qs/core";
 import { createStatusCommandHandlerFactory } from "./handler";
 
 describe("Status Command Handler", () => {

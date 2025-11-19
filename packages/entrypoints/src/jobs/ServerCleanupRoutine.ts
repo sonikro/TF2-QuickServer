@@ -1,7 +1,7 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import schedule from 'node-schedule';
-import { TerminateEmptyServers } from '@tf2qs/core/src/usecase/TerminateEmptyServers';
-import { EventLogger } from '@tf2qs/core/src/services/EventLogger';
+import { TerminateEmptyServers } from '@tf2qs/core';
+import { EventLogger } from '@tf2qs/core';
 
 // Schedule a job to run every minute
 export const scheduleServerCleanupRoutine = (dependencies: {

@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { SRCDSCommandParser } from "./SRCDSCommand";
 import { publicIpv4 } from "public-ip"
 

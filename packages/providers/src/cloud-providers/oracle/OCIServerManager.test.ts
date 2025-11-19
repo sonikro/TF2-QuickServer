@@ -2,19 +2,19 @@ import { containerinstances, core } from "oci-sdk";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core/src/domain";
-import { OCICredentialsFactory } from "@tf2qs/core/src/services/OCICredentialsFactory";
-import { PasswordGeneratorService } from "@tf2qs/core/src/services/PasswordGeneratorService";
-import { AbortError } from "@tf2qs/core/src/services/ServerAbortManager";
-import { ServerCommander } from "@tf2qs/core/src/services/ServerCommander";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
-import { logger } from "@tf2qs/telemetry/src/otel";
+import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
+import { OCICredentialsFactory } from "@tf2qs/core";
+import { PasswordGeneratorService } from "@tf2qs/core";
+import { AbortError } from "@tf2qs/core";
+import { ServerCommander } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
+import { logger } from "@tf2qs/telemetry";
 import { DefaultServerAbortManager } from "../../services/DefaultServerAbortManager";
 import { OCIServerManager } from "./OCIServerManager";
 
 // Mock only the logger, not the whole otel module
-vi.mock('@tf2qs/telemetry/src/otel', async () => {
-  const actual = await vi.importActual<any>('@tf2qs/telemetry/src/otel');
+vi.mock('@tf2qs/telemetry', async () => {
+  const actual = await vi.importActual<any>('@tf2qs/telemetry');
   return {
     ...actual,
     logger: {

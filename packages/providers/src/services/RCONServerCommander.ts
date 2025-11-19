@@ -1,6 +1,6 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { Rcon } from "rcon-client";
-import { ServerCommander } from "@tf2qs/core/src/services/ServerCommander";
+import { ServerCommander } from "@tf2qs/core";
 
 export class RCONServerCommander implements ServerCommander {
 

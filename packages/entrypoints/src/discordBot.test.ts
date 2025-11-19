@@ -6,18 +6,20 @@ import { KnexConnectionManager } from '@tf2qs/providers';
 import { createCommands } from './commands';
 import { startDiscordBot } from "./discordBot";
 
-vi.mock("@tf2qs/providers/src/repository/KnexConnectionManager", async () => {
-    const actual = await vi.importActual("@tf2qs/providers/src/repository/KnexConnectionManager") as any;
+vi.mock("@tf2qs/providers", async () => {
+    const actual = await vi.importActual("@tf2qs/providers") as any;
     return {
         ...actual,
         KnexConnectionManager: {
             initialize: vi.fn(),
             client: mock(),
-        }
+        },
+        CsvUserBanRepository: vi.fn(),
+        DiscordEventLogger: vi.fn().mockImplementation(() => ({
+            log: vi.fn().mockResolvedValue(undefined),
+        }))
     }
 })
-
-vi.mock("@tf2qs/providers/src/repository/CsvUserBanRepository")
 
 vi.mock("./commands", async (importOriginal) => {
     const actual = await importOriginal() as typeof import('./commands');
@@ -37,13 +39,6 @@ vi.mock('discord.js', async (importOriginal) => {
     };
 })
 
-vi.mock("@tf2qs/providers/src/services/DiscordEventLogger", async (importOriginal) => {
-    return {
-        DiscordEventLogger: vi.fn().mockImplementation(() => ({
-            log: vi.fn().mockResolvedValue(undefined),
-        }))
-    }
-})
 describe("startDiscordBot", () => {
 
     const discordCommands = createCommands(mock())

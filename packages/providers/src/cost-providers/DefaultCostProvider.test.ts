@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { Region } from "@tf2qs/core/src/domain/Region";
-import { CostProvider } from "@tf2qs/core/src/services/CostProvider";
+import { Region } from "@tf2qs/core";
+import { CostProvider } from "@tf2qs/core";
 import { DefaultCostProvider } from "./DefaultCostProvider";
 
 describe("DefaultCostProvider", () => {

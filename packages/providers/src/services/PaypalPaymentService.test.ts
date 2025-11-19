@@ -1,7 +1,7 @@
 import { http as rest } from "msw";
 import { setupServer } from "msw/node";
 import { beforeAll, afterAll, afterEach, expect, describe, it } from "vitest";
-import { CreditOrderRequest } from "@tf2qs/core/src/domain/CreditOrderRequest";
+import { CreditOrderRequest } from "@tf2qs/core";
 import { PaypalPaymentService } from "./PaypalPaymentService";
 import Chance from "chance";
 

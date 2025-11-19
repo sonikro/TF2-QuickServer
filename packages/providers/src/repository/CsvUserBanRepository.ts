@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
 import csv from "csv-parse/sync";
-import { UserBanRepository } from "@tf2qs/core/src/repository/UserBanRepository";
-import { logger } from "@tf2qs/telemetry/src/otel";
+import { UserBanRepository } from "@tf2qs/core";
+import { logger } from "@tf2qs/telemetry";
 
 export interface UserBan {
   steam_id: string;

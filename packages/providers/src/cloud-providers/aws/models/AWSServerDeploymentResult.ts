@@ -1,4 +1,4 @@
-import { ServerDeploymentResult } from '@tf2qs/core/src/models/ServerDeploymentResult';
+import { ServerDeploymentResult } from '@tf2qs/core';
 
 /**
  * AWS-specific server deployment result containing ECS and EC2 specific information

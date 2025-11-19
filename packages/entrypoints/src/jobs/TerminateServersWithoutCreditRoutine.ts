@@ -1,8 +1,8 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import schedule from 'node-schedule';
-import { TerminateServersWithoutCredit } from '@tf2qs/core/src/usecase/TerminateServersWithoutCredit';
-import { ConfigManager } from '@tf2qs/core/src/utils/ConfigManager';
-import { EventLogger } from '@tf2qs/core/src/services/EventLogger';
+import { TerminateServersWithoutCredit } from '@tf2qs/core';
+import { ConfigManager } from '@tf2qs/core';
+import { EventLogger } from '@tf2qs/core';
 
 // Schedule a job to run every minute
 export const scheduleTerminateServersWithoutCreditRoutine = (dependencies: {

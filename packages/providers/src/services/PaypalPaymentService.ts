@@ -1,6 +1,6 @@
-import { CreditOrder } from "@tf2qs/core/src/domain/CreditOrder";
-import { CreditOrderRequest } from "@tf2qs/core/src/domain/CreditOrderRequest";
-import { PaymentService } from "@tf2qs/core/src/services/PaymentService";
+import { CreditOrder } from "@tf2qs/core";
+import { CreditOrderRequest } from "@tf2qs/core";
+import { PaymentService } from "@tf2qs/core";
 import { PaypalCreateOrderResponse } from "./PaypalPaymentServiceTypes";
 
 export class PaypalPaymentService implements PaymentService {

@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { InsufficientCapacityError } from "@tf2qs/core/src/errors/InsufficientCapacityError";
+import { InsufficientCapacityError } from "@tf2qs/core";
 import { commandErrorHandler } from "./commandErrorHandler";
 
 describe("commandErrorHandler", () => {

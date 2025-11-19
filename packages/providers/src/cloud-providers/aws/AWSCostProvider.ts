@@ -1,9 +1,9 @@
 import { GetCostAndUsageCommand } from '@aws-sdk/client-cost-explorer';
-import { Cost } from '@tf2qs/core/src/domain/Cost';
-import { DateRange } from '@tf2qs/core/src/domain/DateRange';
-import { Region } from '@tf2qs/core/src/domain/Region';
-import { CostProvider } from '@tf2qs/core/src/services/CostProvider';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { Cost } from '@tf2qs/core';
+import { DateRange } from '@tf2qs/core';
+import { Region } from '@tf2qs/core';
+import { CostProvider } from '@tf2qs/core';
+import { logger } from '@tf2qs/telemetry';
 import { AWSClientFactory } from '../../services/defaultAWSServiceFactory';
 
 type AWSCostProviderDependencies = {

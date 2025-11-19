@@ -1,5 +1,5 @@
 import * as oci from 'oci-sdk';
-import { getRegionConfig, Region } from '@tf2qs/core/src/domain/Region';
+import { getRegionConfig, Region } from '@tf2qs/core';
 
 /**
  * Factory function to create OCI Clients for a given region.

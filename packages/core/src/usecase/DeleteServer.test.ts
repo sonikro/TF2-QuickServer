@@ -2,7 +2,7 @@ import { Chance } from "chance";
 import { Knex } from "knex";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { Region, Server } from "../domain";
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";

@@ -7,7 +7,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { TerminateServersWithoutCredit } from "./TerminateServersWithoutCredit";
 import { EventLogger } from "../services/EventLogger";
 

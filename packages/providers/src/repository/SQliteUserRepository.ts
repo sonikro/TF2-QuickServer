@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { UserRepository } from "@tf2qs/core/src/repository/UserRepository";
-import { User } from "@tf2qs/core/src/domain/User";
+import { UserRepository } from "@tf2qs/core";
+import { User } from "@tf2qs/core";
 
 export class SQliteUserRepository implements UserRepository {
 

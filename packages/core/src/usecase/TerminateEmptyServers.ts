@@ -1,5 +1,6 @@
 import { logger } from '@tf2qs/telemetry';
-import { ServerStatus } from "../domain/ServerStatus";
+import { Server } from '../domain/DeployedServer';
+import { ServerStatusParser } from '../domain/ServerStatus';
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
@@ -91,7 +92,7 @@ export class TerminateEmptyServers {
                         port: 27015,
                         timeout: 5000,
                     });
-                    const serverStatus = new ServerStatus(statusOutput);
+                    const serverStatus = new ServerStatusParser(statusOutput);
                     if (serverStatus.numberOfPlayers === 0 && server.emptySince === null) {
                         logger.emit({
                             severityText: 'INFO',

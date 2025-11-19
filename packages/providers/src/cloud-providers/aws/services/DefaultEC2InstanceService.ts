@@ -7,9 +7,9 @@ import {
     TerminateInstancesCommand,
     waitUntilInstanceRunning
 } from "@aws-sdk/client-ec2";
-import { Region, VariantConfig } from '@tf2qs/core/src/domain';
-import { InsufficientCapacityError } from '@tf2qs/core/src/errors/InsufficientCapacityError';
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region, VariantConfig } from '@tf2qs/core';
+import { InsufficientCapacityError } from '@tf2qs/core';
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { EC2InstanceService as EC2InstanceServiceInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";
 

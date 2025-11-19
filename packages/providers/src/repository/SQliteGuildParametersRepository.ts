@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { GuildParameters } from "@tf2qs/core/src/domain/GuildParameters";
-import { GuildParametersRepository } from "@tf2qs/core/src/repository/GuildParametersRepository";
+import { GuildParameters } from "@tf2qs/core";
+import { GuildParametersRepository } from "@tf2qs/core";
 
 export class SQliteGuildParametersRepository implements GuildParametersRepository {
     constructor(private readonly dependencies: { knex: Knex }) {}

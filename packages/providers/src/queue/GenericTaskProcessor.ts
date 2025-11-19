@@ -1,5 +1,5 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
-import { BackgroundTaskProcessor } from '@tf2qs/core/src/services/BackgroundTaskQueue';
+import { logger } from '@tf2qs/telemetry';
+import { BackgroundTaskProcessor } from '@tf2qs/core';
 
 type UseCase<T> = {
   execute(data: T): Promise<unknown>;

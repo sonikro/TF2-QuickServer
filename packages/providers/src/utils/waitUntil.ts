@@ -1,4 +1,4 @@
-import { AbortError } from "@tf2qs/core/src/services/ServerAbortManager";
+import { AbortError } from "@tf2qs/core";
 
 export function waitUntil<T>(
     condition: () => Promise<T>,

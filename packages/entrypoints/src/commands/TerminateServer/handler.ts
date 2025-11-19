@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { BackgroundTaskQueue } from "@tf2qs/core/src/services/BackgroundTaskQueue";
-import { DeleteServerForUserTaskData } from "@tf2qs/providers/src/queue/DeleteServerForUserTaskProcessor";
+import { BackgroundTaskQueue } from "@tf2qs/core";
+import { DeleteServerForUserTaskData } from "@tf2qs/providers";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 export function terminateServerHandlerFactory(dependencies: {

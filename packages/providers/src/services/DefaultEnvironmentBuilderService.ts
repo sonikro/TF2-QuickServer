@@ -1,7 +1,7 @@
-import { ServerCredentials } from '@tf2qs/core/src/models/ServerCredentials';
-import { DeploymentContext } from '@tf2qs/core/src/models/DeploymentContext';
-import { EnvironmentBuilderService } from '@tf2qs/core/src/services/EnvironmentBuilderService';
-import { VariantConfig, RegionConfig, getRegionDisplayName } from '@tf2qs/core/src/domain';
+import { ServerCredentials } from '@tf2qs/core';
+import { DeploymentContext } from '@tf2qs/core';
+import { EnvironmentBuilderService } from '@tf2qs/core';
+import { VariantConfig, RegionConfig, getRegionDisplayName } from '@tf2qs/core';
 import { Chance } from "chance";
 
 const chance = new Chance();

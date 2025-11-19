@@ -1,5 +1,5 @@
-import { AWSConfig, CreditsConfig, DiscordConfig, getAWSConfig, getCreditsConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core/src/domain";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { AWSConfig, CreditsConfig, DiscordConfig, getAWSConfig, getCreditsConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 
 export class DefaultConfigManager implements ConfigManager {
     getVariantConfig(variant: Variant): VariantConfig {

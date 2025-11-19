@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OperationTracingService } from "./OperationTracingService";
-import { Region } from "@tf2qs/core/src/domain";
+import { Region } from "@tf2qs/core";
 import { logger, tracer } from "./otel";
 
 vi.mock("./otel", () => ({

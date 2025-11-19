@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { UserCreditsRepository } from "@tf2qs/core/src/repository/UserCreditsRepository";
+import { UserCreditsRepository } from "@tf2qs/core";
 
 export class SQliteUserCreditsRepository implements UserCreditsRepository {
 

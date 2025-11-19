@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CloudProvider, Region, Variant } from "@tf2qs/core/src/domain";
-import { ServerCredentials } from "@tf2qs/core/src/models";
-import { EnvironmentBuilderService } from "@tf2qs/core/src/services/EnvironmentBuilderService";
-import { PasswordGeneratorService } from "@tf2qs/core/src/services/PasswordGeneratorService";
-import { TF2ServerReadinessService } from "@tf2qs/core/src/services/TF2ServerReadinessService";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { CloudProvider, Region, Variant } from "@tf2qs/core";
+import { ServerCredentials } from "@tf2qs/core";
+import { EnvironmentBuilderService } from "@tf2qs/core";
+import { PasswordGeneratorService } from "@tf2qs/core";
+import { TF2ServerReadinessService } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 import { AWSServerManager } from "./AWSServerManager";
 import {
     EC2InstanceService,
@@ -15,11 +15,29 @@ import {
 } from "./interfaces";
 
 // Mock the logger module
-vi.mock("@tf2qs/telemetry/src/otel", () => ({
-    logger: {
-        emit: vi.fn()
-    }
-}));
+vi.mock("@tf2qs/telemetry", async () => {
+    const actual = await vi.importActual("@tf2qs/telemetry") as any;
+    return {
+        ...actual,
+        logger: {
+            emit: vi.fn()
+        },
+        meter: {
+            createHistogram: vi.fn().mockReturnValue({
+                record: vi.fn()
+            }),
+            createCounter: vi.fn().mockReturnValue({
+                add: vi.fn()
+            })
+        },
+        tracer: {
+            startSpan: vi.fn().mockReturnValue({
+                end: vi.fn(),
+                setAttribute: vi.fn()
+            })
+        }
+    };
+});
 
 describe("AWSServerManager", () => {
     const mockTaskDefinitionService = {

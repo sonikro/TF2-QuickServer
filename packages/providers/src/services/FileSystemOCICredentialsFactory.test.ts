@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import { FileSystemOCICredentialsFactory } from "./FileSystemOCICredentialsFactory";
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { Region } from "@tf2qs/core/src/domain/Region";
+import { Region } from "@tf2qs/core";
 
 const mockConfig = `
 [sa-saopaulo-1]

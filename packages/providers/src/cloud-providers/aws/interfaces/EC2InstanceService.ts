@@ -1,4 +1,4 @@
-import { Region, VariantConfig } from "@tf2qs/core/src/domain";
+import { Region, VariantConfig } from "@tf2qs/core";
 
 export interface EC2InstanceService {
     /**

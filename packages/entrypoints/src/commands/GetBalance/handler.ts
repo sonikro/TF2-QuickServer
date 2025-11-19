@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { UserCreditsRepository } from "@tf2qs/core/src/repository/UserCreditsRepository";
+import { UserCreditsRepository } from "@tf2qs/core";
 
 export function createGetBalanceCommandHandlerFactory(dependencies: {
     userCreditsRepository: UserCreditsRepository

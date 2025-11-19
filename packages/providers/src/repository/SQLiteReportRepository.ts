@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { LongestServerRun, PeakConcurrentServer, RegionMetrics, TopUserMetric } from "@tf2qs/core/src/domain/MonthlyUsageReport";
-import { ReportRepository } from "@tf2qs/core/src/repository/ReportRepository";
+import { LongestServerRun, PeakConcurrentServer, RegionMetrics, TopUserMetric } from "@tf2qs/core";
+import { ReportRepository } from "@tf2qs/core";
 
 export class SQLiteReportRepository implements ReportRepository {
   constructor(private readonly dependencies: { knex: Knex }) {}

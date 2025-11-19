@@ -10,7 +10,7 @@ import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
 import { ServerManager } from '../services/ServerManager';
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';

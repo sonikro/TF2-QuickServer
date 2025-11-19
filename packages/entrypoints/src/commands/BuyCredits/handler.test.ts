@@ -3,8 +3,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteracti
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { CreditOrder } from "@tf2qs/core/src/domain/CreditOrder";
-import { CreateCreditsPurchaseOrder } from "@tf2qs/core/src/usecase/CreateCreditsPurchaseOrder";
+import { CreditOrder } from "@tf2qs/core";
+import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 import { createBuyCreditsCommandHandlerFactory } from "./handler";
 
 describe("createBuyCreditsCommandHandler", () => {

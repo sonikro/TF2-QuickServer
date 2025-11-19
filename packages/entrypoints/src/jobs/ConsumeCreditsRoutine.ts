@@ -1,9 +1,9 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import schedule from "node-schedule";
 
-import { ConsumeCreditsFromRunningServers } from "@tf2qs/core/src/usecase/ConsumeCreditsFromRunningServers"
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
+import { ConsumeCreditsFromRunningServers } from "@tf2qs/core"
+import { ConfigManager } from "@tf2qs/core";
+import { EventLogger } from "@tf2qs/core";
 
 export const scheduleConsumeCreditsRoutine = (dependencies: {
     consumeCreditsFromRunningServers: ConsumeCreditsFromRunningServers,

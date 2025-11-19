@@ -1,8 +1,8 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { LogReceiver } from "@c43721/srcds-log-receiver";
 import { UDPCommandsServices } from "./srcdsCommands/UDPCommandServices";
 import { parseSRCDSCommand } from "./srcdsCommands";
-import { defaultGracefulShutdownManager } from "@tf2qs/providers/src/services/DefaultGracefulShutdownManager";
+import { defaultGracefulShutdownManager } from "@tf2qs/providers";
 
 type ResilientLogReceiverOptions = {
     address: string;

@@ -1,16 +1,16 @@
-import { logger, tracer, meter } from '@tf2qs/telemetry/src/otel';
+import { logger, tracer, meter } from '@tf2qs/telemetry';
 import { Span } from '@opentelemetry/api';
 import { containerinstances, core } from "oci-sdk";
-import { getRegionDisplayName, Region, Server, Variant } from "@tf2qs/core/src/domain";
-import { ServerStatus } from "@tf2qs/core/src/domain/ServerStatus";
-import { ServerAbortManager } from "@tf2qs/core/src/services/ServerAbortManager";
-import { ServerCommander } from "@tf2qs/core/src/services/ServerCommander";
-import { ServerManager } from "@tf2qs/core/src/services/ServerManager";
-import { PasswordGeneratorService } from "@tf2qs/core/src/services/PasswordGeneratorService";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { getRegionDisplayName, Region, Server, Variant } from "@tf2qs/core";
+import { ServerStatus, ServerStatusParser } from "@tf2qs/core";
+import { ServerAbortManager } from "@tf2qs/core";
+import { ServerCommander } from "@tf2qs/core";
+import { ServerManager } from "@tf2qs/core";
+import { PasswordGeneratorService } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 import { waitUntil } from "../../utils/waitUntil";
-import { OCICredentialsFactory } from "@tf2qs/core/src/services/OCICredentialsFactory";
-import { StatusUpdater } from "@tf2qs/core/src/services/StatusUpdater";
+import { OCICredentialsFactory } from "@tf2qs/core";
+import { StatusUpdater } from "@tf2qs/core";
 import { Chance } from "chance";
 
 const chance = new Chance();
@@ -294,7 +294,7 @@ export class OCIServerManager implements ServerManager {
                                 port: 27015,
                                 timeout: 5000,
                             });
-                            const serverStatus = new ServerStatus(result);
+                            const serverStatus = new ServerStatusParser(result);
                             if (!serverStatus.sourceTVIp) {
                                 throw new Error("Server is not ready yet");
                             }

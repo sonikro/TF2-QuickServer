@@ -1,9 +1,9 @@
-import { Region } from '@tf2qs/core/src/domain/Region';
-import { CostProvider } from '@tf2qs/core/src/services/CostProvider';
-import { DateRange } from '@tf2qs/core/src/domain/DateRange';
-import { Cost } from '@tf2qs/core/src/domain/Cost';
-import { logger } from '@tf2qs/telemetry/src/otel';
-import { ConfigManager } from '@tf2qs/core/src/utils/ConfigManager';
+import { Region } from '@tf2qs/core';
+import { CostProvider } from '@tf2qs/core';
+import { DateRange } from '@tf2qs/core';
+import { Cost } from '@tf2qs/core';
+import { logger } from '@tf2qs/telemetry';
+import { ConfigManager } from '@tf2qs/core';
 import { UsageapiClient, models, requests } from 'oci-usageapi';
 
 type OracleCostProviderDependencies = {

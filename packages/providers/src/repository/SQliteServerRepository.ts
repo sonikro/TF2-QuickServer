@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { Server, ServerStatus } from "@tf2qs/core/src/domain";
-import { ServerRepository } from "@tf2qs/core/src/repository/ServerRepository";
+import { Server, ServerStatus } from "@tf2qs/core";
+import { ServerRepository } from "@tf2qs/core";
 
 export class SQLiteServerRepository implements ServerRepository {
 

@@ -1,9 +1,9 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { Client as DiscordClient } from 'discord.js';
 import { Express, Request, Response } from 'express';
-import { EventLogger } from '@tf2qs/core/src/services/EventLogger';
-import { HandleOrderPaid } from '@tf2qs/core/src/usecase/HandleOrderPaid';
-import { AdyenPaymentService } from '@tf2qs/providers/src/services/AdyenPaymentService';
+import { EventLogger } from '@tf2qs/core';
+import { HandleOrderPaid } from '@tf2qs/core';
+import { AdyenPaymentService } from '@tf2qs/providers';
 import { NotificationRequestItem } from '@adyen/api-library/lib/src/typings/notification/notificationRequestItem';
 
 export interface AdyenAuthorizationWebhookRequest {

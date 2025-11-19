@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { ChatInputCommandInteraction, MessageComponentInteraction, MessageFlags } from "discord.js";
 
 export async function commandErrorHandler(interaction: ChatInputCommandInteraction | MessageComponentInteraction, error: Error) {

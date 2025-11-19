@@ -1,5 +1,5 @@
 import { GenericTaskProcessor } from './GenericTaskProcessor';
-import { DeleteServer } from '@tf2qs/core/src/usecase/DeleteServer';
+import { DeleteServer } from '@tf2qs/core';
 
 export type DeleteServerTaskData = {
   serverId: string;

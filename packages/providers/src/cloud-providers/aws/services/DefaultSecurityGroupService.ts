@@ -5,8 +5,8 @@ import {
     DescribeSecurityGroupsCommand,
     EC2Client,
 } from "@aws-sdk/client-ec2";
-import { Region } from '@tf2qs/core/src/domain';
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region } from '@tf2qs/core';
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { SecurityGroupService as SecurityGroupServiceInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";
 

@@ -3,12 +3,12 @@ import { ChatInputCommandInteraction, InteractionCollector, Message, MessageComp
 import { describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { getVariantConfigs } from "@tf2qs/core/src/domain";
-import { Server } from "@tf2qs/core/src/domain/DeployedServer";
-import { Region } from "@tf2qs/core/src/domain/Region";
-import { UserError } from "@tf2qs/core/src/errors/UserError";
-import { CreateServerForUser } from "@tf2qs/core/src/usecase/CreateServerForUser";
-import { BackgroundTaskQueue } from "@tf2qs/core/src/services/BackgroundTaskQueue";
+import { getVariantConfigs } from "@tf2qs/core";
+import { Server } from "@tf2qs/core";
+import { Region } from "@tf2qs/core";
+import { UserError } from "@tf2qs/core";
+import { CreateServerForUser } from "@tf2qs/core";
+import { BackgroundTaskQueue } from "@tf2qs/core";
 import { createServerCommandHandlerFactory } from "./handler";
 
 describe("createServerCommandHandler", () => {

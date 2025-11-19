@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import {
     ChatInputCommandInteraction,
     MessageFlags,
@@ -10,13 +10,13 @@ import {
     Collection,
     PermissionFlagsBits
 } from "discord.js";
-import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region } from "@tf2qs/core/src/domain";
-import { CreateServerForUser } from "@tf2qs/core/src/usecase/CreateServerForUser";
-import { createInteractionStatusUpdater } from "@tf2qs/providers/src/services/DiscordInteractionStatusUpdater";
+import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region } from "@tf2qs/core";
+import { CreateServerForUser } from "@tf2qs/core";
+import { createInteractionStatusUpdater } from "@tf2qs/providers";
 import { commandErrorHandler } from "../commandErrorHandler";
-import { defaultGracefulShutdownManager } from "@tf2qs/providers/src/services/DefaultGracefulShutdownManager";
-import { BackgroundTaskQueue } from "@tf2qs/core/src/services/BackgroundTaskQueue";
-import { DeleteServerForUserTaskData } from "@tf2qs/providers/src/queue/DeleteServerForUserTaskProcessor";
+import { defaultGracefulShutdownManager } from "@tf2qs/providers";
+import { BackgroundTaskQueue } from "@tf2qs/core";
+import { DeleteServerForUserTaskData } from "@tf2qs/providers";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,

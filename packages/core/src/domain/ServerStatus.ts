@@ -1,4 +1,4 @@
-export class ServerStatus {
+export class ServerStatusParser {
 
     public readonly numberOfPlayers?: number;
     public readonly serverIp?: string;

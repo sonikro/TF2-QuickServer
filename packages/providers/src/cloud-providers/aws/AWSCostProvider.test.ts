@@ -1,10 +1,10 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import { CostExplorerClient, GetCostAndUsageCommand } from "@aws-sdk/client-cost-explorer";
-import { Region } from "@tf2qs/core/src/domain/Region";
+import { Region } from "@tf2qs/core";
 import { AWSCostProvider } from "./AWSCostProvider";
 
-vi.mock("@tf2qs/telemetry/src/otel", () => ({
+vi.mock("@tf2qs/telemetry", () => ({
   logger: {
     emit: vi.fn(),
   },

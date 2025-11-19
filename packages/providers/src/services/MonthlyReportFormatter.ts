@@ -1,5 +1,5 @@
-import { MonthlyUsageReport } from "@tf2qs/core/src/domain/MonthlyUsageReport";
-import { getRegionConfig, Region } from "@tf2qs/core/src/domain/Region";
+import { MonthlyUsageReport } from "@tf2qs/core";
+import { getRegionConfig, Region } from "@tf2qs/core";
 
 export class MonthlyReportFormatter {
   format(report: MonthlyUsageReport): string {

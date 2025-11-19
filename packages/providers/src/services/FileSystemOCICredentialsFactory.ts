@@ -1,5 +1,5 @@
 import {readFileSync} from "fs"
-import { OCICredentialsFactory } from "@tf2qs/core/src/services/OCICredentialsFactory";
+import { OCICredentialsFactory } from "@tf2qs/core";
 
 export const FileSystemOCICredentialsFactory: OCICredentialsFactory = (region) => {
     const configFilePath = process.env.OCI_CONFIG_FILE

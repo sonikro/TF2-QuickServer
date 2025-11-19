@@ -6,7 +6,7 @@ import { Region } from "../domain";
 import { ServerRepository } from "../repository/ServerRepository";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManager } from "../services/ServerManager";
-import { ServerManagerFactory } from '@tf2qs/providers/src/services/ServerManagerFactory';
+import { ServerManagerFactory } from '@tf2qs/providers';
 import { EventLogger } from "../services/EventLogger";
 import { TerminateLongRunningServers } from "./TerminateLongRunningServers";
 

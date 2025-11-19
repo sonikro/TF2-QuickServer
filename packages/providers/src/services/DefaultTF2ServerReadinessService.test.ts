@@ -1,14 +1,14 @@
 import { Chance } from "chance";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ServerStatus } from "@tf2qs/core/src/domain/ServerStatus";
-import { ServerCommander } from "@tf2qs/core/src/services/ServerCommander";
+import { ServerStatusParser } from "@tf2qs/core";
+import { ServerCommander } from "@tf2qs/core";
 import { waitUntil } from "../utils/waitUntil";
 import { DefaultTF2ServerReadinessService } from "./DefaultTF2ServerReadinessService";
 
 // Mock dependencies
 vi.mock("../utils/waitUntil");
-vi.mock("@tf2qs/core/src/domain/ServerStatus");
-vi.mock("@tf2qs/telemetry/src/otel", () => ({
+vi.mock("@tf2qs/core");
+vi.mock("@tf2qs/telemetry", () => ({
     logger: {
         emit: vi.fn()
     }
@@ -20,7 +20,7 @@ describe("DefaultTF2ServerReadinessService", () => {
     let service: DefaultTF2ServerReadinessService;
     let mockServerCommander: ServerCommander;
     let mockWaitUntil: any;
-    let mockServerStatus: any;
+    let mockServerStatusParser: any;
 
     const createTestData = () => ({
         publicIp: chance.ip(),
@@ -37,7 +37,7 @@ describe("DefaultTF2ServerReadinessService", () => {
             query: vi.fn()
         } as unknown as ServerCommander;
         mockWaitUntil = vi.mocked(waitUntil);
-        mockServerStatus = vi.mocked(ServerStatus);
+        mockServerStatusParser = vi.mocked(ServerStatusParser);
 
         service = new DefaultTF2ServerReadinessService(mockServerCommander);
     });
@@ -63,7 +63,7 @@ players : 0 humans, 0 bots (24 max)`;
             };
 
             vi.mocked(mockServerCommander.query).mockResolvedValue(mockServerResponse);
-            mockServerStatus.mockImplementation(() => mockStatusInstance);
+            mockServerStatusParser.mockImplementation(() => mockStatusInstance);
             mockWaitUntil.mockImplementation(async (conditionFn: () => Promise<any>) => {
                 return await conditionFn();
             });
@@ -82,7 +82,7 @@ players : 0 humans, 0 bots (24 max)`;
                 timeout: 5000
             });
 
-            expect(mockServerStatus).toHaveBeenCalledWith(mockServerResponse);
+            expect(mockServerStatusParser).toHaveBeenCalledWith(mockServerResponse);
             expect(result).toBe("192.168.1.100:27015");
         });
 
@@ -123,7 +123,7 @@ players : 0 humans, 0 bots (24 max)`;
             };
 
             vi.mocked(mockServerCommander.query).mockResolvedValue(mockServerResponse);
-            mockServerStatus.mockImplementation(() => mockStatusInstance);
+            mockServerStatusParser.mockImplementation(() => mockStatusInstance);
             mockWaitUntil.mockImplementation(async (conditionFn: () => Promise<any>) => {
                 try {
                     return await conditionFn();
@@ -160,7 +160,7 @@ players : 0 humans, 0 bots (24 max)`;
 
             let attemptCount = 0;
             vi.mocked(mockServerCommander.query).mockResolvedValue(mockServerResponse);
-            mockServerStatus.mockImplementation(() => {
+            mockServerStatusParser.mockImplementation(() => {
                 attemptCount++;
                 return attemptCount < 3 ? mockStatusInstanceNotReady : mockStatusInstanceReady;
             });
@@ -183,7 +183,7 @@ players : 0 humans, 0 bots (24 max)`;
             );
 
             expect(result).toBe("192.168.1.100:27015");
-            expect(mockServerStatus).toHaveBeenCalledTimes(3);
+            expect(mockServerStatusParser).toHaveBeenCalledTimes(3);
         });
 
         it("should create correct sdrAddress from serverIp and serverPort", async () => {
@@ -197,7 +197,7 @@ players : 0 humans, 0 bots (24 max)`;
             };
 
             vi.mocked(mockServerCommander.query).mockResolvedValue(mockServerResponse);
-            mockServerStatus.mockImplementation(() => mockStatusInstance);
+            mockServerStatusParser.mockImplementation(() => mockStatusInstance);
             mockWaitUntil.mockImplementation(async (conditionFn: () => Promise<any>) => {
                 return await conditionFn();
             });

@@ -1,6 +1,6 @@
 import { Knex } from "knex";
-import { CreditOrder } from "@tf2qs/core/src/domain/CreditOrder";
-import { CreditOrdersRepository } from "@tf2qs/core/src/repository/CreditOrdersRepository";
+import { CreditOrder } from "@tf2qs/core";
+import { CreditOrdersRepository } from "@tf2qs/core";
 
 export class SQliteCreditOrdersRepository implements CreditOrdersRepository {
     constructor(private readonly dependencies: { knex: Knex }) {}

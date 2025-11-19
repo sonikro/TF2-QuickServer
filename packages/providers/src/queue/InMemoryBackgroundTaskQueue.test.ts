@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mock } from 'vitest-mock-extended';
-import { BackgroundTaskProcessor } from '@tf2qs/core/src/services/BackgroundTaskQueue';
-import { GracefulShutdownManager } from '@tf2qs/core/src/services/GracefulShutdownManager';
+import { BackgroundTaskProcessor } from '@tf2qs/core';
+import { GracefulShutdownManager } from '@tf2qs/core';
 import { InMemoryBackgroundTaskQueue } from './InMemoryBackgroundTaskQueue';
 
 describe('InMemoryBackgroundTaskQueue', () => {

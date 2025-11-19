@@ -1,15 +1,15 @@
-import { Region, Server, Variant } from '@tf2qs/core/src/domain';
-import { ServerCredentials } from '@tf2qs/core/src/models';
-import { DeploymentContext } from '@tf2qs/core/src/models/DeploymentContext';
-import { EnvironmentBuilderService } from '@tf2qs/core/src/services/EnvironmentBuilderService';
-import { PasswordGeneratorService } from '@tf2qs/core/src/services/PasswordGeneratorService';
-import { ServerCommander } from '@tf2qs/core/src/services/ServerCommander';
-import { ServerManager } from '@tf2qs/core/src/services/ServerManager';
-import { StatusUpdater } from '@tf2qs/core/src/services/StatusUpdater';
-import { TF2ServerReadinessService } from '@tf2qs/core/src/services/TF2ServerReadinessService';
-import { ConfigManager } from '@tf2qs/core/src/utils/ConfigManager';
-import { OperationTracingService } from '@tf2qs/telemetry/src/OperationTracingService';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { Region, Server, Variant } from '@tf2qs/core';
+import { ServerCredentials } from '@tf2qs/core';
+import { DeploymentContext } from '@tf2qs/core';
+import { EnvironmentBuilderService } from '@tf2qs/core';
+import { PasswordGeneratorService } from '@tf2qs/core';
+import { ServerCommander } from '@tf2qs/core';
+import { ServerManager } from '@tf2qs/core';
+import { StatusUpdater } from '@tf2qs/core';
+import { TF2ServerReadinessService } from '@tf2qs/core';
+import { ConfigManager } from '@tf2qs/core';
+import { OperationTracingService } from '@tf2qs/telemetry';
+import { logger } from '@tf2qs/telemetry';
 import { DefaultEnvironmentBuilderService, DefaultTF2ServerReadinessService } from '../../services';
 import { AWSClientFactory } from '../../services/defaultAWSServiceFactory';
 import {

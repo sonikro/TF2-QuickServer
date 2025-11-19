@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { Region } from "@tf2qs/core/src/domain";
-import { OCICredentialsFactory } from "@tf2qs/core/src/services/OCICredentialsFactory";
-import { PasswordGeneratorService } from "@tf2qs/core/src/services/PasswordGeneratorService";
-import { ServerAbortManager } from "@tf2qs/core/src/services/ServerAbortManager";
-import { ServerCommander } from "@tf2qs/core/src/services/ServerCommander";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { Region } from "@tf2qs/core";
+import { OCICredentialsFactory } from "@tf2qs/core";
+import { PasswordGeneratorService } from "@tf2qs/core";
+import { ServerAbortManager } from "@tf2qs/core";
+import { ServerCommander } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
 import { AWSServerManager, OCIServerManager } from "../cloud-providers";
 import { DefaultServerManagerFactory } from "./ServerManagerFactory";
 

@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "discord.js";
-import { getRegions, getRegionDisplayName } from "@tf2qs/core/src/domain";
+import { getRegions, getRegionDisplayName } from "@tf2qs/core";
 
 export const createServerCommandDefinition = new SlashCommandBuilder()
     .setName('create-server')

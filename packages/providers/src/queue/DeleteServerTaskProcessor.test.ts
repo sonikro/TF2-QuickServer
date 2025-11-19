@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { DeleteServer } from '@tf2qs/core/src/usecase/DeleteServer';
+import { DeleteServer } from '@tf2qs/core';
 import { createDeleteServerTaskProcessor } from './DeleteServerTaskProcessor';
 import { GenericTaskProcessor } from './GenericTaskProcessor';
 

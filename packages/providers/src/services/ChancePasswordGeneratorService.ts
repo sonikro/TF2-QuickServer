@@ -1,5 +1,5 @@
 import { Chance } from "chance";
-import { PasswordGeneratorService } from "@tf2qs/core/src/services/PasswordGeneratorService";
+import { PasswordGeneratorService } from "@tf2qs/core";
 
 /**
  * Implementation of PasswordGeneratorService using the Chance library

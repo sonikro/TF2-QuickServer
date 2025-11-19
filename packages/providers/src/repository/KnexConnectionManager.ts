@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import knex, {Knex} from "knex";
 import dbConfig from "../../../../knexfile";
 

@@ -2,14 +2,14 @@ import { models, UsageapiClient } from 'oci-usageapi';
 import { describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { OracleConfig } from '@tf2qs/core/src/domain/OracleConfig';
-import { Region } from '@tf2qs/core/src/domain/Region';
-import { ConfigManager } from '@tf2qs/core/src/utils/ConfigManager';
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { OracleConfig } from '@tf2qs/core';
+import { Region } from '@tf2qs/core';
+import { ConfigManager } from '@tf2qs/core';
+import { logger } from '@tf2qs/telemetry';
 import { OracleCostProvider } from './OracleCostProvider';
 
-vi.mock('@tf2qs/telemetry/src/otel', async () => {
-  const actual = await vi.importActual('@tf2qs/telemetry/src/otel');
+vi.mock('@tf2qs/telemetry', async () => {
+  const actual = await vi.importActual('@tf2qs/telemetry');
   return {
     ...actual,
     logger: {

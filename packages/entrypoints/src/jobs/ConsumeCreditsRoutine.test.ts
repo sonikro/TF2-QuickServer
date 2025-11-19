@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ConsumeCreditsFromRunningServers } from "@tf2qs/core/src/usecase/ConsumeCreditsFromRunningServers";
+import { ConsumeCreditsFromRunningServers } from "@tf2qs/core";
 import { mock } from "vitest-mock-extended";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { ConfigManager } from "@tf2qs/core";
 import { scheduleConsumeCreditsRoutine } from ".";
 import schedule from "node-schedule";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
+import { EventLogger } from "@tf2qs/core";
 
 
 vi.mock("node-schedule")

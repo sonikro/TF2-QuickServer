@@ -7,11 +7,11 @@ import {
     RegisterTaskDefinitionCommand,
     TransportProtocol
 } from "@aws-sdk/client-ecs";
-import { Region } from "@tf2qs/core/src/domain";
-import { DeploymentContext } from "@tf2qs/core/src/models/DeploymentContext";
-import { ServerCredentials } from "@tf2qs/core/src/models/ServerCredentials";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region } from "@tf2qs/core";
+import { DeploymentContext } from "@tf2qs/core";
+import { ServerCredentials } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { AWSConfigService } from "./AWSConfigService";
 import { DefaultTaskDefinitionService } from "./DefaultTaskDefinitionService";
 

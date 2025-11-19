@@ -10,9 +10,9 @@ import {
     waitUntilInstanceRunning,
     _InstanceType
 } from "@aws-sdk/client-ec2";
-import { Region, VariantConfig } from "@tf2qs/core/src/domain";
-import { InsufficientCapacityError } from "@tf2qs/core/src/errors/InsufficientCapacityError";
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region, VariantConfig } from "@tf2qs/core";
+import { InsufficientCapacityError } from "@tf2qs/core";
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { AWSConfigService } from "./AWSConfigService";
 import { DefaultEC2InstanceService } from "./DefaultEC2InstanceService";
 

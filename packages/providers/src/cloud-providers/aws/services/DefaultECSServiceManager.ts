@@ -4,8 +4,8 @@ import {
     DescribeServicesCommand,
     waitUntilServicesStable,
 } from "@aws-sdk/client-ecs";
-import { Region } from '@tf2qs/core/src/domain';
-import { OperationTracingService } from "@tf2qs/telemetry/src/OperationTracingService";
+import { Region } from '@tf2qs/core';
+import { OperationTracingService } from "@tf2qs/telemetry";
 import { waitUntil } from "../../../utils/waitUntil";
 import { ECSServiceManager as ECSServiceManagerInterface } from '../interfaces';
 import { AWSConfigService } from "./AWSConfigService";

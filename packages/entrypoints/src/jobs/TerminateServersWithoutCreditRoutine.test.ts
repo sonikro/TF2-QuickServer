@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
+import { ConfigManager } from "@tf2qs/core";
 import schedule from "node-schedule";
-import { TerminateServersWithoutCredit } from "@tf2qs/core/src/usecase/TerminateServersWithoutCredit";
+import { TerminateServersWithoutCredit } from "@tf2qs/core";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./TerminateServersWithoutCreditRoutine";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
+import { EventLogger } from "@tf2qs/core";
 
 vi.mock("node-schedule");
 

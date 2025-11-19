@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
-import { GetServerStatus } from "@tf2qs/core/src/usecase/GetServerStatus";
+import { GetServerStatus } from "@tf2qs/core";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 const statusIcons = {

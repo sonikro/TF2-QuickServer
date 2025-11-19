@@ -6,3 +6,4 @@ export * from './src/cost-providers/DefaultCostProvider';
 export * from './src/queue';
 export * from './src/repository';
 export * from './src/repository/KnexConnectionManager';
+export * from './src/utils/DefaultConfigManager';

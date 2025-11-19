@@ -1,4 +1,4 @@
-import { logger } from '@tf2qs/telemetry/src/otel';
+import { logger } from '@tf2qs/telemetry';
 import { SRCDSCommandParser } from "./SRCDSCommand";
 
 export const userEnteredGame: SRCDSCommandParser<{ steamId3: string; userId: string }> = (rawString) => {

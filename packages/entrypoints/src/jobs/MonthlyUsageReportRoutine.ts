@@ -1,10 +1,10 @@
 import { Client, ChannelType } from "discord.js";
 import schedule from "node-schedule";
-import { GenerateMonthlyUsageReport } from "@tf2qs/core/src/usecase/GenerateMonthlyUsageReport";
-import { ConfigManager } from "@tf2qs/core/src/utils/ConfigManager";
-import { EventLogger } from "@tf2qs/core/src/services/EventLogger";
-import { logger } from "@tf2qs/telemetry/src/otel";
-import { MonthlyReportFormatter } from "@tf2qs/providers/src/services/MonthlyReportFormatter";
+import { GenerateMonthlyUsageReport } from "@tf2qs/core";
+import { ConfigManager } from "@tf2qs/core";
+import { EventLogger } from "@tf2qs/core";
+import { logger } from "@tf2qs/telemetry";
+import { MonthlyReportFormatter } from "@tf2qs/providers";
 
 export type ScheduleMonthlyUsageReportRoutineDependencies = {
   generateMonthlyUsageReport: GenerateMonthlyUsageReport;
