@@ -5,6 +5,16 @@
     /* Modules */
     "module": "nodenext",                                /* Specify what module code is generated. */
     "rootDir": "./",                                  /* Specify the root folder within your source files. */
+    "paths": {
+      "@tf2qs/core": ["./packages/core"],
+      "@tf2qs/core/*": ["./packages/core/src/*"],
+      "@tf2qs/entrypoints": ["./packages/entrypoints"],
+      "@tf2qs/entrypoints/*": ["./packages/entrypoints/src/*"],
+      "@tf2qs/providers": ["./packages/providers"],
+      "@tf2qs/providers/*": ["./packages/providers/src/*"],
+      "@tf2qs/telemetry": ["./packages/telemetry"],
+      "@tf2qs/telemetry/*": ["./packages/telemetry/src/*"]
+    },
 
     /* Emit */
     "outDir": "./dist",                                   /* Specify an output folder for all emitted files. */

@@ -1,0 +1,15 @@
+{
+  "name": "@tf2qs/core",
+  "version": "0.0.1",
+  "description": "TF2 QuickServer - Core domain logic",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0",
+    "steamid": "^2.1.0"
+  }
+}

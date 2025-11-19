@@ -1,0 +1,21 @@
+{
+  "name": "@tf2qs/entrypoints",
+  "version": "0.0.1",
+  "description": "TF2 QuickServer - Application entrypoints",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@tf2qs/core": "*",
+    "@tf2qs/providers": "*",
+    "@tf2qs/telemetry": "*",
+    "discord.js": "^14.18.0",
+    "express": "^5.1.0",
+    "express-oauth2-jwt-bearer": "^1.7.1",
+    "node-schedule": "^2.1.1",
+    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1"
+  }
+}

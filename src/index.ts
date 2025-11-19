@@ -1,6 +1,6 @@
-import { logger } from './telemetry/otel';
-import "./telemetry/otel"
-import { startDiscordBot } from "./entrypoints/discordBot";
+import { logger } from '@tf2qs/telemetry';
+import "@tf2qs/telemetry"
+import { startDiscordBot } from "@tf2qs/entrypoints";
 
 // Initialize OpenTelemetry
 

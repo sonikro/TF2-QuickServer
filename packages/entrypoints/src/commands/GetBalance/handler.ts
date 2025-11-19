@@ -1,0 +1,20 @@
+import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { UserCreditsRepository } from "@tf2qs/core/src/repository/UserCreditsRepository";
+
+export function createGetBalanceCommandHandlerFactory(dependencies: {
+    userCreditsRepository: UserCreditsRepository
+}) {
+    return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
+        const { userCreditsRepository } = dependencies;
+
+        const credits = await userCreditsRepository.getCredits({
+            userId: interaction.user.id
+        })
+
+        await interaction.reply({
+            content: `💰 You have **${credits}** credits in your account!`,
+            flags: MessageFlags.Ephemeral
+        })
+
+    }
+}
