@@ -1,5 +1,5 @@
 ---
-applyTo: "src/core/**/*.ts"
+applyTo: "packages/core/**/*.ts"
 ---
 
 # Copilot Instructions for Core Layer (Clean Architecture)

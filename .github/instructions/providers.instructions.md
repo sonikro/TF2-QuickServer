@@ -1,5 +1,5 @@
 ---
-applyTo: "src/providers/**/*.ts"
+applyTo: "packages/providers/**/*.ts"
 ---
 
 # Copilot Instructions for Providers Layer (Clean Architecture)

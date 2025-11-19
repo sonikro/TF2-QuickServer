@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.test.ts"
+applyTo: "packages/**/*.test.ts"
 ---
 
 # Copilot Instructions for Test Files

@@ -1,5 +1,5 @@
 ---
-applyTo: "src/**/*.ts"
+applyTo: "packages/**/*.ts"
 ---
 
 # Copilot Instructions for Telemetry
