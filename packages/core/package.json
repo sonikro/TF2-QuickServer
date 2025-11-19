@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "uuid": "^11.1.0",
-    "steamid": "^2.1.0"
+    "steamid": "^2.1.0",
+    "config": "^3.3.12",
+    "knex": "^3.1.0",
+    "discord.js": "^14.18.0"
   }
 }

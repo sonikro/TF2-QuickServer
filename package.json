@@ -65,34 +65,9 @@
     "vitest-when": "^0.6.0"
   },
   "dependencies": {
-    "@adyen/api-library": "^26.1.0",
-    "@aws-sdk/client-cost-explorer": "^3.927.0",
-    "@aws-sdk/client-ec2": "^3.888.0",
-    "@aws-sdk/client-ecs": "^3.888.0",
     "@aws-sdk/client-s3": "^3.927.0",
-    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",
-    "@opentelemetry/auto-instrumentations-node": "^0.62.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.203.0",
-    "@opentelemetry/resources": "^2.0.1",
-    "@opentelemetry/sdk-logs": "^0.203.0",
-    "@opentelemetry/sdk-node": "^0.203.0",
-    "chance": "^1.1.12",
     "config": "^3.3.12",
-    "csv-parse": "^5.6.0",
-    "discord.js": "^14.18.0",
     "dotenv": "^16.4.7",
-    "express": "^5.1.0",
-    "express-oauth2-jwt-bearer": "^1.7.1",
-    "jsonwebtoken": "^9.0.2",
-    "knex": "^3.1.0",
-    "node-schedule": "^2.1.1",
-    "oci-sdk": "^2.107.0",
-    "p-limit": "^6.2.0",
-    "public-ip": "^7.0.1",
-    "rcon-client": "^4.2.5",
-    "sqlite3": "^5.1.7",
-    "steamid": "^2.1.0",
-    "ts-node": "^10.9.2",
-    "uuid": "^11.1.0"
+    "ts-node": "^10.9.2"
   }
 }

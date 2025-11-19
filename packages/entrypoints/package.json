@@ -16,6 +16,8 @@
     "express": "^5.1.0",
     "express-oauth2-jwt-bearer": "^1.7.1",
     "node-schedule": "^2.1.1",
-    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1"
+    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",
+    "chance": "^1.1.12",
+    "public-ip": "^7.0.1"
   }
 }

@@ -21,6 +21,8 @@
     "oci-sdk": "^2.107.0",
     "rcon-client": "^4.2.5",
     "public-ip": "^7.0.1",
-    "p-limit": "^6.2.0"
+    "p-limit": "^6.2.0",
+    "discord.js": "^14.18.0",
+    "chance": "^1.1.12"
   }
 }
