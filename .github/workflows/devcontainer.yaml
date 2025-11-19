@@ -1,0 +1,46 @@
+name: DevContainer CI/CD
+
+on:
+  push:
+    paths:
+      - '.github/.devcontainer/**'
+    branches:
+      - main
+  pull_request:
+    paths:
+      - '.github/.devcontainer/**'
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Dev Container
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/sonikro/tf2-quickserver-devcontainer
+          cacheFrom: ghcr.io/sonikro/tf2-quickserver-devcontainer
+          subFolder: .github
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'always' || 'never' }}
+          runCmd: |
+            node --version
+            npm --version
+            terraform --version
+            go version
+            aws --version
+            docker --version
