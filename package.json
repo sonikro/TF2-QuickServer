@@ -12,8 +12,8 @@
     "dev": "nodemon",
     "terraform:deploy": "terraform -chdir=./terraform init && terraform -chdir=./terraform apply -auto-approve && terraform -chdir=./terraform output -json > ./config/local.json",
     "terraform:plan": "terraform -chdir=./terraform  init && terraform -chdir=./terraform plan",
-    "download:maps": "tsx ./scripts/downloadMaps.ts",
-    "sync:fastdl": "tsx ./scripts/syncFastDL.ts",
+    "download:maps": "tsx ./packages/scripts/downloadMaps.ts",
+    "sync:fastdl": "tsx ./packages/scripts/syncFastDL.ts",
     "migration:run": "knex --knexfile knexfile.ts migrate:latest",
     "migration:create": "knex --knexfile knexfile.ts migrate:make",
     "build:fat:standard-competitive-amd64": "docker build -t sonikro/fat-tf2-standard-competitive-amd64:latest -f ./variants/fat-standard-competitive-amd64/Dockerfile .",
@@ -54,8 +54,8 @@
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-vitest": "^6.2.0",
     "env-cmd": "^10.1.0",
+    "knex": "^3.1.0",
     "msw": "^2.7.3",
-    "node-bzip2": "^1.0.2",
     "nodemon": "^3.1.9",
     "supertest": "^7.1.0",
     "tsx": "^4.19.3",
@@ -63,11 +63,5 @@
     "vitest": "^3.0.9",
     "vitest-mock-extended": "^3.0.1",
     "vitest-when": "^0.6.0"
-  },
-  "dependencies": {
-    "@aws-sdk/client-s3": "^3.927.0",
-    "config": "^3.3.12",
-    "dotenv": "^16.4.7",
-    "ts-node": "^10.9.2"
   }
 }

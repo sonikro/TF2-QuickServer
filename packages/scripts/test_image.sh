@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: ./scripts/test_image.sh <image_name>
+# Usage: ./packages/scripts/test_image.sh <image_name>
 # This script runs a container from the given image and checks its health status.
 
 set -euo pipefail

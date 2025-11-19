@@ -158,8 +158,8 @@ const syncFastDL = async (): Promise<void> => {
     validateEnvironment();
 
     const bucketName = process.env.FASTDL_BUCKET_NAME as string;
-    const mapsDir = path.resolve(__dirname, '../maps');
-    const fastDLDir = path.resolve(__dirname, '../fastdl/maps');
+    const mapsDir = path.resolve(__dirname, '../../maps');
+    const fastDLDir = path.resolve(__dirname, '../../fastdl/maps');
     const s3Prefix = 'fastdl/maps';
 
     console.log('Starting FastDL sync process...');

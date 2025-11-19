@@ -8,8 +8,8 @@ const bzip2 = require('node-bzip2');
 const BASE_URL = "https://fastdl.serveme.tf/maps/";
 
 // Resolve paths
-const mapsDir = path.resolve(__dirname, '../maps');
-const mapsJsonPath = path.resolve(__dirname, '../maps.json');
+const mapsDir = path.resolve(__dirname, '../../maps');
+const mapsJsonPath = path.resolve(__dirname, '../../maps.json');
 
 // Ensure the maps directory exists
 if (!fs.existsSync(mapsDir)) {

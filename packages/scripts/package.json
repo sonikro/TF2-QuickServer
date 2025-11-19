@@ -1,0 +1,15 @@
+{
+  "name": "@tf2qs/scripts",
+  "version": "0.0.1",
+  "description": "TF2 QuickServer - Build and maintenance scripts",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "download:maps": "tsx ./downloadMaps.ts",
+    "sync:fastdl": "tsx ./syncFastDL.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.709.0",
+    "node-bzip2": "^1.0.1"
+  }
+}
