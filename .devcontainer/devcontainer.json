@@ -1,24 +1,9 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
-	"name": "Node.js & TypeScript",
+	"name": "TF2-QuickServer",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "ghcr.io/sonikro/tf2-quickserver-devcontainer",
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"vitest.explorer",
-				"github.vscode-github-actions",
-				"yy0931.vscode-sqlite3-editor",
-				"Sarrus.sourcepawn-vscode",
-				"yzhang.markdown-all-in-one"
-			]
-		}
-	},
-	"appPort": [
-		"27100:27100/udp",
-		"27101:27101/udp"
-	]
+	"image": "ghcr.io/sonikro/tf2-quickserver-devcontainer"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
