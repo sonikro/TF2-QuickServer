@@ -199,9 +199,10 @@ WORKDIR $HOME
 
 # Copies tf2version.txt to make the layer stale when the TF2 version is updated
 COPY ./variants/base/maps_to_keep ./variants/base/tf2.txt.template ./tf2version.txt $HOME/
+COPY --chmod=755 ./variants/base/install_tf2.sh $HOME/
 RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
   && steamcmd +help +quit \
-  && steamcmd +runscript $HOME/tf2.txt \
+  && $HOME/install_tf2.sh \
   && find $SERVER_DIR/tf/maps -type f | grep -v "$(cat maps_to_keep)" | xargs rm -rf \
   && rm maps_to_keep \
   && mkdir -p $HOME/.steam \
