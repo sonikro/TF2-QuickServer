@@ -76,7 +76,7 @@ RUN curl -L "${ETF2L_CONFIGS_URL}" -o "${ETF2L_CONFIGS_FILE_NAME}" \
 
 # RGL configs and plugins
 ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
-ARG RGL_CONFIGS_VERSION=v256
+ARG RGL_CONFIGS_VERSION=v357
 ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
 RUN curl -L "${RGL_CONFIGS_URL}" -o "${RGL_CONFIGS_FILE_NAME}" \
   && unzip -q "${RGL_CONFIGS_FILE_NAME}" \
@@ -84,7 +84,7 @@ RUN curl -L "${RGL_CONFIGS_URL}" -o "${RGL_CONFIGS_FILE_NAME}" \
   && cp "addons/sourcemod/plugins/"{config_checker,rglqol}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/" \
   && cp "addons/sourcemod/scripting/"{config_checker,rglqol}.sp "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/" \
   && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" \
-  && cp "addons/sourcemod/plugins/disabled/"{p4sstime,tf2Halftime,roundtimer_override}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
+  && cp "addons/sourcemod/plugins/disabled/"{p4sstime,roundtimer_override}.smx "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/" \
   && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/disabled" \
   && cp "addons/sourcemod/scripting/disabled/roundtimer_override.sp" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/disabled/"
 
