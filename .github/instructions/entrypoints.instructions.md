@@ -1,5 +1,5 @@
 ---
-applyTo: "src/entrypoints/**/*.ts"
+applyTo: "packages/entrypoints/**/*.ts"
 ---
 
 # Copilot Instructions for Entrypoints Layer (Clean Architecture)

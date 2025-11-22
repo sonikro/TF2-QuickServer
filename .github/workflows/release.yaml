@@ -7,7 +7,7 @@ on:
     paths: 
       - Dockerfile
       - config/**
-      - scripts/**
+      - packages/**
       - src/**
       - db/**
       - package.json

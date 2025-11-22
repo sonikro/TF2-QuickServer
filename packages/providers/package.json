@@ -1,0 +1,28 @@
+{
+  "name": "@tf2qs/providers",
+  "version": "0.0.1",
+  "description": "TF2 QuickServer - Infrastructure providers",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "test": "vitest",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@tf2qs/core": "*",
+    "@adyen/api-library": "^26.1.0",
+    "@aws-sdk/client-cost-explorer": "^3.927.0",
+    "@aws-sdk/client-ec2": "^3.888.0",
+    "@aws-sdk/client-ecs": "^3.888.0",
+    "@aws-sdk/client-s3": "^3.927.0",
+    "csv-parse": "^5.6.0",
+    "knex": "^3.1.0",
+    "sqlite3": "^5.1.7",
+    "oci-sdk": "^2.107.0",
+    "rcon-client": "^4.2.5",
+    "public-ip": "^7.0.1",
+    "p-limit": "^6.2.0",
+    "discord.js": "^14.18.0",
+    "chance": "^1.1.12"
+  }
+}
