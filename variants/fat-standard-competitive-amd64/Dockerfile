@@ -136,6 +136,9 @@ RUN curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PL
   && curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PLUS_VERSION}/srctvplus.vdf" \
   -o "${PLUGIN_INSTALL_DIR}/addons/srctvplus.vdf"
 
+# Override srctvplus.so with 64-bit x86_64 version
+COPY variants/base/tf/addons/srctvplus_x86_64.so "${PLUGIN_INSTALL_DIR}/addons/srctvplus.so"
+
 # Dodgeball plugin
 ARG DODGEBALL_PLUGIN_VERSION_NUMBER=1.9.6
 ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
