@@ -27,16 +27,17 @@
 	"appPort": [
 		"27100:27100/udp",
 		"27101:27101/udp"
-	]
+	],
+
+	// Fix cmake symlink issue from devcontainers-extra/features/cmake feature
+	// The feature incorrectly symlinks to the bash completion file instead of the binary
+	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
 
 	// Configure tool-specific properties.
 	// "customizations": {},
