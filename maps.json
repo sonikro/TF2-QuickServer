@@ -135,5 +135,11 @@
     "mge_glassworks",
     "mge_granary_mid",
     "cp_holyhell_rc1", 
-    "mge_training_v8_beta4b"
+    "mge_training_v8_beta4b",
+    "cp_entropy_b5",
+    "cp_logjam_rc12f",
+    "cp_cardinal_rc1a",
+    "cp_mannbase_rc3",
+    "koth_gamma_rc1",
+    "koth_coalplant_b7"
 ]
