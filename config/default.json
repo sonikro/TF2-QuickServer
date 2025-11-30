@@ -260,6 +260,15 @@
                 "koth": "qel_4s_koth.cfg"
             },
             "guildId": "1291587765770649656"
+        },
+        "mge-tf": {
+            "displayName": "MGE.TF",
+            "hostname": "MGE.TF | {region} @ TF2-QuickServer",
+            "guildId": "1172639313649995777",
+            "map": "mge_training_v8_beta4b",
+            "admins": [
+                "STEAM_0:1:40459123"
+            ]
         }
     },
     "discord": {
