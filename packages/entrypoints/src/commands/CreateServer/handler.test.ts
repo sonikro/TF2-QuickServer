@@ -14,11 +14,7 @@ import { createServerCommandHandlerFactory } from "./handler";
 describe("createServerCommandHandler", () => {
     const chance = new Chance();
 
-    // Helper to get a non-Santiago region for tests
-    const getTestRegion = () => {
-        const nonSantiagoRegions = Object.values(Region).filter(r => r !== Region.SA_SANTIAGO_1);
-        return chance.pickone(nonSantiagoRegions);
-    };
+    const getTestRegion = () => chance.pickone(Object.values(Region));
 
     const createHandler = () => {
         const interaction = mock<ChatInputCommandInteraction>();
@@ -465,24 +461,5 @@ describe("createServerCommandHandler", () => {
 
 
 
-    it("it should only show 64bit variants for Santiago", async () => {
-        const { handler, interaction } = createHandler();
 
-        interaction.guildId = "1323509685264842752" // InsertCoin
-
-        when(interaction.options.getString)
-            .calledWith("region")
-            .thenReturn(Region.SA_SANTIAGO_1);
-
-        // Mock admin permissions to bypass the Santiago block
-
-        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
-
-        await handler(interaction);
-
-        const replyCall = (interaction.reply as any).mock.calls[0][0];
-        const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
-        
-        expect(displayedVariants).toEqual(['Standard Competitive', 'InsertCoin Mixes']);
-    });
 });
