@@ -37,6 +37,15 @@ WORKDIR /download
 ARG PLUGIN_INSTALL_DIR=/server/tf
 RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
 
+# F2's SourceMod plugins
+ARG F2_SOURCEMOD_PLUGINS_FILE_NAME=f2-sourcemod-plugins.zip
+ARG F2_SOURCEMOD_PLUGINS_VERSION=20250908-1757334414124
+ARG F2_SOURCEMOD_PLUGINS_URL=https://github.com/F2/F2s-sourcemod-plugins/releases/download/${F2_SOURCEMOD_PLUGINS_VERSION}/${F2_SOURCEMOD_PLUGINS_FILE_NAME}
+ARG F2_ENABLED_PLUGINS="afk.smx fixstvslot.smx logstf.smx medicstats.smx recordstv.smx restorescore.smx supstats2.smx waitforstv.smx"
+RUN curl -L "${F2_SOURCEMOD_PLUGINS_URL}" -o "${F2_SOURCEMOD_PLUGINS_FILE_NAME}" \
+  && unzip -q -j "${F2_SOURCEMOD_PLUGINS_FILE_NAME}" ${F2_ENABLED_PLUGINS} \
+  -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"
+
 # MGEMod (by Maxijabase)
 ARG MGEMOD_FILE_NAME=mge.zip
 ARG MGEMOD_VERSION=v3.1.0-beta9
