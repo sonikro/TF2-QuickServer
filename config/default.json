@@ -68,7 +68,17 @@
             "image": "sonikro/fat-tf2-standard-competitive-amd64:latest"
         },
         "standard-competitive": {
-            "displayName": "Standard Competitive",
+            "displayName": "Standard Competitive (64-bit)",
+            "defaultCfgs": {
+                "5cp": "fbtf_6v6_5cp.cfg",
+                "koth": "fbtf_6v6_koth.cfg",
+                "pl": "rgl_HL_stopwatch.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
+            }
+        },
+        "standard-competitive-i386": {
+            "displayName": "Standard Competitive (32-bit)",
+            "image": "sonikro/fat-tf2-standard-competitive-i386:latest",
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
