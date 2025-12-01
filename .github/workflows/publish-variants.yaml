@@ -47,11 +47,22 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  build-fat-mge-tf:
+    uses: ./.github/workflows/build-variant.yaml
+    with:
+      variant-name: fat-mge-tf
+      dockerfile-path: ./variants/fat-mge-tf/Dockerfile
+      image-name: sonikro/fat-mge-tf
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   publish-release-notes:
     runs-on: ubuntu-latest
     needs:
       - build-fat-tf2-standard-competitive-i386
       - build-fat-tf2-standard-competitive-amd64
+      - build-fat-mge-tf
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
@@ -76,6 +87,7 @@ jobs:
             **Published Images:**
             • sonikro/fat-tf2-standard-competitive-i386:latest
             • sonikro/fat-tf2-standard-competitive-amd64:latest
+            • sonikro/fat-mge-tf:latest
             
             **Latest Commit:**
             `${{ steps.commit.outputs.message }}`
