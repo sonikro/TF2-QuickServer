@@ -266,6 +266,7 @@
             "hostname": "MGE.TF | {region} @ TF2-QuickServer",
             "guildId": "1172639313649995777",
             "map": "mge_training_v8_beta4b",
+            "image": "sonikro/fat-mge-tf:latest",
             "admins": [
                 "STEAM_0:1:40459123"
             ]

@@ -81,3 +81,29 @@ services:
       - "host.docker.internal:27101"
     profiles:
       - server
+  fat-mge-tf:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-mge-tf/Dockerfile
+    container_name: tf2-fat-mge-tf
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "mge_training_v8_beta4b"
+      - +log
+      - on
+      - +logaddress_add
+      - "host.docker.internal:27101"
+    profiles:
+      - server

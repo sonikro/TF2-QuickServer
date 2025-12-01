@@ -162,7 +162,6 @@ RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
 
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
-LABEL maintainer="garrappachc@gmail.com"
 
 RUN export DEBIAN_FRONTEND=noninteractive \
   && export TZ=Etc/UTC \
