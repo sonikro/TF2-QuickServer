@@ -36,6 +36,7 @@ WORKDIR /download
 
 ARG PLUGIN_INSTALL_DIR=/server/tf
 RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
+RUN mkdir -p "${PLUGIN_INSTALL_DIR}" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"
 
 # F2's SourceMod plugins
 ARG F2_SOURCEMOD_PLUGINS_FILE_NAME=f2-sourcemod-plugins.zip
