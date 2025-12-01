@@ -27,13 +27,14 @@ export function createServerCommandHandlerFactory(dependencies: {
         const region = interaction.options.getString('region') as Region;
 
         // Step 1: Show variant buttons
-        const variants = getVariantConfigs().filter(variant => {
-            // Filter by guildId
-            if (variant.config.guildId && variant.config.guildId !== interaction.guildId) {
-                return false;
-            }
-            return true;
-        });
+        const allVariants = getVariantConfigs();
+        const guildSpecificVariants = allVariants.filter(variant => 
+            variant.config.guildId === interaction.guildId
+        );
+        
+        const variants = guildSpecificVariants.length > 0 
+            ? guildSpecificVariants
+            : allVariants.filter(variant => !variant.config.guildId);
 
         const rows = [];
         for (let i = 0; i < variants.length; i += 5) {

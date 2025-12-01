@@ -349,35 +349,57 @@ describe("createServerCommandHandler", () => {
         expect(backgroundTaskQueue.enqueue).not.toHaveBeenCalled();
     });
 
-    it("should only show variants with matching guildId or no guildId", async () => {
+    it("should only show variants for the requesting guild", async () => {
         const { handler, interaction } = createHandler();
         const region = getTestRegion();
         const guildId = interaction.guildId;
 
-        const variants = getVariantConfigs();
+        const allVariants = getVariantConfigs();
+        const guildSpecificVariants = allVariants.filter(v => v.config.guildId === guildId);
+        const sharedVariants = allVariants.filter(v => !v.config.guildId);
+        
+        const expectedVariants = guildSpecificVariants.length > 0
+            ? guildSpecificVariants
+            : sharedVariants;
+        
+        const expectedLabels = expectedVariants.map(v => v.config.displayName || v.name);
 
-        const variantsWithGuildId = variants.filter(v => v.config.guildId === guildId);
-        const variantsWithoutGuildId = variants.filter(v => !v.config.guildId);
-        const expectedVariants = [...variantsWithoutGuildId]
-            .map(v => v.config.displayName || v.name);
-        const expectedHiddenVariants = variantsWithGuildId.map(v => v.config.displayName || v.name);
         when(interaction.options.getString)
             .calledWith("region")
             .thenReturn(region);
 
         interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
-        // Use the message and collector from createHandler
 
-        // Call the command handler
         await handler(interaction);
-        // Check that only the correct variants are shown
+
         const replyCall = (interaction.reply as any).mock.calls[0][0];
-        expect(replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label))).toEqual(
-            expect.arrayContaining(expectedVariants)
-        );
-        expect(replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label))).not.toContain(
-            expectedHiddenVariants
-        );
+        const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
+        
+        expect(displayedVariants).toEqual(expectedLabels);
+    });
+
+    it("should show all default variants if a guild has no specific variants", async () => {
+        const { handler, interaction } = createHandler();
+        const region = getTestRegion();
+        const randomGuildId = chance.guid();
+        interaction.guildId = randomGuildId;
+
+        const allVariants = getVariantConfigs();
+        const sharedVariants = allVariants.filter(v => !v.config.guildId);
+        const expectedLabels = sharedVariants.map(v => v.config.displayName || v.name);
+
+        when(interaction.options.getString)
+            .calledWith("region")
+            .thenReturn(region);
+
+        interaction.reply = vi.fn().mockResolvedValue(undefined) as any;
+
+        await handler(interaction);
+
+        const replyCall = (interaction.reply as any).mock.calls[0][0];
+        const displayedVariants = replyCall.components.flatMap((row: any) => row.components.map((btn: any) => btn.data.label));
+        
+        expect(displayedVariants).toEqual(expectedLabels);
     });
 
     it("should reply with abort message if server creation is aborted by the user", async () => {
