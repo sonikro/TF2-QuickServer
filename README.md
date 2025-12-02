@@ -62,6 +62,8 @@
 | Command | Description |
 |--------|-------------|
 | `/create-server <region>` | Launches a server in the selected region (you'll be prompted to select a variant) |
+| `/get-my-servers` | Retrieves all your active server details (IPs, passwords, etc.) in case you lost the original message |
+| `/status` | Shows the current status of all servers across all regions (running, pending, terminating counts) |
 | `/terminate-servers` | Terminates all servers created by the user |
 | `/set-user-data <steamId>` | Sets the SteamID of the user, assigning them as the Sourcemod admin for all servers the user creates |
 

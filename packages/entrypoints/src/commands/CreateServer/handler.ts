@@ -17,6 +17,7 @@ import { commandErrorHandler } from "../commandErrorHandler";
 import { defaultGracefulShutdownManager } from "@tf2qs/providers";
 import { BackgroundTaskQueue } from "@tf2qs/core";
 import { DeleteServerForUserTaskData } from "@tf2qs/providers";
+import { formatServerMessage } from "../formatServerMessage";
 
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
@@ -111,19 +112,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                         return;
                     }
                     await buttonInteraction.followUp({
-                        content: `🎉 **Server Created Successfully!** 🎉\n\n` +
-                            `🆔 **Server ID:** \`${deployedServer.serverId}\`\n` +
-                            `🌍 **Region:** \`${getRegionDisplayName(deployedServer.region)}\`\n` +
-                            `🎮 **Variant:** \`${deployedServer.variant}\`\n\n` +
-                            `**CONNECT Addresses:**\n` +
-                            `- **SDR Connect:**\n` +
-                            `\`\`\`\nconnect ${deployedServer.hostIp}:${deployedServer.hostPort};${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
-                            `- **Direct Connect:**\n` +
-                            `\`\`\`\nconnect ${deployedServer.rconAddress}:27015;${deployedServer.hostPassword ? `password ${deployedServer.hostPassword}` : ''}\n\`\`\`\n` +
-                            `- **TV Connect:**\n` +
-                            `\`\`\`\nconnect ${deployedServer.tvIp}:${deployedServer.tvPort};${deployedServer.tvPassword ? `password ${deployedServer.tvPassword}` : ''}\n\`\`\`\n` +
-                            `⚠️ **Warning:** If you are connecting from the SDR IP, use the following RCON commands in the console:\n` +
-                            `\`\`\`\nrcon_address ${deployedServer.rconAddress}\nrcon_password ${deployedServer.rconPassword}\n\`\`\`\n`,
+                        content: `🎉 **Server Created Successfully!** 🎉\n\n${formatServerMessage(deployedServer)}`,
                         flags: MessageFlags.Ephemeral
                     });
                 } catch (error: Error | any) {
