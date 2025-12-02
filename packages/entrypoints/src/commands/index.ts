@@ -3,10 +3,12 @@ import { UserCreditsRepository } from "@tf2qs/core";
 import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
+import { GetUserServers } from "@tf2qs/core";
 import { BackgroundTaskQueue } from "@tf2qs/core";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getBalanceCommandDefinition } from "./GetBalance/definition";
 import { createGetBalanceCommandHandlerFactory } from "./GetBalance/handler";
+import { getMyServersCommandDefinition, getMyServersCommandHandlerFactory } from "./GetMyServers";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 import { ConfigManager } from "@tf2qs/core";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
@@ -21,6 +23,7 @@ export type CommandDependencies = {
     setUserData: SetUserData;
     backgroundTaskQueue: BackgroundTaskQueue;
     getServerStatus: GetServerStatus;
+    getUserServers: GetUserServers;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -52,6 +55,13 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: statusCommandDefinition,
             handler: createStatusCommandHandlerFactory({
                 getServerStatus: dependencies.getServerStatus,
+            })
+        },
+        getMyServers: {
+            name: "get-my-servers",
+            definition: getMyServersCommandDefinition,
+            handler: getMyServersCommandHandlerFactory({
+                getUserServers: dependencies.getUserServers,
             })
         },
         ...(dependencies.configManager.getCreditsConfig().enabled ? {

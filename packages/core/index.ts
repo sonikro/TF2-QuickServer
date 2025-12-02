@@ -41,6 +41,7 @@ export * from './src/usecase/DeleteServer';
 export * from './src/usecase/DeleteServerForUser';
 export * from './src/usecase/GenerateMonthlyUsageReport';
 export * from './src/usecase/GetServerStatus';
+export * from './src/usecase/GetUserServers';
 export * from './src/usecase/HandleOrderPaid';
 export * from './src/usecase/SetUserData';
 export * from './src/usecase/TerminateEmptyServers';
