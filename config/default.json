@@ -280,6 +280,30 @@
             "admins": [
                 "STEAM_0:1:40459123"
             ]
+        },
+        "rgl-standard": {
+            "displayName": "RGL Standard",
+            "hostname": "RGL | {region} @ TF2-QuickServer",
+            "image": "sonikro/fat-tf2-standard-competitive-i386:latest",
+            "defaultCfgs": {
+                "pl": "rgl_HL_stopwatch.cfg",
+                "koth": "rgl_6s_koth.cfg",
+                "5cp": "rgl_6s_5cp_match_half1.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
+            },
+            "guildId": "137337002113761281"
+        },
+        "rgl-pro": {
+            "displayName": "RGL PRO",
+            "hostname": "RGL Pro | {region} @ TF2-QuickServer",
+            "image": "sonikro/fat-tf2-standard-competitive-i386:latest",
+            "defaultCfgs": {
+                "pl": "rgl_HL_stopwatch.cfg",
+                "koth": "rgl_6s_koth_pro.cfg",
+                "5cp": "rgl_6s_5cp_match_pro.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
+            },
+            "guildId": "137337002113761281"
         }
     },
     "discord": {
