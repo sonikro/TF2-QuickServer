@@ -254,14 +254,15 @@ USER tf2
 # Copy custom configs and plugins from base variant
 COPY --chown=tf2 variants/base/tf/cfg/* "${SERVER_DIR}/tf/cfg/"
 RUN mkdir -p "${SERVER_DIR}/tf/addons/sourcemod/extensions/x64"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions/x64/* "${SERVER_DIR}/tf/addons/sourcemod/extensions/x64/"
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions-x64/* "${SERVER_DIR}/tf/addons/sourcemod/extensions/x64/"
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/gamedata-x64/* "${SERVER_DIR}/tf/addons/sourcemod/gamedata/"
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins-x64/* "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/* "${SERVER_DIR}/tf/addons/sourcemod/configs/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/x64/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/translations/* "${SERVER_DIR}/tf/addons/sourcemod/translations/"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/gamedata/* "${SERVER_DIR}/tf/addons/sourcemod/gamedata/"
+
 # Copy maps
 COPY --chown=tf2 maps/ "${SERVER_DIR}/tf/maps/"
 

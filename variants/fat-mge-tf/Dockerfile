@@ -148,7 +148,7 @@ COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/*.smx "${SERVER_DIR}/
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/translations/* "${SERVER_DIR}/tf/addons/sourcemod/translations/"
-COPY --chown=tf2 variants/base/tf/addons/sourcemod/gamedata/* "${SERVER_DIR}/tf/addons/sourcemod/gamedata/"
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions/* "${SERVER_DIR}/tf/addons/sourcemod/extensions/"
 # Copy specific MGE settings
 COPY --chown=tf2 variants/fat-mge-tf/tf/addons/sourcemod/configs/* "${SERVER_DIR}/tf/addons/sourcemod/configs/"
 COPY --chown=tf2 variants/fat-mge-tf/tf/cfg/* "${SERVER_DIR}/tf/cfg/"
