@@ -106,6 +106,7 @@ describe("MonthlyUsageReportRoutine", () => {
 * 🇦🇷 Buenos Aires: **$0.00**
 * 🇧🇷 São Paulo: **$0.00**
 * 🇨🇱 Santiago: **100.00 USD**
+* 🇨🇴 Bogotá: **$0.00**
 * 🇩🇪 Frankfurt: **$0.00**
 * 🇺🇸 Chicago: **$0.00**
 * 🇵🇪 Lima: **$0.00**

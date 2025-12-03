@@ -37,6 +37,7 @@ See <#1365408843676520508> to help!`;
       { id: 'us-east-1-bue-1', emoji: '🇦🇷', name: 'Buenos Aires' },
       { id: 'sa-saopaulo-1', emoji: '🇧🇷', name: 'São Paulo' },
       { id: 'sa-santiago-1', emoji: '🇨🇱', name: 'Santiago' },
+      { id: 'sa-bogota-1', emoji: '🇨🇴', name: 'Bogotá' },
       { id: 'eu-frankfurt-1', emoji: '🇩🇪', name: 'Frankfurt' },
       { id: 'us-chicago-1', emoji: '🇺🇸', name: 'Chicago' },
       { id: 'us-east-1-lim-1', emoji: '🇵🇪', name: 'Lima' },
