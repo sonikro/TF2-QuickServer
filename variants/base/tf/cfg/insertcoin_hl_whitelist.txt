@@ -1,0 +1,266 @@
+// Whitelist generated at Wed, 03 Dec 2025 17:52:09 +0100
+// Custom Whitelist ID: 18587
+
+// Share or view this whitelist:
+//	https://whitelist.tf/18587
+
+// New items added to the game are: allowed
+// Hats are: allowed
+// Miscs are: allowed
+// Pyrovision is: allowed
+// Noisemakers are: NOT allowed
+// Restricted noisemakers are: NOT allowed
+// Halloween/Full Moon items are: allowed
+// Noise making miscs are: allowed
+// Explosion on death miscs are: allowed
+// Festive weapon reskins are: allowed
+// Botkiller weapon reskins are: allowed
+
+// Blocked weapons for Multiple classes
+// - Secondary
+//  * B.A.S.E. Jumper
+
+// Blocked weapons for Scout
+// - Primary
+//  * Soda Popper
+// - Secondary
+//  * Crit-a-Cola
+//  * Mad Milk
+
+// Blocked weapons for Soldier
+// - Primary
+//  * Cow Mangler 5000
+//  * Rocket Jumper
+
+// Blocked weapons for Pyro
+// - Secondary
+//  * Gas Passer
+//  * Scorch Shot
+//  * Thermal Thruster
+
+// Blocked weapons for Demoman
+// - Primary
+//  * Loch-n-Load
+// - Secondary
+//  * Quickiebomb Launcher
+//  * Sticky Jumper
+// - Melee
+//  * Ullapool Caber
+
+// Blocked weapons for Heavy
+// - Primary
+//  * Natascha
+// - Secondary
+//  * Family Business
+
+// Blocked weapons for Engineer
+// - Secondary
+//  * Short Circuit
+
+// Blocked weapons for Medic
+// - Secondary
+//  * Vaccinator
+// - Melee
+//  * Vita-Saw
+
+// Blocked weapons for Sniper
+// - Primary
+//  * Classic
+//  * Machina
+// - Secondary
+//  * Darwin's Danger Shield
+//  * Jarate
+
+// Blocked weapons for Spy
+// - Secondary
+//  * Diamondback
+
+"item_whitelist"
+{
+	"unlisted_items_default_to"		"1"
+
+	//------------- Blocked weapons/reskins (Total: 28) -------------\\
+	//______________________ Multiple classes _______________________\\
+	"The B.A.S.E. Jumper"						"0"
+	//____________________________ Scout ____________________________\\
+	"Crit-a-Cola"							"0"
+	"Mad Milk"							"0"
+	"Mutated Milk"							"0"
+	"The Soda Popper"						"0"
+	//___________________________ Soldier ___________________________\\
+	"Rocket Jumper"							"0"
+	"The Cow Mangler 5000"						"0"
+	//____________________________ Pyro _____________________________\\
+	"The Gas Passer"						"0"
+	"The Scorch Shot"						"0"
+	"The Thermal Thruster"						"0"
+	//___________________________ Demoman ___________________________\\
+	"Stickybomb Jumper"						"0"
+	"The Loch-n-Load"						"0"
+	"The Quickiebomb Launcher"					"0"
+	"The Ullapool Caber"						"0"
+	//____________________________ Heavy ____________________________\\
+	"Deflector"							"0"
+	"Natascha"							"0"
+	"The Family Business"						"0"
+	//__________________________ Engineer ___________________________\\
+	"The Short Circuit"						"0"
+	//____________________________ Medic ____________________________\\
+	"The Vaccinator"						"0"
+	"The Vita-Saw"							"0"
+	//___________________________ Sniper ____________________________\\
+	"Darwin's Danger Shield"					"0"
+	"Festive Jarate"						"0"
+	"Jarate"							"0"
+	"Shooting Star"							"0"
+	"The Classic"							"0"
+	"The Machina"							"0"
+	"The Self-Aware Beauty Mark"					"0"
+	//_____________________________ Spy _____________________________\\
+	"The Diamondback"						"0"
+
+	//------------- ConTrabanned ConTracker (Total: 1) --------------\\
+	//_________________________ All classes _________________________\\
+	"Activated Campaign 3 Pass"					"0"
+
+	//------------------- Noisemakers (Total: 14) -------------------\\
+	"Charity Noise Maker - Bell"					"0"
+	"Charity Noise Maker - Tingsha"					"0"
+	"Halloween Noise Maker - Banshee"				"0"
+	"Halloween Noise Maker - Black Cat"				"0"
+	"Halloween Noise Maker - Crazy Laugh"				"0"
+	"Halloween Noise Maker - Gremlin"				"0"
+	"Halloween Noise Maker - Stabby"				"0"
+	"Halloween Noise Maker - Werewolf"				"0"
+	"Halloween Noise Maker - Witch"					"0"
+	"Noise Maker - TF Birthday"					"0"
+	"Noise Maker - Vuvuzela"					"0"
+	"Noise Maker - Winter 2011"					"0"
+	"Promotional Noise Maker - Fireworks"				"0"
+	"Promotional Noise Maker - Koto"				"0"
+
+	//--------------------- Taunts (Total: 113) ---------------------\\
+	//_________________________ All classes _________________________\\
+	"Conga Taunt"							"0"
+	"Flippin' Awesome Taunt"					"0"
+	"High Five Taunt"						"0"
+	"Laugh Taunt"							"0"
+	"Replay Taunt"							"0"
+	"RPS Taunt"							"0"
+	"Skullcracker Taunt"						"0"
+	"Square Dance Taunt"						"0"
+	"Taunt: Burstchester"						"0"
+	"Taunt: Cheers!"						"0"
+	"Taunt: Commending Clap"					"0"
+	"Taunt: Flying Colors"						"0"
+	"Taunt: Kazotsky Kick"						"0"
+	"Taunt: Killer Joke"						"0"
+	"Taunt: Mannrobics"						"0"
+	"Taunt: Mourning Mercs"						"0"
+	"Taunt: Peace!"							"0"
+	"Taunt: Second Rate Sorcery"					"0"
+	"Taunt: The Final Score"					"0"
+	"Taunt: The Fist Bump"						"0"
+	"Taunt: The Scaredy-cat!"					"0"
+	"Taunt: The Victory Lap"					"0"
+	"Taunt: Unleashed Rage"						"0"
+	"Taunt: Yeti Punch"						"0"
+	"Taunt: Yeti Smash"						"0"
+	"Taunt: Zoomin' Broom"						"0"
+	"The Shred Alert"						"0"
+	//____________________________ Scout ____________________________\\
+	"Battin' a Thousand Taunt"					"0"
+	"Deep Fried Desire Taunt"					"0"
+	"Taunt: Foul Play"						"0"
+	"Taunt: Healthcare Hog"						"0"
+	"Taunt: Peace Out"						"0"
+	"Taunt: Runner's Rhythm"					"0"
+	"Taunt: Spin-to-Win"						"0"
+	"Taunt: The Boston Boarder"					"0"
+	"Taunt: The Boston Breakdance"					"0"
+	"Taunt: The Bunnyhopper"					"0"
+	"Taunt: The Carlton"						"0"
+	"Taunt: The Homerunner's Hobby"					"0"
+	"Taunt: The Killer Signature"					"0"
+	"Taunt: The Scooty Scoot"					"0"
+	"Taunt: The Trackman's Touchdown"				"0"
+	//___________________________ Soldier ___________________________\\
+	"Fresh Brewed Victory Taunt"					"0"
+	"Taunt: Can It!"						"0"
+	"Taunt: Neck Snap"						"0"
+	"Taunt: Panzer Pants"						"0"
+	"Taunt: Rocket Jockey"						"0"
+	"Taunt: Soldier's Requiem"					"0"
+	"Taunt: Star-Spangled Strategy"					"0"
+	"Taunt: The Fubar Fanfare"					"0"
+	"Taunt: The Profane Puppeteer"					"0"
+	//____________________________ Pyro _____________________________\\
+	"Party Trick Taunt"						"0"
+	"Pool Party Taunt"						"0"
+	"Taunt: Cremator's Condolences"					"0"
+	"Taunt: Roasty Toasty"						"0"
+	"Taunt: Scorcher's Solo"					"0"
+	"Taunt: The Balloonibouncer"					"0"
+	"Taunt: The Headcase"						"0"
+	"Taunt: The Hot Wheeler"					"0"
+	"Taunt: The Skating Scorcher"					"0"
+	//___________________________ Demoman ___________________________\\
+	"Oblooterated Taunt"						"0"
+	"Spent Well Spirits Taunt"					"0"
+	"Taunt: Drunk Mann's Cannon"					"0"
+	"Taunt: Fore-Head Slice"					"0"
+	"Taunt: Roar O'War"						"0"
+	"Taunt: Scotsmann's Stagger"					"0"
+	"Taunt: Shanty Shipmate"					"0"
+	"Taunt: The Drunken Sailor"					"0"
+	"Taunt: The Pooped Deck"					"0"
+	"Taunt: True Scotsman's Call"					"0"
+	//____________________________ Heavy ____________________________\\
+	"Taunt: Bare Knuckle Beatdown"					"0"
+	"Taunt: Bear Hug"						"0"
+	"Taunt: Crushing Defeat"					"0"
+	"Taunt: Ring King"						"0"
+	"Taunt: Russian Rubdown"					"0"
+	"Taunt: The Boiling Point"					"0"
+	"Taunt: The Proletariat Showoff"				"0"
+	"Taunt: The Road Rager"						"0"
+	"Taunt: The Russian Arms Race"					"0"
+	"Taunt: The Soviet Strongarm"					"0"
+	"Taunt: The Table Tantrum"					"0"
+	//__________________________ Engineer ___________________________\\
+	"Rancho Relaxo Taunt"						"0"
+	"Taunt: Bucking Bronco"						"0"
+	"Taunt: Texan Trickshot"					"0"
+	"Taunt: Texas Truckin"						"0"
+	"Taunt: Texas Twirl 'Em"					"0"
+	"Taunt: The Dueling Banjo"					"0"
+	"Taunt: The Jumping Jack"					"0"
+	//____________________________ Medic ____________________________\\
+	"Meet the Medic Heroic Taunt"					"0"
+	"Results Are In Taunt"						"0"
+	"Taunt: Borrowed Bones"						"0"
+	"Taunt: Doctor's Defibrillators"				"0"
+	"Taunt: Heartbreaker"						"0"
+	"Taunt: Surgeon's Squeezebox"					"0"
+	"Taunt: The Head Doctor"					"0"
+	"Taunt: The Mannbulance!"					"0"
+	"Taunt: Time Out Therapy"					"0"
+	//___________________________ Sniper ____________________________\\
+	"I See You Taunt"						"0"
+	"Taunt: Didgeridrongo"						"0"
+	"Taunt: Most Wanted"						"0"
+	"Taunt: Shooter's Stakeout"					"0"
+	"Taunt: Straight Shooter Tutor"					"0"
+	"Taunt: The Killer Solo"					"0"
+	//_____________________________ Spy _____________________________\\
+	"Buy A Life Taunt"						"0"
+	"Taunt: Curtain Call"						"0"
+	"Taunt: Disco Fever"						"0"
+	"Taunt: Luxury Lounge"						"0"
+	"Taunt: Tailored Terminal"					"0"
+	"Taunt: The Boxtrot"						"0"
+	"Taunt: The Crypt Creeper"					"0"
+	"Taunt: The Punchline"						"0"
+	"Taunt: The Travel Agent"					"0"
+	"Taunt: Tuefort Tango"						"0"
+}

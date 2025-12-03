@@ -147,7 +147,7 @@
             "defaultCfgs": {
                 "pl": "bf_hl_stopwatch.cfg",
                 "5cp": "bf_hl_5cp.cfg",
-                "koth": "bf_hl_koth.cfg",
+                "koth": "insertcoin_hl_koth.cfg",
                 "cp_steel_f12": "bf_hl_stopwatch.cfg"
             },
             "admins": [
