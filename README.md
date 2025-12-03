@@ -1,5 +1,6 @@
-
 # 🎮 TF2-QuickServer
+
+> Looking for a simpler way to create TF2 servers on Oracle Cloud? Check out the [Terraform Module](https://github.com/sonikro/terraform-oracle-tf2-server) — it provides an easy way to spin up servers without the Discord bot complexity.
 
 [![Read the Wiki – How to Use TF2-QuickServer](https://img.shields.io/badge/Wiki-How%20to%20Use%20TF2--QuickServer-blueviolet?style=for-the-badge&logo=github)](https://github.com/sonikro/TF2-QuickServer/wiki)
 
