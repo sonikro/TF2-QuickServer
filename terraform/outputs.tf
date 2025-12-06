@@ -274,6 +274,20 @@ output "fastdl_url" {
 }
 
 # ===========================================
+# BACKUP OUTPUTS
+# ===========================================
+
+output "backup_bucket_name" {
+  description = "Name of the S3 bucket for backups"
+  value       = module.aws-backup-us-east-1.bucket_name
+}
+
+output "backup_bucket_arn" {
+  description = "ARN of the S3 bucket for backups"
+  value       = module.aws-backup-us-east-1.bucket_arn
+}
+
+# ===========================================
 # API GATEWAY OUTPUTS
 # ===========================================
 
