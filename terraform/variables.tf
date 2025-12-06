@@ -49,6 +49,17 @@ variable "fastdl_acm_certificate_arn" {
   type        = string
 }
 
+variable "backup_bucket_name" {
+  description = "Name of the S3 bucket for backups"
+  type        = string
+}
+
+variable "backup_retention_days" {
+  description = "Number of days to retain backups before deletion"
+  type        = number
+  default     = 7
+}
+
 # ===========================================
 # API GATEWAY VARIABLES
 # ===========================================

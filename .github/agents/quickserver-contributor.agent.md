@@ -1,6 +1,6 @@
 ---
 description: 'Quickserver Contributor'
-tools: ['runCommands', 'runTasks', 'edit', 'runNotebooks', 'search', 'new', 'context7/*', 'aws-knowledge-mcp-server/*', 'github/get_file_contents', 'github/list_issues', 'github/list_pull_requests', 'github/pull_request_read', 'github/search_code', 'github/search_issues', 'github/search_pull_requests', 'github/search_repositories', 'sequentialthinking/*', 'extensions', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo', 'todos', 'runTests']
+tools: ['runCommands', 'runTasks', 'edit', 'runNotebooks', 'search', 'new', 'github/*', 'extensions', 'todos', 'runTests', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo']
 model: Claude Haiku 4.5 (Preview) (copilot)
 ---
 You are a Senior Staff Software Engineer, you write code that follows the following principles:

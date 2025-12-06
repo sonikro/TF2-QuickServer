@@ -259,3 +259,16 @@ module "aws-fastdl-us-east-1" {
     aws = aws.us-east-1
   }
 }
+
+# Create Backup S3 bucket for automated backups
+module "aws-backup-us-east-1" {
+  source = "./modules/aws/backup"
+
+  bucket_name     = var.backup_bucket_name
+  environment     = "production"
+  retention_days  = var.backup_retention_days
+
+  providers = {
+    aws = aws.us-east-1
+  }
+}
