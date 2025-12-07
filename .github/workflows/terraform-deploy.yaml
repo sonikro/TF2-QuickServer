@@ -1,0 +1,109 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - terraform/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - terraform/**
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+env:
+  AWS_REGION: us-east-1
+  TERRAGRUNT_WORKING_DIR: terraform
+  tg_version: 0.93.13
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terragrunt Format Check
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: ${{ env.tg_version }}
+          tf_path: terraform
+          tg_dir: terraform
+          tg_command: hcl fmt --check --diff
+
+      - name: Terragrunt Validate
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: ${{ env.tg_version }}
+          tf_path: terraform
+          tg_dir: terraform
+          tg_command: run-all validate
+
+      - name: Terragrunt Plan
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: ${{ env.tg_version }}
+          tf_path: terraform
+          tg_dir: terraform
+          tg_command: run-all plan
+          tg_comment: 1
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          TF_VAR_compartment_ocid: ${{ secrets.TF_VAR_COMPARTMENT_OCID }}
+          TF_VAR_santiago_compartment_ocid: ${{ secrets.TF_VAR_SANTIAGO_COMPARTMENT_OCID }}
+          TF_VAR_docker_username: ${{ secrets.TF_VAR_DOCKER_USERNAME }}
+          TF_VAR_docker_password: ${{ secrets.TF_VAR_DOCKER_PASSWORD }}
+          TF_VAR_fastdl_bucket_name: ${{ secrets.TF_VAR_FASTDL_BUCKET_NAME }}
+          TF_VAR_route53_hosted_zone_id: ${{ secrets.TF_VAR_ROUTE53_HOSTED_ZONE_ID }}
+          TF_VAR_fastdl_acm_certificate_arn: ${{ secrets.TF_VAR_FASTDL_ACM_CERTIFICATE_ARN }}
+          TF_VAR_backend_api_endpoint: ${{ secrets.TF_VAR_BACKEND_API_ENDPOINT }}
+          TF_VAR_api_gateway_domain_name: ${{ secrets.TF_VAR_API_GATEWAY_DOMAIN_NAME }}
+          TF_VAR_api_gateway_acm_certificate_arn: ${{ secrets.TF_VAR_API_GATEWAY_ACM_CERTIFICATE_ARN }}
+          TF_VAR_backup_bucket_name: ${{ secrets.TF_VAR_BACKUP_BUCKET_NAME }}
+          TF_VAR_backup_retention_days: ${{ secrets.TF_VAR_BACKUP_RETENTION_DAYS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terragrunt Apply
+        uses: gruntwork-io/terragrunt-action@v3
+        with:
+          tg_version: ${{ env.tg_version }}
+          tf_path: terraform
+          tg_dir: terraform
+          tg_command: run-all apply
+        env:
+          TF_VAR_compartment_ocid: ${{ secrets.TF_VAR_COMPARTMENT_OCID }}
+          TF_VAR_santiago_compartment_ocid: ${{ secrets.TF_VAR_SANTIAGO_COMPARTMENT_OCID }}
+          TF_VAR_docker_username: ${{ secrets.TF_VAR_DOCKER_USERNAME }}
+          TF_VAR_docker_password: ${{ secrets.TF_VAR_DOCKER_PASSWORD }}
+          TF_VAR_fastdl_bucket_name: ${{ secrets.TF_VAR_FASTDL_BUCKET_NAME }}
+          TF_VAR_route53_hosted_zone_id: ${{ secrets.TF_VAR_ROUTE53_HOSTED_ZONE_ID }}
+          TF_VAR_fastdl_acm_certificate_arn: ${{ secrets.TF_VAR_FASTDL_ACM_CERTIFICATE_ARN }}
+          TF_VAR_backend_api_endpoint: ${{ secrets.TF_VAR_BACKEND_API_ENDPOINT }}
+          TF_VAR_api_gateway_domain_name: ${{ secrets.TF_VAR_API_GATEWAY_DOMAIN_NAME }}
+          TF_VAR_api_gateway_acm_certificate_arn: ${{ secrets.TF_VAR_API_GATEWAY_ACM_CERTIFICATE_ARN }}
+          TF_VAR_backup_bucket_name: ${{ secrets.TF_VAR_BACKUP_BUCKET_NAME }}
+          TF_VAR_backup_retention_days: ${{ secrets.TF_VAR_BACKUP_RETENTION_DAYS }}

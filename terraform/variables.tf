@@ -5,11 +5,13 @@
 variable "compartment_ocid" {
   description = "The OCID of the compartment"
   type        = string
+  sensitive   = true
 }
 
 variable "santiago_compartment_ocid" {
   description = "The OCID of the Santiago compartment"
   type        = string
+  sensitive   = true
 }
 
 variable "docker_username" {
@@ -31,6 +33,7 @@ variable "docker_password" {
 variable "fastdl_bucket_name" {
   description = "Name of the S3 bucket for FastDL"
   type        = string
+  sensitive   = true
 }
 
 variable "fastdl_domain_name" {
@@ -42,16 +45,19 @@ variable "fastdl_domain_name" {
 variable "route53_hosted_zone_id" {
   description = "Route53 hosted zone ID for sonikro.com domain"
   type        = string
+  sensitive   = true
 }
 
 variable "fastdl_acm_certificate_arn" {
   description = "ARN of the ACM certificate for FastDL HTTPS (must be in us-east-1)"
   type        = string
+  sensitive   = true
 }
 
 variable "backup_bucket_name" {
   description = "Name of the S3 bucket for backups"
   type        = string
+  sensitive   = true
 }
 
 variable "backup_retention_days" {
@@ -73,9 +79,11 @@ variable "backend_api_endpoint" {
 variable "api_gateway_domain_name" {
   description = "Custom domain name for the API Gateway"
   type        = string
+  sensitive   = true
 }
 
 variable "api_gateway_acm_certificate_arn" {
   description = "ARN of the ACM certificate for API Gateway HTTPS (must be in us-east-1)"
   type        = string
+  sensitive   = true
 }

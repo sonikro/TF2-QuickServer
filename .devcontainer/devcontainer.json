@@ -7,7 +7,14 @@
 
 	// Fix cmake symlink issue from devcontainers-extra/features/cmake feature
 	// The feature incorrectly symlinks to the bash completion file instead of the binary
-	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake"
+	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"4ops.terraform"
+			]
+		}
+	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
