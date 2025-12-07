@@ -16,7 +16,7 @@ import { Chance } from "chance";
 const chance = new Chance();
 
 const serverCreationDurationHistogram = meter.createHistogram('server_creation_duration_seconds', {
-  description: 'Duration to create a server (seconds)',
+    description: 'Duration to create a server (seconds)',
 });
 
 export class OCIServerManager implements ServerManager {
@@ -113,10 +113,10 @@ export class OCIServerManager implements ServerManager {
 
                 // Extract first UUID block (before first hyphen) for hostname prefix
                 const uuidPrefix = serverId.split('-')[0];
-                
+
                 const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
                 const finalHostname = `#${uuidPrefix} ${hostname}`;
-                
+
                 const environmentVariables: Record<string, string> = {
                     SERVER_HOSTNAME: finalHostname,
                     SERVER_PASSWORD: serverPassword,
@@ -178,6 +178,12 @@ export class OCIServerManager implements ServerManager {
                                         logSecret.toString(),
                                     ],
                                     environmentVariables,
+                                    securityContext: {
+                                        securityContextType: "LINUX",
+                                        capabilities: {
+                                            addCapabilities: [containerinstances.models.ContainerCapabilities.AddCapabilities.All],
+                                        }
+                                    }
                                 },
                                 {
                                     displayName: "shield",
@@ -354,7 +360,7 @@ export class OCIServerManager implements ServerManager {
                 const { ociClientFactory } = this.dependencies;
                 const { region, serverId } = args;
                 logger.emit({ severityText: 'INFO', body: `Starting server deletion for server ID: ${serverId}`, attributes: { serverId } });
-                
+
                 const { containerClient, vncClient } = ociClientFactory(region);
                 const oracleConfig = this.dependencies.configManager.getOracleConfig();
                 const oracleRegionConfig = oracleConfig.regions[region];
@@ -384,12 +390,12 @@ export class OCIServerManager implements ServerManager {
                 if (nsgs.items && nsgs.items.length > 0) {
                     nsgId = nsgs.items[0].id;
                 }
-                
+
                 logger.emit({ severityText: 'INFO', body: `Deleting container instance for server ID: ${serverId}`, attributes: { serverId } });
                 await containerClient.deleteContainerInstance({
                     containerInstanceId,
                 });
-                
+
                 // Wait for the NSG to have no VNICs associated before deleting it
                 if (nsgId) {
                     logger.emit({ severityText: 'INFO', body: `Deleting network security group for server ID: ${serverId}`, attributes: { serverId } });
@@ -402,7 +408,7 @@ export class OCIServerManager implements ServerManager {
                     }, { interval: 5000, timeout: 300000 });
                     await this.deleteNetworkSecurityGroup({ nsgId, vncClient });
                 }
-                
+
                 logger.emit({ severityText: 'INFO', body: `Server deletion completed successfully for server ID: ${serverId}`, attributes: { serverId } });
                 parentSpan.end();
             } catch (err) {
