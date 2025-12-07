@@ -1,0 +1,36 @@
+# variables.auto.pkrvars.hcl.example
+# Example Packer variables for all Oracle regions
+# Copy this file to variables.auto.pkrvars.hcl and fill in your actual values
+
+# Image version
+image_version = "v1.0.0"
+
+# Chicago (us-chicago-1)
+chicago_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+chicago_subnet_ocid         = "ocid1.subnet.oc1.us-chicago-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+chicago_availability_domain = "QmgQ:US-CHICAGO-1-AD-1"
+
+# São Paulo (sa-saopaulo-1)
+sao_paulo_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sao_paulo_subnet_ocid         = "ocid1.subnet.oc1.sa-saopaulo-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sao_paulo_availability_domain = "QmgQ:SA-SAOPAULO-1-AD-1"
+
+# Bogotá (sa-bogota-1)
+bogota_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+bogota_subnet_ocid         = "ocid1.subnet.oc1.sa-bogota-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+bogota_availability_domain = "QmgQ:SA-BOGOTA-1-AD-1"
+
+# Santiago (sa-santiago-1)
+santiago_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+santiago_subnet_ocid         = "ocid1.subnet.oc1.sa-santiago-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+santiago_availability_domain = "ffHR:SA-SANTIAGO-1-AD-1"
+
+# Frankfurt (eu-frankfurt-1)
+frankfurt_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+frankfurt_subnet_ocid         = "ocid1.subnet.oc1.eu-frankfurt-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+frankfurt_availability_domain = "ffHR:EU-FRANKFURT-1-AD-1"
+
+# Sydney (ap-sydney-1)
+sydney_compartment_ocid    = "ocid1.tenancy.oc1..aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sydney_subnet_ocid         = "ocid1.subnet.oc1.ap-sydney-1.aaaaaaaaXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sydney_availability_domain = "ffHR:AP-SYDNEY-1-AD-1"
