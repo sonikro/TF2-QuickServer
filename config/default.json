@@ -59,26 +59,16 @@
     },
     "variants": {
         "default": {
-            "shape": "CI.Standard.E4.Flex",
+            "shape": "VM.Standard.E4.Flex",
             "ocpu": 1,
             "memory": 4,
             "maxPlayers": 24,
             "map": "cp_process_f12",
             "svPure": 2,
-            "image": "sonikro/fat-tf2-standard-competitive-amd64:latest"
+            "image": "sonikro/fat-tf2-standard-competitive-i386:latest"
         },
         "standard-competitive": {
-            "displayName": "Standard Competitive (64-bit)",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp.cfg",
-                "koth": "fbtf_6v6_koth.cfg",
-                "pl": "rgl_HL_stopwatch.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            }
-        },
-        "standard-competitive-i386": {
-            "displayName": "Standard Competitive (32-bit)",
-            "image": "sonikro/fat-tf2-standard-competitive-i386:latest",
+            "displayName": "Standard Competitive",
             "defaultCfgs": {
                 "5cp": "fbtf_6v6_5cp.cfg",
                 "koth": "fbtf_6v6_koth.cfg",
