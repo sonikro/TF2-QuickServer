@@ -1,0 +1,20 @@
+[Unit]
+Description=TF2-QuickServer Docker Compose Startup
+After=docker.service cloud-final.service
+Requires=docker.service
+Wants=cloud-final.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/tf2-quickserver/startup.sh
+StandardOutput=journal
+StandardError=journal
+User=root
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+
+[Install]
+WantedBy=multi-user.target

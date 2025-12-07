@@ -7,7 +7,17 @@
 
 	// Fix cmake symlink issue from devcontainers-extra/features/cmake feature
 	// The feature incorrectly symlinks to the bash completion file instead of the binary
-	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake"
+	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake",
+	"features": {
+		"ghcr.io/devcontainers-extra/features/packer-asdf:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"hashicorp.hcl"
+			]
+		}
+	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
