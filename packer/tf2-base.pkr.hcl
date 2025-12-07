@@ -355,6 +355,11 @@ build {
   provisioner "shell" {
     inline = [
       "echo '==> Cleaning up...'",
+      "echo 'Waiting for any remaining apt locks...'",
+      "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do",
+      "  echo 'Waiting for apt locks...'",
+      "  sleep 5",
+      "done",
       "sudo apt-get clean",
       "sudo apt-get autoremove -y",
       "sudo rm -rf /var/lib/apt/lists/*",
