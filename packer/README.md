@@ -36,6 +36,31 @@ packer build .
 
 The image will be named `tf2-quickserver-vm` in your OCI compartment.
 
+### Cleaning Up Old Images
+
+Over time, multiple `tf2-quickserver-vm` images will accumulate in your OCI compartments. Use the cleanup script to remove old images and keep only the latest one in each region:
+
+```bash
+cd packages/scripts
+yarn run cleanup:oracle:images
+```
+
+To preview what will be deleted without actually removing anything, use the dry-run flag:
+
+```bash
+yarn run cleanup:oracle:images -d
+# or
+yarn run cleanup:oracle:images --dry-run
+```
+
+The script will:
+1. Scan all configured Oracle regions
+2. List all `tf2-quickserver-vm` images in each region
+3. Keep the most recent image in each region
+4. Delete all older images (unless running in dry-run mode)
+
+**Note:** Ensure `OCI_CONFIG_FILE` environment variable is set before running the cleanup script.
+
 ### Launching a VM with Cloud-Init
 
 When creating a VM instance from this image, pass a cloud-init script that writes the docker-compose.yml file:

@@ -1,8 +1,7 @@
 [Unit]
 Description=TF2-QuickServer Docker Compose Startup
-After=docker.service cloud-final.service
+After=docker.service
 Requires=docker.service
-Wants=cloud-final.service
 
 [Service]
 Type=oneshot
