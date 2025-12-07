@@ -3,7 +3,8 @@
 # ===========================================
 
 output "compartment_id" {
-  value = var.compartment_ocid
+  value     = var.compartment_ocid
+  sensitive = true
 }
 
 # São Paulo Region
@@ -79,7 +80,8 @@ output "santiago_nsg_id" {
   value = module.oci-network-sa-santiago-1.nsg_id
 }
 output "santiago_compartment_id" {
-  value = var.santiago_compartment_ocid
+  value     = var.santiago_compartment_ocid
+  sensitive = true
 }
 output "santiago_vnc_id" {
   value = module.oci-network-sa-santiago-1.vnc_id
@@ -91,7 +93,8 @@ output "santiago_secret_id" {
 
 # Frankfurt Region
 output "frankfurt_compartment_id" {
-  value = var.santiago_compartment_ocid
+  value     = var.santiago_compartment_ocid
+  sensitive = true
 }
 output "frankfurt_subnet_id" {
   value = module.oci-network-eu-frankfurt-1.subnet_id
@@ -112,7 +115,8 @@ output "frankfurt_secret_id" {
 
 # Sydney Region
 output "sydney_compartment_id" {
-  value = var.santiago_compartment_ocid
+  value     = var.santiago_compartment_ocid
+  sensitive = true
 }
 output "sydney_subnet_id" {
   value = module.oci-network-ap-sydney-1.subnet_id
@@ -299,6 +303,7 @@ output "api_gateway_endpoint" {
 output "api_gateway_custom_domain" {
   description = "Custom domain name for the API Gateway"
   value       = aws_apigatewayv2_domain_name.api_domain.domain_name
+  sensitive = true
 }
 
 output "api_gateway_id" {
