@@ -247,7 +247,7 @@ edicts  : 426 used of 2048 max
 describe("OCIServerManager", () => {
 
   describe("deployServer", () => {
-  
+
     const environment = createTestEnvironment();
     let result: Awaited<ReturnType<typeof environment.sut.deployServer>>;
 
@@ -315,6 +315,12 @@ describe("OCIServerManager", () => {
                 ADMIN_LIST: "default_admin,12345678901234567",
                 SV_LOGSECRET: expect.any(String),
               },
+              securityContext: {
+                securityContextType: "LINUX",
+                capabilities: {
+                  addCapabilities: [containerinstances.models.ContainerCapabilities.AddCapabilities.All],
+                }
+              }
             },
             {
               displayName: "shield",
@@ -347,12 +353,12 @@ describe("OCIServerManager", () => {
           ],
         },
       });
-      });
+    });
 
     it("should include imagePullSecrets with vault configuration", () => {
       const containerInstanceRequest = environment.containerClient.createContainerInstance.mock.calls[0][0];
       const imagePullSecrets = containerInstanceRequest.createContainerInstanceDetails.imagePullSecrets;
-      
+
       expect(imagePullSecrets).toBeDefined();
       expect(imagePullSecrets).toHaveLength(1);
       expect(imagePullSecrets![0]).toEqual({
@@ -394,7 +400,7 @@ describe("OCIServerManager", () => {
           serverId: "test-server-id"
         })
       }));
-      
+
       // Verify all logger calls have serverId
       const loggerCalls = environment.loggerSpy.mock.calls;
       loggerCalls.forEach((call: any) => {
@@ -412,7 +418,7 @@ describe("OCIServerManager", () => {
       const { sut, containerClient, configManager } = createTestEnvironment();
       const statusUpdater = vi.fn();
       const uuidServerId = "abcd1234-5678-9012-3456-789012345678";
-      
+
       await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
@@ -420,10 +426,10 @@ describe("OCIServerManager", () => {
         serverId: uuidServerId,
         statusUpdater,
       });
-      
+
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
-      
+
       expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#abcd1234 Test Server");
     });
 
@@ -432,7 +438,7 @@ describe("OCIServerManager", () => {
       const statusUpdater = vi.fn();
       const uuidServerId = "xyz9876a-bcde-f012-3456-789012345678";
       variantConfig.hostname = "Custom Server | {region} @ TF2-QuickServer";
-      
+
       await sut.deployServer({
         region: testRegion,
         variantName: testVariant,
@@ -440,10 +446,10 @@ describe("OCIServerManager", () => {
         serverId: uuidServerId,
         statusUpdater,
       });
-      
+
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
-      
+
       expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#xyz9876a Custom Server | São Paulo @ TF2-QuickServer");
     });
   })
