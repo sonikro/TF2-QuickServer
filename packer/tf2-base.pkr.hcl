@@ -152,7 +152,7 @@ source "oracle-oci" "chicago" {
   subnet_ocid             = var.chicago_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
@@ -173,7 +173,7 @@ source "oracle-oci" "sao_paulo" {
   subnet_ocid             = var.sao_paulo_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
@@ -194,7 +194,7 @@ source "oracle-oci" "bogota" {
   subnet_ocid             = var.bogota_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
@@ -215,7 +215,7 @@ source "oracle-oci" "santiago" {
   subnet_ocid             = var.santiago_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
@@ -236,7 +236,7 @@ source "oracle-oci" "frankfurt" {
   subnet_ocid             = var.frankfurt_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
@@ -257,7 +257,7 @@ source "oracle-oci" "sydney" {
   subnet_ocid             = var.sydney_subnet_ocid
   
   base_image_filter {
-    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-2025"
+    display_name_search = "^Canonical-Ubuntu-22.04-Minimal-"
   }
   
   shape = local.build_shape
