@@ -288,13 +288,23 @@ build {
   # PROVISIONING STEPS
   # ===========================================
   
-  # Step 1: Wait for apt locks to be released (from cloud-init/unattended-upgrades)
+  # Step 1: Wait for cloud-init and disable unattended-upgrades
   provisioner "shell" {
     inline = [
+      "echo 'Waiting for cloud-init to complete...'",
+      "cloud-init status --wait || true",
+      "echo 'Disabling unattended-upgrades...'",
+      "sudo systemctl stop unattended-upgrades || true",
+      "sudo systemctl disable unattended-upgrades || true",
+      "sudo systemctl mask unattended-upgrades || true",
+      "sudo pkill -9 -f unattended-upgrade || true",
       "echo 'Waiting for apt locks to be released...'",
-      "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do echo 'Waiting for dpkg lock...'; sleep 2; done",
-      "while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1; do echo 'Waiting for apt lists lock...'; sleep 2; done",
-      "while sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do echo 'Waiting for apt cache lock...'; sleep 2; done",
+      "while sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 || sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 || sudo fuser /var/cache/apt/archives/lock >/dev/null 2>&1; do",
+      "  echo 'Waiting for apt locks... (checking all locks)'",
+      "  sleep 5",
+      "done",
+      "echo 'Waiting an additional 10 seconds for any pending apt operations...'",
+      "sleep 10",
       "echo 'All apt locks released, ready to provision'"
     ]
   }
