@@ -3,11 +3,11 @@ import { getRegionConfig, Region } from '@tf2qs/core';
 
 /**
  * Factory function to create OCI Clients for a given region.
- * Creates containerClient and vncClient for the specified region.
+ * Creates containerClient, vncClient, and computeClient for the specified region.
  * Creates usageClient in the home region since the Usage API is tenancy-wide and must be called from home region.
  * 
  * @param region - The OCI region to connect to.
- * @returns An object containing containerClient, vncClient for the region, and usageClient in home region.
+ * @returns An object containing containerClient, vncClient, computeClient for the region, and usageClient in home region.
  */
 export function defaultOracleServiceFactory(region: Region) {
     const regionConfig = getRegionConfig(region);
@@ -18,6 +18,7 @@ export function defaultOracleServiceFactory(region: Region) {
     
     const containerClient = new oci.containerinstances.ContainerInstanceClient({ authenticationDetailsProvider: provider });
     const vncClient = new oci.core.VirtualNetworkClient({ authenticationDetailsProvider: provider });
+    const computeClient = new oci.core.ComputeClient({ authenticationDetailsProvider: provider });
     
     const homeProvider = new oci.common.ConfigFileAuthenticationDetailsProvider(process.env.OCI_CONFIG_FILE!, homeRegion)
     homeProvider.setRegion(homeRegion);
@@ -26,6 +27,7 @@ export function defaultOracleServiceFactory(region: Region) {
     return {
         containerClient,
         vncClient,
+        computeClient,
         usageClient
     }
 }

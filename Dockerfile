@@ -8,6 +8,7 @@ COPY packages/core/package*.json ./packages/core/
 COPY packages/entrypoints/package*.json ./packages/entrypoints/
 COPY packages/providers/package*.json ./packages/providers/
 COPY packages/telemetry/package*.json ./packages/telemetry/
+COPY packages/scripts/package*.json ./packages/scripts/
 
 RUN apt-get update -y && apt-get install -y cmake
 RUN npm install
