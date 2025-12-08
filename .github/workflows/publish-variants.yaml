@@ -11,6 +11,7 @@ on:
       - "maps.json"
       - "maps/**"
       - "tf2version.txt"
+      - "packer/**"
   pull_request:
     branches:
       - main
@@ -57,12 +58,72 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-  publish-release-notes:
+  build-packer-images:
     runs-on: ubuntu-latest
     needs:
       - build-fat-tf2-standard-competitive-i386
-      - build-fat-tf2-standard-competitive-amd64
       - build-fat-mge-tf
+      - build-fat-tf2-pickup
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      OCI_CONFIG_FILE: ~/.oci/config
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+
+      - name: Configure OCI credentials and Packer variables
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_CONFIG_FILE }}" > ~/.oci/config
+          echo "${{ secrets.OCI_PEM }}" > ~/.oci/oci.pem
+          chmod 600 ~/.oci/config ~/.oci/oci.pem
+          echo "${{ secrets.PACKER_VARIABLES }}" > ./packer/variables.auto.pkrvars.hcl
+
+      - name: Build all regions in parallel
+        working-directory: ./packer
+        run: |
+          packer init .
+          packer build -parallel-builds=6 .
+
+  cleanup-oracle-images:
+    runs-on: ubuntu-latest
+    needs:
+      - build-packer-images
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      OCI_CONFIG_FILE: ~/.oci/config
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: './.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure OCI credentials
+        run: |
+          mkdir -p ~/.oci
+          echo "${{ secrets.OCI_CONFIG_FILE }}" > ~/.oci/config
+          echo "${{ secrets.OCI_PEM }}" > ~/.oci/oci.pem
+          chmod 600 ~/.oci/config ~/.oci/oci.pem
+
+      - name: Run cleanup script
+        working-directory: ./packages/scripts
+        run: |
+          npm run cleanup:oracle:images
+
+  publish-release-notes:
+    runs-on: ubuntu-latest
+    needs:
+      - build-packer-images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository
@@ -82,12 +143,7 @@ jobs:
           args: |
             🚀 **TF2-QuickServer Release**
             
-            New variant images have been published to Docker Hub
-            
-            **Published Images:**
-            • sonikro/fat-tf2-standard-competitive-i386:latest
-            • sonikro/fat-tf2-standard-competitive-amd64:latest
-            • sonikro/fat-mge-tf:latest
+            New variant images have been published to Docker Hub and VM images built for all regions
             
             **Latest Commit:**
             `${{ steps.commit.outputs.message }}`
