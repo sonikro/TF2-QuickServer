@@ -203,6 +203,8 @@ export class OracleVMManager implements ServerManager {
                     region: region,
                     variant: variantName,
                 });
+
+                logger.emit({ severityText: 'INFO', body: `Server creation took ${durationSeconds.toFixed(2)} seconds for server ID: ${serverId}`, attributes: { serverId, durationSeconds } });
                 return {
                     serverId,
                     region,

@@ -6,7 +6,7 @@ import { PasswordGeneratorService } from "@tf2qs/core";
 import { ServerAbortManager } from "@tf2qs/core";
 import { ServerCommander } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
-import { AWSServerManager, OCIServerManager } from "../cloud-providers";
+import { AWSServerManager, OCIServerManager, OracleVMManager } from "../cloud-providers";
 import { DefaultServerManagerFactory } from "./ServerManagerFactory";
 
 describe('DefaultServerManagerFactory', () => {
@@ -49,11 +49,11 @@ describe('DefaultServerManagerFactory', () => {
         describe('AWS regions', () => {
             it.each([
                 { region: Region.US_EAST_1_BUE_1, expectedClass: AWSServerManager },
-                { region: Region.EU_FRANKFURT_1, expectedClass: OCIServerManager },
-                { region: Region.SA_BOGOTA_1, expectedClass: OCIServerManager },
-                { region: Region.SA_SANTIAGO_1, expectedClass: OCIServerManager },
-                { region: Region.SA_SAOPAULO_1, expectedClass: OCIServerManager },
-                { region: Region.US_CHICAGO_1, expectedClass: OCIServerManager },
+                { region: Region.EU_FRANKFURT_1, expectedClass: OracleVMManager },
+                { region: Region.SA_BOGOTA_1, expectedClass: OracleVMManager },
+                { region: Region.SA_SANTIAGO_1, expectedClass: OracleVMManager },
+                { region: Region.SA_SAOPAULO_1, expectedClass: OracleVMManager },
+                { region: Region.US_CHICAGO_1, expectedClass: OracleVMManager },
             ])('should return a ServerManager for $description', ({ region, expectedClass }) => {
                 const result = factory.createServerManager(region);
 
