@@ -38,22 +38,22 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
                     passwordGeneratorService: this.dependencies.passwordGeneratorService,
                 });
             case CloudProvider.ORACLE:
-                //  return new OCIServerManager({
-                //     serverCommander: this.dependencies.serverCommander,
-                //     configManager: this.dependencies.configManager,
-                //     passwordGeneratorService: this.dependencies.passwordGeneratorService,
-                //     ociClientFactory: defaultOracleServiceFactory,
-                //     serverAbortManager: this.dependencies.serverAbortManager,
-                //     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
-                // });
-                return OracleVMManager.create({
+                 return new OCIServerManager({
                     serverCommander: this.dependencies.serverCommander,
                     configManager: this.dependencies.configManager,
                     passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                    ociClientFactory: defaultOracleServiceFactory,
                     serverAbortManager: this.dependencies.serverAbortManager,
                     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
-                    region,
                 });
+                // return OracleVMManager.create({
+                //     serverCommander: this.dependencies.serverCommander,
+                //     configManager: this.dependencies.configManager,
+                //     passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                //     serverAbortManager: this.dependencies.serverAbortManager,
+                //     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
+                //     region,
+                // });
             default:
                 throw new Error(`Unsupported cloud provider: ${cloudProvider} for region: ${region}`);
         }

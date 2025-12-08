@@ -59,7 +59,7 @@
     },
     "variants": {
         "default": {
-            "shape": "VM.Standard.E4.Flex",
+            "shape": "CI.Standard.E4.Flex",
             "ocpu": 1,
             "memory": 4,
             "maxPlayers": 24,
