@@ -44,7 +44,7 @@ export class DefaultTF2ServerReadinessService implements TF2ServerReadinessServi
                 };
             },
             {
-                timeout: 180000,
+                timeout: 300000,
                 interval: 5000,
                 signal: abortSignal
             }

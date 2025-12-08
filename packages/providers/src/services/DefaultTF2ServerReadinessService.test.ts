@@ -103,7 +103,7 @@ players : 0 humans, 0 bots (24 max)`;
             expect(mockWaitUntil).toHaveBeenCalledWith(
                 expect.any(Function),
                 {
-                    timeout: 180000,
+                    timeout: 300000,
                     interval: 5000,
                     signal: abortSignal
                 }
@@ -128,7 +128,7 @@ players : 0 humans, 0 bots (24 max)`;
                 try {
                     return await conditionFn();
                 } catch (error) {
-                    throw new Error(`Timeout after 180000ms: ${error}`);
+                    throw new Error(`Timeout after 300000ms: ${error}`);
                 }
             });
 
@@ -136,7 +136,7 @@ players : 0 humans, 0 bots (24 max)`;
                 testData.publicIp,
                 testData.rconPassword,
                 testData.serverId
-            )).rejects.toThrow("Timeout after 180000ms: Error: Server is not ready yet");
+            )).rejects.toThrow("Timeout after 300000ms: Error: Server is not ready yet");
         });
 
         it("should retry until server becomes ready", async () => {
