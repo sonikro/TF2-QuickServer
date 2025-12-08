@@ -117,6 +117,12 @@ jobs:
           echo "${{ secrets.OCI_PEM }}" > ~/.oci/oci.pem
           chmod 600 ~/.oci/config ~/.oci/oci.pem
 
+      - name: Create config/local.json
+        run: |
+          cat > ./config/local.json << 'EOF'
+          ${{ secrets.CONFIG_JSON }}
+          EOF
+
       - name: Run cleanup script
         working-directory: ./packages/scripts
         run: |
