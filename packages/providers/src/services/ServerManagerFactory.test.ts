@@ -1,7 +1,7 @@
 import { ConfigManager, OCICredentialsFactory, PasswordGeneratorService, Region, ServerAbortManager, ServerCommander } from "@tf2qs/core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
-import { AWSServerManager, OCIServerManager } from "../cloud-providers";
+import { AWSServerManager, OracleVMManager } from "../cloud-providers";
 import { DefaultServerManagerFactory } from "./ServerManagerFactory";
 import * as oracleServiceFactory from "./defaultOracleServiceFactory";
 
@@ -54,11 +54,11 @@ describe('DefaultServerManagerFactory', () => {
         describe('AWS regions', () => {
             it.each([
                 { region: Region.US_EAST_1_BUE_1, expectedClass: AWSServerManager },
-                { region: Region.EU_FRANKFURT_1, expectedClass: OCIServerManager },
-                { region: Region.SA_BOGOTA_1, expectedClass: OCIServerManager },
-                { region: Region.SA_SANTIAGO_1, expectedClass: OCIServerManager },
-                { region: Region.SA_SAOPAULO_1, expectedClass: OCIServerManager },
-                { region: Region.US_CHICAGO_1, expectedClass: OCIServerManager },
+                { region: Region.EU_FRANKFURT_1, expectedClass: OracleVMManager },
+                { region: Region.SA_BOGOTA_1, expectedClass: OracleVMManager },
+                { region: Region.SA_SANTIAGO_1, expectedClass: OracleVMManager },
+                { region: Region.SA_SAOPAULO_1, expectedClass: OracleVMManager },
+                { region: Region.US_CHICAGO_1, expectedClass: OracleVMManager },
             ])('should return a ServerManager for $region', ({ region, expectedClass }) => {
                 const result = factory.createServerManager(region);
 
