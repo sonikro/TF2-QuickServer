@@ -80,7 +80,9 @@ jobs:
           echo "${{ secrets.OCI_CONFIG_FILE }}" > ~/.oci/config
           echo "${{ secrets.OCI_PEM }}" > ~/.oci/oci.pem
           chmod 600 ~/.oci/config ~/.oci/oci.pem
-          echo "${{ secrets.PACKER_VARIABLES }}" > ./packer/variables.auto.pkrvars.hcl
+          cat > ./packer/variables.auto.pkrvars.hcl << 'EOF'
+          ${{ secrets.PACKER_VARIABLES }}
+          EOF
 
       - name: Build all regions in parallel
         working-directory: ./packer
