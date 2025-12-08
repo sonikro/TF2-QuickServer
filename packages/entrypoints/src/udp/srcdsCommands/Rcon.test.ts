@@ -94,5 +94,16 @@ describe("rcon command parser", () => {
                 attributes: { serverId: fakeServer.serverId, sourceIp: "1.2.3.4:51736", command: "status" }
             });
         });
+
+        it("should allow status command from 127.0.0.1 (localhost)", async () => {
+            // This means the status command is coming from localhost
+            vi.mocked(publicIpv4).mockResolvedValue("5.6.7.8");
+            const localCommand = 'rcon from "127.0.0.1:51736": command "status"';
+            const command = rcon(localCommand);
+            if (!command || !command.handler) throw new Error("No handler");
+            await command.handler({ args: command.args, password: "123", services });
+            expect(services.serverCommander.query).not.toHaveBeenCalled();
+            expect(vi.mocked(logger.emit)).not.toHaveBeenCalledWith(expect.objectContaining({ severityText: 'WARN' }), expect.anything());
+        });
     });
 });

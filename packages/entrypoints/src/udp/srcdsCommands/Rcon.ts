@@ -22,7 +22,8 @@ export const rcon: SRCDSCommandParser<{ sourceIp: string, command: string }> = (
                 if (args.command === "status") {
                     const myIP = await publicIpv4();
                     const sourceCommandIP = sourceIp.split(":")[0];
-                    if (myIP !== sourceCommandIP) {
+                    const allowedIPs = [myIP, "127.0.0.1"];
+                    if (!allowedIPs.includes(sourceCommandIP)) {
                         await services.serverCommander.query({
                             host: server.rconAddress,
                             port: 27015,
