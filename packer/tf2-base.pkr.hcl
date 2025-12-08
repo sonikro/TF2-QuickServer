@@ -335,12 +335,22 @@ build {
   provisioner "shell" {
     script = "scripts/install-docker.sh"
   }
+
+  # Step 3a: Optimize Docker daemon configuration
+  provisioner "shell" {
+    script = "scripts/optimize-docker-daemon.sh"
+  }
   
   # Step 4: Pre-load Docker images
   provisioner "shell" {
     script = "scripts/preload-docker-images.sh"
   }
   
+  # Step 4a: Disable unnecessary services and optimize kernel
+  provisioner "shell" {
+    script = "scripts/disable-unnecessary-services.sh"
+  }
+
   # Step 5: Configure cloud-init for docker-compose startup
   provisioner "shell" {
     script = "scripts/configure-cloud-init.sh"
@@ -363,7 +373,7 @@ build {
     ]
   }
   
-  # Step 8: Clean up to reduce image size
+  # Step 8: Remove package manager cache to reduce image size
   provisioner "shell" {
     inline = [
       "echo '==> Cleaning up...'",
@@ -381,9 +391,10 @@ build {
       "done",
       "sudo apt-get clean || true",
       "sudo apt-get autoremove -y || true",
-      "sudo rm -rf /var/lib/apt/lists/*",
-      "sudo rm -rf /tmp/*",
-      "sudo rm -rf /var/tmp/*",
+      "sudo rm -rf /var/lib/apt/lists/* || true",
+      "sudo rm -rf /tmp/* || true",
+      "sudo rm -rf /var/tmp/* || true",
+      "sudo truncate -s 0 /var/log/*log || true",
       "echo '==> Cleanup complete'"
     ]
   }

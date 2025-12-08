@@ -6,13 +6,14 @@ echo "==> Installing Docker and Docker Compose..."
 # Update package index
 sudo apt-get update
 
-# Install prerequisites
+# Install minimal prerequisites only
 sudo apt-get install -y \
     apt-transport-https \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release \
+    --no-install-recommends
 
 # Add Docker's official GPG key
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -27,7 +28,12 @@ echo \
 
 # Install Docker Engine and Docker Compose plugin
 sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-compose-plugin \
+    --no-install-recommends
 
 # Enable and start Docker service
 sudo systemctl enable docker
