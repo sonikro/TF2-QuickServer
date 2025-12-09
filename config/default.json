@@ -212,6 +212,32 @@
             ],
             "guildId": "1143342782396780584"
         },
+        "insertcoin-novatos": {
+            "displayName": "InsertCoin Novatos",
+            "hostname": "InsertCoin Novatos | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "insertcoin_5cp_novatos.cfg",
+                "koth": "fbtf_6v6_koth.cfg",
+                "pl": "rgl_HL_stopwatch.cfg",
+                "ultiduo": "rgl_ud_ultiduo.cfg"
+            },
+            "admins": [
+                "STEAM_0:1:124066436",
+                "STEAM_0:0:674555708",
+                "STEAM_0:0:29546995",
+                "STEAM_0:0:43847245",
+                "STEAM_0:0:23221722",
+                "STEAM_0:0:559647877",
+                "STEAM_0:1:153691324",
+                "STEAM_0:0:139729835",
+                "STEAM_0:1:454167379",
+                "STEAM_0:0:210475374",
+                "STEAM_0:1:438914332",
+                "STEAM_0:1:194888319",
+                "STEAM_0:0:210340262"
+            ],
+            "guildId": "1443412454574129224"
+        },
         "TFArena": {
             "displayName": "TF Arena",
             "hostname": "TFArena | {region} @ TF2-QuickServer",
