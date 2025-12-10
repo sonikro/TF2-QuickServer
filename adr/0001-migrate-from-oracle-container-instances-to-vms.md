@@ -1,6 +1,6 @@
 # ADR 0001: Migrate from Oracle Container Instances to Oracle VMs
 
-**Status:** Accepted
+**Status:** Pending Tests
 
 **Date:** 2025-12-08
 
@@ -26,20 +26,24 @@ We decided to migrate from Oracle Container Instances to Oracle VMs with Ubuntu 
 
 ## Consequences
 
-### Positive
+### Positive (Theoretical)
 
-- **Extension Support:** TFTrue and SrcTV+ extensions now work correctly since we control the kernel and SELinux policies
-- **Faster Startup:** Server startup time reduced to approximately 3.5 minutes because VMs don't need to download the large TF2 Docker image on each instantiation
+- **Extension Support:** TFTrue and SrcTV+ extensions work correctly since we control the kernel and SELinux policies
 - **Full Control:** Complete control over the base OS and security policies enables proper configuration for TF2 server requirements
 - **Observability:** SHIELD firewall and NewRelic agent integration work as intended
-- **Docker Efficiency:** Docker continues to provide consistent containerization and deployment benefits
 
-### Negative
+### Negative (Observed During Testing)
 
+- **Performance Degradation:** 1OCPU and 4-core VMs cause lag spikes and stutters on the server due to resource contention. Resources are no longer dedicated to containers but shared with all other VM processes, introducing additional overhead
+- **Fixed Infrastructure Cost:** Maintaining one Custom Image per region results in approximately 3.5 USD per month per region. With 6 Oracle regions, this forces a fixed infrastructure cost exceeding 21 USD per month regardless of actual usage
 - **Increased Pipeline Duration:** Publishing new images takes longer because we must rebuild both Docker images and VM images
-- **Storage Costs:** Each base VM image (approximately 26GB) must be stored per region, though this fits within Oracle Cloud's 200GB free tier monthly storage quota
 - **Image Management Complexity:** Additional responsibility to manage, version, and clean up base VM images across regions
 - **Maintenance Burden:** Requires coordination between Docker image updates and VM base image rebuilds
+
+### Identified Issues to Resolve
+
+- **Cost:** Fixed monthly cost of over 21 USD per region for maintaining custom VM images
+- **Performance:** VM process overhead degrades server performance, causing lag spikes and stutters due to resource contention
 
 ## Alternatives Considered
 
