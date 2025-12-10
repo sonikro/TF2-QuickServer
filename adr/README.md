@@ -26,6 +26,7 @@ ADRs follow the Nygard format, which includes:
 ## ADRs
 
 - [ADR 0001: Migrate from Oracle Container Instances to Oracle VMs](./0001-migrate-from-oracle-container-instances-to-vms.md)
+- [ADR 0002: 32-bit vs 64-bit SRCDS Images](./0002-32bit-vs-64bit-srcds-images.md)
 
 ## References
 
