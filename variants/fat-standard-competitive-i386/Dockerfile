@@ -129,13 +129,6 @@ ARG SHOWSDR_PLUGIN_URL=https://github.com/Full-Buff/sdr-plugin/releases/download
 RUN curl -L "${SHOWSDR_PLUGIN_URL}" -o "${SHOWSDR_PLUGIN_FILE_NAME}" \
   && unzip -q -n "${SHOWSDR_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
-# SourceTV Plus extension
-ARG SRCTV_PLUS_VERSION=v3.0
-RUN curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PLUS_VERSION}/srctvplus.so" \
-  -o "${PLUGIN_INSTALL_DIR}/addons/srctvplus.so" \
-  && curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PLUS_VERSION}/srctvplus.vdf" \
-  -o "${PLUGIN_INSTALL_DIR}/addons/srctvplus.vdf"
-
 # Dodgeball plugin
 ARG DODGEBALL_PLUGIN_VERSION_NUMBER=1.9.6
 ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
