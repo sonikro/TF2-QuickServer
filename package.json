@@ -8,7 +8,7 @@
   ],
   "private": true,
   "scripts": {
-    "start": "env-cmd -f .env tsx ./src/index.ts",
+    "start": "tsx --env-file .env ./src/index.ts",
     "test": "vitest",
     "dev": "nodemon",
     "terraform:deploy": "terraform -chdir=./terraform init && terraform -chdir=./terraform apply -auto-approve && terraform -chdir=./terraform output -json > ./config/local.json",
@@ -24,7 +24,7 @@
     "build:fat:tf2pickup": "docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .",
     "build:fat:mge-tf": "docker build -t sonikro/fat-mge-tf:latest -f ./variants/fat-mge-tf/Dockerfile .",
     "push:fat:mge-tf": "docker push sonikro/fat-mge-tf:latest",
-    "build": "tsc"
+    "build": "tsgo"
   },
   "repository": {
     "type": "git",
@@ -53,16 +53,16 @@
     "@types/node-schedule": "^2.1.7",
     "@types/supertest": "^6.0.3",
     "@types/websocket": "^1.0.10",
+    "@typescript/native-preview": "^7.0.0-dev.20251210.1",
     "@vitest/coverage-v8": "^3.0.9",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-vitest": "^6.2.0",
-    "env-cmd": "^10.1.0",
     "knex": "^3.1.0",
     "msw": "^2.7.3",
     "nodemon": "^3.1.9",
     "supertest": "^7.1.0",
     "tsx": "^4.19.3",
-    "typescript": "^5.8.2",
+    "typescript": "^5.9.3",
     "vitest": "^3.0.9",
     "vitest-mock-extended": "^3.0.1",
     "vitest-when": "^0.6.0"
