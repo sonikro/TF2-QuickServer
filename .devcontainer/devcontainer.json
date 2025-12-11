@@ -14,7 +14,8 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"hashicorp.hcl"
+				"hashicorp.hcl",
+				"TypeScriptTeam.native-preview"
 			]
 		}
 	}
