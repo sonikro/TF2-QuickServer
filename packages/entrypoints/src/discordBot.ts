@@ -30,7 +30,6 @@ import { SQLiteServerRepository } from "@tf2qs/providers";
 import { SQliteUserCreditsRepository } from "@tf2qs/providers";
 import { SQliteUserRepository } from "@tf2qs/providers";
 import { SQliteVariantRepository } from "@tf2qs/providers";
-import { DefaultVariantService } from "@tf2qs/providers";
 import { AdyenPaymentService } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
@@ -42,7 +41,7 @@ import { FileSystemOCICredentialsFactory } from "@tf2qs/providers";
 import { PaypalPaymentService } from "@tf2qs/providers";
 import { RCONServerCommander } from "@tf2qs/providers";
 import { DefaultServerManagerFactory } from "@tf2qs/providers";
-import { defaultConfigManager } from "@tf2qs/providers";
+import { DefaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
@@ -76,7 +75,7 @@ export async function startDiscordBot() {
 
     const eventLogger = new DiscordEventLogger({
         discordClient: client,
-        configManager: defaultConfigManager,
+        configManager: configManager,
     })
 
     const serverAbortManager = new DefaultServerAbortManager();
@@ -85,7 +84,7 @@ export async function startDiscordBot() {
 
     const serverManagerFactory = new DefaultServerManagerFactory({
         serverCommander,
-        configManager: defaultConfigManager,
+        configManager: configManager,
         passwordGeneratorService: passwordGeneratorService,
         serverAbortManager,
         ociCredentialsFactory: FileSystemOCICredentialsFactory
@@ -131,7 +130,7 @@ export async function startDiscordBot() {
         knex: KnexConnectionManager.client
     })
 
-    const variantService = new DefaultVariantService({
+    const configManager = new DefaultConfigManager({
         variantRepository
     })
 
@@ -168,7 +167,7 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
             eventLogger,
-            configManager: defaultConfigManager,
+            configManager: configManager,
             userRepository,
             guildParametersRepository,
             userBanRepository
@@ -193,9 +192,9 @@ export async function startDiscordBot() {
         deleteVariant: new DeleteVariant({
             variantRepository
         }),
-        variantService,
+        variantRepository,
         userCreditsRepository,
-        configManager: defaultConfigManager,
+        configManager: configManager,
         backgroundTaskQueue
     })
 
@@ -206,7 +205,7 @@ export async function startDiscordBot() {
             serverActivityRepository: serverActivityRepository,
             serverCommander: serverCommander,
             eventLogger,
-            configManager: defaultConfigManager,
+            configManager: configManager,
             backgroundTaskQueue
         }),
         eventLogger
@@ -217,7 +216,7 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
         }),
-        configManager: defaultConfigManager,
+        configManager: configManager,
         eventLogger
     })
 
@@ -229,7 +228,7 @@ export async function startDiscordBot() {
             serverCommander,
             eventLogger
         }),
-        configManager: defaultConfigManager,
+        configManager: configManager,
         eventLogger
     })
 
@@ -259,7 +258,7 @@ export async function startDiscordBot() {
 
     const oracleCostProvider = new OracleCostProvider({
         ociClientFactory: defaultOracleServiceFactory,
-        configManager: defaultConfigManager,
+        configManager: configManager,
     })
 
     const awsCostProvider = new AWSCostProvider({
@@ -276,7 +275,7 @@ export async function startDiscordBot() {
             reportRepository,
             costProvider: defaultCostProvider,
         }),
-        configManager: defaultConfigManager,
+        configManager: configManager,
         eventLogger,
         discordClient: client,
     })

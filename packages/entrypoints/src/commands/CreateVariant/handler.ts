@@ -22,7 +22,6 @@ export function createVariantCommandHandlerFactory(dependencies: {
         const defaultCfgsStr = interaction.options.getString('default_cfgs');
         const adminsStr = interaction.options.getString('admins');
         const image = interaction.options.getString('image');
-        const emptyMinutesTerminate = interaction.options.getInteger('empty_minutes_terminate');
 
         if (variantName.includes(' ')) {
             await interaction.reply({
@@ -58,7 +57,6 @@ export function createVariantCommandHandlerFactory(dependencies: {
                 defaultCfgs,
                 admins,
                 image: image || undefined,
-                emptyMinutesTerminate: emptyMinutesTerminate || undefined,
             });
 
             await interaction.editReply({

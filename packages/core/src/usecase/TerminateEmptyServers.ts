@@ -41,34 +41,32 @@ export class TerminateEmptyServers {
             };
         });
 
+        const variantConfigMap = new Map<string, number>();
+        for (const server of mergedServers) {
+            if (!variantConfigMap.has(server.variant)) {
+                try {
+                    const variantConfig = await configManager.getVariantConfig({ 
+                        variant: server.variant, 
+                        guildId: server.guildId 
+                    });
+                    variantConfigMap.set(server.variant, variantConfig?.emptyMinutesTerminate ?? 10);
+                } catch (error) {
+                    variantConfigMap.set(server.variant, 10);
+                }
+            }
+        }
+
         const serversToDelete = mergedServers.filter((server) => {
             if (!server.emptySince) {
                 return false;
             }
-            try {
-                const variantConfig = configManager.getVariantConfig(server.variant);
-                const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
-                const emptyDuration = new Date().getTime() - server.emptySince.getTime();
-                return emptyDuration >= minutesEmpty * 60 * 1000;
-            } catch (error) {
-                const minutesEmpty = 10;
-                const emptyDuration = new Date().getTime() - server.emptySince.getTime();
-                return emptyDuration >= minutesEmpty * 60 * 1000;
-            }
+            const minutesEmpty = variantConfigMap.get(server.variant) ?? 10;
+            const emptyDuration = new Date().getTime() - server.emptySince.getTime();
+            return emptyDuration >= minutesEmpty * 60 * 1000;
         });
 
         for (const server of serversToDelete) {
-            let minutesEmpty = 10;
-            try {
-                const variantConfig = configManager.getVariantConfig(server.variant);
-                minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
-            } catch (error) {
-                logger.emit({
-                    severityText: 'WARN',
-                    body: `Variant ${server.variant} not found in config, using default empty timeout of ${minutesEmpty} minutes`,
-                    attributes: { serverId: server.serverId, variant: server.variant }
-                });
-            }
+            const minutesEmpty = variantConfigMap.get(server.variant) ?? 10;
 
             logger.emit({
                 severityText: 'INFO',

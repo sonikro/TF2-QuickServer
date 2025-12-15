@@ -10,7 +10,6 @@ export async function up(knex: Knex): Promise<void> {
         table.json("default_cfgs").nullable();
         table.json("admins").nullable();
         table.string("image").nullable();
-        table.integer("empty_minutes_terminate").nullable();
         table.timestamps(true, true);
         table.unique(["guild_id", "variant_name"]);
         table.index("guild_id");

@@ -9,7 +9,6 @@ export type CreateVariantParams = {
     defaultCfgs?: Record<string, string>;
     admins?: string[];
     image?: string;
-    emptyMinutesTerminate?: number;
 }
 
 export class CreateVariant {
@@ -35,7 +34,6 @@ export class CreateVariant {
             defaultCfgs: params.defaultCfgs,
             admins: params.admins,
             image: params.image,
-            emptyMinutesTerminate: params.emptyMinutesTerminate,
         };
 
         return await this.dependencies.variantRepository.create({ variant });

@@ -16,7 +16,7 @@ import { SetUserData } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
 import { createVariantCommandDefinition, createVariantCommandHandlerFactory } from "./CreateVariant";
 import { deleteVariantCommandDefinition, deleteVariantCommandHandlerFactory } from "./DeleteVariant";
-import { CreateVariant, DeleteVariant, VariantService } from "@tf2qs/core";
+import { CreateVariant, DeleteVariant, VariantRepository } from "@tf2qs/core";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -29,7 +29,7 @@ export type CommandDependencies = {
     getUserServers: GetUserServers;
     createVariant: CreateVariant;
     deleteVariant: DeleteVariant;
-    variantService: VariantService;
+    variantRepository: VariantRepository;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -40,7 +40,7 @@ export function createCommands(dependencies: CommandDependencies) {
             handler: createServerCommandHandlerFactory({
                 createServerForUser: dependencies.createServerForUser,
                 backgroundTaskQueue: dependencies.backgroundTaskQueue,
-                variantService: dependencies.variantService,
+                variantRepository: dependencies.variantRepository,
             }),
         },
         terminateServer: {

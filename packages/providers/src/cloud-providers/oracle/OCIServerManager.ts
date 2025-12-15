@@ -75,18 +75,22 @@ export class OCIServerManager implements ServerManager {
         variantName: Variant;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
+        guildId?: string;
         extraEnvs?: Record<string, string>;
     }): Promise<Server> {
         return await tracer.startActiveSpan('OCIServerManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
             const startTime = Date.now();
             const { serverCommander, configManager, passwordGeneratorService, ociClientFactory, serverAbortManager } = this.dependencies;
-            const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
+            const { region, variantName, sourcemodAdminSteamId, serverId, guildId, extraEnvs = {}, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
             try {
 
                 const { containerClient, vncClient } = ociClientFactory(region);
-                const variantConfig = configManager.getVariantConfig(variantName);
+                const variantConfig = await configManager.getVariantConfig({ 
+                    variant: variantName, 
+                    guildId 
+                });
                 const regionConfig = configManager.getRegionConfig(region);
                 const oracleConfig = configManager.getOracleConfig();
                 const oracleRegionConfig = oracleConfig.regions[region];

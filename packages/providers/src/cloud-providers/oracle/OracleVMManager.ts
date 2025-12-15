@@ -75,17 +75,21 @@ export class OracleVMManager implements ServerManager {
         variantName: Variant;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
+        guildId?: string;
         extraEnvs?: Record<string, string>;
     }): Promise<Server> {
         return await tracer.startActiveSpan('OracleVMManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
             const startTime = Date.now();
             const { configManager, passwordGeneratorService, serverAbortManager } = this.dependencies;
-            const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
+            const { region, variantName, sourcemodAdminSteamId, serverId, guildId, extraEnvs = {}, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
             try {
 
-                const variantConfig = configManager.getVariantConfig(variantName);
+                const variantConfig = await configManager.getVariantConfig({ 
+                    variant: variantName, 
+                    guildId 
+                });
                 const regionConfig = configManager.getRegionConfig(region);
                 const oracleConfig = configManager.getOracleConfig();
                 const oracleRegionConfig = oracleConfig.regions[region];

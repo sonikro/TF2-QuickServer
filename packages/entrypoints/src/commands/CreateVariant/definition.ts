@@ -32,11 +32,12 @@ export const createVariantCommandDefinition = new SlashCommandBuilder()
     )
     .addStringOption(option =>
         option.setName('image')
-            .setDescription('Docker image to use (default: sonikro/fat-tf2-standard-competitive-i386:latest)')
+            .setDescription('Docker image to use')
             .setRequired(false)
-    )
-    .addIntegerOption(option =>
-        option.setName('empty_minutes_terminate')
-            .setDescription('Minutes before terminating an empty server (default: 10)')
-            .setRequired(false)
+            .addChoices(
+                { name: 'Standard Competitive i386', value: 'sonikro/fat-tf2-standard-competitive-i386:latest' },
+                { name: 'Standard Competitive AMD64', value: 'sonikro/fat-tf2-standard-competitive-amd64:latest' },
+                { name: 'TF2 Pickup', value: 'sonikro/fat-tf2-pickup:latest' },
+                { name: 'MGE', value: 'sonikro/fat-mge-tf:latest' }
+            )
     );

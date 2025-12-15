@@ -123,6 +123,7 @@ export class CreateServerForUser {
             variantName: args.variantName,
             sourcemodAdminSteamId: user.steamIdText,
             serverId,
+            guildId: args.guildId,
             extraEnvs: guildParameters?.environment_variables || {},
             statusUpdater
         });

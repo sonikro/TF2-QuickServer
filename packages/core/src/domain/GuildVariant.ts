@@ -7,7 +7,6 @@ export type GuildVariant = {
     defaultCfgs?: Record<string, string>;
     admins?: string[];
     image?: string;
-    emptyMinutesTerminate?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }

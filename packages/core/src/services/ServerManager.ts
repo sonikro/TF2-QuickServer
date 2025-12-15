@@ -11,6 +11,7 @@ export interface ServerManager {
         variantName: Variant,
         statusUpdater: StatusUpdater,
         sourcemodAdminSteamId?: string,
+        guildId?: string,
         extraEnvs?: Record<string, string>,
     }): Promise<Server>;
 
