@@ -63,7 +63,9 @@ export function createVariantCommandHandlerFactory(dependencies: {
 
             await interaction.editReply({
                 content: `✅ Variant **${displayName}** (${variantName}) has been created successfully!\n\n` +
-                    `This variant is now available when creating servers in this guild.`
+                    `This variant is now available when creating servers in this guild.\n\n` +
+                    `⚠️ Note: Custom variants currently use default server infrastructure settings. ` +
+                    `Custom hostname, admins, and other settings will be applied in a future update.`
             });
         } catch (error) {
             await commandErrorHandler(interaction, error);

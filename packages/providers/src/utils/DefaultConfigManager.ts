@@ -3,7 +3,11 @@ import { ConfigManager } from "@tf2qs/core";
 
 export class DefaultConfigManager implements ConfigManager {
     getVariantConfig(variant: Variant): VariantConfig {
-        return getVariantConfig(variant)
+        try {
+            return getVariantConfig(variant);
+        } catch (error) {
+            return getVariantConfig("default");
+        }
     }
     getRegionConfig(region: Region): RegionConfig {
         return getRegionConfig(region)

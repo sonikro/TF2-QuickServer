@@ -45,15 +45,30 @@ export class TerminateEmptyServers {
             if (!server.emptySince) {
                 return false;
             }
-            const variantConfig = configManager.getVariantConfig(server.variant);
-            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
-            const emptyDuration = new Date().getTime() - server.emptySince.getTime();
-            return emptyDuration >= minutesEmpty * 60 * 1000;
+            try {
+                const variantConfig = configManager.getVariantConfig(server.variant);
+                const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+                const emptyDuration = new Date().getTime() - server.emptySince.getTime();
+                return emptyDuration >= minutesEmpty * 60 * 1000;
+            } catch (error) {
+                const minutesEmpty = 10;
+                const emptyDuration = new Date().getTime() - server.emptySince.getTime();
+                return emptyDuration >= minutesEmpty * 60 * 1000;
+            }
         });
 
         for (const server of serversToDelete) {
-            const variantConfig = configManager.getVariantConfig(server.variant);
-            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+            let minutesEmpty = 10;
+            try {
+                const variantConfig = configManager.getVariantConfig(server.variant);
+                minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+            } catch (error) {
+                logger.emit({
+                    severityText: 'WARN',
+                    body: `Variant ${server.variant} not found in config, using default empty timeout of ${minutesEmpty} minutes`,
+                    attributes: { serverId: server.serverId, variant: server.variant }
+                });
+            }
 
             logger.emit({
                 severityText: 'INFO',
