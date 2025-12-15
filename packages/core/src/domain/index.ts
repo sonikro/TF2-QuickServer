@@ -11,6 +11,7 @@ export * from "./User";
 export * from "./CreditOrder";
 export * from "./CreditOrderRequest";
 export * from "./GuildParameters";
+export * from "./GuildVariant";
 export * from "./Cost";
 export * from "./DateRange";
 export * from "./ServerActivity";

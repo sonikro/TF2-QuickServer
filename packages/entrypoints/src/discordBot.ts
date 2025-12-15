@@ -2,8 +2,10 @@ import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, R
 import { ConsumeCreditsFromRunningServers } from "@tf2qs/core";
 import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
+import { CreateVariant } from "@tf2qs/core";
 import { DeleteServer } from "@tf2qs/core";
 import { DeleteServerForUser } from "@tf2qs/core";
+import { DeleteVariant } from "@tf2qs/core";
 import { GenerateMonthlyUsageReport } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
@@ -27,6 +29,8 @@ import { SQliteServerActivityRepository } from "@tf2qs/providers";
 import { SQLiteServerRepository } from "@tf2qs/providers";
 import { SQliteUserCreditsRepository } from "@tf2qs/providers";
 import { SQliteUserRepository } from "@tf2qs/providers";
+import { SQliteVariantRepository } from "@tf2qs/providers";
+import { DefaultVariantService } from "@tf2qs/providers";
 import { AdyenPaymentService } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
@@ -123,6 +127,14 @@ export async function startDiscordBot() {
 
     const userBanRepository = new CsvUserBanRepository()
 
+    const variantRepository = new SQliteVariantRepository({
+        knex: KnexConnectionManager.client
+    })
+
+    const variantService = new DefaultVariantService({
+        variantRepository
+    })
+
     const backgroundTaskQueue = new InMemoryBackgroundTaskQueue(defaultGracefulShutdownManager);
     const deleteServerUseCase = new DeleteServerForUser({
         serverManagerFactory: serverManagerFactory,
@@ -175,6 +187,13 @@ export async function startDiscordBot() {
         getUserServers: new GetUserServers({
             serverRepository
         }),
+        createVariant: new CreateVariant({
+            variantRepository
+        }),
+        deleteVariant: new DeleteVariant({
+            variantRepository
+        }),
+        variantService,
         userCreditsRepository,
         configManager: defaultConfigManager,
         backgroundTaskQueue

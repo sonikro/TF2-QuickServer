@@ -17,6 +17,7 @@ export * from './src/repository/ServerActivityRepository';
 export * from './src/repository/UserRepository';
 export * from './src/repository/UserBanRepository';
 export * from './src/repository/UserCreditsRepository';
+export * from './src/repository/VariantRepository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
@@ -32,16 +33,20 @@ export * from './src/services/ServerCommander';
 export * from './src/services/ServerManager';
 export * from './src/services/StatusUpdater';
 export * from './src/services/TF2ServerReadinessService';
+export * from './src/services/VariantService';
 
 // Use cases
 export * from './src/usecase/ConsumeCreditsFromRunningServers';
 export * from './src/usecase/CreateCreditsPurchaseOrder';
 export * from './src/usecase/CreateServerForUser';
+export * from './src/usecase/CreateVariant';
 export * from './src/usecase/DeleteServer';
 export * from './src/usecase/DeleteServerForUser';
+export * from './src/usecase/DeleteVariant';
 export * from './src/usecase/GenerateMonthlyUsageReport';
 export * from './src/usecase/GetServerStatus';
 export * from './src/usecase/GetUserServers';
+export * from './src/usecase/GetVariantsForGuild';
 export * from './src/usecase/HandleOrderPaid';
 export * from './src/usecase/SetUserData';
 export * from './src/usecase/TerminateEmptyServers';

@@ -4,6 +4,7 @@ export * from './DefaultEnvironmentBuilderService';
 export * from './DefaultGracefulShutdownManager';
 export * from './DefaultServerAbortManager';
 export * from './DefaultTF2ServerReadinessService';
+export * from './DefaultVariantService';
 export * from './DiscordEventLogger';
 export * from './DiscordInteractionStatusUpdater';
 export * from './FileSystemOCICredentialsFactory';
