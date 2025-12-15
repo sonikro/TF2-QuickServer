@@ -111,6 +111,7 @@ export class CreateServerForUser {
                 region: args.region,
                 variant: args.variantName,
                 createdBy: args.creatorId,
+                guildId: args.guildId,
                 status: "pending",
             } as Server, trx);
         });
@@ -134,6 +135,7 @@ export class CreateServerForUser {
         await serverRepository.upsertServer({
             ...server,
             createdBy: args.creatorId,
+            guildId: args.guildId,
             status: "ready"
         });
         return server;

@@ -22,9 +22,10 @@ export class SQLiteServerRepository implements ServerRepository {
                 tvPassword: server.tvPassword,
                 createdAt: server.createdAt ?? new Date(),
                 createdBy: server.createdBy,
+                guild_id: server.guildId,
                 status: server.status,
                 sv_logsecret: server.logSecret
-            } as Server)
+            } as any)
             .onConflict('serverId')
             .merge();
 
@@ -97,6 +98,7 @@ export class SQLiteServerRepository implements ServerRepository {
         return {
             ...server,
             createdAt: toDate(server.createdAt),
+            guildId: server.guild_id,
             logSecret: server.sv_logsecret
         };
     }

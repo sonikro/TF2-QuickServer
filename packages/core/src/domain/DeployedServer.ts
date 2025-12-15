@@ -16,6 +16,7 @@ export interface Server {
     tvPassword?: string;
     createdAt?: Date;
     createdBy?: string;
+    guildId?: string;
     status?: ServerStatus;
     logSecret?: number;
 }
