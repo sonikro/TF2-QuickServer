@@ -169,6 +169,8 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   lib32stdc++6 \
   libtinfo5:i386 \
   libcurl3-gnutls:i386 \
+  libssl3:i386 \
+  ca-certificates \
   wget \
   unzip \
   gettext-base \
