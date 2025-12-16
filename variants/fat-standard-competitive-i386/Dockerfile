@@ -148,7 +148,8 @@ ARG FBTF_CONFIGS_VERSION=23
 ARG FBTF_CONFIGS_FILE_NAME=fbtf_cfg_s${FBTF_CONFIGS_VERSION}.zip
 ARG FBTF_CONFIGS_URL=https://fbtf.tf/uploads/cfgs/${FBTF_CONFIGS_FILE_NAME}
 RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
-  && unzip -q "${FBTF_CONFIGS_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/cfg/"
+  && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
+  && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
 
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
