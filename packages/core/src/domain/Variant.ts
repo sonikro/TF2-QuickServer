@@ -1,5 +1,3 @@
-import config from "config";
-
 export type Variant = string;
 
 export type VariantConfig = {
@@ -43,21 +41,4 @@ export type VariantConfig = {
      * @default false
      */
     managedExternally?: boolean;
-}
-
-export function getVariantConfig(variant: Variant) {
-    const defaultSettings = config.get<VariantConfig>(`variants.default`);
-    const variantConfig = config.get<VariantConfig>(`variants.${variant}`); // This will throw if the variant is not found
-    return {
-        ...defaultSettings,
-        ...variantConfig,
-    };
-}
-
-export function getVariantConfigs() {
-    const variants = config.get<Record<string, VariantConfig>>(`variants`);
-    return Object.keys(variants).filter(it => it !== "default").map(variant => ({
-        name: variant,
-        config: getVariantConfig(variant),
-    }));
 }

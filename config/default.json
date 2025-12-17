@@ -1,330 +1,87 @@
 {
-    "regions": {
-        "sa-saopaulo-1": {
-            "displayName": "São Paulo",
-            "srcdsHostname": "TF2-QuickServer | São Paulo",
-            "tvHostname": "TF2-QuickServer TV | São Paulo",
-            "cloudProvider": "oracle",
-            "homeRegion": "us-chicago-1"
-        },
-        "sa-santiago-1": {
-            "displayName": "Santiago",
-            "srcdsHostname": "TF2-QuickServer | Santiago",
-            "tvHostname": "TF2-QuickServer TV | Santiago",
-            "cloudProvider": "oracle",
-            "homeRegion": "sa-santiago-1"
-        },
-        "sa-bogota-1": {
-            "displayName": "Bogotá",
-            "srcdsHostname": "TF2-QuickServer | Bogotá",
-            "tvHostname": "TF2-QuickServer TV | Bogotá",
-            "cloudProvider": "oracle",
-            "homeRegion": "us-chicago-1"
-        },
-        "us-chicago-1": {
-            "displayName": "Chicago",
-            "srcdsHostname": "TF2-QuickServer | Chicago",
-            "tvHostname": "TF2-QuickServer TV | Chicago",
-            "cloudProvider": "oracle",
-            "homeRegion": "us-chicago-1"
-        },
-        "eu-frankfurt-1": {
-            "displayName": "Frankfurt",
-            "srcdsHostname": "TF2-QuickServer | Frankfurt",
-            "tvHostname": "TF2-QuickServer TV | Frankfurt",
-            "cloudProvider": "oracle",
-            "homeRegion": "sa-santiago-1"
-        },
-        "ap-sydney-1": {
-            "displayName": "Sydney",
-            "srcdsHostname": "TF2-QuickServer | Sydney",
-            "tvHostname": "TF2-QuickServer TV | Sydney",
-            "cloudProvider": "oracle",
-            "homeRegion": "sa-santiago-1"
-        },
-        "us-east-1-bue-1": {
-            "displayName": "Buenos Aires (Experimental)",
-            "srcdsHostname": "TF2-QuickServer | Buenos Aires",
-            "tvHostname": "TF2-QuickServer TV | Buenos Aires",
-            "cloudProvider": "aws",
-            "homeRegion": "us-east-1"
-        },
-        "us-east-1-lim-1": {
-            "displayName": "Lima (Experimental)",
-            "srcdsHostname": "TF2-QuickServer | Lima",
-            "tvHostname": "TF2-QuickServer TV | Lima",
-            "cloudProvider": "aws",
-            "homeRegion": "us-east-1"
-        }
+  "regions": {
+    "sa-saopaulo-1": {
+      "displayName": "São Paulo",
+      "srcdsHostname": "TF2-QuickServer | São Paulo",
+      "tvHostname": "TF2-QuickServer TV | São Paulo",
+      "cloudProvider": "oracle",
+      "homeRegion": "us-chicago-1"
     },
-    "variants": {
-        "default": {
-            "shape": "CI.Standard.E4.Flex",
-            "ocpu": 1,
-            "memory": 4,
-            "maxPlayers": 24,
-            "map": "cp_process_f12",
-            "svPure": 2,
-            "image": "sonikro/fat-tf2-standard-competitive-i386:latest"
-        },
-        "standard-competitive": {
-            "displayName": "Standard Competitive",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp.cfg",
-                "koth": "fbtf_6v6_koth.cfg",
-                "pl": "rgl_HL_stopwatch.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            }
-        },
-        "fbtf-6v6-standard": {
-            "displayName": "FBTF 6v6 Standard",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp.cfg",
-                "koth": "fbtf_6v6_koth.cfg"
-            },
-            "hostname": "FBTF 6v6 Standard | {region} @ TF2-QuickServer",
-            "guildId": "144450745662570496"
-        },
-        "fbtf-6v6-pro": {
-            "displayName": "FBTF 6v6 Pro",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp_pro.cfg",
-                "koth": "fbtf_6v6_koth.cfg"
-            },
-            "hostname": "FBTF 6v6 Pro | {region} @ TF2-QuickServer",
-            "guildId": "144450745662570496"
-        },
-        "fbtf-9v9": {
-            "displayName": "FBTF 9v9",
-            "defaultCfgs": {
-                "pl": "rgl_HL_stopwatch.cfg",
-                "koth": "rgl_HL_koth.cfg",
-                "cp_steel_f12": "rgl_HL_stopwatch.cfg"
-            },
-            "hostname": "FBTF 9v9 | {region} @ TF2-QuickServer",
-            "guildId": "144450745662570496"
-        },
-        "insertcoin": {
-            "displayName": "InsertCoin Mixes",
-            "hostname": "InsertCoin Mixes | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "insertcoin_5cp.cfg",
-                "koth": "fbtf_6v6_koth.cfg",
-                "pl": "rgl_HL_stopwatch.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            },
-            "admins": [
-                "STEAM_0:1:124066436",
-                "STEAM_0:0:674555708",
-                "STEAM_0:0:29546995",
-                "STEAM_0:0:126279196",
-                "STEAM_0:0:43847245",
-                "STEAM_0:1:609890121",
-                "STEAM_0:1:79034295",
-                "STEAM_0:1:80160413",
-                "STEAM_0:0:559647877",
-                "STEAM_0:1:66778305",
-                "STEAM_0:1:153691324",
-                "STEAM_0:1:569914170",
-                "STEAM_0:1:153691324",
-                "STEAM_0:0:598396606"
-            ],
-            "guildId": "1323509685264842752"
-        },
-        "insertcoin-hl": {
-            "displayName": "InsertCoin HL",
-            "hostname": "InsertCoin HL | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "pl": "bf_hl_stopwatch.cfg",
-                "5cp": "bf_hl_5cp.cfg",
-                "koth": "insertcoin_hl_koth.cfg",
-                "cp_steel_f12": "bf_hl_stopwatch.cfg"
-            },
-            "admins": [
-                "STEAM_0:1:124066436",
-                "STEAM_0:0:674555708",
-                "STEAM_0:0:29546995",
-                "STEAM_0:0:43847245",
-                "STEAM_0:1:79034295",
-                "STEAM_0:0:559647877",
-                "STEAM_0:1:108717565",
-                "STEAM_0:1:66778305",
-                "STEAM_0:1:161112963",
-                "STEAM_0:1:83898018",
-                "STEAM_0:0:147529553",
-                "STEAM_0:1:462697690",
-                "STEAM_0:1:151061834",
-                "STEAM_0:1:454167379",
-                "STEAM_0:0:226161678",
-                "STEAM_0:0:55877960",
-                "STEAM_0:0:53127652",
-                "STEAM_0:0:23221722"
-            ],
-            "guildId": "1414690765208158328"
-        },
-        "tf2pickup": {
-            "displayName": "br.tf2pickup.org",
-            "hostname": "br.tf2pickup.org | {region} @ TF2-QuickServer",
-            "image": "sonikro/fat-tf2-pickup:latest",
-            "emptyMinutesTerminate": 60,
-            "managedExternally": true,
-            "admins": [
-                "STEAM_0:0:14581482",
-                "STEAM_0:0:26146577",
-                "STEAM_1:0:57128127",
-                "STEAM_0:1:25189350",
-                "STEAM_0:1:48369748",
-                "STEAM_0:1:59961573",
-                "STEAM_0:1:109770789",
-                "STEAM_0:1:11075984"
-            ],
-            "guildId": "1151219992432492677"
-        },
-        "hlbr-tf2pickup": {
-            "displayName": "hl.br.tf2pickup.org",
-            "hostname": "hl.br.tf2pickup.org | {region} @ TF2-QuickServer",
-            "image": "sonikro/fat-tf2-pickup:latest",
-            "emptyMinutesTerminate": 60,
-            "managedExternally": true,
-            "admins": [
-                "STEAM_0:1:433143455",
-                "STEAM_0:1:79008369",
-                "STEAM_0:1:64055278",
-                "STEAM_0:0:44243516",
-                "STEAM_0:1:433143455"
-            ],
-            "guildId": "929204770969907280"
-        },
-        "mix-sa-novatos": {
-            "displayName": "Mix Novatos - B4nny cfg 25 min",
-            "hostname": "Mix SA Novatos | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "novatos_6v6_5cp.cfg",
-                "koth": "novatos_6v6_koth.cfg"
-            },
-            "admins": [
-                "STEAM_0:1:162898562",
-                "STEAM_0:0:185104239",
-                "STEAM_0:0:208429922",
-                "STEAM_0:0:453571126",
-                "STEAM_0:1:580470584",
-                "STEAM_0:0:457601451"
-            ],
-            "guildId": "1143342782396780584"
-        },
-        "insertcoin-novatos": {
-            "displayName": "InsertCoin Novatos",
-            "hostname": "InsertCoin Novatos | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "insertcoin_5cp_novatos.cfg",
-                "koth": "fbtf_6v6_koth.cfg",
-                "pl": "rgl_HL_stopwatch.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            },
-            "admins": [
-                "STEAM_0:1:124066436",
-                "STEAM_0:0:674555708",
-                "STEAM_0:0:29546995",
-                "STEAM_0:0:43847245",
-                "STEAM_0:0:23221722",
-                "STEAM_0:0:559647877",
-                "STEAM_0:1:153691324",
-                "STEAM_0:0:139729835",
-                "STEAM_0:1:454167379",
-                "STEAM_0:0:210475374",
-                "STEAM_0:1:438914332",
-                "STEAM_0:1:194888319",
-                "STEAM_0:0:210340262"
-            ],
-            "guildId": "1443412454574129224"
-        },
-        "TFArena": {
-            "displayName": "TF Arena",
-            "hostname": "TFArena | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "tfarena_6v6_5cp.cfg",
-                "koth": "tfarena_6v6_koth.cfg",
-                "pl": "tfarena_6v6_stopwatch.cfg",
-                "cp_steel_2024h": "tfarena_6v6_stopwatch.cfg"
-            },
-            "guildId": "803785792052527114"
-        },
-        "bf-9v9": {
-            "displayName": "BF HL",
-            "hostname": "Brasil Fortress HL | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "pl": "bf_hl_stopwatch.cfg",
-                "5cp": "bf_hl_5cp.cfg",
-                "koth": "bf_hl_koth.cfg",
-                "cp_steel_f12": "bf_hl_stopwatch.cfg"
-            },
-            "guildId": "312687261219160065"
-        },
-        "bf-6v6-standard": {
-            "displayName": "BF 6v6 Standard",
-            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "bf_6v6_5cp.cfg",
-                "koth": "bf_6v6_koth.cfg"
-            },
-            "guildId": "312687261219160065"
-        },
-        "bf-6v6-invite": {
-            "displayName": "BF 6v6 Invite",
-            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "bf_6v6_5cp_invite.cfg",
-                "koth": "bf_6v6_koth.cfg"
-            },
-            "guildId": "312687261219160065"
-        },
-        "qel-4v4": {
-            "displayName": "QEL 4v4",
-            "hostname": "QEL 4v4 | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "fbtf_6v6_5cp.cfg",
-                "koth": "qel_4s_koth.cfg"
-            },
-            "guildId": "1291587765770649656"
-        },
-        "mge-tf": {
-            "displayName": "MGE.TF",
-            "hostname": "MGE.TF | {region} @ TF2-QuickServer",
-            "guildId": "1172639313649995777",
-            "map": "mge_training_v8_beta4b",
-            "image": "sonikro/fat-mge-tf:latest",
-            "admins": [
-                "STEAM_0:1:40459123"
-            ]
-        },
-        "rgl-standard": {
-            "displayName": "RGL Standard",
-            "hostname": "RGL | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "pl": "rgl_HL_stopwatch.cfg",
-                "koth": "rgl_6s_koth.cfg",
-                "5cp": "rgl_6s_5cp_match_half1.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            },
-            "guildId": "137337002113761281"
-        },
-        "rgl-pro": {
-            "displayName": "RGL PRO",
-            "hostname": "RGL Pro | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "pl": "rgl_HL_stopwatch.cfg",
-                "koth": "rgl_6s_koth_pro.cfg",
-                "5cp": "rgl_6s_5cp_match_pro.cfg",
-                "ultiduo": "rgl_ud_ultiduo.cfg"
-            },
-            "guildId": "137337002113761281"
-        }
+    "sa-santiago-1": {
+      "displayName": "Santiago",
+      "srcdsHostname": "TF2-QuickServer | Santiago",
+      "tvHostname": "TF2-QuickServer TV | Santiago",
+      "cloudProvider": "oracle",
+      "homeRegion": "sa-santiago-1"
     },
-    "discord": {
-        "logChannelId": "1360789887208394851",
-        "reportDiscordChannelId": "1378761634889076926"
+    "sa-bogota-1": {
+      "displayName": "Bogotá",
+      "srcdsHostname": "TF2-QuickServer | Bogotá",
+      "tvHostname": "TF2-QuickServer TV | Bogotá",
+      "cloudProvider": "oracle",
+      "homeRegion": "us-chicago-1"
     },
-    "credits": {
-        "enabled": false
+    "us-chicago-1": {
+      "displayName": "Chicago",
+      "srcdsHostname": "TF2-QuickServer | Chicago",
+      "tvHostname": "TF2-QuickServer TV | Chicago",
+      "cloudProvider": "oracle",
+      "homeRegion": "us-chicago-1"
+    },
+    "eu-frankfurt-1": {
+      "displayName": "Frankfurt",
+      "srcdsHostname": "TF2-QuickServer | Frankfurt",
+      "tvHostname": "TF2-QuickServer TV | Frankfurt",
+      "cloudProvider": "oracle",
+      "homeRegion": "sa-santiago-1"
+    },
+    "ap-sydney-1": {
+      "displayName": "Sydney",
+      "srcdsHostname": "TF2-QuickServer | Sydney",
+      "tvHostname": "TF2-QuickServer TV | Sydney",
+      "cloudProvider": "oracle",
+      "homeRegion": "sa-santiago-1"
+    },
+    "us-east-1-bue-1": {
+      "displayName": "Buenos Aires (Experimental)",
+      "srcdsHostname": "TF2-QuickServer | Buenos Aires",
+      "tvHostname": "TF2-QuickServer TV | Buenos Aires",
+      "cloudProvider": "aws",
+      "homeRegion": "us-east-1"
+    },
+    "us-east-1-lim-1": {
+      "displayName": "Lima (Experimental)",
+      "srcdsHostname": "TF2-QuickServer | Lima",
+      "tvHostname": "TF2-QuickServer TV | Lima",
+      "cloudProvider": "aws",
+      "homeRegion": "us-east-1"
     }
+  },
+  "variants": {
+    "default": {
+      "shape": "CI.Standard.E4.Flex",
+      "ocpu": 1,
+      "memory": 4,
+      "maxPlayers": 24,
+      "map": "cp_process_f12",
+      "svPure": 2,
+      "image": "sonikro/fat-tf2-standard-competitive-i386:latest"
+    },
+    "standard-competitive": {
+      "displayName": "Standard Competitive",
+      "defaultCfgs": {
+        "5cp": "fbtf_6v6_5cp.cfg",
+        "koth": "fbtf_6v6_koth.cfg",
+        "pl": "rgl_HL_stopwatch.cfg",
+        "ultiduo": "rgl_ud_ultiduo.cfg"
+      }
+    }
+  },
+  "discord": {
+    "logChannelId": "1360789887208394851",
+    "reportDiscordChannelId": "1378761634889076926"
+  },
+  "credits": {
+    "enabled": false
+  }
 }

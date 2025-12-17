@@ -41,19 +41,32 @@ export class TerminateEmptyServers {
             };
         });
 
+        const variantConfigMap = new Map<string, number>();
+        for (const server of mergedServers) {
+            if (!variantConfigMap.has(server.variant)) {
+                try {
+                    const variantConfig = await configManager.getVariantConfig({ 
+                        variant: server.variant, 
+                        guildId: server.guildId 
+                    });
+                    variantConfigMap.set(server.variant, variantConfig?.emptyMinutesTerminate ?? 10);
+                } catch (error) {
+                    variantConfigMap.set(server.variant, 10);
+                }
+            }
+        }
+
         const serversToDelete = mergedServers.filter((server) => {
             if (!server.emptySince) {
                 return false;
             }
-            const variantConfig = configManager.getVariantConfig(server.variant);
-            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+            const minutesEmpty = variantConfigMap.get(server.variant) ?? 10;
             const emptyDuration = new Date().getTime() - server.emptySince.getTime();
             return emptyDuration >= minutesEmpty * 60 * 1000;
         });
 
         for (const server of serversToDelete) {
-            const variantConfig = configManager.getVariantConfig(server.variant);
-            const minutesEmpty = variantConfig?.emptyMinutesTerminate ?? 10;
+            const minutesEmpty = variantConfigMap.get(server.variant) ?? 10;
 
             logger.emit({
                 severityText: 'INFO',

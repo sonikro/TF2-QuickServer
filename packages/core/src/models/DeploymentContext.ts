@@ -11,6 +11,7 @@ export class DeploymentContext {
         variantName,
         statusUpdater,
         sourcemodAdminSteamId,
+        guildId,
         extraEnvs = {}
     }: {
         serverId: string;
@@ -18,6 +19,7 @@ export class DeploymentContext {
         variantName: Variant;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
+        guildId?: string;
         extraEnvs?: Record<string, string>;
     }) {
         this.serverId = serverId;
@@ -25,6 +27,7 @@ export class DeploymentContext {
         this.variantName = variantName;
         this.statusUpdater = statusUpdater;
         this.sourcemodAdminSteamId = sourcemodAdminSteamId;
+        this.guildId = guildId;
         this.extraEnvs = extraEnvs;
     }
 
@@ -33,6 +36,7 @@ export class DeploymentContext {
     public readonly variantName: Variant;
     public readonly statusUpdater: StatusUpdater;
     public readonly sourcemodAdminSteamId?: string;
+    public readonly guildId?: string;
     public readonly extraEnvs: Record<string, string>;
 
     /**

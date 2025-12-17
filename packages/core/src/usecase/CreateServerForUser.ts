@@ -111,6 +111,7 @@ export class CreateServerForUser {
                 region: args.region,
                 variant: args.variantName,
                 createdBy: args.creatorId,
+                guildId: args.guildId,
                 status: "pending",
             } as Server, trx);
         });
@@ -122,6 +123,7 @@ export class CreateServerForUser {
             variantName: args.variantName,
             sourcemodAdminSteamId: user.steamIdText,
             serverId,
+            guildId: args.guildId,
             extraEnvs: guildParameters?.environment_variables || {},
             statusUpdater
         });
@@ -134,6 +136,7 @@ export class CreateServerForUser {
         await serverRepository.upsertServer({
             ...server,
             createdBy: args.creatorId,
+            guildId: args.guildId,
             status: "ready"
         });
         return server;

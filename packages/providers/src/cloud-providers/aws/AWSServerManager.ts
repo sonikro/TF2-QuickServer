@@ -101,6 +101,7 @@ export class AWSServerManager implements ServerManager {
             variantName: args.variantName,
             statusUpdater: args.statusUpdater,
             sourcemodAdminSteamId: args.sourcemodAdminSteamId,
+            guildId: args.guildId,
             extraEnvs: args.extraEnvs,
         });
 
@@ -115,7 +116,10 @@ export class AWSServerManager implements ServerManager {
             const credentials = ServerCredentials.generate(this.passwordGeneratorService);
 
             // Get configuration
-            const variantConfig = this.configManager.getVariantConfig(args.variantName);
+            const variantConfig = await this.configManager.getVariantConfig({ 
+                variant: args.variantName, 
+                guildId: args.guildId 
+            });
             const regionConfig = this.configManager.getRegionConfig(args.region);
 
             // Build environment variables

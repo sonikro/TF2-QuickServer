@@ -10,7 +10,7 @@ import {
     Collection,
     PermissionFlagsBits
 } from "discord.js";
-import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region } from "@tf2qs/core";
+import { getRegionDisplayName, Region, VariantRepository } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
 import { createInteractionStatusUpdater } from "@tf2qs/providers";
 import { commandErrorHandler } from "../commandErrorHandler";
@@ -22,20 +22,14 @@ import { formatServerMessage } from "../formatServerMessage";
 export function createServerCommandHandlerFactory(dependencies: {
     createServerForUser: CreateServerForUser,
     backgroundTaskQueue: BackgroundTaskQueue,
+    variantRepository: VariantRepository,
 }) {
     return async function createServerCommandHandler(interaction: ChatInputCommandInteraction) {
-        const { createServerForUser, backgroundTaskQueue } = dependencies;
+        const { createServerForUser, backgroundTaskQueue, variantRepository } = dependencies;
         const region = interaction.options.getString('region') as Region;
 
         // Step 1: Show variant buttons
-        const allVariants = getVariantConfigs();
-        const guildSpecificVariants = allVariants.filter(variant => 
-            variant.config.guildId === interaction.guildId
-        );
-        
-        const variants = guildSpecificVariants.length > 0 
-            ? guildSpecificVariants
-            : allVariants.filter(variant => !variant.config.guildId);
+        const variants = await variantRepository.getVariantConfigs({ guildId: interaction.guildId || undefined });
 
         const rows = [];
         for (let i = 0; i < variants.length; i += 5) {
@@ -100,7 +94,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                         guildId: buttonInteraction.guildId!,
                         statusUpdater: createInteractionStatusUpdater(buttonInteraction)
                     });
-                    const variantConfig = getVariantConfig(variantName);
+                    const variantConfig = await variantRepository.getVariantConfig({ variant: variantName, guildId: buttonInteraction.guildId || undefined });
                     if (variantConfig.managedExternally) {
                         await buttonInteraction.followUp({
                             content: `🎉 **Server Created and Registered!** 🎉\n\n` +

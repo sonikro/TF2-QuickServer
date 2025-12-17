@@ -14,6 +14,9 @@ import { ConfigManager } from "@tf2qs/core";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
+import { createVariantCommandDefinition, createVariantCommandHandlerFactory } from "./CreateVariant";
+import { deleteVariantCommandDefinition, deleteVariantCommandHandlerFactory } from "./DeleteVariant";
+import { CreateVariant, DeleteVariant, VariantRepository } from "@tf2qs/core";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -24,6 +27,9 @@ export type CommandDependencies = {
     backgroundTaskQueue: BackgroundTaskQueue;
     getServerStatus: GetServerStatus;
     getUserServers: GetUserServers;
+    createVariant: CreateVariant;
+    deleteVariant: DeleteVariant;
+    variantRepository: VariantRepository;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -34,6 +40,7 @@ export function createCommands(dependencies: CommandDependencies) {
             handler: createServerCommandHandlerFactory({
                 createServerForUser: dependencies.createServerForUser,
                 backgroundTaskQueue: dependencies.backgroundTaskQueue,
+                variantRepository: dependencies.variantRepository,
             }),
         },
         terminateServer: {
@@ -62,6 +69,20 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: getMyServersCommandDefinition,
             handler: getMyServersCommandHandlerFactory({
                 getUserServers: dependencies.getUserServers,
+            })
+        },
+        createVariant: {
+            name: "create-variant",
+            definition: createVariantCommandDefinition,
+            handler: createVariantCommandHandlerFactory({
+                createVariant: dependencies.createVariant,
+            })
+        },
+        deleteVariant: {
+            name: "delete-variant",
+            definition: deleteVariantCommandDefinition,
+            handler: deleteVariantCommandHandlerFactory({
+                deleteVariant: dependencies.deleteVariant,
             })
         },
         ...(dependencies.configManager.getCreditsConfig().enabled ? {

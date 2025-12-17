@@ -35,7 +35,10 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
             async () => {
                 const awsRegionConfig = this.awsConfigService.getRegionConfig(context.region);
                 const { ecsClient } = this.awsConfigService.getClients(context.region);
-                const variantConfig = this.configManager.getVariantConfig(context.variantName);
+                const variantConfig = await this.configManager.getVariantConfig({ 
+                    variant: context.variantName, 
+                    guildId: context.guildId 
+                });
 
                 this.tracingService.logOperationStart('Registering task definition', context.serverId, context.region);
 
