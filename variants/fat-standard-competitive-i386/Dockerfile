@@ -39,7 +39,7 @@ RUN mkdir -p "${PLUGIN_INSTALL_DIR}"
 
 # SOAP-TF2DM - DM mode plugin
 ARG SOAP_DM_FILE_NAME=soap.zip
-ARG SOAP_DM_VERSION=4.4.7
+ARG SOAP_DM_VERSION=4.4.8
 ARG SOAP_DM_URL=https://github.com/sapphonie/SOAP-TF2DM/releases/download/v${SOAP_DM_VERSION}/${SOAP_DM_FILE_NAME}
 RUN curl -L "${SOAP_DM_URL}" -o "${SOAP_DM_FILE_NAME}" \
   && unzip -q "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
@@ -53,7 +53,7 @@ RUN curl -L "${COMP_FIXES_URL}" -o "${COMP_FIXES_FILE_NAME}" \
 
 # MGEMod
 ARG MGEMOD_FILE_NAME=mge.zip
-ARG MGEMOD_VERSION=v3.0.7
+ARG MGEMOD_VERSION=v3.0.9
 ARG MGEMOD_URL=https://github.com/sapphonie/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
 RUN curl -L "${MGEMOD_URL}" -o "${MGEMOD_FILE_NAME}" \
   && unzip -q -n "${MGEMOD_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
@@ -69,14 +69,14 @@ RUN curl -L "${F2_SOURCEMOD_PLUGINS_URL}" -o "${F2_SOURCEMOD_PLUGINS_FILE_NAME}"
 
 # ETF2L configs
 ARG ETF2L_CONFIGS_FILE_NAME=etf2l_configs.zip
-ARG ETF2L_CONFIGS_VERSION=1.0.20
+ARG ETF2L_CONFIGS_VERSION=1.0.23
 ARG ETF2L_CONFIGS_URL=https://github.com/ETF2L/gameserver-configs/releases/download/${ETF2L_CONFIGS_VERSION}/${ETF2L_CONFIGS_FILE_NAME}
 RUN curl -L "${ETF2L_CONFIGS_URL}" -o "${ETF2L_CONFIGS_FILE_NAME}" \
   && unzip -q "${ETF2L_CONFIGS_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/cfg/"
 
 # RGL configs and plugins
 ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
-ARG RGL_CONFIGS_VERSION=v357
+ARG RGL_CONFIGS_VERSION=v359
 ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
 RUN curl -L "${RGL_CONFIGS_URL}" -o "${RGL_CONFIGS_FILE_NAME}" \
   && unzip -q "${RGL_CONFIGS_FILE_NAME}" \
@@ -106,7 +106,7 @@ RUN curl -L "https://github.com/demostf/plugin/raw/master/demostf.smx" \
 
 # TF2Rue - Rounds Until End plugin
 ARG TF2RUE_FILE_NAME=tf2rue.zip
-ARG TF2RUE_VERSION=v0.0.12
+ARG TF2RUE_VERSION=v0.0.13
 ARG TF2RUE_URL=https://github.com/sapphonie/tf2rue/releases/download/${TF2RUE_VERSION}/${TF2RUE_FILE_NAME}
 RUN curl -L "${TF2RUE_URL}" -o "${TF2RUE_FILE_NAME}" \
   && unzip -q -n "${TF2RUE_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
