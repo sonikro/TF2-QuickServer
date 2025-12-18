@@ -52,7 +52,7 @@ export async function startDiscordBot() {
 
     // Initialize the client with necessary intents
     const client = new Client({
-        intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+        intents: [GatewayIntentBits.Guilds]
     });
 
     // Define the bot token
