@@ -47,6 +47,17 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  build-fat-tf2center:
+    needs: build-fat-tf2-standard-competitive-i386
+    uses: ./.github/workflows/build-variant.yaml
+    with:
+      variant-name: fat-tf2center
+      dockerfile-path: ./variants/fat-tf2center/Dockerfile
+      image-name: sonikro/fat-tf2center
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   build-fat-mge-tf:
     uses: ./.github/workflows/build-variant.yaml
     with:
@@ -64,6 +75,7 @@ jobs:
       - build-fat-tf2-standard-competitive-amd64
       - build-fat-mge-tf
       - build-fat-tf2-pickup
+      - build-fat-tf2center
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout repository

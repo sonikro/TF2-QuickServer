@@ -23,6 +23,7 @@
     "push:fat:standard-competitive-i386": "docker push sonikro/fat-tf2-standard-competitive-i386:latest",
     "build:fat:tf2pickup": "docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .",
     "build:fat:mge-tf": "docker build -t sonikro/fat-mge-tf:latest -f ./variants/fat-mge-tf/Dockerfile .",
+    "build:fat:tf2center": "docker build -t sonikro/fat-tf2-tf2center:latest -f ./variants/fat-tf2center/Dockerfile .",
     "push:fat:mge-tf": "docker push sonikro/fat-mge-tf:latest",
     "build": "tsgo"
   },
