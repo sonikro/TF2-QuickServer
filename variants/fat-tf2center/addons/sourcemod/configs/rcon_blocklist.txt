@@ -1,0 +1,3 @@
+killserver
+quit
+exit

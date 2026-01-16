@@ -81,6 +81,32 @@ services:
       - "host.docker.internal:27101"
     profiles:
       - server
+  fat-tf2center:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-tf2center/Dockerfile
+    container_name: tf2-fat-tf2center
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "2"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "cp_badlands"
+      - +log
+      - on
+      - +logaddress_add
+      - "host.docker.internal:27101"
+    profiles:
+      - server
   fat-mge-tf:
     build:
       context: ./
