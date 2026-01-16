@@ -186,7 +186,7 @@
         "tf2center": {
             "displayName": "TF2Center",
             "hostname": "TF2Center | {region} @ TF2-QuickServer",
-            "image": "sonikro/fat-tf2-tf2center:latest",
+            "image": "sonikro/fat-tf2center:latest",
             "emptyMinutesTerminate": 60
         },
         "hlbr-tf2pickup": {
