@@ -373,30 +373,25 @@ export class OCIServerManager implements ServerManager {
                     displayName: serverId,
                 });
 
-                if (!containerInstances.containerInstanceCollection.items || containerInstances.containerInstanceCollection.items.length === 0) {
-                    throw new Error(`No container instance found for serverId: ${serverId}`);
+                const containerInstanceId = containerInstances.containerInstanceCollection.items?.[0]?.id;
+                
+                if (containerInstanceId) {
+                    logger.emit({ severityText: 'INFO', body: `Deleting container instance for server ID: ${serverId}`, attributes: { serverId } });
+                    await containerClient.deleteContainerInstance({
+                        containerInstanceId,
+                    });
+                } else {
+                    logger.emit({ severityText: 'INFO', body: `Container instance not found for server ID: ${serverId}, skipping deletion`, attributes: { serverId } });
                 }
 
-                const containerInstanceId = containerInstances.containerInstanceCollection.items[0].id;
-                // Get NSG ID by name (serverId)
-                // NOTE: vcn_id must be present in your OracleRegionSettings config
-                const vcnId = oracleRegionConfig.vnc_id
+                const vcnId = oracleRegionConfig.vnc_id;
                 const nsgs = await vncClient.listNetworkSecurityGroups({
                     compartmentId: oracleRegionConfig.compartment_id,
                     displayName: serverId,
                     vcnId: vcnId,
                 });
-                let nsgId: string | undefined = undefined;
-                if (nsgs.items && nsgs.items.length > 0) {
-                    nsgId = nsgs.items[0].id;
-                }
+                const nsgId = nsgs.items?.[0]?.id;
 
-                logger.emit({ severityText: 'INFO', body: `Deleting container instance for server ID: ${serverId}`, attributes: { serverId } });
-                await containerClient.deleteContainerInstance({
-                    containerInstanceId,
-                });
-
-                // Wait for the NSG to have no VNICs associated before deleting it
                 if (nsgId) {
                     logger.emit({ severityText: 'INFO', body: `Deleting network security group for server ID: ${serverId}`, attributes: { serverId } });
                     await waitUntil(async () => {
@@ -407,6 +402,8 @@ export class OCIServerManager implements ServerManager {
                         throw new Error("NSG still has associated VNICs");
                     }, { interval: 5000, timeout: 300000 });
                     await this.deleteNetworkSecurityGroup({ nsgId, vncClient });
+                } else {
+                    logger.emit({ severityText: 'INFO', body: `Network security group not found for server ID: ${serverId}, skipping deletion`, attributes: { serverId } });
                 }
 
                 logger.emit({ severityText: 'INFO', body: `Server deletion completed successfully for server ID: ${serverId}`, attributes: { serverId } });
