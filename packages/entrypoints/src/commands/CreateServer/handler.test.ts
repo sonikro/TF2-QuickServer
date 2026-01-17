@@ -127,7 +127,7 @@ describe("createServerCommandHandler", () => {
         });
     });
 
-    it("should reply with custom message for variants that are managed externally", async () => {
+    it("should reply with custom message for variants that have customCreationMessage", async () => {
         const { handler, interaction, createServerForUser, message, collector } = createHandler();
         const region = getTestRegion();
         const variantName = "tf2pickup";
@@ -175,7 +175,7 @@ describe("createServerCommandHandler", () => {
             content: expect.stringContaining(`Creating server in region`),
         });
         expect(buttonInteraction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining("managed by an external system"),
+            content: expect.stringContaining("TF2 Pickup system"),
             flags: MessageFlags.Ephemeral,
         });
     });

@@ -10,7 +10,7 @@ import {
     Collection,
     PermissionFlagsBits
 } from "discord.js";
-import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region } from "@tf2qs/core";
+import { getRegionDisplayName, getVariantConfigs, getVariantConfig, Region, interpolateString } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
 import { createInteractionStatusUpdater } from "@tf2qs/providers";
 import { commandErrorHandler } from "../commandErrorHandler";
@@ -101,16 +101,16 @@ export function createServerCommandHandlerFactory(dependencies: {
                         statusUpdater: createInteractionStatusUpdater(buttonInteraction)
                     });
                     const variantConfig = getVariantConfig(variantName);
-                    if (variantConfig.managedExternally) {
+                    
+                    if (variantConfig.customCreationMessage) {
+                        const interpolatedMessage = interpolateString(variantConfig.customCreationMessage, deployedServer);
                         await buttonInteraction.followUp({
-                            content: `🎉 **Server Created and Registered!** 🎉\n\n` +
-                                `💻 This server is managed by an external system.\n` +
-                                `🔒 Therefore, the connect information will not be shared with you.\n` +
-                                `✅ The server is now **available to be used**!`,
+                            content: interpolatedMessage,
                             flags: MessageFlags.Ephemeral
                         });
                         return;
                     }
+                    
                     await buttonInteraction.followUp({
                         content: `🎉 **Server Created Successfully!** 🎉\n\n${formatServerMessage(deployedServer)}`,
                         flags: MessageFlags.Ephemeral

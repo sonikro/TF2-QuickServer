@@ -167,7 +167,7 @@
             "hostname": "br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
-            "managedExternally": true,
+            "customCreationMessage": "🎉 **Server Created Successfully!** 🎉\n\n🤖 This server is managed by the TF2 Pickup system.\n📋 It will automatically register to the platform and be available for matches.\n✅ No further action is needed - the server is ready to go!",
             "admins": [
                 "STEAM_0:0:14581482",
                 "STEAM_0:0:26146577",
@@ -187,14 +187,15 @@
             "displayName": "TF2Center",
             "hostname": "TF2Center | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2center:latest",
-            "emptyMinutesTerminate": 120
+            "emptyMinutesTerminate": 120,
+            "customCreationMessage": "🎉 **Server Created Successfully!** 🎉\n\n📍 **Direct Connect Information:**\n`rcon_address: {rconAddress}:27015`\n`rcon_password: {rconPassword}`\n\nUse this information to create a lobby in the TF2Center platform."
         },
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
             "hostname": "hl.br.tf2pickup.org | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
-            "managedExternally": true,
+            "customCreationMessage": "🎉 **Server Created and Registered!** 🎉\n\n💻 This server is managed by an external system.\n🔒 Therefore, the connect information will not be shared with you.\n✅ The server is now **available to be used**!",
             "admins": [
                 "STEAM_0:1:433143455",
                 "STEAM_0:1:79008369",

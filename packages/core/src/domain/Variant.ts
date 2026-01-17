@@ -38,11 +38,12 @@ export type VariantConfig = {
     guildId?: string;
 
     /**
-     * Whether the server is managed by an external system.
-     * If true, users will not receive connection details as the server is managed externally.
-     * @default false
+     * Custom message shown to the user when the server is created successfully.
+     * Supports variable interpolation using double braces, e.g. {hostIp}, {hostPort}, {serverId}
+     * Available variables come from the Server object properties.
+     * If not set, the default server connection message will be shown.
      */
-    managedExternally?: boolean;
+    customCreationMessage?: string;
 }
 
 export function getVariantConfig(variant: Variant) {
