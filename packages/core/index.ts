@@ -51,4 +51,5 @@ export * from './src/usecase/TerminateServersWithoutCredit';
 
 // Utils
 export * from './src/utils/ConfigManager';
+export * from './src/utils/interpolateString';
 

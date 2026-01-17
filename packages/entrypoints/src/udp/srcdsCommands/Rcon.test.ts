@@ -105,5 +105,15 @@ describe("rcon command parser", () => {
             expect(services.serverCommander.query).not.toHaveBeenCalled();
             expect(vi.mocked(logger.emit)).not.toHaveBeenCalledWith(expect.objectContaining({ severityText: 'WARN' }), expect.anything());
         });
+
+        it("should allow status command from extra allowed IPs", async () => {
+            process.env.STATUS_EXTRA_ALLOWED_IPS = "1.2.3.4,10.20.30.40";
+            const allowedIpsCommand = 'rcon from "10.20.30.40:51736": command "status"';
+            const command = rcon(allowedIpsCommand);
+            if (!command || !command.handler) throw new Error("No handler");
+            await command.handler({ args: command.args, password: "123", services });
+            expect(services.serverCommander.query).not.toHaveBeenCalled();
+            expect(vi.mocked(logger.emit)).not.toHaveBeenCalledWith(expect.objectContaining({ severityText: 'WARN' }), expect.anything());
+        })
     });
 });
