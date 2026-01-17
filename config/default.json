@@ -187,7 +187,7 @@
             "displayName": "TF2Center",
             "hostname": "TF2Center | {region} @ TF2-QuickServer",
             "image": "sonikro/fat-tf2center:latest",
-            "emptyMinutesTerminate": 60
+            "emptyMinutesTerminate": 120
         },
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
