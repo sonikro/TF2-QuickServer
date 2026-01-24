@@ -27,6 +27,9 @@ services:
       - "24"
       - "+map"
       - "cp_badlands"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
     profiles:
       - server
   fat-server-amd64:
@@ -53,6 +56,9 @@ services:
       - on
       - +logaddress_add
       - "host.docker.internal:27101"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
     profiles:
       - server
   fat-server-i386:
@@ -79,6 +85,9 @@ services:
       - on
       - +logaddress_add
       - "host.docker.internal:27101"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
     profiles:
       - server
   fat-tf2center:
@@ -105,6 +114,9 @@ services:
       - on
       - +logaddress_add
       - "host.docker.internal:27101"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
     profiles:
       - server
   fat-mge-tf:
@@ -131,5 +143,8 @@ services:
       - on
       - +logaddress_add
       - "host.docker.internal:27101"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
     profiles:
       - server

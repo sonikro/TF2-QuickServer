@@ -61,6 +61,30 @@ export class OCIServerManager implements ServerManager {
                 }
             });
         }
+        // Add "allow all UDP" ingress/egress rules for fragmented UDP packets.
+        // OCI drops subsequent UDP fragments that lack port information when only port-specific rules exist.
+        // These rules ensure SourceTV spectators are not kicked due to fragmented packet handling.
+        await vncClient.addNetworkSecurityGroupSecurityRules({
+            networkSecurityGroupId: nsgId,
+            addNetworkSecurityGroupSecurityRulesDetails: {
+                securityRules: [
+                    {
+                        direction: core.models.AddSecurityRuleDetails.Direction.Ingress,
+                        protocol: "17", // UDP
+                        source: "0.0.0.0/0",
+                        sourceType: core.models.AddSecurityRuleDetails.SourceType.CidrBlock,
+                        description: "Allow all UDP ingress - required for UDP fragments / SourceTV / TF2",
+                    },
+                    {
+                        direction: core.models.AddSecurityRuleDetails.Direction.Egress,
+                        protocol: "17", // UDP
+                        destination: "0.0.0.0/0",
+                        destinationType: core.models.AddSecurityRuleDetails.DestinationType.CidrBlock,
+                        description: "Allow all UDP egress - required for UDP fragments / SourceTV / TF2",
+                    }
+                ]
+            }
+        });
         return nsgId;
     }
 
@@ -178,6 +202,10 @@ export class OCIServerManager implements ServerManager {
                                         logSecret.toString(),
                                     ],
                                     environmentVariables,
+                                    // Grant all capabilities to the TF2 container. This includes NET_ADMIN
+                                    // which is required to set MTU inside the container for UDP fragmentation control.
+                                    // Lowering MTU helps prevent SourceTV spectators from being kicked due to
+                                    // OCI dropping fragmented UDP packets.
                                     securityContext: {
                                         securityContextType: "LINUX",
                                         capabilities: {

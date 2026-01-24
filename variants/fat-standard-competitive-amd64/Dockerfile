@@ -178,6 +178,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   unzip \
   gettext-base \
   libbsd0 \
+  iproute2 \
   && rm -rf /var/lib/apt/lists/*
 
 ARG USER=tf2
@@ -271,7 +272,12 @@ COPY --chown=tf2 maps/ "${SERVER_DIR}/tf/maps/"
 COPY --chown=tf2 variants/base/enforced_cvars.cfg $SERVER_DIR/enforced_cvars.cfg
 COPY --chown=tf2 variants/base/custom_entrypoint.sh .
 
-ENTRYPOINT [ "./custom_entrypoint.sh" ]
+# Root entrypoint for privileged operations (MTU configuration)
+# Must be owned by root and run as root
+USER root
+COPY --chmod=755 variants/base/root_entrypoint.sh .
+
+ENTRYPOINT [ "./root_entrypoint.sh" ]
 CMD ["+sv_pure", "1", "+map", "cp_badlands", "+maxplayers", "24"]
 
 EXPOSE $PORT/tcp
