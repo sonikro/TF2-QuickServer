@@ -55,10 +55,14 @@ func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, oracl
 	}
 
 	var oldIngressRuleIDs []string
+	var oldEgressRuleIDs []string
 	for _, rule := range listResp.Items {
 		if string(rule.Direction) == "INGRESS" {
 			fmt.Printf("[NSG] Marking old ingress rule for removal: %s\n", *rule.Id)
 			oldIngressRuleIDs = append(oldIngressRuleIDs, *rule.Id)
+		} else if string(rule.Direction) == "EGRESS" {
+			fmt.Printf("[NSG] Marking old egress rule for removal: %s\n", *rule.Id)
+			oldEgressRuleIDs = append(oldEgressRuleIDs, *rule.Id)
 		}
 	}
 
@@ -96,6 +100,23 @@ func EnableFirewallRestriction(ctx context.Context, client VirtualNetwork, oracl
 		fmt.Println("[NSG] Successfully removed old ingress rules.")
 	}
 
+	// Remove old egress rules (including allow-all UDP egress)
+	if len(oldEgressRuleIDs) > 0 {
+		fmt.Printf("[NSG] Removing %d old egress rules...\n", len(oldEgressRuleIDs))
+		removeReq := core.RemoveNetworkSecurityGroupSecurityRulesRequest{
+			NetworkSecurityGroupId: &nsgID,
+			RemoveNetworkSecurityGroupSecurityRulesDetails: core.RemoveNetworkSecurityGroupSecurityRulesDetails{
+				SecurityRuleIds: oldEgressRuleIDs,
+			},
+		}
+		_, err := client.RemoveNetworkSecurityGroupSecurityRules(ctx, removeReq)
+		if err != nil {
+			fmt.Printf("[NSG] Failed to remove old egress rules: %v\n", err)
+			return fmt.Errorf("failed to remove old egress rules: %w", err)
+		}
+		fmt.Println("[NSG] Successfully removed old egress rules.")
+	}
+
 	fmt.Println("[NSG] Firewall restriction enabled.")
 	return nil
 }
@@ -120,19 +141,27 @@ func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, orac
 	}
 
 	var oldIngressRuleIDs []string
+	var oldEgressRuleIDs []string
 	for _, rule := range listResp.Items {
 		if string(rule.Direction) == "INGRESS" {
 			fmt.Printf("[NSG] Marking old ingress rule for removal: %s\n", *rule.Id)
 			oldIngressRuleIDs = append(oldIngressRuleIDs, *rule.Id)
+		} else if string(rule.Direction) == "EGRESS" {
+			fmt.Printf("[NSG] Marking old egress rule for removal: %s\n", *rule.Id)
+			oldEgressRuleIDs = append(oldEgressRuleIDs, *rule.Id)
 		}
 	}
 
 	// Add new rules for TCP and UDP 27015-27020 from 0.0.0.0/0
-	fmt.Println("[NSG] Adding allow-all rules for TCP/UDP 27015-27020 from 0.0.0.0/0...")
+	// Also add allow-all UDP rules (no port restriction) for fragmented UDP packets
+	fmt.Println("[NSG] Adding allow-all rules for TCP/UDP 27015-27020 and allow-all UDP from 0.0.0.0/0...")
 	allCIDR := "0.0.0.0/0"
 	tcpProto := "6"
 	udpProto := "17"
+	ingressDescription := "Allow all UDP ingress - required for UDP fragments / SourceTV / TF2"
+	egressDescription := "Allow all UDP egress - required for UDP fragments / SourceTV / TF2"
 	rules := []core.AddSecurityRuleDetails{
+		// Port-specific TCP rule
 		{
 			Direction:   core.AddSecurityRuleDetailsDirectionIngress,
 			Source:      &allCIDR,
@@ -146,6 +175,7 @@ func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, orac
 				},
 			},
 		},
+		// Port-specific UDP rule
 		{
 			Direction:   core.AddSecurityRuleDetailsDirectionIngress,
 			Source:      &allCIDR,
@@ -158,6 +188,24 @@ func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, orac
 					Max: common.Int(27020),
 				},
 			},
+		},
+		// Allow all UDP ingress (no port restriction) for fragmented packets
+		{
+			Direction:   core.AddSecurityRuleDetailsDirectionIngress,
+			Source:      &allCIDR,
+			SourceType:  core.AddSecurityRuleDetailsSourceTypeCidrBlock,
+			Protocol:    &udpProto,
+			IsStateless: common.Bool(false),
+			Description: &ingressDescription,
+		},
+		// Allow all UDP egress (no port restriction) for fragmented packets
+		{
+			Direction:       core.AddSecurityRuleDetailsDirectionEgress,
+			Destination:     &allCIDR,
+			DestinationType: core.AddSecurityRuleDetailsDestinationTypeCidrBlock,
+			Protocol:        &udpProto,
+			IsStateless:     common.Bool(false),
+			Description:     &egressDescription,
 		},
 	}
 
@@ -189,6 +237,23 @@ func DisableFirewallRestriction(ctx context.Context, client VirtualNetwork, orac
 			return fmt.Errorf("failed to remove old ingress rules: %w", err)
 		}
 		fmt.Println("[NSG] Successfully removed old ingress rules.")
+	}
+
+	// Remove old egress rules
+	if len(oldEgressRuleIDs) > 0 {
+		fmt.Printf("[NSG] Removing %d old egress rules...\n", len(oldEgressRuleIDs))
+		removeReq := core.RemoveNetworkSecurityGroupSecurityRulesRequest{
+			NetworkSecurityGroupId: &nsgID,
+			RemoveNetworkSecurityGroupSecurityRulesDetails: core.RemoveNetworkSecurityGroupSecurityRulesDetails{
+				SecurityRuleIds: oldEgressRuleIDs,
+			},
+		}
+		_, err := client.RemoveNetworkSecurityGroupSecurityRules(ctx, removeReq)
+		if err != nil {
+			fmt.Printf("[NSG] Failed to remove old egress rules: %v\n", err)
+			return fmt.Errorf("failed to remove old egress rules: %w", err)
+		}
+		fmt.Println("[NSG] Successfully removed old egress rules.")
 	}
 
 	fmt.Println("[NSG] Firewall restriction disabled (allow-all rules active).")

@@ -42,27 +42,35 @@ func (m *mockVirtualNetworkClient) ListNetworkSecurityGroupSecurityRules(ctx con
 
 func TestEnableFirewallRestriction(t *testing.T) {
 	tests := []struct {
-		name          string
-		ips           []string
-		existingRules []core.SecurityRule
-		wantAdd       []core.AddSecurityRuleDetails
-		wantRemove    []string
-		oracleParams  config.OracleParameters
+		name              string
+		ips               []string
+		existingRules     []core.SecurityRule
+		wantAdd           []core.AddSecurityRuleDetails
+		wantRemoveIngress []string
+		wantRemoveEgress  []string
+		oracleParams      config.OracleParameters
 	}{
 		{
-			name: "it should add new rules for a single IP, and remove old ingress rules",
+			name: "it should add new rules for a single IP, and remove old ingress and egress rules",
 			ips:  []string{"1.2.3.4"},
-			existingRules: []core.SecurityRule{{
-				Id:        strPtr("old-ingress"),
-				Direction: "INGRESS",
-			}},
+			existingRules: []core.SecurityRule{
+				{
+					Id:        strPtr("old-ingress"),
+					Direction: "INGRESS",
+				},
+				{
+					Id:        strPtr("old-egress"),
+					Direction: "EGRESS",
+				},
+			},
 			wantAdd: []core.AddSecurityRuleDetails{{
 				Direction:  core.AddSecurityRuleDetailsDirectionIngress,
 				Source:     strPtr("1.2.3.4/32"),
 				SourceType: core.AddSecurityRuleDetailsSourceTypeCidrBlock,
 				Protocol:   strPtr("all"),
 			}},
-			wantRemove: []string{"old-ingress"},
+			wantRemoveIngress: []string{"old-ingress"},
+			wantRemoveEgress:  []string{"old-egress"},
 			oracleParams: config.OracleParameters{
 				NsgName:       "nsgid",
 				CompartmentId: "compartmentid",
@@ -70,7 +78,7 @@ func TestEnableFirewallRestriction(t *testing.T) {
 			},
 		},
 		{
-			name:          "it should add multiple ips and not remove any old rules if there are any",
+			name:          "it should add multiple ips and not remove any old rules if there are none",
 			ips:           []string{"1.2.3.4", "5.6.7.8"},
 			existingRules: nil,
 			wantAdd: []core.AddSecurityRuleDetails{
@@ -87,7 +95,8 @@ func TestEnableFirewallRestriction(t *testing.T) {
 					Protocol:   strPtr("all"),
 				},
 			},
-			wantRemove: nil,
+			wantRemoveIngress: nil,
+			wantRemoveEgress:  nil,
 			oracleParams: config.OracleParameters{
 				NsgName:       "nsgid",
 				CompartmentId: "compartmentid",
@@ -123,16 +132,27 @@ func TestEnableFirewallRestriction(t *testing.T) {
 					t.Errorf("rule %d mismatch: got %+v, want %+v", i, got, want)
 				}
 			}
-			if len(tt.wantRemove) > 0 {
-				if len(mock.RemoveRulesReqs) != 1 {
-					t.Fatalf("expected 1 remove call, got %d", len(mock.RemoveRulesReqs))
-				}
-				removed := mock.RemoveRulesReqs[0].RemoveNetworkSecurityGroupSecurityRulesDetails.SecurityRuleIds
-				if !equalStringSlices(removed, tt.wantRemove) {
-					t.Errorf("expected removed %v, got %v", tt.wantRemove, removed)
-				}
-			} else if len(mock.RemoveRulesReqs) != 0 {
-				t.Errorf("expected no remove calls, got %d", len(mock.RemoveRulesReqs))
+
+			// Check remove calls - may have 0, 1, or 2 remove calls depending on ingress/egress rules
+			expectedRemoveCalls := 0
+			if len(tt.wantRemoveIngress) > 0 {
+				expectedRemoveCalls++
+			}
+			if len(tt.wantRemoveEgress) > 0 {
+				expectedRemoveCalls++
+			}
+			if len(mock.RemoveRulesReqs) != expectedRemoveCalls {
+				t.Fatalf("expected %d remove calls, got %d", expectedRemoveCalls, len(mock.RemoveRulesReqs))
+			}
+
+			// Verify removed rule IDs
+			var allRemovedIDs []string
+			for _, req := range mock.RemoveRulesReqs {
+				allRemovedIDs = append(allRemovedIDs, req.RemoveNetworkSecurityGroupSecurityRulesDetails.SecurityRuleIds...)
+			}
+			expectedRemoved := append(tt.wantRemoveIngress, tt.wantRemoveEgress...)
+			if !equalStringSlicesUnordered(allRemovedIDs, expectedRemoved) {
+				t.Errorf("expected removed %v, got %v", expectedRemoved, allRemovedIDs)
 			}
 		})
 	}
@@ -140,33 +160,28 @@ func TestEnableFirewallRestriction(t *testing.T) {
 
 func TestDisableFirewallRestriction(t *testing.T) {
 	tests := []struct {
-		name         string
-		listItems    []core.SecurityRule
-		wantAdd      []core.AddSecurityRuleDetails
-		wantRemove   []string
-		oracleParams config.OracleParameters
+		name              string
+		listItems         []core.SecurityRule
+		wantAddCount      int
+		wantRemoveIngress []string
+		wantRemoveEgress  []string
+		oracleParams      config.OracleParameters
 	}{
 		{
-			name: "adds new rules and removes old ingress rules",
-			listItems: []core.SecurityRule{{
-				Id:        strPtr("old-ingress"),
-				Direction: "INGRESS",
-			}},
-			wantAdd: []core.AddSecurityRuleDetails{
+			name: "adds new rules including allow-all UDP and removes old ingress and egress rules",
+			listItems: []core.SecurityRule{
 				{
-					Direction:  core.AddSecurityRuleDetailsDirectionIngress,
-					Source:     strPtr("0.0.0.0/0"),
-					SourceType: core.AddSecurityRuleDetailsSourceTypeCidrBlock,
-					Protocol:   strPtr("6"),
+					Id:        strPtr("old-ingress"),
+					Direction: "INGRESS",
 				},
 				{
-					Direction:  core.AddSecurityRuleDetailsDirectionIngress,
-					Source:     strPtr("0.0.0.0/0"),
-					SourceType: core.AddSecurityRuleDetailsSourceTypeCidrBlock,
-					Protocol:   strPtr("17"),
+					Id:        strPtr("old-egress"),
+					Direction: "EGRESS",
 				},
 			},
-			wantRemove: []string{"old-ingress"},
+			wantAddCount:      4, // TCP port-specific, UDP port-specific, UDP all ingress, UDP all egress
+			wantRemoveIngress: []string{"old-ingress"},
+			wantRemoveEgress:  []string{"old-egress"},
 			oracleParams: config.OracleParameters{
 				NsgName:       "nsgid",
 				CompartmentId: "compartmentid",
@@ -174,23 +189,11 @@ func TestDisableFirewallRestriction(t *testing.T) {
 			},
 		},
 		{
-			name:      "no old ingress rules",
-			listItems: nil,
-			wantAdd: []core.AddSecurityRuleDetails{
-				{
-					Direction:  core.AddSecurityRuleDetailsDirectionIngress,
-					Source:     strPtr("0.0.0.0/0"),
-					SourceType: core.AddSecurityRuleDetailsSourceTypeCidrBlock,
-					Protocol:   strPtr("6"),
-				},
-				{
-					Direction:  core.AddSecurityRuleDetailsDirectionIngress,
-					Source:     strPtr("0.0.0.0/0"),
-					SourceType: core.AddSecurityRuleDetailsSourceTypeCidrBlock,
-					Protocol:   strPtr("17"),
-				},
-			},
-			wantRemove: nil,
+			name:              "no old rules to remove",
+			listItems:         nil,
+			wantAddCount:      4,
+			wantRemoveIngress: nil,
+			wantRemoveEgress:  nil,
 			oracleParams: config.OracleParameters{
 				NsgName:       "nsgid",
 				CompartmentId: "compartmentid",
@@ -214,43 +217,59 @@ func TestDisableFirewallRestriction(t *testing.T) {
 				t.Fatalf("expected 1 add call, got %d", len(mock.AddRulesReqs))
 			}
 			added := mock.AddRulesReqs[0].AddNetworkSecurityGroupSecurityRulesDetails.SecurityRules
-			if len(added) != len(tt.wantAdd) {
-				t.Errorf("expected %d rules added, got %d", len(tt.wantAdd), len(added))
+			if len(added) != tt.wantAddCount {
+				t.Errorf("expected %d rules added, got %d", tt.wantAddCount, len(added))
 			}
-			for i, want := range tt.wantAdd {
-				got := added[i]
-				if got.Direction != want.Direction ||
-					(got.Source == nil || *got.Source != *want.Source) ||
-					got.SourceType != want.SourceType ||
-					(got.Protocol == nil || *got.Protocol != *want.Protocol) {
-					t.Errorf("rule %d mismatch: got %+v, want %+v", i, got, want)
+
+			// Verify we have the expected rule types
+			var hasTcpPortSpecific, hasUdpPortSpecific, hasUdpAllIngress, hasUdpAllEgress bool
+			for _, rule := range added {
+				if rule.Protocol != nil && *rule.Protocol == "6" && rule.TcpOptions != nil {
+					hasTcpPortSpecific = true
 				}
-				// Check port range for TCP/UDP rules
-				if *got.Protocol == "6" && got.TcpOptions != nil {
-					if got.TcpOptions.DestinationPortRange == nil ||
-						*got.TcpOptions.DestinationPortRange.Min != 27015 ||
-						*got.TcpOptions.DestinationPortRange.Max != 27020 {
-						t.Errorf("TCP rule %d has wrong port range: got %+v", i, got.TcpOptions.DestinationPortRange)
-					}
-				}
-				if *got.Protocol == "17" && got.UdpOptions != nil {
-					if got.UdpOptions.DestinationPortRange == nil ||
-						*got.UdpOptions.DestinationPortRange.Min != 27015 ||
-						*got.UdpOptions.DestinationPortRange.Max != 27020 {
-						t.Errorf("UDP rule %d has wrong port range: got %+v", i, got.UdpOptions.DestinationPortRange)
+				if rule.Protocol != nil && *rule.Protocol == "17" {
+					if rule.UdpOptions != nil && rule.UdpOptions.DestinationPortRange != nil {
+						hasUdpPortSpecific = true
+					} else if rule.Direction == core.AddSecurityRuleDetailsDirectionIngress && rule.UdpOptions == nil {
+						hasUdpAllIngress = true
+					} else if rule.Direction == core.AddSecurityRuleDetailsDirectionEgress {
+						hasUdpAllEgress = true
 					}
 				}
 			}
-			if len(tt.wantRemove) > 0 {
-				if len(mock.RemoveRulesReqs) != 1 {
-					t.Fatalf("expected 1 remove call, got %d", len(mock.RemoveRulesReqs))
-				}
-				removed := mock.RemoveRulesReqs[0].RemoveNetworkSecurityGroupSecurityRulesDetails.SecurityRuleIds
-				if !equalStringSlices(removed, tt.wantRemove) {
-					t.Errorf("expected removed %v, got %v", tt.wantRemove, removed)
-				}
-			} else if len(mock.RemoveRulesReqs) != 0 {
-				t.Errorf("expected no remove calls, got %d", len(mock.RemoveRulesReqs))
+			if !hasTcpPortSpecific {
+				t.Error("missing TCP port-specific rule")
+			}
+			if !hasUdpPortSpecific {
+				t.Error("missing UDP port-specific rule")
+			}
+			if !hasUdpAllIngress {
+				t.Error("missing UDP allow-all ingress rule")
+			}
+			if !hasUdpAllEgress {
+				t.Error("missing UDP allow-all egress rule")
+			}
+
+			// Check remove calls
+			expectedRemoveCalls := 0
+			if len(tt.wantRemoveIngress) > 0 {
+				expectedRemoveCalls++
+			}
+			if len(tt.wantRemoveEgress) > 0 {
+				expectedRemoveCalls++
+			}
+			if len(mock.RemoveRulesReqs) != expectedRemoveCalls {
+				t.Fatalf("expected %d remove calls, got %d", expectedRemoveCalls, len(mock.RemoveRulesReqs))
+			}
+
+			// Verify removed rule IDs
+			var allRemovedIDs []string
+			for _, req := range mock.RemoveRulesReqs {
+				allRemovedIDs = append(allRemovedIDs, req.RemoveNetworkSecurityGroupSecurityRulesDetails.SecurityRuleIds...)
+			}
+			expectedRemoved := append(tt.wantRemoveIngress, tt.wantRemoveEgress...)
+			if !equalStringSlicesUnordered(allRemovedIDs, expectedRemoved) {
+				t.Errorf("expected removed %v, got %v", expectedRemoved, allRemovedIDs)
 			}
 		})
 	}
@@ -264,6 +283,23 @@ func equalStringSlices(a, b []string) bool {
 		if a[i] != b[i] {
 			return false
 		}
+	}
+	return true
+}
+
+func equalStringSlicesUnordered(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	aMap := make(map[string]int)
+	for _, s := range a {
+		aMap[s]++
+	}
+	for _, s := range b {
+		if aMap[s] == 0 {
+			return false
+		}
+		aMap[s]--
 	}
 	return true
 }

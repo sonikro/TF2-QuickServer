@@ -574,6 +574,73 @@ describe("OCIServerManager", () => {
     });
   });
 
+  describe("NSG security rules", () => {
+    it("should create allow all UDP ingress and egress rules for fragmented packets", async () => {
+      const { sut, vncClient, statusUpdater } = createTestEnvironment();
+
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "nsg-test-server-id",
+        statusUpdater,
+      });
+
+      const allCalls = vncClient.addNetworkSecurityGroupSecurityRules.mock.calls;
+      const allRules = allCalls.flatMap((call: any) => call[0].addNetworkSecurityGroupSecurityRulesDetails.securityRules);
+
+      const allUdpIngressRule = allRules.find((rule: any) =>
+        rule.direction === "INGRESS" &&
+        rule.protocol === "17" &&
+        rule.source === "0.0.0.0/0" &&
+        rule.udpOptions === undefined &&
+        rule.description?.includes("UDP fragments")
+      );
+
+      const allUdpEgressRule = allRules.find((rule: any) =>
+        rule.direction === "EGRESS" &&
+        rule.protocol === "17" &&
+        rule.destination === "0.0.0.0/0" &&
+        rule.udpOptions === undefined &&
+        rule.description?.includes("UDP fragments")
+      );
+
+      expect(allUdpIngressRule).toBeDefined();
+      expect(allUdpEgressRule).toBeDefined();
+    });
+
+    it("should create port-specific UDP rules in addition to allow all UDP rules", async () => {
+      const { sut, vncClient, statusUpdater } = createTestEnvironment();
+
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "nsg-ports-test-server-id",
+        statusUpdater,
+      });
+
+      const allCalls = vncClient.addNetworkSecurityGroupSecurityRules.mock.calls;
+      const allRules = allCalls.flatMap((call: any) => call[0].addNetworkSecurityGroupSecurityRulesDetails.securityRules);
+
+      const portSpecificUdpRule = allRules.find((rule: any) =>
+        rule.direction === "INGRESS" &&
+        rule.protocol === "17" &&
+        rule.udpOptions?.destinationPortRange?.min === 27015 &&
+        rule.udpOptions?.destinationPortRange?.max === 27020
+      );
+
+      const allowAllUdpRule = allRules.find((rule: any) =>
+        rule.direction === "INGRESS" &&
+        rule.protocol === "17" &&
+        rule.udpOptions === undefined
+      );
+
+      expect(portSpecificUdpRule).toBeDefined();
+      expect(allowAllUdpRule).toBeDefined();
+    });
+  });
+
   describe("abort server deployment", () => {
     it("should throw an AbortError if the deployment is aborted", async () => {
       const { sut, serverAbortManager, statusUpdater } = createTestEnvironment();
