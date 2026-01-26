@@ -17,6 +17,7 @@ export * from './src/repository/ServerActivityRepository';
 export * from './src/repository/UserRepository';
 export * from './src/repository/UserBanRepository';
 export * from './src/repository/UserCreditsRepository';
+export * from './src/repository/ServerStatusMetricsRepository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
@@ -34,6 +35,7 @@ export * from './src/services/StatusUpdater';
 export * from './src/services/TF2ServerReadinessService';
 
 // Use cases
+export * from './src/usecase/CollectServerMetrics';
 export * from './src/usecase/ConsumeCreditsFromRunningServers';
 export * from './src/usecase/CreateCreditsPurchaseOrder';
 export * from './src/usecase/CreateServerForUser';

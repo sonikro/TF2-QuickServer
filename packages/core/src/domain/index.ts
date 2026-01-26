@@ -15,3 +15,4 @@ export * from "./Cost";
 export * from "./DateRange";
 export * from "./ServerActivity";
 export { ServerStatusParser } from "./ServerStatus";
+export * from "./ServerStatusMetric";

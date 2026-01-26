@@ -5,6 +5,7 @@ export class ServerStatusParser {
     public readonly serverPort?: number;
     public readonly sourceTVIp?: string | null;
     public readonly sourceTVPort?: number | null;
+    public readonly map?: string;
 
     constructor(private readonly statusString: string) {
         // Server IP and Source TV IP extraction
@@ -33,6 +34,15 @@ export class ServerStatusParser {
         const numbers = playersClaim.match(/\d+/);
         if (numbers) {
             this.numberOfPlayers = parseInt(numbers[0], 10);
+        }
+
+        // Parse map name
+        const mapClaim = statusClaims.find(claim => claim.startsWith("map"));
+        if (mapClaim) {
+            const mapMatch = mapClaim.match(/map\s*:\s*(\S+)/);
+            if (mapMatch) {
+                this.map = mapMatch[1];
+            }
         }
     }
 
