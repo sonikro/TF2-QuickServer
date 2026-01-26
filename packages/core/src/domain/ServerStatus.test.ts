@@ -33,4 +33,8 @@ edicts  : 426 used of 2048 max
     it("should parse number of players", () => {
         expect(sut.numberOfPlayers).toBe(1)
     })
+
+    it("should parse the map name", () => {
+        expect(sut.map).toBe("cp_badlands")
+    })
 })

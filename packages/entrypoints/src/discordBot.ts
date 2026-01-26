@@ -12,6 +12,7 @@ import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
 import { TerminatePendingServers } from "@tf2qs/core";
 import { TerminateServersWithoutCredit } from "@tf2qs/core";
+import { CollectServerMetrics } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
@@ -27,6 +28,7 @@ import { SQliteServerActivityRepository } from "@tf2qs/providers";
 import { SQLiteServerRepository } from "@tf2qs/providers";
 import { SQliteUserCreditsRepository } from "@tf2qs/providers";
 import { SQliteUserRepository } from "@tf2qs/providers";
+import { SQliteServerStatusMetricsRepository } from "@tf2qs/providers";
 import { AdyenPaymentService } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
@@ -42,7 +44,7 @@ import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine, scheduleServerMetricsCollectionRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
@@ -122,6 +124,10 @@ export async function startDiscordBot() {
     })
 
     const userBanRepository = new CsvUserBanRepository()
+
+    const serverStatusMetricsRepository = new SQliteServerStatusMetricsRepository({
+        knex: KnexConnectionManager.client
+    })
 
     const backgroundTaskQueue = new InMemoryBackgroundTaskQueue(defaultGracefulShutdownManager);
     const deleteServerUseCase = new DeleteServerForUser({
@@ -260,6 +266,15 @@ export async function startDiscordBot() {
         configManager: defaultConfigManager,
         eventLogger,
         discordClient: client,
+    })
+
+    scheduleServerMetricsCollectionRoutine({
+        collectServerMetrics: new CollectServerMetrics({
+            serverRepository,
+            serverStatusMetricsRepository,
+            serverCommander,
+        }),
+        eventLogger,
     })
 
     // Slash commands

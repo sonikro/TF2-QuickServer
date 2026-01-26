@@ -7,3 +7,4 @@ export * from './SQliteServerActivityRepository';
 export * from './SQliteServerRepository';
 export * from './SQliteUserCreditsRepository';
 export * from './SQliteUserRepository';
+export * from './SQliteServerStatusMetricsRepository';
