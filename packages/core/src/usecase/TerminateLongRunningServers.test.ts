@@ -49,13 +49,13 @@ const createTestEnvironment = () => {
 };
 
 describe("TerminateLongRunningServers", () => {
-    it("should send a warning to servers running >9h but <10h", async () => {
+    it("should send a warning to servers running >11h but <12h", async () => {
         const { sut, mocks } = createTestEnvironment();
-        const serverWarn = createServer(ms(9.5));
+        const serverWarn = createServer(ms(11.5));
         mocks.serverRepository.getAllServers.mockResolvedValue([serverWarn]);
         await sut.execute();
         expect(mocks.serverCommander.query).toHaveBeenCalledWith({
-            command: expect.stringContaining("will be automatically terminated when it reaches 10 hours"),
+            command: expect.stringContaining("will be automatically terminated when it reaches 12 hours"),
             host: serverWarn.rconAddress,
             port: 27015,
             password: serverWarn.rconPassword,
@@ -64,9 +64,9 @@ describe("TerminateLongRunningServers", () => {
         expect(mocks.serverManager.deleteServer).not.toHaveBeenCalled();
     });
 
-    it("should terminate servers running >=10h", async () => {
+    it("should terminate servers running >=12h", async () => {
         const { sut, mocks } = createTestEnvironment();
-        const serverTerminate = createServer(ms(10.1));
+        const serverTerminate = createServer(ms(12.1));
         mocks.serverRepository.getAllServers.mockResolvedValue([serverTerminate]);
         await sut.execute();
         expect(mocks.serverCommander.query).toHaveBeenCalledWith({
@@ -82,14 +82,14 @@ describe("TerminateLongRunningServers", () => {
         });
         expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(serverTerminate.serverId);
         expect(mocks.eventLogger.log).toHaveBeenCalledWith({
-            eventMessage: expect.stringContaining("terminated for exceeding 10 hours runtime."),
+            eventMessage: expect.stringContaining("terminated for exceeding 12 hours runtime."),
             actorId: serverTerminate.createdBy
         });
     });
 
-    it("should do nothing for servers running <9h", async () => {
+    it("should do nothing for servers running <11h", async () => {
         const { sut, mocks } = createTestEnvironment();
-        const server = createServer(ms(8));
+        const server = createServer(ms(10));
         mocks.serverRepository.getAllServers.mockResolvedValue([server]);
         await sut.execute();
         expect(mocks.serverCommander.query).not.toHaveBeenCalled();
