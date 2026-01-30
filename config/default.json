@@ -301,6 +301,15 @@
             },
             "guildId": "1291587765770649656"
         },
+        "qel-6v6": {
+            "displayName": "QEL 6v6",
+            "hostname": "QEL 6v6 | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "qel_6s_5cp_match_pro.cfg",
+                "koth": "qel_6s_koth_pro.cfg"
+            },
+            "guildId": "1291587765770649656"
+        },
         "mge-tf": {
             "displayName": "MGE.TF",
             "hostname": "MGE.TF | {region} @ TF2-QuickServer",
