@@ -115,10 +115,6 @@ RUN curl -L "${TF2RUE_URL}" -o "${TF2RUE_FILE_NAME}" \
 RUN curl -L "https://github.com/H20Gamez/Enhanced-Match-Timer/releases/download/Release/enhanced_match_timer.smx" \
   -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/enhanced_match_timer.smx"
 
-# Grouped Class Limits plugin
-RUN curl -L "https://github.com/Full-Buff/grouped_classlimits/releases/download/latest/grouped_classlimits.smx" \
-  -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/grouped_classlimits.smx"
-
 # Updated Pause Plugin
 ARG UPDATED_PAUSE_FILE_NAME=updated-pause-plugin.zip
 ARG UPDATED_PAUSE_VERSION=v1.4.2
