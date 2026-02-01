@@ -1,3 +1,4 @@
+import { clientConnected } from "./ClientConnected";
 import { rcon } from "./Rcon";
 import { say } from "./Say";
 import { SRCDSCommand, SRCDSCommandParser } from "./SRCDSCommand";
@@ -7,6 +8,7 @@ export const commands: SRCDSCommandParser<any>[] = [
     userEnteredGame,
     say,
     rcon,
+    clientConnected,
 ]
 
 export function parseSRCDSCommand(rawString: string): SRCDSCommand<any> | null {
