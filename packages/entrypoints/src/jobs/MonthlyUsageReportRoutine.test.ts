@@ -61,6 +61,7 @@ describe("MonthlyUsageReportRoutine", () => {
         dependencies.configManager.getDiscordConfig.mockReturnValue({
             reportDiscordChannelId: reportChannelId,
             logChannelId: "log-channel-id",
+            streamerChannelId: "streamer-channel-id",
         });
 
         const sendFn = vi.fn();

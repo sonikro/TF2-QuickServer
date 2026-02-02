@@ -345,7 +345,8 @@
     },
     "discord": {
         "logChannelId": "1360789887208394851",
-        "reportDiscordChannelId": "1378761634889076926"
+        "reportDiscordChannelId": "1378761634889076926",
+        "streamerChannelId": "1467687214350733457"
     },
     "credits": {
         "enabled": false
