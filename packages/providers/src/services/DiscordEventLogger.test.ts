@@ -3,29 +3,26 @@ import { mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { Client, TextChannel } from "discord.js";
 import { DiscordEventLogger } from "./DiscordEventLogger";
-import { ConfigManager } from "@tf2qs/core";
 
 describe("DiscordEventLogger", () => {
     function createTestEnvironment() {
         const mockClient = mockDeep<Client>();
         const mockTextChannel = mockDeep<TextChannel>();
-        const mockConfigManager = mockDeep<ConfigManager>();
-
-        mockConfigManager.getDiscordConfig.mockReturnValue({ logChannelId: "1234567890", reportDiscordChannelId: "report-channel-id" });
+        const channelId = "1234567890";
 
         const discordEventLogger = new DiscordEventLogger({
             discordClient: mockClient,
-            configManager: mockConfigManager,
+            channelId,
         });
 
-        return { mockClient, mockTextChannel, mockConfigManager, discordEventLogger };
+        return { mockClient, mockTextChannel, channelId, discordEventLogger };
     }
 
     it("should log an event to the specified text channel", async () => {
-        const { mockClient, mockTextChannel, discordEventLogger } = createTestEnvironment();
+        const { mockClient, mockTextChannel, channelId, discordEventLogger } = createTestEnvironment();
 
         when(mockClient.channels.fetch)
-            .calledWith("1234567890")
+            .calledWith(channelId)
             .thenResolve(mockTextChannel);
 
         mockTextChannel.isTextBased.mockReturnValue(true);

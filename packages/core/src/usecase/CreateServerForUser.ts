@@ -1,4 +1,4 @@
-import { Region, Server, Variant } from "../domain";
+import { getRegionDisplayName, Region, Server, Variant } from "../domain";
 import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from "../repository/GuildParametersRepository";
 import { ServerRepository } from "../repository/ServerRepository";
@@ -20,6 +20,7 @@ export class CreateServerForUser {
         userCreditsRepository: UserCreditsRepository,
         guildParametersRepository: GuildParametersRepository,
         eventLogger: EventLogger,
+        sourceTvEventLogger: EventLogger,
         configManager: ConfigManager,
         userRepository: UserRepository,
         userBanRepository: UserBanRepository,
@@ -32,7 +33,7 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, sourceTvEventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         
         // Get the appropriate server manager for this region
@@ -130,6 +131,13 @@ export class CreateServerForUser {
             actorId: args.creatorId,
             eventMessage: `User created a server in region ${args.region} with variant ${args.variantName}`
         }))
+
+        const regionDisplayName = getRegionDisplayName(args.region);
+        const passwordPart = server.tvPassword ? `;password ${server.tvPassword}` : '';
+        await sourceTvEventLogger.log({
+            actorId: args.creatorId,
+            eventMessage: `Server created with variant **${args.variantName}** on region **${regionDisplayName}**.\nSourceTV: \`connect ${server.tvIp}:${server.tvPort}${passwordPart}\``
+        });
 
         await serverRepository.upsertServer({
             ...server,

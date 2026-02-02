@@ -1,3 +1,3 @@
 export interface EventLogger {
-    log(args: { eventMessage: string; actorId: string;}): Promise<void>;
+    log(args: { eventMessage: string; actorId: string }): Promise<void>;
 }

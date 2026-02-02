@@ -74,7 +74,12 @@ export async function startDiscordBot() {
 
     const eventLogger = new DiscordEventLogger({
         discordClient: client,
-        configManager: defaultConfigManager,
+        channelId: defaultConfigManager.getDiscordConfig().logChannelId,
+    })
+
+    const sourceTvEventLogger = new DiscordEventLogger({
+        discordClient: client,
+        channelId: defaultConfigManager.getDiscordConfig().streamerChannelId,
     })
 
     const serverAbortManager = new DefaultServerAbortManager();
@@ -162,6 +167,7 @@ export async function startDiscordBot() {
             serverRepository,
             userCreditsRepository,
             eventLogger,
+            sourceTvEventLogger,
             configManager: defaultConfigManager,
             userRepository,
             guildParametersRepository,

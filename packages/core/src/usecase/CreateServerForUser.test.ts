@@ -2,7 +2,7 @@ import Chance from 'chance';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { Region, Server } from '../domain';
+import { getRegionDisplayName, Region, Server } from '../domain';
 import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from '../repository/GuildParametersRepository';
 import { ServerRepository } from '../repository/ServerRepository';
@@ -29,6 +29,7 @@ const createTestEnvironment = () => {
     const serverManagerFactory = mock<ServerManagerFactory>();
     const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
+    const sourceTvEventLogger = mock<EventLogger>();
     const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
@@ -98,6 +99,7 @@ const createTestEnvironment = () => {
             serverRepository,
             userCreditsRepository,
             eventLogger,
+            sourceTvEventLogger,
             configManager,
             userRepository,
             guildParametersRepository,
@@ -110,6 +112,7 @@ const createTestEnvironment = () => {
             userCreditsRepository,
             configManager,
             eventLogger,
+            sourceTvEventLogger,
             userRepository,
             guildParametersRepository,
             userBanRepository,
@@ -177,6 +180,17 @@ describe('CreateServerForUser Use Case', () => {
                     status: "ready",
                     createdBy: data.userId,
                 }));
+            });
+
+            it("should call sourceTvEventLogger.log with SourceTV connection info", async () => {
+                const regionDisplayName = getRegionDisplayName(data.region);
+                const passwordPart = data.deployedServer.tvPassword ? `;password ${data.deployedServer.tvPassword}` : '';
+                const expectedMessage = `Server created with variant **${data.variantName}** on region **${regionDisplayName}**.\nSourceTV: \`connect ${data.deployedServer.tvIp}:${data.deployedServer.tvPort}${passwordPart}\``;
+
+                expect(mocks.sourceTvEventLogger.log).toHaveBeenCalledWith({
+                    actorId: data.userId,
+                    eventMessage: expectedMessage
+                });
             });
         });
 
