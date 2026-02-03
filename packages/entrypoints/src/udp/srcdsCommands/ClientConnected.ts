@@ -8,7 +8,7 @@ type ClientConnectedArgs = {
 
 export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawString) => {
   // Example: Client "sonikro" connected (169.254.249.16:18930).
-  const match = rawString.match(/Client "([^"]+)" connected \(([^:]+):(\d+)\)\./);
+  const match = rawString.match(/Client "([^"]+)" connected \(([^:]+):(\d+)\)/);
   
   if (!match) {
     return null;
