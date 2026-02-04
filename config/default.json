@@ -263,6 +263,17 @@
             },
             "guildId": "803785792052527114"
         },
+        "fruit-mixes-hl": {
+            "displayName": "Fruit Mixes Highlander",
+            "hostname": "Fruit Mixes Highlander | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "etf2l_9v9_5cp.cfg",
+                "koth": "etf2l_9v9_koth.cfg",
+                "pl": "etf2l_9v9_stopwatch.cfg",
+                "cp_steel_f12": "etf2l_9v9_stopwatch.cfg"
+            },
+            "guildId": "734372178526601276"
+        },
         "bf-9v9": {
             "displayName": "BF HL",
             "hostname": "Brasil Fortress HL | {region} @ TF2-QuickServer",
