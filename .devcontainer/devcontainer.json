@@ -18,14 +18,14 @@
 				"TypeScriptTeam.native-preview"
 			]
 		}
-	}
+	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
-
+	"runArgs": [
+		"-p", "27101:27101/udp"
+	]
 	// Configure tool-specific properties.
 	// "customizations": {},
 
