@@ -17,11 +17,11 @@ vi.mock("@tf2qs/telemetry", async (importActual) => {
 
 describe("clientConnected command parser", () => {
   it("should parse a valid client connected message", () => {
-    const rawString = 'Client "sonikro" connected (169.254.249.16:18930).';
+    const rawString = '02/05/2026 - 01:42:17: "sonikro<5><[U:1:29162964]><>" connected, address "169.254.249.16:18930"';
     const result = clientConnected(rawString);
     expect(result).not.toBeNull();
     expect(result?.type).toBe("clientConnected");
-    expect(result?.args).toEqual({ nickname: "sonikro", ipAddress: "169.254.249.16" });
+    expect(result?.args).toEqual({ nickname: "sonikro", ipAddress: "169.254.249.16", steamId3: "U:1:29162964" });
   });
 
   it("should return null for non-matching string", () => {
@@ -31,14 +31,14 @@ describe("clientConnected command parser", () => {
   });
 
   it("should handle nicknames with special characters", () => {
-    const rawString = 'Client "player[TAG]" connected (192.168.1.100:27015).';
+    const rawString = '02/05/2026 - 01:42:17: "player[TAG]<3><[U:1:12345]><>" connected, address "192.168.1.100:27015"';
     const result = clientConnected(rawString);
     expect(result).not.toBeNull();
-    expect(result?.args).toEqual({ nickname: "player[TAG]", ipAddress: "192.168.1.100" });
+    expect(result?.args).toEqual({ nickname: "player[TAG]", ipAddress: "192.168.1.100", steamId3: "U:1:12345" });
   });
 
   describe("handler", () => {
-    const rawString = 'Client "sonikro" connected (169.254.249.16:18930).';
+    const rawString = '02/05/2026 - 01:42:17: "sonikro<5><[U:1:29162964]><>" connected, address "169.254.249.16:18930"';
 
     function createTestEnvironment() {
       const services = mockDeep<UDPCommandsServices>();
@@ -62,7 +62,8 @@ describe("clientConnected command parser", () => {
         body: `Client connected to server`,
         attributes: {
           nickname: "sonikro",
-          ipAddress: "169.254.249.16"
+          ipAddress: "169.254.249.16",
+          steamId3: "U:1:29162964"
         }
       });
 
