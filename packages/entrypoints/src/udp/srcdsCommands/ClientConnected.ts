@@ -4,24 +4,25 @@ import { SRCDSCommandParser } from "./SRCDSCommand";
 type ClientConnectedArgs = {
   nickname: string;
   ipAddress: string;
+  steamId3: string;
 };
 
 export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawString) => {
-  // Example: Client "sonikro" connected (169.254.249.16:18930).
-  const match = rawString.match(/Client "([^"]+)" connected \(([^:]+):(\d+)\)/);
+  // Example: "02/05/2026 - 01:42:17: \"sonikro<5><[U:1:29162964]><>\" connected, address \"169.254.249.16:18930\""
+  const match = rawString.match(/"([^<]+)<\d+><\[([^\]]+)\]><>"\s+connected,\s+address\s+"([^:]+):/);
   
   if (!match) {
     return null;
   }
 
-  const [, nickname, ipAddress] = match;
+  const [, nickname, steamId3, ipAddress] = match;
 
   return {
     raw: rawString,
-    args: { nickname, ipAddress },
+    args: { nickname, ipAddress, steamId3 },
     type: "clientConnected",
     handler: async ({ args }) => {
-      const { nickname, ipAddress } = args;
+      const { nickname, ipAddress, steamId3 } = args;
 
       logger.emit({
         severityText: 'INFO',
@@ -29,6 +30,7 @@ export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawStri
         attributes: {
           nickname,
           ipAddress,
+          steamId3,
         },
       });
     },
