@@ -29,6 +29,7 @@ import { SQLiteServerRepository } from "@tf2qs/providers";
 import { SQliteUserCreditsRepository } from "@tf2qs/providers";
 import { SQliteUserRepository } from "@tf2qs/providers";
 import { SQliteServerStatusMetricsRepository } from "@tf2qs/providers";
+import { SQlitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
 import { AdyenPaymentService } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
@@ -131,6 +132,10 @@ export async function startDiscordBot() {
     const userBanRepository = new CsvUserBanRepository()
 
     const serverStatusMetricsRepository = new SQliteServerStatusMetricsRepository({
+        knex: KnexConnectionManager.client
+    })
+
+    const playerConnectionHistoryRepository = new SQlitePlayerConnectionHistoryRepository({
         knex: KnexConnectionManager.client
     })
 
@@ -372,7 +377,8 @@ export async function startDiscordBot() {
         serverRepository,
         userRepository,
         eventLogger,
-        backgroundTaskQueue
+        backgroundTaskQueue,
+        playerConnectionHistoryRepository
     });
 
     initializeExpress({})

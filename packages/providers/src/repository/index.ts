@@ -8,3 +8,4 @@ export * from './SQliteServerRepository';
 export * from './SQliteUserCreditsRepository';
 export * from './SQliteUserRepository';
 export * from './SQliteServerStatusMetricsRepository';
+export * from './SQlitePlayerConnectionHistoryRepository';

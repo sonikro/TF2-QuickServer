@@ -14,5 +14,6 @@ export * from "./GuildParameters";
 export * from "./Cost";
 export * from "./DateRange";
 export * from "./ServerActivity";
+export * from "./PlayerConnectionHistory";
 export { ServerStatusParser } from "./ServerStatus";
 export * from "./ServerStatusMetric";

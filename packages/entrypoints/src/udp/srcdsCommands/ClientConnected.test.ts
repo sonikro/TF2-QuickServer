@@ -68,5 +68,25 @@ describe("clientConnected command parser", () => {
       });
 
     });
+
+    it("should save connection history to repository", async () => {
+      const { services, command, handler } = createTestEnvironment();
+      if (!command || !handler) throw new Error("Command or handler is undefined");
+
+      await handler({
+        args: command.args,
+        password: "test-password",
+        services,
+      });
+
+      expect(services.playerConnectionHistoryRepository.save).toHaveBeenCalledWith({
+        connectionHistory: {
+          steamId3: "U:1:29162964",
+          ipAddress: "169.254.249.16",
+          nickname: "sonikro",
+          timestamp: expect.any(Date),
+        },
+      });
+    });
   });
 });

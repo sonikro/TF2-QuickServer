@@ -18,6 +18,7 @@ export * from './src/repository/UserRepository';
 export * from './src/repository/UserBanRepository';
 export * from './src/repository/UserCreditsRepository';
 export * from './src/repository/ServerStatusMetricsRepository';
+export * from './src/repository/PlayerConnectionHistoryRepository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
