@@ -1,4 +1,5 @@
 import { clientConnected } from "./ClientConnected";
+import { loadingMap } from "./LoadingMap";
 import { rcon } from "./Rcon";
 import { say } from "./Say";
 import { SRCDSCommand, SRCDSCommandParser } from "./SRCDSCommand";
@@ -9,6 +10,7 @@ export const commands: SRCDSCommandParser<any>[] = [
     say,
     rcon,
     clientConnected,
+    loadingMap,
 ]
 
 export function parseSRCDSCommand(rawString: string): SRCDSCommand<any> | null {

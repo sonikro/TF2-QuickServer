@@ -13,14 +13,12 @@ export class SQliteServerStatusMetricsRepository implements ServerStatusMetricsR
         const { knex } = this.dependencies;
 
         const [id] = await knex("server_status_metrics").insert({
-            server_id: metric.serverId,
             map: metric.map,
             timestamp: metric.timestamp,
         });
 
         return {
             id,
-            serverId: metric.serverId,
             map: metric.map,
             timestamp: metric.timestamp,
         };

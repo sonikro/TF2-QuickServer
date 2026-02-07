@@ -12,7 +12,6 @@ import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
 import { TerminatePendingServers } from "@tf2qs/core";
 import { TerminateServersWithoutCredit } from "@tf2qs/core";
-import { CollectServerMetrics } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
@@ -45,7 +44,7 @@ import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine, scheduleServerMetricsCollectionRoutine } from "./jobs";
+import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
@@ -279,15 +278,6 @@ export async function startDiscordBot() {
         discordClient: client,
     })
 
-    scheduleServerMetricsCollectionRoutine({
-        collectServerMetrics: new CollectServerMetrics({
-            serverRepository,
-            serverStatusMetricsRepository,
-            serverCommander,
-        }),
-        eventLogger,
-    })
-
     // Slash commands
     const commands = Object.values(discordCommands).map(command => command.definition)
 
@@ -378,7 +368,8 @@ export async function startDiscordBot() {
         userRepository,
         eventLogger,
         backgroundTaskQueue,
-        playerConnectionHistoryRepository
+        playerConnectionHistoryRepository,
+        serverStatusMetricsRepository
     });
 
     initializeExpress({})
