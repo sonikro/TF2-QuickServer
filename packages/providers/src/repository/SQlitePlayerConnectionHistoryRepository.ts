@@ -16,7 +16,6 @@ export class SQlitePlayerConnectionHistoryRepository implements PlayerConnection
             steam_id_3: connectionHistory.steamId3,
             ip_address: connectionHistory.ipAddress,
             nickname: connectionHistory.nickname,
-            timestamp: connectionHistory.timestamp,
         });
 
         return {
@@ -24,7 +23,6 @@ export class SQlitePlayerConnectionHistoryRepository implements PlayerConnection
             steamId3: connectionHistory.steamId3,
             ipAddress: connectionHistory.ipAddress,
             nickname: connectionHistory.nickname,
-            timestamp: connectionHistory.timestamp,
         };
     }
 }

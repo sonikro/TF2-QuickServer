@@ -84,7 +84,6 @@ describe("clientConnected command parser", () => {
           steamId3: "U:1:29162964",
           ipAddress: "169.254.249.16",
           nickname: "sonikro",
-          timestamp: expect.any(Date),
         },
       });
     });

@@ -40,7 +40,6 @@ export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawStri
           steamId3,
           ipAddress,
           nickname,
-          timestamp: new Date(),
         },
       });
     },
