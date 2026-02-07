@@ -21,7 +21,7 @@ export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawStri
     raw: rawString,
     args: { nickname, ipAddress, steamId3 },
     type: "clientConnected",
-    handler: async ({ args }) => {
+    handler: async ({ args, services }) => {
       const { nickname, ipAddress, steamId3 } = args;
 
       logger.emit({
@@ -31,6 +31,16 @@ export const clientConnected: SRCDSCommandParser<ClientConnectedArgs> = (rawStri
           nickname,
           ipAddress,
           steamId3,
+        },
+      });
+
+      // Persist connection history
+      await services.playerConnectionHistoryRepository.save({
+        connectionHistory: {
+          steamId3,
+          ipAddress,
+          nickname,
+          timestamp: new Date(),
         },
       });
     },
