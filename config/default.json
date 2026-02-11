@@ -354,7 +354,7 @@
             "guildId": "137337002113761281"
         },
         "rome-standard": {
-            "displayName": "ROME",
+            "displayName": "ROME Standard",
             "hostname": "ROME | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "pl": "rgl_HL_stopwatch.cfg",
@@ -365,7 +365,7 @@
             "guildId": "1011082976840396962"
         },
         "rome-pro": {
-            "displayName": "ROME",
+            "displayName": "ROME Pro",
             "hostname": "ROME Pro | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "pl": "rgl_HL_stopwatch.cfg",
