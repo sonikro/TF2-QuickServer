@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
-import { UserCreditsRepository } from "@tf2qs/core";
+import { UserCreditsRepository, PlayerConnectionHistoryRepository } from "@tf2qs/core";
 import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
@@ -32,6 +32,7 @@ export type CommandDependencies = {
     backgroundTaskQueue: BackgroundTaskQueue;
     getServerStatus: GetServerStatus;
     getUserServers: GetUserServers;
+    playerConnectionHistoryRepository: PlayerConnectionHistoryRepository;
 }
 
 export function createCommands(dependencies: CommandDependencies): Record<string, Command> {
@@ -61,7 +62,9 @@ export function createCommands(dependencies: CommandDependencies): Record<string
         getPlayerConnectionHistory: {
             name: "get-player-connection-history",
             definition: getPlayerConnectionHistoryDefinition,
-            handler: getPlayerConnectionHistoryHandlerFactory(),
+            handler: getPlayerConnectionHistoryHandlerFactory({
+                playerConnectionHistoryRepository: dependencies.playerConnectionHistoryRepository,
+            }),
             ownerOnly: true,
         },
         status: {

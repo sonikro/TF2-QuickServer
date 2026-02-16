@@ -194,7 +194,8 @@ export async function startDiscordBot() {
         }),
         userCreditsRepository,
         configManager: defaultConfigManager,
-        backgroundTaskQueue
+        backgroundTaskQueue,
+        playerConnectionHistoryRepository
     })
 
     // Schedule jobs

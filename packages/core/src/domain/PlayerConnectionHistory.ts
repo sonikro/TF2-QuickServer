@@ -3,4 +3,5 @@ export type PlayerConnectionHistory = {
     steamId3: string;
     ipAddress: string;
     nickname: string;
+    timestamp?: Date;
 };
