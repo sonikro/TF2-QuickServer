@@ -14,6 +14,14 @@ import { ConfigManager } from "@tf2qs/core";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
+import { getPlayerConnectionHistoryDefinition, getPlayerConnectionHistoryHandlerFactory } from "./GetPlayerConnectionHistory";
+
+export type Command = {
+    name: string;
+    definition: SlashCommandOptionsOnlyBuilder;
+    handler: (interaction: ChatInputCommandInteraction) => Promise<void>;
+    ownerOnly?: boolean;
+}
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -26,7 +34,7 @@ export type CommandDependencies = {
     getUserServers: GetUserServers;
 }
 
-export function createCommands(dependencies: CommandDependencies) {
+export function createCommands(dependencies: CommandDependencies): Record<string, Command> {
     return {
         createServer: {
             name: "create-server",
@@ -48,7 +56,13 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: setUserDataDefinition,
             handler: setUserDataHandlerFactory({
                 setUserData: dependencies.setUserData,
-            })
+            }),
+        },
+        getPlayerConnectionHistory: {
+            name: "get-player-connection-history",
+            definition: getPlayerConnectionHistoryDefinition,
+            handler: getPlayerConnectionHistoryHandlerFactory(),
+            ownerOnly: true,
         },
         status: {
             name: "status",
@@ -82,9 +96,5 @@ export function createCommands(dependencies: CommandDependencies) {
         //         createCreditsPurchaseOrder: dependencies.createCreditsPurchaseOrder,
         //     })
         // }
-    } satisfies Record<string, {
-        name: string;
-        definition: SlashCommandOptionsOnlyBuilder,
-        handler: (interaction: ChatInputCommandInteraction) => Promise<void>;
-    }>
+    };
 }

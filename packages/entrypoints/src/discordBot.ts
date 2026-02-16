@@ -60,6 +60,7 @@ export async function startDiscordBot() {
     // Define the bot token
     const token = process.env.DISCORD_TOKEN!;
     const clientId = process.env.DISCORD_CLIENT_ID!;
+    const ownerGuildId = process.env.DISCORD_OWNER_GUILD_ID;
 
     // Check if token and clientId are available
     if (!token) {
@@ -279,7 +280,16 @@ export async function startDiscordBot() {
     })
 
     // Slash commands
-    const commands = Object.values(discordCommands).map(command => command.definition)
+    const allCommands = Object.values(discordCommands);
+    
+    // Separate regular commands from owner-only commands
+    const regularCommands = allCommands
+        .filter(cmd => !cmd.ownerOnly)
+        .map(cmd => cmd.definition);
+    
+    const ownerOnlyCommands = allCommands
+        .filter(cmd => cmd.ownerOnly)
+        .map(cmd => cmd.definition);
 
     // Register commands with Discord API
     const rest = new REST({ version: '10' }).setToken(token);
@@ -290,10 +300,32 @@ export async function startDiscordBot() {
         body: 'Started refreshing application (/) commands.'
     });
 
-    // Register commands globally (this applies to all guilds)
+    // Register regular commands globally (this applies to all guilds)
     await rest.put(Routes.applicationCommands(clientId), {
-        body: commands.map(command => command.toJSON()), // Convert CommandBuilder to JSON
+        body: regularCommands.map(command => command.toJSON()), // Convert CommandBuilder to JSON
     });
+
+    logger.emit({
+        severityText: 'INFO',
+        body: `Successfully registered ${regularCommands.length} global command(s).`
+    });
+
+    // Register owner-only commands to the specific guild if configured
+    if (ownerGuildId && ownerOnlyCommands.length > 0) {
+        await rest.put(Routes.applicationGuildCommands(clientId, ownerGuildId), {
+            body: ownerOnlyCommands.map(command => command.toJSON()),
+        });
+
+        logger.emit({
+            severityText: 'INFO',
+            body: `Successfully registered ${ownerOnlyCommands.length} owner-only command(s) to guild ${ownerGuildId}.`
+        });
+    } else if (ownerOnlyCommands.length > 0) {
+        logger.emit({
+            severityText: 'WARN',
+            body: 'DISCORD_OWNER_GUILD_ID not set. Owner-only commands will not be registered.'
+        });
+    }
 
     logger.emit({
         severityText: 'INFO',

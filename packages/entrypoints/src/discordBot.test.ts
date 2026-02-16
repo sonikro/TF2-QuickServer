@@ -76,6 +76,7 @@ describe("startDiscordBot", () => {
         beforeAll(async () => {
             process.env.DISCORD_TOKEN = 'valid_token';
             process.env.DISCORD_CLIENT_ID = 'valid_client_id';
+            process.env.DISCORD_OWNER_GUILD_ID = 'test_guild_123';
             await startDiscordBot();
         })
 
@@ -83,13 +84,27 @@ describe("startDiscordBot", () => {
             expect(KnexConnectionManager.initialize).toHaveBeenCalled();
         })
         it("should register all commands globally with Discord API", async () => {
-            const expectedCommands = Object.values(discordCommands)
+            const regularCommands = Object.values(discordCommands)
+                .filter(cmd => !cmd.ownerOnly)
                 .map(command => command.definition.toJSON());
 
             expect(rest.put).toHaveBeenCalledWith(
                 Routes.applicationCommands('valid_client_id'),
                 expect.objectContaining({
-                    body: expectedCommands
+                    body: regularCommands
+                })
+            );
+        })
+
+        it("should register owner-only commands to the specific guild", async () => {
+            const ownerOnlyCommands = Object.values(discordCommands)
+                .filter(cmd => cmd.ownerOnly)
+                .map(command => command.definition.toJSON());
+
+            expect(rest.put).toHaveBeenCalledWith(
+                Routes.applicationGuildCommands('valid_client_id', 'test_guild_123'),
+                expect.objectContaining({
+                    body: ownerOnlyCommands
                 })
             );
         })
