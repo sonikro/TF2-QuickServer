@@ -30,6 +30,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ca-certificates \
   curl \
   unzip \
+  p7zip-full \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /download
@@ -129,19 +130,15 @@ ARG SHOWSDR_PLUGIN_URL=https://github.com/Full-Buff/sdr-plugin/releases/download
 RUN curl -L "${SHOWSDR_PLUGIN_URL}" -o "${SHOWSDR_PLUGIN_FILE_NAME}" \
   && unzip -q -n "${SHOWSDR_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
-# Dodgeball plugin
-ARG DODGEBALL_PLUGIN_VERSION_NUMBER=1.9.6
-ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
-ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball-Modified/archive/refs/tags/v${DODGEBALL_PLUGIN_VERSION_NUMBER}.zip
+# Dodgeball plugin 
+
+ARG DODGEBALL_PLUGIN_VERSION_NUMBER=2.1.0
+ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified.7z
+ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball/releases/download/v${DODGEBALL_PLUGIN_VERSION_NUMBER}/TF2-Dodgeball-Modified.7z
 RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
-  && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" \
-  && cp -r "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
-  && if [ -d "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix" ] && [ "$(ls -A "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix")" ]; then \
-       cp -r "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}/Subplugins/EventFix/"* "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"; \
-    else \
-       echo "Error: Dodgeball EventFix subplugin directory missing or empty" >&2; exit 1; \
-    fi \
-  && rm -r "${DODGEBALL_PLUGIN_FILE_NAME}" "TF2-Dodgeball-Modified-${DODGEBALL_PLUGIN_VERSION_NUMBER}"
+  && 7z x -y "${DODGEBALL_PLUGIN_FILE_NAME}" \
+  && cp -r "TF2-Dodgeball-Modified/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
+  && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" "TF2-Dodgeball-Modified"
 
 # FBTF configs (latest version)
 ARG FBTF_CONFIGS_VERSION=23
