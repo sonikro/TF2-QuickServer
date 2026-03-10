@@ -164,7 +164,7 @@
         },
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
-            "hostname": "br.tf2pickup.org | {region} @ TF2-QuickServer",
+            "hostname": "br.tf2pickup.org",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "customCreationMessage": "🎉 **Server Created Successfully!** 🎉\n\n🤖 This server is managed by the TF2 Pickup system.\n📋 It will automatically register to the platform and be available for matches.\n✅ No further action is needed - the server is ready to go!",
@@ -192,7 +192,7 @@
         },
         "hlbr-tf2pickup": {
             "displayName": "hl.br.tf2pickup.org",
-            "hostname": "hl.br.tf2pickup.org | {region} @ TF2-QuickServer",
+            "hostname": "hl.br.tf2pickup.org",
             "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "customCreationMessage": "🎉 **Server Created and Registered!** 🎉\n\n💻 This server is managed by an external system.\n🔒 Therefore, the connect information will not be shared with you.\n✅ The server is now **available to be used**!",
