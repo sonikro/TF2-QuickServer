@@ -94,7 +94,7 @@ describe("DefaultEnvironmentBuilderService", () => {
             const result = service.build(deploymentContext, serverCredentials, variantConfig, regionConfig);
 
             const expectedUuidPrefix = deploymentContext.serverId.split('-')[0];
-            const expectedHostname = `#${expectedUuidPrefix} Test Server - Buenos Aires`;
+            const expectedHostname = `${expectedUuidPrefix} Test Server - Buenos Aires`;
 
             expect(result).toEqual({
                 SERVER_HOSTNAME: expectedHostname,
@@ -145,7 +145,7 @@ describe("DefaultEnvironmentBuilderService", () => {
             const result = service.build(deploymentContext, serverCredentials, variantWithoutHostname, regionConfig);
 
             const expectedUuidPrefix = deploymentContext.serverId.split('-')[0];
-            const expectedHostname = `#${expectedUuidPrefix} ${regionConfig.srcdsHostname}`;
+            const expectedHostname = `${expectedUuidPrefix} ${regionConfig.srcdsHostname}`;
 
             expect(result.SERVER_HOSTNAME).toBe(expectedHostname);
         });
@@ -236,7 +236,7 @@ describe("DefaultEnvironmentBuilderService", () => {
 
             const result = service.build(deploymentContext, serverCredentials, variantConfig, regionConfig);
 
-            expect(result.SERVER_HOSTNAME).toBe("#abc123 Test Server - Buenos Aires");
+            expect(result.SERVER_HOSTNAME).toBe("abc123 Test Server - Buenos Aires");
         });
     });
 });

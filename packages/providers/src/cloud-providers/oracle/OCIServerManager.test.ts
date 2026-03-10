@@ -305,7 +305,7 @@ describe("OCIServerManager", () => {
                 expect.any(String),
               ],
               environmentVariables: {
-                SERVER_HOSTNAME: "#test Test Server",
+                SERVER_HOSTNAME: "test Test Server",
                 SERVER_PASSWORD: "test-password",
                 DEMOS_TF_APIKEY: "test-demo-tf-api-key",
                 LOGS_TF_APIKEY: "test-logs-tf-api-key",
@@ -430,7 +430,7 @@ describe("OCIServerManager", () => {
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
 
-      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#abcd1234 Test Server");
+      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("abcd1234 Test Server");
     });
 
     it("should prepend first UUID block with # to custom hostname", async () => {
@@ -450,7 +450,7 @@ describe("OCIServerManager", () => {
       const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
       const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
 
-      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("#xyz9876a Custom Server | São Paulo @ TF2-QuickServer");
+      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("xyz9876a Custom Server | São Paulo @ TF2-QuickServer");
     });
   })
 
@@ -474,7 +474,7 @@ describe("OCIServerManager", () => {
           containers: [
             expect.objectContaining({
               environmentVariables: expect.objectContaining({
-                SERVER_HOSTNAME: `#test custom-hostname | São Paulo @ TF2-QuickServer`,
+                SERVER_HOSTNAME: `test custom-hostname | São Paulo @ TF2-QuickServer`,
               }),
             }),
             expect.anything(),

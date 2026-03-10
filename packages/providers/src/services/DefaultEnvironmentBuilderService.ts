@@ -30,7 +30,7 @@ export class DefaultEnvironmentBuilderService implements EnvironmentBuilderServi
         const uuidPrefix = context.uuidPrefix;
 
         const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(context.region)) : regionConfig.srcdsHostname;
-        const finalHostname = `#${uuidPrefix} ${hostname}`;
+        const finalHostname = `${uuidPrefix} ${hostname}`;
 
         const environment: Record<string, string> = {
             SERVER_HOSTNAME: finalHostname,

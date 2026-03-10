@@ -139,7 +139,7 @@ export class OCIServerManager implements ServerManager {
                 const uuidPrefix = serverId.split('-')[0];
 
                 const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
-                const finalHostname = `#${uuidPrefix} ${hostname}`;
+                const finalHostname = `${uuidPrefix} ${hostname}`;
 
                 const environmentVariables: Record<string, string> = {
                     SERVER_HOSTNAME: finalHostname,
