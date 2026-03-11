@@ -51,23 +51,40 @@ export function createCreateServerHandler(backgroundTaskQueue: BackgroundTaskQue
             res.status(400).json({ error: 'Bad Request', message: 'region is required and must be a string' });
             return;
         }
+        if (!Object.values(Region).includes(region as Region)) {
+            res.status(400).json({ error: 'Bad Request', message: 'region is not a valid region' });
+            return;
+        }
         if (!variantName || typeof variantName !== 'string') {
             res.status(400).json({ error: 'Bad Request', message: 'variantName is required and must be a string' });
             return;
         }
-        if (extraEnvs !== undefined && (typeof extraEnvs !== 'object' || Array.isArray(extraEnvs) || extraEnvs === null)) {
-            res.status(400).json({ error: 'Bad Request', message: 'extraEnvs must be a key-value object if provided' });
-            return;
+
+        let sanitizedExtraEnvs: Record<string, string> | undefined;
+        if (extraEnvs !== undefined) {
+            if (typeof extraEnvs !== 'object' || Array.isArray(extraEnvs) || extraEnvs === null) {
+                res.status(400).json({ error: 'Bad Request', message: 'extraEnvs must be a key-value object if provided' });
+                return;
+            }
+            const result: Record<string, string> = {};
+            for (const [key, value] of Object.entries(extraEnvs as Record<string, unknown>)) {
+                if (typeof value !== 'string') {
+                    res.status(400).json({ error: 'Bad Request', message: 'extraEnvs values must be strings' });
+                    return;
+                }
+                result[key] = value;
+            }
+            sanitizedExtraEnvs = result;
         }
 
         const taskData: CreateServerForClientTaskData = {
             region: region as Region,
             variantName: variantName as Variant,
             clientId: clientId as string,
-            extraEnvs: extraEnvs as Record<string, string> | undefined,
+            extraEnvs: sanitizedExtraEnvs,
         };
 
-        const taskId = await backgroundTaskQueue.enqueue('create-server-for-client', taskData);
+        const taskId = await backgroundTaskQueue.enqueue('create-server-for-client', taskData, undefined, undefined, { ownerId: clientId as string });
 
         res.status(202).json({ taskId });
     };

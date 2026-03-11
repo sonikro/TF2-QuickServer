@@ -8,13 +8,13 @@ describe('POST /api/servers', () => {
         // Given
         const { app, backgroundTaskQueue } = makeSut();
         when(backgroundTaskQueue.enqueue)
-            .calledWith('create-server-for-client', expect.anything())
+            .calledWith('create-server-for-client', expect.anything(), undefined, undefined, expect.objectContaining({ ownerId: TEST_CLIENT_ID }))
             .thenResolve('task-123');
 
         // When
         const response = await request(app)
             .post('/api/servers')
-            .send({ region: 'us-east-1', variantName: 'standard-competitive' });
+            .send({ region: 'sa-saopaulo-1', variantName: 'standard-competitive' });
 
         // Then
         expect(response.status).toBe(202);
@@ -30,17 +30,20 @@ describe('POST /api/servers', () => {
         // When
         await request(app)
             .post('/api/servers')
-            .send({ region: 'eu-london', variantName: 'standard-competitive', extraEnvs });
+            .send({ region: 'eu-frankfurt-1', variantName: 'standard-competitive', extraEnvs });
 
         // Then
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
             'create-server-for-client',
             expect.objectContaining({
-                region: 'eu-london',
+                region: 'eu-frankfurt-1',
                 variantName: 'standard-competitive',
                 clientId: TEST_CLIENT_ID,
                 extraEnvs,
-            })
+            }),
+            undefined,
+            undefined,
+            expect.objectContaining({ ownerId: TEST_CLIENT_ID })
         );
     });
 
@@ -52,12 +55,15 @@ describe('POST /api/servers', () => {
         // When
         await request(app)
             .post('/api/servers')
-            .send({ region: 'us-east-1', variantName: 'standard-competitive' });
+            .send({ region: 'sa-saopaulo-1', variantName: 'standard-competitive' });
 
         // Then
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
             'create-server-for-client',
-            expect.objectContaining({ extraEnvs: undefined })
+            expect.objectContaining({ extraEnvs: undefined }),
+            undefined,
+            undefined,
+            expect.objectContaining({ ownerId: TEST_CLIENT_ID })
         );
     });
 
@@ -67,6 +73,8 @@ describe('POST /api/servers', () => {
         { body: { region: 123, variantName: 'standard-competitive' }, description: 'region is not a string' },
         { body: { region: 'us-east-1', variantName: 456 }, description: 'variantName is not a string' },
         { body: { region: 'us-east-1', variantName: 'standard-competitive', extraEnvs: ['invalid'] }, description: 'extraEnvs is an array' },
+        { body: { region: 'invalid-region', variantName: 'standard-competitive' }, description: 'region is not a valid Region enum value' },
+        { body: { region: 'us-east-1', variantName: 'standard-competitive', extraEnvs: { KEY: 123 } }, description: 'extraEnvs has non-string values' },
     ])('should return 400 when $description', async ({ body }) => {
         // Given
         const { app } = makeSut();

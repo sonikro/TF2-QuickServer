@@ -10,7 +10,7 @@ describe('DELETE /api/servers/:serverId', () => {
         const server = makeServer({ createdBy: TEST_CLIENT_ID });
         when(serverRepository.findById).calledWith('server-xyz').thenResolve(server);
         when(backgroundTaskQueue.enqueue)
-            .calledWith('delete-server', expect.objectContaining({ serverId: 'server-xyz' }))
+            .calledWith('delete-server', expect.objectContaining({ serverId: 'server-xyz' }), undefined, undefined, expect.objectContaining({ ownerId: TEST_CLIENT_ID }))
             .thenResolve('task-delete-123');
 
         // When

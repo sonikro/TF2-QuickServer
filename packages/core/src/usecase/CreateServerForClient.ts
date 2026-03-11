@@ -1,8 +1,8 @@
 import { Region, Server, Variant } from "../domain";
 import { ServerRepository } from "../repository/ServerRepository";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerManagerFactory } from "../services/ServerManagerFactory";
 import { StatusUpdater } from "../services/StatusUpdater";
-import { v4 as uuid } from "uuid";
+import { IdGenerator } from "../services/IdGenerator";
 import { logger } from '@tf2qs/telemetry';
 
 export type CreateServerForClientParams = {
@@ -18,10 +18,11 @@ export class CreateServerForClient {
     constructor(private readonly dependencies: {
         serverManagerFactory: ServerManagerFactory;
         serverRepository: ServerRepository;
+        idGenerator: IdGenerator;
     }) { }
 
     public async execute(args: CreateServerForClientParams): Promise<Server> {
-        const { serverManagerFactory, serverRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, idGenerator } = this.dependencies;
         const statusUpdater: StatusUpdater = args.statusUpdater ?? (async () => {});
 
         const serverManager = serverManagerFactory.createServerManager(args.region);
@@ -36,7 +37,7 @@ export class CreateServerForClient {
             },
         });
 
-        const serverId = uuid();
+        const serverId = idGenerator.generate();
 
         await serverRepository.upsertServer({
             serverId,

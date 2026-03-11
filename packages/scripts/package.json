@@ -13,10 +13,13 @@
   },
   "dependencies": {
     "@tf2qs/core": "*",
+    "@tf2qs/entrypoints": "*",
     "@tf2qs/providers": "*",
     "@aws-sdk/client-s3": "^3.709.0",
+    "js-yaml": "^4.1.0",
     "node-bzip2": "^1.0.1",
     "oci-sdk": "^2.107.0",
-    "dotenv": "^16.0.0"
+    "dotenv": "^16.0.0",
+    "swagger-jsdoc": "^6.2.8"
   }
 }
