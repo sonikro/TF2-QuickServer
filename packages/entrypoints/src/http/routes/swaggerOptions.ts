@@ -61,7 +61,7 @@ export const swaggerOptions: swaggerJsdoc.Options = {
                         extraEnvs: {
                             type: 'object',
                             additionalProperties: { type: 'string' },
-                            example: { STV_TITLE: 'My Pickup', HOSTNAME: 'My TF2 Server' },
+                            example: { TF2PICKUPORG_API_ADDRESS: 'API Address', TF2PICKUPORG_SECRET: 'API Secret' },
                             description: 'Optional custom environment variables to pass to the server',
                         },
                     },
