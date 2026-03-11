@@ -16,7 +16,7 @@ import { TerminateServersWithoutCredit } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
-import { createCreateServerForClientTaskProcessor } from "@tf2qs/providers";
+import { createServerForClientTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerForUserTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerTaskProcessor } from "@tf2qs/providers";
 import { InMemoryBackgroundTaskQueue } from "@tf2qs/providers";
@@ -176,7 +176,7 @@ export async function startDiscordBot() {
 
     backgroundTaskQueue.registerProcessor(
         'create-server-for-client',
-        createCreateServerForClientTaskProcessor(createServerForClientUseCase)
+        createServerForClientTaskProcessor(createServerForClientUseCase)
     );
 
     const discordCommands = createCommands({

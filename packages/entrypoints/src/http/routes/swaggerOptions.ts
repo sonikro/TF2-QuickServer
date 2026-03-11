@@ -1,4 +1,5 @@
 import swaggerJsdoc from 'swagger-jsdoc';
+import path from 'path';
 
 export const swaggerOptions: swaggerJsdoc.Options = {
     definition: {
@@ -124,7 +125,9 @@ export const swaggerOptions: swaggerJsdoc.Options = {
         },
     },
     apis: [
-        './packages/entrypoints/src/http/routes/servers/*.ts',
-        './packages/entrypoints/src/http/routes/tasks/*.ts',
+        path.join(__dirname, '../routes/servers/*.ts'),
+        path.join(__dirname, '../routes/servers/*.js'),
+        path.join(__dirname, '../routes/tasks/*.ts'),
+        path.join(__dirname, '../routes/tasks/*.js'),
     ],
 };

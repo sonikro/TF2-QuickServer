@@ -11,7 +11,7 @@ import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
 
-export { ServerManagerFactory };
+export type { ServerManagerFactory };
 
 export class DefaultServerManagerFactory implements ServerManagerFactory {
     constructor(

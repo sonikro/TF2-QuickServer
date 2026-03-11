@@ -3,7 +3,7 @@ import { GenericTaskProcessor } from './GenericTaskProcessor';
 
 export type CreateServerForClientTaskData = CreateServerForClientParams;
 
-export function createCreateServerForClientTaskProcessor(
+export function createServerForClientTaskProcessor(
     createServerForClient: CreateServerForClient
 ): GenericTaskProcessor<CreateServerForClientTaskData> {
     return new GenericTaskProcessor({
