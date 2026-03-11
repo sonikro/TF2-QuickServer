@@ -2,7 +2,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import yaml from 'js-yaml';
 import fs from 'fs';
 import path from 'path';
-import { swaggerOptions } from '@tf2qs/entrypoints/src/http/routes/swaggerOptions';
+import { swaggerOptions } from '@tf2qs/entrypoints';
 
 // This script generates docs/api/openapi.yaml from the shared swaggerOptions definition
 // and @openapi JSDoc annotations in the route files.

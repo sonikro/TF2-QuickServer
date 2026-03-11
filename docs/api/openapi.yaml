@@ -14,7 +14,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Auth0 M2M JWT token (Client Credentials flow). Use the azp claim as the client identifier.
+      description: Auth0 M2M JWT token (Client Credentials flow). Use the `azp` claim as the client identifier.
     oauth2:
       type: oauth2
       description: Auth0 OAuth2 Client Credentials flow for M2M authentication.
@@ -116,8 +116,14 @@ components:
             - completed
             - failed
         result:
-          description: The Server object when status is completed
-          $ref: '#/components/schemas/Server'
+          nullable: true
+          description: >-
+            The result when status is completed. Contains a Server object for create-server tasks, or null for
+            delete-server tasks.
+          oneOf:
+            - $ref: '#/components/schemas/Server'
+            - type: object
+              nullable: true
         error:
           type: string
           description: Error message when status is failed
@@ -271,6 +277,8 @@ paths:
                 $ref: '#/components/schemas/TaskStatus'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
 tags: []
