@@ -1,6 +1,16 @@
 import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 import { initializeExpress } from './express';
+import { BackgroundTaskQueue, GetUserServers, ServerRepository } from '@tf2qs/core';
+
+function makeDeps() {
+    return {
+        getUserServers: mock<GetUserServers>(),
+        backgroundTaskQueue: mock<BackgroundTaskQueue>(),
+        serverRepository: mock<ServerRepository>(),
+    };
+}
 
 describe("initializeExpress", () => {
 
@@ -11,7 +21,7 @@ describe("initializeExpress", () => {
             vi.clearAllMocks();
             delete process.env.AUTH0_DOMAIN;
             delete process.env.AUTH0_AUDIENCE;
-            app = initializeExpress({});
+            app = initializeExpress({ apiDependencies: makeDeps() });
         });
 
         it.each([
@@ -27,7 +37,7 @@ describe("initializeExpress", () => {
             vi.clearAllMocks();
             process.env.AUTH0_DOMAIN = 'test.auth0.com';
             process.env.AUTH0_AUDIENCE = 'https://api.test.com';
-            app = initializeExpress({});
+            app = initializeExpress({ apiDependencies: makeDeps() });
         });
 
         it.each([

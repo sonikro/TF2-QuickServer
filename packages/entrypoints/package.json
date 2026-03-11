@@ -9,15 +9,21 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",
     "@tf2qs/core": "*",
     "@tf2qs/providers": "*",
     "@tf2qs/telemetry": "*",
+    "chance": "^1.1.12",
     "discord.js": "^14.18.0",
     "express": "^5.1.0",
     "express-oauth2-jwt-bearer": "^1.7.1",
     "node-schedule": "^2.1.1",
-    "@c43721/srcds-log-receiver": "npm:@jsr/c43721__srcds-log-receiver@^1.1.4-rc1",
-    "chance": "^1.1.12",
-    "public-ip": "^7.0.1"
+    "public-ip": "^7.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8"
   }
 }

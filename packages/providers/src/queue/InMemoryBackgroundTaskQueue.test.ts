@@ -377,4 +377,130 @@ describe('InMemoryBackgroundTaskQueue', () => {
       expect(onError).toHaveBeenCalledOnce();
     });
   });
+
+  describe('task status tracking', () => {
+    function makeSut() {
+      vi.useFakeTimers();
+      const shutdownManagerMock = mock<GracefulShutdownManager>();
+      vi.mocked(shutdownManagerMock.run).mockImplementation(async (action) => action());
+      const sut = new InMemoryBackgroundTaskQueue(shutdownManagerMock);
+      return { sut, shutdownManagerMock };
+    }
+
+    it('should return null for unknown taskId', async () => {
+      // Given
+      const { sut } = makeSut();
+
+      // When
+      const status = await sut.getTask('nonexistent-task-id');
+
+      // Then
+      expect(status).toBeNull();
+    });
+
+    it('should set task status to pending on enqueue', async () => {
+      // Given
+      const { sut } = makeSut();
+
+      // When
+      const taskId = await sut.enqueue('test-task', { data: 'test' });
+      const status = await sut.getTask(taskId);
+
+      // Then
+      expect(status).toMatchObject({ taskId, type: 'test-task', status: 'pending' });
+    });
+
+    it('should transition task status from pending to running to completed on success', async () => {
+      // Given
+      const { sut } = makeSut();
+      const processor = mock<BackgroundTaskProcessor>();
+      processor.process.mockResolvedValue({ serverId: 'abc' });
+      sut.registerProcessor('test-task', processor);
+
+      const taskId = await sut.enqueue('test-task', { data: 'test' });
+      await sut.start();
+
+      // When
+      await vi.advanceTimersByTimeAsync(2000);
+      await sut.stop();
+
+      // Then
+      const status = await sut.getTask(taskId);
+      expect(status).toMatchObject({
+        taskId,
+        status: 'completed',
+        result: { serverId: 'abc' },
+      });
+      expect(status?.completedAt).toBeDefined();
+    });
+
+    it('should transition task status to failed when processor throws', async () => {
+      // Given
+      const { sut } = makeSut();
+      const processor = mock<BackgroundTaskProcessor>();
+      processor.process.mockRejectedValue(new Error('Deployment failed'));
+      sut.registerProcessor('test-task', processor);
+
+      const taskId = await sut.enqueue('test-task', { data: 'test' });
+      await sut.start();
+
+      // When
+      await vi.advanceTimersByTimeAsync(2000);
+      await sut.stop();
+
+      // Then
+      const status = await sut.getTask(taskId);
+      expect(status).toMatchObject({
+        taskId,
+        status: 'failed',
+        error: 'Deployment failed',
+      });
+      expect(status?.completedAt).toBeDefined();
+    });
+
+    it('should transition to completed after a successful retry', async () => {
+      // Given
+      const { sut } = makeSut();
+      const processor = mock<BackgroundTaskProcessor>();
+      processor.process
+        .mockRejectedValueOnce(new Error('Temporary failure'))
+        .mockResolvedValueOnce({ serverId: 'success' });
+      sut.registerProcessor('test-task', processor);
+
+      const taskId = await sut.enqueue('test-task', { data: 'test' }, undefined, { maxRetries: 1 });
+      await sut.start();
+
+      // When - first attempt fails, retry is scheduled
+      await vi.advanceTimersByTimeAsync(1100);
+      const statusAfterFirstAttempt = await sut.getTask(taskId);
+      expect(statusAfterFirstAttempt?.status).toBe('pending');
+
+      // When - retry completes successfully
+      await vi.advanceTimersByTimeAsync(2000);
+      await sut.stop();
+
+      // Then - final status is completed
+      const finalStatus = await sut.getTask(taskId);
+      expect(finalStatus?.status).toBe('completed');
+    });
+
+    it.each([
+      { type: 'create-server-for-client' },
+      { type: 'delete-server' },
+      { type: 'delete-server-for-user' },
+    ])('should track task status for task type $type', async ({ type }) => {
+      // Given
+      const { sut } = makeSut();
+      const processor = mock<BackgroundTaskProcessor>();
+      processor.process.mockResolvedValue(undefined);
+      sut.registerProcessor(type, processor);
+
+      // When
+      const taskId = await sut.enqueue(type, { data: 'test' });
+
+      // Then
+      const status = await sut.getTask(taskId);
+      expect(status).toMatchObject({ taskId, type, status: 'pending' });
+    });
+  });
 });
