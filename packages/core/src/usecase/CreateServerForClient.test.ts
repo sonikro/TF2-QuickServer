@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mock } from 'vitest-mock-extended';
-import { when } from 'vitest-when';
-import { ServerRepository, ServerManager } from '@tf2qs/core';
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerRepository, ServerManagerFactory, ServerManager, IdGenerator } from '@tf2qs/core';
 import { CreateServerForClient } from './CreateServerForClient';
 import { Region, Server } from '../domain';
 
@@ -11,15 +9,18 @@ describe('CreateServerForClient', () => {
         const serverRepository = mock<ServerRepository>();
         const serverManagerFactory = mock<ServerManagerFactory>();
         const serverManager = mock<ServerManager>();
+        const idGenerator = mock<IdGenerator>();
 
-        when(serverManagerFactory.createServerManager).calledWith(expect.anything()).thenReturn(serverManager);
+        serverManagerFactory.createServerManager.mockReturnValue(serverManager);
+        idGenerator.generate.mockReturnValue('mock-server-id');
 
         const sut = new CreateServerForClient({
             serverRepository,
             serverManagerFactory,
+            idGenerator,
         });
 
-        return { sut, serverRepository, serverManagerFactory, serverManager };
+        return { sut, serverRepository, serverManagerFactory, serverManager, idGenerator };
     }
 
     const baseArgs = {
@@ -44,7 +45,6 @@ describe('CreateServerForClient', () => {
         it('should create a server and return the deployed server', async () => {
             // Given
             const { sut, serverRepository, serverManager } = makeSut();
-            when(serverManager.deployServer).calledWith(expect.objectContaining({ clientId: undefined })).thenResolve(deployedServer);
             serverManager.deployServer.mockResolvedValue(deployedServer);
             serverRepository.upsertServer.mockResolvedValue();
 

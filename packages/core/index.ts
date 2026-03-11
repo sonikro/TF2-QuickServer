@@ -22,6 +22,8 @@ export * from './src/repository/PlayerConnectionHistoryRepository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
+export * from './src/services/IdGenerator';
+export * from './src/services/ServerManagerFactory';
 export * from './src/services/CostProvider';
 export * from './src/services/EnvironmentBuilderService';
 export * from './src/services/EventLogger';

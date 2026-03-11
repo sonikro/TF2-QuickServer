@@ -11,5 +11,6 @@ export * from './MonthlyReportFormatter';
 export * from './PaypalPaymentService';
 export * from './RCONServerCommander';
 export * from './ServerManagerFactory';
+export * from './UuidIdGenerator';
 export * from './defaultAWSServiceFactory';
 export * from './defaultOracleServiceFactory';

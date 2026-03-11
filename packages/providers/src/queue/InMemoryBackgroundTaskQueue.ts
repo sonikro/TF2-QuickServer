@@ -9,7 +9,9 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
   private taskStatuses: Map<string, TaskStatus> = new Map();
   private running = false;
   private processingInterval: NodeJS.Timeout | null = null;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private readonly processingDelayMs = 1000;
+  private readonly taskTtlMs = 60 * 60 * 1000; // 1 hour TTL for terminal task statuses
   private readonly defaultRetryConfig: Required<BackgroundTaskRetryConfig> = {
     maxRetries: 0,
     initialDelayMs: 1000,
@@ -30,7 +32,8 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     type: string,
     data: T,
     callbacks?: BackgroundTaskCallbacks,
-    retryConfig?: BackgroundTaskRetryConfig
+    retryConfig?: BackgroundTaskRetryConfig,
+    metadata?: { ownerId?: string }
   ): Promise<string> {
     const id = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const mergedRetryConfig = retryConfig ? { ...this.defaultRetryConfig, ...retryConfig } : undefined;
@@ -51,6 +54,7 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
       taskId: id,
       type,
       status: 'pending',
+      ownerId: metadata?.ownerId,
       createdAt: task.createdAt,
     });
 
@@ -81,6 +85,10 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     this.processingInterval = setInterval(async () => {
       await this.processTasks();
     }, this.processingDelayMs);
+
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupExpiredTaskStatuses();
+    }, this.taskTtlMs);
   }
 
   async stop(): Promise<void> {
@@ -93,6 +101,11 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
       this.processingInterval = null;
+    }
+
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
     }
 
     logger.emit({
@@ -135,6 +148,11 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
           taskId: task.id,
           taskType: task.type,
         },
+      });
+      this.updateTaskStatus(task.id, {
+        status: 'failed',
+        error: `No processor registered for task type: ${task.type}`,
+        completedAt: new Date(),
       });
       return;
     }
@@ -242,6 +260,16 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
   ): number {
     const exponentialDelay = config.initialDelayMs * Math.pow(config.backoffMultiplier, attemptNumber - 1);
     return Math.min(exponentialDelay, config.maxDelayMs);
+  }
+
+  private cleanupExpiredTaskStatuses(): void {
+    const cutoff = Date.now() - this.taskTtlMs;
+    for (const [taskId, status] of this.taskStatuses.entries()) {
+      if ((status.status === 'completed' || status.status === 'failed') &&
+          status.completedAt && status.completedAt.getTime() < cutoff) {
+        this.taskStatuses.delete(taskId);
+      }
+    }
   }
 
   private updateTaskStatus(taskId: string, update: Partial<Omit<TaskStatus, 'taskId' | 'type' | 'createdAt'>>): void {

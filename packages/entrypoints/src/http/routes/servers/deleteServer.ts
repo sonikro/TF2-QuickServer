@@ -56,7 +56,7 @@ export function createDeleteServerHandler(backgroundTaskQueue: BackgroundTaskQue
             return;
         }
 
-        const taskId = await backgroundTaskQueue.enqueue('delete-server', { serverId });
+        const taskId = await backgroundTaskQueue.enqueue('delete-server', { serverId }, undefined, undefined, { ownerId: clientId as string });
 
         res.status(202).json({ taskId });
     };

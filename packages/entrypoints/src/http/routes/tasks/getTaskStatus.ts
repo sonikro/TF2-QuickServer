@@ -36,11 +36,22 @@ export function createGetTaskStatusHandler(backgroundTaskQueue: BackgroundTaskQu
      *         $ref: '#/components/responses/NotFound'
      */
     return async (req: Request, res: Response): Promise<void> => {
+        const clientId = req.auth?.payload.azp || req.auth?.payload.sub;
+        if (!clientId) {
+            res.status(401).json({ error: 'Unauthorized', message: 'No client ID found in token' });
+            return;
+        }
+
         const { taskId } = req.params;
 
         const taskStatus = await backgroundTaskQueue.getTask(taskId);
         if (!taskStatus) {
             res.status(404).json({ error: 'Not Found', message: `Task ${taskId} not found` });
+            return;
+        }
+
+        if (taskStatus.ownerId && taskStatus.ownerId !== clientId) {
+            res.status(403).json({ error: 'Forbidden', message: 'You do not have permission to view this task' });
             return;
         }
 

@@ -42,6 +42,7 @@ import { FileSystemOCICredentialsFactory } from "@tf2qs/providers";
 import { PaypalPaymentService } from "@tf2qs/providers";
 import { RCONServerCommander } from "@tf2qs/providers";
 import { DefaultServerManagerFactory } from "@tf2qs/providers";
+import { UuidIdGenerator } from "@tf2qs/providers";
 import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
@@ -170,6 +171,7 @@ export async function startDiscordBot() {
     const createServerForClientUseCase = new CreateServerForClient({
         serverManagerFactory: serverManagerFactory,
         serverRepository,
+        idGenerator: new UuidIdGenerator(),
     });
 
     backgroundTaskQueue.registerProcessor(

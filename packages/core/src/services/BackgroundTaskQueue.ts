@@ -32,7 +32,8 @@ export interface BackgroundTaskQueue {
     type: string,
     data: T,
     callbacks?: BackgroundTaskCallbacks,
-    retryConfig?: BackgroundTaskRetryConfig
+    retryConfig?: BackgroundTaskRetryConfig,
+    metadata?: { ownerId?: string }
   ): Promise<string>;
   registerProcessor<T extends Record<string, unknown>>(
     type: string,
