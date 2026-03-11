@@ -4,6 +4,39 @@
 
 The HTTP API entrypoint uses Auth0 for authentication via OAuth 2.0 Client Credentials flow. This enables machine-to-machine (M2M) authentication where client applications authenticate using a client ID and client secret to obtain access tokens.
 
+## Generating a Token (Production API)
+
+To call the TF2 QuickServer API, you need an Auth0 M2M token. Request one using your `client_id` and `client_secret`:
+
+```bash
+curl -X POST https://tf2-quickserver.us.auth0.com/oauth/token \
+  -H 'content-type: application/json' \
+  -d '{
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "audience": "https://tf2-quickserver.sonikro.com",
+    "grant_type": "client_credentials"
+  }'
+```
+
+Response:
+```json
+{
+  "access_token": "eyJhbGc...",
+  "token_type": "Bearer",
+  "expires_in": 86400
+}
+```
+
+Use the `access_token` as a Bearer token in all API requests:
+
+```bash
+curl https://tf2-quickserver.sonikro.com/api/servers \
+  -H 'Authorization: Bearer eyJhbGc...'
+```
+
+> **Contact the QuickServer team** to have an M2M application created for your client.
+
 ## Architecture
 
 - **JWT Validation**: All routes under `/api/*` require a valid JWT token from Auth0

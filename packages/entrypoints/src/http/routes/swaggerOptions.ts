@@ -10,8 +10,7 @@ export const swaggerOptions: swaggerJsdoc.Options = {
             description: 'API for managing TF2 game servers. Designed for integration with the tf2pickup system.',
         },
         servers: [
-            { url: 'https://tf2-quickserver.sonikro.com/api', description: 'Production' },
-            { url: '/api', description: 'Local / relative' },
+            { url: 'https://tf2-quickserver.sonikro.com', description: 'Production' },
         ],
         components: {
             securitySchemes: {
@@ -23,7 +22,10 @@ export const swaggerOptions: swaggerJsdoc.Options = {
                 },
                 oauth2: {
                     type: 'oauth2',
-                    description: 'Auth0 OAuth2 Client Credentials flow for M2M authentication.',
+                    description: 'Auth0 OAuth2 Client Credentials flow for M2M authentication. ' +
+                        'When using Bruno or Insomnia, add `audience: https://tf2-quickserver.sonikro.com` as an extra token body parameter — ' +
+                        'Auth0 requires this field but it is not part of the standard OAuth2 spec. ' +
+                        'See docs/oauth.md for full instructions.',
                     flows: {
                         clientCredentials: {
                             tokenUrl: 'https://tf2-quickserver.us.auth0.com/oauth/token',
