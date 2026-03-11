@@ -1,12 +1,11 @@
-import { Express } from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import { profileHandler } from '../middlewares/profile';
-import { createListServersHandler } from './servers/listServers';
-import { createCreateServerHandler } from './servers/createServer';
-import { createDeleteServerHandler } from './servers/deleteServer';
-import { createGetTaskStatusHandler } from './tasks/getTaskStatus';
-import { BackgroundTaskQueue, GetUserServers, ServerRepository } from '@tf2qs/core';
+import yaml from 'js-yaml';
+import fs from 'fs';
+import path from 'path';
+
+// This script generates docs/api/openapi.yaml from the swaggerOptions definition
+// in api.ts combined with @openapi JSDoc annotations in the route files.
+// Run with: npm run gen:openapi
 
 const swaggerOptions: swaggerJsdoc.Options = {
     definition: {
@@ -17,7 +16,6 @@ const swaggerOptions: swaggerJsdoc.Options = {
             description: 'API for managing TF2 game servers. Designed for integration with the tf2pickup system.',
         },
         servers: [
-            { url: 'https://tf2-quickserver.sonikro.com/api', description: 'Production' },
             { url: '/api', description: 'Local / relative' },
         ],
         components: {
@@ -26,7 +24,7 @@ const swaggerOptions: swaggerJsdoc.Options = {
                     type: 'http',
                     scheme: 'bearer',
                     bearerFormat: 'JWT',
-                    description: 'Auth0 M2M JWT token (Client Credentials flow). Use the `azp` claim as the client identifier.',
+                    description: 'Auth0 M2M JWT token (Client Credentials flow). Use the azp claim as the client identifier.',
                 },
                 oauth2: {
                     type: 'oauth2',
@@ -130,24 +128,11 @@ const swaggerOptions: swaggerJsdoc.Options = {
     ],
 };
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const spec = swaggerJsdoc(swaggerOptions);
+const outputPath = path.resolve('./docs/api/openapi.yaml');
 
-export type ApiRouteDependencies = {
-    getUserServers: GetUserServers;
-    backgroundTaskQueue: BackgroundTaskQueue;
-    serverRepository: ServerRepository;
-};
+fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+fs.writeFileSync(outputPath, yaml.dump(spec, { lineWidth: 120 }));
 
-export function registerApiRoutes(app: Express, dependencies: ApiRouteDependencies) {
-    app.get('/api/profile', profileHandler);
-
-    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-    app.get('/api/openapi.json', (_req, res) => { res.json(swaggerSpec); });
-
-    const { getUserServers, backgroundTaskQueue, serverRepository } = dependencies;
-    app.get('/api/servers', createListServersHandler(getUserServers));
-    app.post('/api/servers', createCreateServerHandler(backgroundTaskQueue));
-    app.delete('/api/servers/:serverId', createDeleteServerHandler(backgroundTaskQueue, serverRepository));
-    app.get('/api/tasks/:taskId', createGetTaskStatusHandler(backgroundTaskQueue));
-}
-
+const pathCount = Object.keys((spec as any).paths ?? {}).length;
+console.log(`✓ Generated ${outputPath} (${pathCount} paths)`);

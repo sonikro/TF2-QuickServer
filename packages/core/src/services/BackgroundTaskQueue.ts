@@ -1,3 +1,5 @@
+import { TaskStatus } from '../domain/TaskStatus';
+
 export type BackgroundTaskRetryConfig = {
   maxRetries: number;
   initialDelayMs?: number;
@@ -39,4 +41,5 @@ export interface BackgroundTaskQueue {
   start(): Promise<void>;
   stop(): Promise<void>;
   isRunning(): boolean;
+  getTask(taskId: string): Promise<TaskStatus | null>;
 }

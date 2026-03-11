@@ -17,3 +17,4 @@ export * from "./ServerActivity";
 export * from "./PlayerConnectionHistory";
 export { ServerStatusParser } from "./ServerStatus";
 export * from "./ServerStatusMetric";
+export * from "./TaskStatus";

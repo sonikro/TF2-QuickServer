@@ -1,10 +1,12 @@
 import { logger } from '@tf2qs/telemetry';
 import { BackgroundTask, BackgroundTaskQueue, BackgroundTaskProcessor, BackgroundTaskCallbacks, BackgroundTaskRetryConfig } from '@tf2qs/core';
 import { GracefulShutdownManager } from '@tf2qs/core';
+import { TaskStatus } from '@tf2qs/core';
 
 export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
   private tasks: BackgroundTask[] = [];
   private processors: Map<string, BackgroundTaskProcessor> = new Map();
+  private taskStatuses: Map<string, TaskStatus> = new Map();
   private running = false;
   private processingInterval: NodeJS.Timeout | null = null;
   private readonly processingDelayMs = 1000;
@@ -44,6 +46,13 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     };
 
     this.tasks.push(task);
+
+    this.taskStatuses.set(id, {
+      taskId: id,
+      type,
+      status: 'pending',
+      createdAt: task.createdAt,
+    });
 
     logger.emit({
       severityText: 'INFO',
@@ -96,6 +105,10 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     return this.running;
   }
 
+  async getTask(taskId: string): Promise<TaskStatus | null> {
+    return this.taskStatuses.get(taskId) ?? null;
+  }
+
   private async processTasks(): Promise<void> {
     if (this.tasks.length === 0) {
       return;
@@ -126,6 +139,8 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
       return;
     }
 
+    this.updateTaskStatus(task.id, { status: 'running' });
+
     try {
       await this.shutdownManager.run(async () => {
         logger.emit({
@@ -151,6 +166,8 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
           },
         });
 
+        this.updateTaskStatus(task.id, { status: 'completed', result, completedAt: new Date() });
+
         if (task.callbacks?.onSuccess) {
           await task.callbacks.onSuccess(result);
         }
@@ -174,8 +191,11 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
       });
 
       if (shouldRetry) {
+        this.updateTaskStatus(task.id, { status: 'pending' });
         this.scheduleRetry(task, currentAttempt + 1);
       } else {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.updateTaskStatus(task.id, { status: 'failed', error: errorMessage, completedAt: new Date() });
         if (task.callbacks?.onError) {
           await task.callbacks.onError(error instanceof Error ? error : new Error(String(error)));
         }
@@ -222,5 +242,12 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
   ): number {
     const exponentialDelay = config.initialDelayMs * Math.pow(config.backoffMultiplier, attemptNumber - 1);
     return Math.min(exponentialDelay, config.maxDelayMs);
+  }
+
+  private updateTaskStatus(taskId: string, update: Partial<Omit<TaskStatus, 'taskId' | 'type' | 'createdAt'>>): void {
+    const existing = this.taskStatuses.get(taskId);
+    if (existing) {
+      this.taskStatuses.set(taskId, { ...existing, ...update });
+    }
   }
 }

@@ -38,6 +38,7 @@ export * from './src/services/TF2ServerReadinessService';
 // Use cases
 export * from './src/usecase/ConsumeCreditsFromRunningServers';
 export * from './src/usecase/CreateCreditsPurchaseOrder';
+export * from './src/usecase/CreateServerForClient';
 export * from './src/usecase/CreateServerForUser';
 export * from './src/usecase/DeleteServer';
 export * from './src/usecase/DeleteServerForUser';

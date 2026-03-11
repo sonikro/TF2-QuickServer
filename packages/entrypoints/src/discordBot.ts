@@ -1,3 +1,4 @@
+import { CreateServerForClient } from "@tf2qs/core";
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, REST, Routes } from "discord.js";
 import { ConsumeCreditsFromRunningServers } from "@tf2qs/core";
 import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
@@ -15,6 +16,7 @@ import { TerminateServersWithoutCredit } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
+import { createCreateServerForClientTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerForUserTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerTaskProcessor } from "@tf2qs/providers";
 import { InMemoryBackgroundTaskQueue } from "@tf2qs/providers";
@@ -163,6 +165,16 @@ export async function startDiscordBot() {
     backgroundTaskQueue.registerProcessor(
         'delete-server',
         createDeleteServerTaskProcessor(deleteServerTaskUseCase)
+    );
+
+    const createServerForClientUseCase = new CreateServerForClient({
+        serverManagerFactory: serverManagerFactory,
+        serverRepository,
+    });
+
+    backgroundTaskQueue.registerProcessor(
+        'create-server-for-client',
+        createCreateServerForClientTaskProcessor(createServerForClientUseCase)
     );
 
     const discordCommands = createCommands({
@@ -372,7 +384,13 @@ export async function startDiscordBot() {
         serverStatusMetricsRepository
     });
 
-    initializeExpress({})
+    initializeExpress({
+        apiDependencies: {
+            getUserServers: new GetUserServers({ serverRepository }),
+            backgroundTaskQueue,
+            serverRepository,
+        }
+    })
 
     // Prevent crashes and log global errors
     process.on('unhandledRejection', (error: Error | any) => {
