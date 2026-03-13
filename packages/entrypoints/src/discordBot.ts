@@ -172,6 +172,7 @@ export async function startDiscordBot() {
         serverManagerFactory: serverManagerFactory,
         serverRepository,
         idGenerator: new UuidIdGenerator(),
+        eventLogger
     });
 
     backgroundTaskQueue.registerProcessor(

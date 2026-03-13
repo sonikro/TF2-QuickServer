@@ -18,6 +18,7 @@ describe('CreateServerForClient', () => {
             serverRepository,
             serverManagerFactory,
             idGenerator,
+            eventLogger: mock(),
         });
 
         return { sut, serverRepository, serverManagerFactory, serverManager, idGenerator };

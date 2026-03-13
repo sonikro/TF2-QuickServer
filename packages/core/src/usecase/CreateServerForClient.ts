@@ -3,6 +3,7 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { ServerManagerFactory } from "../services/ServerManagerFactory";
 import { StatusUpdater } from "../services/StatusUpdater";
 import { IdGenerator } from "../services/IdGenerator";
+import { EventLogger } from "../services/EventLogger";
 import { logger } from '@tf2qs/telemetry';
 
 export type CreateServerForClientParams = {
@@ -19,10 +20,11 @@ export class CreateServerForClient {
         serverManagerFactory: ServerManagerFactory;
         serverRepository: ServerRepository;
         idGenerator: IdGenerator;
+        eventLogger: EventLogger;
     }) { }
 
     public async execute(args: CreateServerForClientParams): Promise<Server> {
-        const { serverManagerFactory, serverRepository, idGenerator } = this.dependencies;
+        const { serverManagerFactory, serverRepository, idGenerator, eventLogger } = this.dependencies;
         const statusUpdater: StatusUpdater = args.statusUpdater ?? (async () => {});
 
         const serverManager = serverManagerFactory.createServerManager(args.region);
@@ -69,6 +71,11 @@ export class CreateServerForClient {
                 serverId: server.serverId,
                 region: args.region,
             },
+        });
+
+        await eventLogger.log({
+            actorId: args.clientId,
+            eventMessage: `API client created a server in region ${args.region} with variant ${args.variantName}`,
         });
 
         return server;
