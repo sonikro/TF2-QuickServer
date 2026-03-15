@@ -162,6 +162,15 @@
             ],
             "guildId": "1414690765208158328"
         },
+        "zfl": {
+            "displayName": "ZFL",
+            "hostname": "ZFL | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "cp_ZFL.cfg",
+                "koth": "koth_ZFL.cfg"
+            },
+            "guildId": "1432805380680847534"
+        },
         "tf2pickup": {
             "displayName": "br.tf2pickup.org",
             "hostname": "br.tf2pickup.org",
