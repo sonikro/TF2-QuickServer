@@ -142,6 +142,38 @@ describe("DefaultTaskDefinitionService", () => {
             });
         });
 
+        it("uses firstMap override when provided in deployment context", async () => {
+            const taskDefinitionArn = "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1";
+            const contextWithFirstMap = {
+                ...context,
+                firstMap: "koth_product_final"
+            } as DeploymentContext;
+
+            ecsClientMock.on(RegisterTaskDefinitionCommand).resolves({
+                taskDefinition: {
+                    taskDefinitionArn
+                }
+            });
+
+            const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
+
+            await service.create(contextWithFirstMap, credentials, environment);
+
+            const registerCalls = ecsClientMock.commandCalls(RegisterTaskDefinitionCommand);
+            expect(registerCalls).toHaveLength(1);
+
+            const command = registerCalls[0].args[0].input.containerDefinitions?.[0].command;
+            expect(command).toEqual([
+                "-enablefakeip",
+                "+sv_pure",
+                "2",
+                "+maxplayers",
+                "12",
+                "+map",
+                "koth_product_final"
+            ]);
+        });
+
         it("creates task definition successfully with NewRelic sidecar", async () => {
             // Set up NewRelic environment variable
             process.env.NEW_RELIC_LICENSE_KEY = "test-license-key";

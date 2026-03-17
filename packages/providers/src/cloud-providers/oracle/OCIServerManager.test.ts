@@ -504,6 +504,27 @@ describe("OCIServerManager", () => {
       expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
       expect(envVars.ANOTHER_VAR).toBe("another-value");
     });
+
+    it("should use firstMap override instead of variant default map", async () => {
+      const { sut, containerClient } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "test-server-first-map",
+        firstMap: "custom_map",
+        statusUpdater,
+      });
+
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Args = containerInstanceRequest.createContainerInstanceDetails.containers[0].arguments as string[];
+      const mapArgIndex = tf2Args.indexOf("+map");
+
+      expect(mapArgIndex).toBeGreaterThanOrEqual(0);
+      expect(tf2Args[mapArgIndex + 1]).toBe("custom_map");
+    });
   });
   describe("newrelic-infra sidecar", () => {
     it("should add newrelic-infra container when NEW_RELIC_LICENSE_KEY is set", async () => {

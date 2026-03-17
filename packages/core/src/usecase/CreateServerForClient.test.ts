@@ -91,6 +91,21 @@ describe('CreateServerForClient', () => {
             );
         });
 
+        it('should pass firstMap to deployServer when provided', async () => {
+            // Given
+            const { sut, serverRepository, serverManager } = makeSut();
+            serverManager.deployServer.mockResolvedValue(deployedServer);
+            serverRepository.upsertServer.mockResolvedValue();
+
+            // When
+            await sut.execute({ ...baseArgs, firstMap: 'cp_process_f12' });
+
+            // Then
+            expect(serverManager.deployServer).toHaveBeenCalledWith(
+                expect.objectContaining({ firstMap: 'cp_process_f12' })
+            );
+        });
+
         it('should pass empty extraEnvs to deployServer when not provided', async () => {
             // Given
             const { sut, serverRepository, serverManager } = makeSut();

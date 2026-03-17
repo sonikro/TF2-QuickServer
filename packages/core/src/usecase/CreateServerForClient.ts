@@ -9,6 +9,7 @@ import { logger } from '@tf2qs/telemetry';
 export type CreateServerForClientParams = {
     region: Region;
     variantName: Variant;
+    firstMap?: string;
     clientId: string;
     extraEnvs?: Record<string, string>;
     statusUpdater?: StatusUpdater;
@@ -53,6 +54,7 @@ export class CreateServerForClient {
             serverId,
             region: args.region,
             variantName: args.variantName,
+            firstMap: args.firstMap,
             extraEnvs: args.extraEnvs ?? {},
             statusUpdater,
         });

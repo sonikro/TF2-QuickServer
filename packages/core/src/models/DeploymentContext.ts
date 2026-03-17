@@ -9,6 +9,7 @@ export class DeploymentContext {
         serverId,
         region,
         variantName,
+        firstMap,
         statusUpdater,
         sourcemodAdminSteamId,
         extraEnvs = {}
@@ -16,6 +17,7 @@ export class DeploymentContext {
         serverId: string;
         region: Region;
         variantName: Variant;
+        firstMap?: string;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
@@ -23,6 +25,7 @@ export class DeploymentContext {
         this.serverId = serverId;
         this.region = region;
         this.variantName = variantName;
+        this.firstMap = firstMap;
         this.statusUpdater = statusUpdater;
         this.sourcemodAdminSteamId = sourcemodAdminSteamId;
         this.extraEnvs = extraEnvs;
@@ -31,6 +34,7 @@ export class DeploymentContext {
     public readonly serverId: string;
     public readonly region: Region;
     public readonly variantName: Variant;
+    public readonly firstMap?: string;
     public readonly statusUpdater: StatusUpdater;
     public readonly sourcemodAdminSteamId?: string;
     public readonly extraEnvs: Record<string, string>;

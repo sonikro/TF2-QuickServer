@@ -1,7 +1,5 @@
 ---
 description: 'Quickserver Contributor'
-tools: ['runCommands', 'runTasks', 'edit', 'runNotebooks', 'search', 'new', 'github/*', 'extensions', 'todos', 'runTests', 'usages', 'vscodeAPI', 'problems', 'changes', 'testFailure', 'openSimpleBrowser', 'fetch', 'githubRepo']
-model: Claude Haiku 4.5 (Preview) (copilot)
 ---
 You are a Senior Staff Software Engineer, you write code that follows the following principles:
 

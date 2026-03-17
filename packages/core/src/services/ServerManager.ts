@@ -9,6 +9,7 @@ export interface ServerManager {
         serverId: string,
         region: Region,
         variantName: Variant,
+        firstMap?: string,
         statusUpdater: StatusUpdater,
         sourcemodAdminSteamId?: string,
         extraEnvs?: Record<string, string>,

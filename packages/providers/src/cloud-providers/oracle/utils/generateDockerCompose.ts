@@ -4,6 +4,7 @@ import * as yaml from 'yaml';
 type DockerComposeParams = {
     serverId: string;
     variantConfig: VariantConfig;
+    firstMap?: string;
     environmentVariables: Record<string, string>;
     containerImage: string;
     rconPassword: string;
@@ -14,13 +15,14 @@ type DockerComposeParams = {
 };
 
 export function generateDockerCompose(params: DockerComposeParams): string {
-    const { serverId, variantConfig, environmentVariables, containerImage, rconPassword, region, variantName, oracleRegionConfig, ociCredentials } = params;
+    const { serverId, variantConfig, firstMap, environmentVariables, containerImage, rconPassword, region, variantName, oracleRegionConfig, ociCredentials } = params;
+    const startupMap = firstMap ?? variantConfig.map;
 
     const tf2ServerCommand = [
         "-enablefakeip",
         `+sv_pure ${variantConfig.svPure}`,
         `+maxplayers ${variantConfig.maxPlayers}`,
-        `+map ${variantConfig.map}`,
+        `+map ${startupMap}`,
         "+log on",
         `+logaddress_add ${process.env.SRCDS_LOG_ADDRESS || ""}`,
         `+sv_logsecret ${environmentVariables.SV_LOGSECRET}`,

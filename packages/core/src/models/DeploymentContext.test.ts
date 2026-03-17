@@ -14,6 +14,7 @@ describe("DeploymentContext", () => {
         const region = chance.pickone(validRegions);
         const variantName = chance.pickone(["standard-competitive", "casual", "vanilla"]) as Variant;
         const serverId = chance.guid();
+        const firstMap = chance.pickone(['cp_process_f12', 'koth_product_final']);
         const sourcemodAdminSteamId = chance.string({ length: 17, pool: '0123456789' });
         const extraEnvs = {
             TEST_ENV: chance.word(),
@@ -28,6 +29,7 @@ describe("DeploymentContext", () => {
                 region,
                 variantName,
                 serverId,
+                firstMap,
                 sourcemodAdminSteamId,
                 extraEnvs
             }
@@ -42,6 +44,7 @@ describe("DeploymentContext", () => {
                 serverId: data.serverId,
                 region: data.region,
                 variantName: data.variantName,
+                firstMap: data.firstMap,
                 statusUpdater: mocks.statusUpdater,
                 sourcemodAdminSteamId: data.sourcemodAdminSteamId,
                 extraEnvs: data.extraEnvs
@@ -50,6 +53,7 @@ describe("DeploymentContext", () => {
             expect(context.serverId).toBe(data.serverId);
             expect(context.region).toBe(data.region);
             expect(context.variantName).toBe(data.variantName);
+            expect(context.firstMap).toBe(data.firstMap);
             expect(context.statusUpdater).toBe(mocks.statusUpdater);
             expect(context.sourcemodAdminSteamId).toBe(data.sourcemodAdminSteamId);
             expect(context.extraEnvs).toEqual(data.extraEnvs);
@@ -68,6 +72,7 @@ describe("DeploymentContext", () => {
             expect(context.serverId).toBe(data.serverId);
             expect(context.region).toBe(data.region);
             expect(context.variantName).toBe(data.variantName);
+            expect(context.firstMap).toBeUndefined();
             expect(context.statusUpdater).toBe(mocks.statusUpdater);
             expect(context.sourcemodAdminSteamId).toBeUndefined();
             expect(context.extraEnvs).toEqual({});

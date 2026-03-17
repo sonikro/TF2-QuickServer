@@ -73,6 +73,7 @@ export class OracleVMManager implements ServerManager {
         serverId: string;
         region: Region;
         variantName: Variant;
+        firstMap?: string;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
@@ -81,7 +82,7 @@ export class OracleVMManager implements ServerManager {
             parentSpan.setAttribute('serverId', args.serverId);
             const startTime = Date.now();
             const { configManager, passwordGeneratorService, serverAbortManager } = this.dependencies;
-            const { region, variantName, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
+            const { region, variantName, firstMap, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
             try {
 
@@ -140,6 +141,7 @@ export class OracleVMManager implements ServerManager {
                 const dockerComposeYaml = generateDockerCompose({
                     serverId,
                     variantConfig,
+                    firstMap,
                     environmentVariables,
                     containerImage,
                     rconPassword,
