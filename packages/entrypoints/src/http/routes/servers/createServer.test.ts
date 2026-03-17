@@ -79,6 +79,7 @@ describe('POST /api/servers', () => {
         { body: { region: 'us-east-1', variantName: 'standard-competitive', extraEnvs: { KEY: 123 } }, description: 'extraEnvs has non-string values' },
         { body: { region: 'us-east-1', variantName: 'standard-competitive', firstMap: 123 }, description: 'firstMap is not a string' },
         { body: { region: 'us-east-1', variantName: 'standard-competitive', firstMap: '   ' }, description: 'firstMap is an empty string' },
+        { body: { region: 'us-east-1', variantName: 'standard-competitive', firstMap: ';kill;' }, description: 'firstMap is a malicious injection string' },
     ])('should return 400 when $description', async ({ body }) => {
         // Given
         const { app } = makeSut();
