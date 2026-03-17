@@ -295,6 +295,34 @@ describe('OracleVMManager', () => {
       expect(tf2Service.cap_add).toContain('ALL');
     });
 
+    it('should override startup map when firstMap is provided', async () => {
+      const { sut, data, capturedLaunchInstanceParams } = createTestEnvironment();
+      const statusUpdater = vi.fn() as StatusUpdater;
+
+      await sut.deployServer({
+        serverId: data.serverId,
+        region: data.testRegion,
+        variantName: data.testVariant,
+        firstMap: 'koth_product_final',
+        statusUpdater
+      });
+
+      const params = capturedLaunchInstanceParams();
+      const cloudInitScript = Buffer.from(params.userDataBase64, 'base64').toString('utf-8');
+      const dockerComposeContent = cloudInitScript
+        .split('content: |')[1]
+        .split('\n')
+        .filter((line) => line.trim() && !line.startsWith('#'))
+        .map((line) => line.replace(/^\s{6}/, ''))
+        .join('\n');
+
+      const dockerCompose = yaml.parse(dockerComposeContent);
+      const tf2Command = dockerCompose.services['tf2-server'].command as string;
+
+      expect(tf2Command).toContain('+map koth_product_final');
+      expect(tf2Command).not.toContain(`+map ${data.variantConfig.map}`);
+    });
+
     it('should return all expected parameters in a successful run', async () => {
       const { sut, data } = createTestEnvironment();
       const statusUpdater = vi.fn() as StatusUpdater;

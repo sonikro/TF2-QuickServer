@@ -41,10 +41,11 @@ export function createCreateServerHandler(backgroundTaskQueue: BackgroundTaskQue
             return;
         }
 
-        const { region, variantName, extraEnvs } = req.body as {
+        const { region, variantName, extraEnvs, firstMap } = req.body as {
             region?: unknown;
             variantName?: unknown;
             extraEnvs?: unknown;
+            firstMap?: unknown;
         };
 
         if (!region || typeof region !== 'string') {
@@ -57,6 +58,10 @@ export function createCreateServerHandler(backgroundTaskQueue: BackgroundTaskQue
         }
         if (!variantName || typeof variantName !== 'string') {
             res.status(400).json({ error: 'Bad Request', message: 'variantName is required and must be a string' });
+            return;
+        }
+        if (firstMap !== undefined && (typeof firstMap !== 'string' || firstMap.trim().length === 0)) {
+            res.status(400).json({ error: 'Bad Request', message: 'firstMap must be a non-empty string if provided' });
             return;
         }
 
@@ -82,6 +87,7 @@ export function createCreateServerHandler(backgroundTaskQueue: BackgroundTaskQue
             variantName: variantName as Variant,
             clientId: clientId as string,
             extraEnvs: sanitizedExtraEnvs,
+            firstMap: firstMap as string | undefined,
         };
 
         const taskId = await backgroundTaskQueue.enqueue('create-server-for-client', taskData, undefined, undefined, { ownerId: clientId as string });

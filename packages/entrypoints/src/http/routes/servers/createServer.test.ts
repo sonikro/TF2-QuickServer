@@ -26,11 +26,12 @@ describe('POST /api/servers', () => {
         const { app, backgroundTaskQueue } = makeSut();
         backgroundTaskQueue.enqueue.mockResolvedValue('task-123');
         const extraEnvs = { STV_TITLE: 'My Server' };
+        const firstMap = 'cp_process_f12';
 
         // When
         await request(app)
             .post('/api/servers')
-            .send({ region: 'eu-frankfurt-1', variantName: 'standard-competitive', extraEnvs });
+            .send({ region: 'eu-frankfurt-1', variantName: 'standard-competitive', extraEnvs, firstMap });
 
         // Then
         expect(backgroundTaskQueue.enqueue).toHaveBeenCalledWith(
@@ -40,6 +41,7 @@ describe('POST /api/servers', () => {
                 variantName: 'standard-competitive',
                 clientId: TEST_CLIENT_ID,
                 extraEnvs,
+                firstMap,
             }),
             undefined,
             undefined,
@@ -75,6 +77,8 @@ describe('POST /api/servers', () => {
         { body: { region: 'us-east-1', variantName: 'standard-competitive', extraEnvs: ['invalid'] }, description: 'extraEnvs is an array' },
         { body: { region: 'invalid-region', variantName: 'standard-competitive' }, description: 'region is not a valid Region enum value' },
         { body: { region: 'us-east-1', variantName: 'standard-competitive', extraEnvs: { KEY: 123 } }, description: 'extraEnvs has non-string values' },
+        { body: { region: 'us-east-1', variantName: 'standard-competitive', firstMap: 123 }, description: 'firstMap is not a string' },
+        { body: { region: 'us-east-1', variantName: 'standard-competitive', firstMap: '   ' }, description: 'firstMap is an empty string' },
     ])('should return 400 when $description', async ({ body }) => {
         // Given
         const { app } = makeSut();

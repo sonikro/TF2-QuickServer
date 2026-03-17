@@ -60,6 +60,11 @@ export const swaggerOptions: swaggerJsdoc.Options = {
                     properties: {
                         region: { type: 'string', example: 'us-east-1', description: 'The AWS or OCI region to deploy in' },
                         variantName: { type: 'string', example: 'standard-competitive', description: 'The server variant to deploy' },
+                        firstMap: {
+                            type: 'string',
+                            example: 'cp_process_f12',
+                            description: 'Optional startup map override. If omitted, the variant default map is used.',
+                        },
                         extraEnvs: {
                             type: 'object',
                             additionalProperties: { type: 'string' },

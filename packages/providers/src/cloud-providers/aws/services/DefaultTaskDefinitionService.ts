@@ -36,6 +36,7 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                 const awsRegionConfig = this.awsConfigService.getRegionConfig(context.region);
                 const { ecsClient } = this.awsConfigService.getClients(context.region);
                 const variantConfig = this.configManager.getVariantConfig(context.variantName);
+                const startupMap = context.firstMap ?? variantConfig.map;
 
                 this.tracingService.logOperationStart('Registering task definition', context.serverId, context.region);
 
@@ -61,7 +62,7 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                             "+maxplayers",
                             variantConfig.maxPlayers.toString(),
                             "+map",
-                            variantConfig.map,
+                            startupMap,
                         ],
                         portMappings: [
                             {

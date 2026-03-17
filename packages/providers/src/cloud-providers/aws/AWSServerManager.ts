@@ -90,6 +90,7 @@ export class AWSServerManager implements ServerManager {
         serverId: string;
         region: Region;
         variantName: Variant;
+        firstMap?: string;
         statusUpdater: StatusUpdater;
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
@@ -99,6 +100,7 @@ export class AWSServerManager implements ServerManager {
             serverId: args.serverId,
             region: args.region,
             variantName: args.variantName,
+            firstMap: args.firstMap,
             statusUpdater: args.statusUpdater,
             sourcemodAdminSteamId: args.sourcemodAdminSteamId,
             extraEnvs: args.extraEnvs,
