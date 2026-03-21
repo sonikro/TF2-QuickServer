@@ -330,6 +330,12 @@
             },
             "guildId": "1291587765770649656"
         },
+        "qel-mge": {
+            "displayName": "QEL MGE",
+            "hostname": "QEL MGE | {region} @ TF2-QuickServer",
+            "guildId": "1291587765770649656",
+            "map": "mge_qel2_rc4"
+        },
         "mge-tf": {
             "displayName": "MGE.TF",
             "hostname": "MGE.TF | {region} @ TF2-QuickServer",
