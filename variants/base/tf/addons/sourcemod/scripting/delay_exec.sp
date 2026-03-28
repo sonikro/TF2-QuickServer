@@ -3,7 +3,7 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-#define PLUGIN_VERSION "0.7.0"
+#define PLUGIN_VERSION "0.8.0"
 
 #define MIN_INTERVAL_MS 10
 #define MAX_INTERVAL_MS 2000
@@ -41,6 +41,7 @@ Handle g_RunTimer = null;
 
 ConVar g_DefaultIntervalMs;
 ConVar g_DefaultBatchSize;
+ConVar g_UserMessageType;
 ConVar g_Debug;
 ConVar g_QueueMax;
 
@@ -64,7 +65,7 @@ public void OnPluginStart()
 
 	g_DefaultIntervalMs = CreateConVar(
 		"sm_delay_exec_default_interval_ms",
-		"60",
+		"100",
 		"Default delay in milliseconds between command batches.",
 		FCVAR_NOTIFY,
 		true,
@@ -75,13 +76,24 @@ public void OnPluginStart()
 
 	g_DefaultBatchSize = CreateConVar(
 		"sm_delay_exec_default_batch_size",
-		"2",
+		"3",
 		"Default number of cfg commands to execute per timer tick.",
 		FCVAR_NOTIFY,
 		true,
 		float(MIN_BATCH_SIZE),
 		true,
 		float(MAX_BATCH_SIZE)
+	);
+
+	g_UserMessageType = CreateConVar(
+		"sm_delay_exec_message_type",
+		"1",
+		"Player message mode for delayed exec. 0=disabled, 1=chat, 2=hint.",
+		FCVAR_NOTIFY,
+		true,
+		0.0,
+		true,
+		2.0
 	);
 
 	g_Debug = CreateConVar(
@@ -505,12 +517,7 @@ bool EnqueueDelayedExec(int client, const char[] rawCfgPath, int intervalMs, int
 		batchSize
 	);
 
-	PrintToChatAll(
-		"\x04[CFG]\x01 Queued \x03%s\x01 (position \x03%d\x01). Current run: \x03%s\x01.",
-		normalizedPath,
-		queuePos,
-		g_CurrentConfig
-	);
+	BroadcastUserMessage("Queued %s (position %d). Current run: %s.", normalizedPath, queuePos, g_CurrentConfig);
 
 	return true;
 }
@@ -550,11 +557,7 @@ void RecoverStaleRunStateIfNeeded(const char[] reason)
 		g_ExecutedCommandCount,
 		g_TotalExecutableCommands
 	);
-	PrintToChatAll(
-		"\x04[CFG]\x01 Delayed exec for \x03%s\x01 was interrupted (%s). Clearing stale state.",
-		g_CurrentConfig,
-		reason
-	);
+	BroadcastUserMessage("Delayed exec for %s was interrupted (%s). Clearing stale state.", g_CurrentConfig, reason);
 
 	ResetRunState();
 	TryStartNextQueuedRun();
@@ -588,11 +591,7 @@ void TryStartNextQueuedRun()
 
 		if (StartDelayedExec(0, nextCfg, nextIntervalMs, nextBatchSize, false))
 		{
-			PrintToChatAll(
-				"\x04[CFG]\x01 Starting queued cfg \x03%s\x01. Remaining queued runs: \x03%d\x01.",
-				nextCfg,
-				g_PendingCfgQueue.Length
-			);
+			BroadcastUserMessage("Starting queued cfg %s. Remaining queued runs: %d.", nextCfg, g_PendingCfgQueue.Length);
 			return;
 		}
 
@@ -602,14 +601,8 @@ void TryStartNextQueuedRun()
 
 void AnnounceRunStartedToAll(int totalCommands, int intervalMs, int batchSize)
 {
-	PrintHintTextToAll(
-		"Applying CFG: %s\n%d commands to be executed",
-		g_CurrentConfig,
-		totalCommands
-	);
-
-	PrintToChatAll(
-		"\x04[CFG]\x01 Delayed exec started for \x03%s\x01. Total commands: \x03%d\x01 (interval: \x03%dms\x01, batch: \x03%d\x01).",
+	BroadcastUserMessage(
+		"Delayed exec started for %s. Total commands: %d (interval: %dms, batch: %d).",
 		g_CurrentConfig,
 		totalCommands,
 		intervalMs,
@@ -631,21 +624,33 @@ void AnnounceRunProgressToAll(bool finished, float elapsedSeconds)
 		done = total;
 	}
 
-	PrintHintTextToAll(
-		"CFG applied: %s\nCommands: %d/%d\nTime: %.2fs",
+	BroadcastUserMessage(
+		"Delayed exec finished for %s. Executed: %d/%d. Remaining: 0. Time: %.2fs.",
 		g_CurrentConfig,
 		done,
 		total,
 		elapsedSeconds
 	);
+}
 
-	PrintToChatAll(
-		"\x04[CFG]\x01 Delayed exec finished for \x03%s\x01. Executed: \x03%d/%d\x01. Remaining: \x030\x01. Time: \x03%.2fs\x01.",
-		g_CurrentConfig,
-		done,
-		total,
-		elapsedSeconds
-	);
+void BroadcastUserMessage(const char[] format, any ...)
+{
+	int messageType = g_UserMessageType.IntValue;
+	if (messageType == 0)
+	{
+		return;
+	}
+
+	char message[512];
+	VFormat(message, sizeof(message), format, 2);
+
+	if (messageType == 2)
+	{
+		PrintHintTextToAll("%s", message);
+		return;
+	}
+
+	PrintToChatAll("[CFG] %s", message);
 }
 
 bool ShouldDelayByWhitelistPrefix(const char[] rawCfgPath)
@@ -988,8 +993,8 @@ void StopCurrentRun(bool printLog, bool clearPending = false)
 		}
 
 		PrintToServer("[DelayExec] Stopped run for %s at command %d/%d.", g_CurrentConfig, g_ExecutedCommandCount, g_TotalExecutableCommands);
-		PrintToChatAll(
-			"\x04[CFG]\x01 Delayed exec stopped for \x03%s\x01. Executed: \x03%d/%d\x01. Remaining: \x03%d\x01. Queued runs: \x03%d\x01.",
+		BroadcastUserMessage(
+			"Delayed exec stopped for %s. Executed: %d/%d. Remaining: %d. Queued runs: %d.",
 			g_CurrentConfig,
 			g_ExecutedCommandCount,
 			g_TotalExecutableCommands,
