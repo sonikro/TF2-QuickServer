@@ -7,6 +7,7 @@
     "cp_gullywash_f9",
     "cp_granary_pro_rc8",
     "cp_granary_pro_rc16f",
+    "cp_granary_pro_rc17a3",
     "cp_prolands_rc2ta",
     "cp_sultry_b8a",
     "cp_villa_b19",
@@ -18,6 +19,7 @@
     "koth_bagel_rc8",
     "koth_bagel_rc10",
     "koth_bagel_rc11",
+    "koth_bagel_rc12",
     "koth_bagel_event",
     "koth_product_final",
     "koth_cascade_rc2",
@@ -149,6 +151,7 @@
     "cp_entropy_b5",
     "cp_logjam_rc12f",
     "cp_cardinal_rc1a",
+    "cp_subbase_b3a",
     "cp_mannbase_rc3",
     "koth_gamma_rc1",
     "koth_coalplant_b7"
