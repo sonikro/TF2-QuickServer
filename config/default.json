@@ -166,8 +166,7 @@
             "displayName": "ZFL",
             "hostname": "ZFL | {region} @ TF2-QuickServer",
             "defaultCfgs": {
-                "5cp": "cp_ZFL.cfg",
-                "koth": "koth_ZFL.cfg"
+                "koth": "ZFL_3v3.cfg"
             },
             "guildId": "1432805380680847534"
         },
