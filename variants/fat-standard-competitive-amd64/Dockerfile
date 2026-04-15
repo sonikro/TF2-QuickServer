@@ -52,10 +52,10 @@ ARG COMP_FIXES_URL=https://github.com/ldesgoui/tf2-comp-fixes/releases/download/
 RUN curl -L "${COMP_FIXES_URL}" -o "${COMP_FIXES_FILE_NAME}" \
   && unzip -q -o "${COMP_FIXES_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
-# MGEMod
+# MGEMod (by Maxijabase)
 ARG MGEMOD_FILE_NAME=mge.zip
-ARG MGEMOD_VERSION=v3.0.7
-ARG MGEMOD_URL=https://github.com/sapphonie/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
+ARG MGEMOD_VERSION=v3.1.0-beta16
+ARG MGEMOD_URL=https://github.com/maxijabase/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
 RUN curl -L "${MGEMOD_URL}" -o "${MGEMOD_FILE_NAME}" \
   && unzip -q -n "${MGEMOD_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 

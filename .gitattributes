@@ -1,3 +1,0 @@
-maps/mge_league_v1.bsp filter=lfs diff=lfs merge=lfs -text
-maps/mge_league_v2.bsp filter=lfs diff=lfs merge=lfs -text
-maps/mge_worldchampionship_v5.bsp filter=lfs diff=lfs merge=lfs -text
