@@ -49,7 +49,7 @@ RUN curl -L "${F2_SOURCEMOD_PLUGINS_URL}" -o "${F2_SOURCEMOD_PLUGINS_FILE_NAME}"
 
 # MGEMod (by Maxijabase)
 ARG MGEMOD_FILE_NAME=mge.zip
-ARG MGEMOD_VERSION=v3.1.0-beta9
+ARG MGEMOD_VERSION=v3.1.0-beta16
 ARG MGEMOD_URL=https://github.com/maxijabase/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
 RUN curl -L "${MGEMOD_URL}" -o "${MGEMOD_FILE_NAME}" \
   && unzip -q -n "${MGEMOD_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
@@ -145,6 +145,7 @@ USER tf2
 # Copy default settings
 COPY --chown=tf2 variants/base/tf/cfg/* "${SERVER_DIR}/tf/cfg/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/* "${SERVER_DIR}/tf/addons/sourcemod/configs/"
+COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/mge/* "${SERVER_DIR}/tf/addons/sourcemod/configs/mge/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"

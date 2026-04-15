@@ -5,9 +5,9 @@
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "ghcr.io/sonikro/tf2-quickserver-devcontainer",
 
-	// Fix cmake symlink issue from devcontainers-extra/features/cmake feature
+	// Install Git LFS and fix the cmake symlink issue from devcontainers-extra/features/cmake feature
 	// The feature incorrectly symlinks to the bash completion file instead of the binary
-	"postCreateCommand": "sudo rm -f /usr/local/bin/cmake && sudo ln -s /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake",
+	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y git-lfs && git lfs install --skip-repo && sudo rm -f /usr/local/bin/cmake && sudo ln -sf /usr/local/lib/cmake/cmake-*/bin/cmake /usr/local/bin/cmake",
 	"features": {
 		"ghcr.io/devcontainers-extra/features/packer-asdf:2": {}
 	},
