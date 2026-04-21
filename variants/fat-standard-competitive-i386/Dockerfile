@@ -77,7 +77,7 @@ RUN curl -L "${ETF2L_CONFIGS_URL}" -o "${ETF2L_CONFIGS_FILE_NAME}" \
 
 # RGL configs and plugins
 ARG RGL_CONFIGS_FILE_NAME=server-resources-updater.zip
-ARG RGL_CONFIGS_VERSION=v359
+ARG RGL_CONFIGS_VERSION=v369
 ARG RGL_CONFIGS_URL=https://github.com/RGLgg/server-resources-updater/releases/download/${RGL_CONFIGS_VERSION}/${RGL_CONFIGS_FILE_NAME}
 RUN curl -L "${RGL_CONFIGS_URL}" -o "${RGL_CONFIGS_FILE_NAME}" \
   && unzip -q "${RGL_CONFIGS_FILE_NAME}" \
