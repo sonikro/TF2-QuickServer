@@ -47,7 +47,6 @@ export class TerminateServersWithoutCredit {
 
         // Terminate servers without credits
         const terminationPromises = await Promise.allSettled(serversWithoutCredits.map(async server => {
-            // Get the appropriate server manager for this region
             const serverManager = serverManagerFactory.createServerManager(server.region);
             await serverCommander.query({
                 command: `say Your server is being terminated due to lack of credits.`,

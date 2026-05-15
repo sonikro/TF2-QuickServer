@@ -36,14 +36,12 @@ export class CreateServerForUser {
         const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, sourceTvEventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         
-        // Get the appropriate server manager for this region
         const serverManager = serverManagerFactory.createServerManager(args.region);
         const user = await userRepository.getById(args.creatorId);
         if (!user || !user.steamIdText) {
             throw new UserError('Before creating a server, please set your Steam ID using the `/set-user-data` command. This is required to give you admin access to the server.');
         }
 
-        // Check if user is banned
         const steamId = new SteamID(user.steamIdText);
         const steamID3 = steamId.steam3().replace("[", "").replace("]", "");
         
@@ -95,10 +93,6 @@ export class CreateServerForUser {
             }
         }
         const serverId = uuid();
-
-        // Use a transaction to ensure atomicity and consistency
-        // Also, if the server creation fails, we want the server ID To be in the database
-        // so we can delete it later
 
         await serverRepository.runInTransaction(async (trx) => {
             const allServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);
