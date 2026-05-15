@@ -22,7 +22,6 @@ export class DeleteServerForUser {
         const { serverRepository, serverActivityRepository, serverManagerFactory, eventLogger, serverAbortManager } = this.dependencies;
         const { userId } = args;
         
-        // Use transaction to ensure consistency
         await serverRepository.runInTransaction(async (trx) => {
             const server = await serverRepository.getAllServersByUserId(userId, trx);
 
@@ -30,7 +29,6 @@ export class DeleteServerForUser {
                 return;
             }
 
-            // Mark all servers as terminating
             for (const s of server) {
                 await serverRepository.upsertServer({
                     ...s,
