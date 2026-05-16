@@ -6,10 +6,10 @@ import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
+import { IdGenerator } from "../services/IdGenerator";
 import { ServerManagerFactory } from '@tf2qs/providers';
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
-import { v4 as uuid } from "uuid";
 import SteamID from "steamid";
 import { logger } from '@tf2qs/telemetry';
 export class CreateServerForUser {
@@ -24,6 +24,7 @@ export class CreateServerForUser {
         configManager: ConfigManager,
         userRepository: UserRepository,
         userBanRepository: UserBanRepository,
+        idGenerator: IdGenerator,
     }) { }
 
     public async execute(args: {
@@ -33,7 +34,7 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, sourceTvEventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, sourceTvEventLogger, configManager, userRepository, guildParametersRepository, userBanRepository, idGenerator } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         
         const serverManager = serverManagerFactory.createServerManager(args.region);
@@ -92,7 +93,7 @@ export class CreateServerForUser {
                 throw new UserError('You do not have enough credits to start a server.')
             }
         }
-        const serverId = uuid();
+        const serverId = idGenerator.generate();
 
         await serverRepository.runInTransaction(async (trx) => {
             const allServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);

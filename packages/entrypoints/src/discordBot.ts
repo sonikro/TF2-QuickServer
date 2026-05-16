@@ -190,7 +190,8 @@ export async function startDiscordBot() {
             configManager: defaultConfigManager,
             userRepository,
             guildParametersRepository,
-            userBanRepository
+            userBanRepository,
+            idGenerator: new UuidIdGenerator()
         }),
         createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
             creditOrdersRepository,
