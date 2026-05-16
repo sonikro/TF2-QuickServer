@@ -9,17 +9,12 @@ import { ServerRepository } from '../repository/ServerRepository';
 import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
+import { IdGenerator } from '../services/IdGenerator';
 import { ServerManager } from '../services/ServerManager';
 import { ServerManagerFactory } from '@tf2qs/providers';
 import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';
-
-vi.mock("uuid", () => {
-    return {
-        v4: () => "test-uuid"
-    }
-})
 
 const chance = new Chance();
 
@@ -33,12 +28,15 @@ const createTestEnvironment = () => {
     const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
+    const idGenerator = mock<IdGenerator>();
     const userBanRepository = mock<UserBanRepository>({
         isUserBanned: vi.fn().mockResolvedValue({ isBanned: false, reason: '' })
     });
 
     // Configure the factory to return the mocked server manager for any Region
     serverManagerFactory.createServerManager.mockReturnValue(serverManager);
+
+    when(idGenerator.generate).calledWith().thenReturn("test-uuid");
 
     when(configManager.getCreditsConfig).calledWith().thenReturn({
         enabled: true
@@ -104,6 +102,7 @@ const createTestEnvironment = () => {
             userRepository,
             guildParametersRepository,
             userBanRepository,
+            idGenerator,
         }),
         mocks: {
             serverRepository,
@@ -116,6 +115,7 @@ const createTestEnvironment = () => {
             userRepository,
             guildParametersRepository,
             userBanRepository,
+            idGenerator,
             trx,
             statusUpdater
         },
