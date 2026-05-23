@@ -123,13 +123,6 @@ ARG UPDATED_PAUSE_URL=https://github.com/l-Aad-l/updated-pause-plugin/releases/d
 RUN curl -L "${UPDATED_PAUSE_URL}" -o "${UPDATED_PAUSE_FILE_NAME}" \
   && unzip -q -o "${UPDATED_PAUSE_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
-# ShowSDR plugin
-ARG SHOWSDR_PLUGIN_FILE_NAME=showsdr.zip
-ARG SHOWSDR_PLUGIN_VERSION=1.0.0
-ARG SHOWSDR_PLUGIN_URL=https://github.com/Full-Buff/sdr-plugin/releases/download/${SHOWSDR_PLUGIN_VERSION}/${SHOWSDR_PLUGIN_FILE_NAME}
-RUN curl -L "${SHOWSDR_PLUGIN_URL}" -o "${SHOWSDR_PLUGIN_FILE_NAME}" \
-  && unzip -q -n "${SHOWSDR_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
-
 # Dodgeball plugin 
 
 ARG DODGEBALL_PLUGIN_VERSION_NUMBER=2.1.0
