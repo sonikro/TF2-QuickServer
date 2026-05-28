@@ -7,7 +7,7 @@ import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
 import { IdGenerator } from "../services/IdGenerator";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerManagerFactory } from '@tf2qs/core';
 import { StatusUpdater } from "../services/StatusUpdater";
 import { ConfigManager } from "../utils/ConfigManager";
 import SteamID from "steamid";
