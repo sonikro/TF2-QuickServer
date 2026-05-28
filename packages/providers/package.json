@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@tf2qs/core": "*",
-    "@adyen/api-library": "^26.1.0",
     "@aws-sdk/client-cost-explorer": "^3.927.0",
     "@aws-sdk/client-ec2": "^3.888.0",
     "@aws-sdk/client-ecs": "^3.888.0",

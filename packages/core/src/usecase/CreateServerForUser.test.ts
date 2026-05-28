@@ -6,13 +6,11 @@ import { getRegionDisplayName, Region, Server } from '../domain';
 import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from '../repository/GuildParametersRepository';
 import { ServerRepository } from '../repository/ServerRepository';
-import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
 import { IdGenerator } from '../services/IdGenerator';
 import { ServerManager } from '../services/ServerManager';
 import { ServerManagerFactory } from '@tf2qs/providers';
-import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';
 
@@ -22,10 +20,8 @@ const createTestEnvironment = () => {
     const serverRepository = mock<ServerRepository>();
     const serverManager = mock<ServerManager>();
     const serverManagerFactory = mock<ServerManagerFactory>();
-    const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
     const sourceTvEventLogger = mock<EventLogger>();
-    const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
     const idGenerator = mock<IdGenerator>();
@@ -37,10 +33,6 @@ const createTestEnvironment = () => {
     serverManagerFactory.createServerManager.mockReturnValue(serverManager);
 
     when(idGenerator.generate).calledWith().thenReturn("test-uuid");
-
-    when(configManager.getCreditsConfig).calledWith().thenReturn({
-        enabled: true
-    });
 
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(["standard-competitive", "casual"]);
@@ -95,10 +87,8 @@ const createTestEnvironment = () => {
         sut: new CreateServerForUser({
             serverManagerFactory,
             serverRepository,
-            userCreditsRepository,
             eventLogger,
             sourceTvEventLogger,
-            configManager,
             userRepository,
             guildParametersRepository,
             userBanRepository,
@@ -108,8 +98,6 @@ const createTestEnvironment = () => {
             serverRepository,
             serverManager,
             serverManagerFactory,
-            userCreditsRepository,
-            configManager,
             eventLogger,
             sourceTvEventLogger,
             userRepository,
@@ -131,10 +119,7 @@ const createTestEnvironment = () => {
 }
 
 describe('CreateServerForUser Use Case', () => {
-
-    describe("credits enabled", () => {
-
-        describe("user has credits", () => {
+        describe("user has valid setup", () => {
             const { data, mocks, sut } = createTestEnvironment();
 
             beforeAll(async () => {
@@ -146,10 +131,6 @@ describe('CreateServerForUser Use Case', () => {
                         sourcemodAdminSteamId: data.steamId
                     }))
                     .thenResolve(data.deployedServer);
-
-                when(mocks.userCreditsRepository.getCredits)
-                    .calledWith({ userId: data.userId })
-                    .thenResolve(1);
 
                 when(mocks.guildParametersRepository.findById)
                     .calledWith(data.guildId)
@@ -194,70 +175,8 @@ describe('CreateServerForUser Use Case', () => {
             });
         });
 
-        describe("user has no credits", () => {
-            it("should throw a UserError saying the user has not enough credits", async () => {
-                const { data, mocks, sut } = createTestEnvironment();
-
-                when(mocks.userCreditsRepository.getCredits)
-                    .calledWith({ userId: data.userId })
-                    .thenResolve(0);
-
-                when(mocks.guildParametersRepository.findById)
-                    .calledWith(data.guildId)
-                    .thenResolve(null);
-
-                const act = () => sut.execute({
-                    creatorId: data.userId,
-                    region: data.region,
-                    variantName: data.variantName,
-                    guildId: data.guildId,
-                    statusUpdater: mocks.statusUpdater
-
-                });
-
-                await expect(act()).rejects.toThrow(new UserError("You do not have enough credits to start a server."));
-            });
-        });
-    });
-
-    describe("credits disabled", () => {
-        it("should create server without checking credits", async () => {
-            const { data, mocks, sut } = createTestEnvironment();
-
-            when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-                enabled: false
-            });
-
-            when(mocks.serverManager.deployServer)
-                .calledWith(expect.objectContaining({
-                    region: data.region,
-                    variantName: data.variantName,
-                    serverId: "test-uuid"
-                }))
-                .thenResolve(data.deployedServer);
-
-            when(mocks.guildParametersRepository.findById)
-                .calledWith(data.guildId)
-                .thenResolve(null);
-
-            await sut.execute({
-                creatorId: data.userId,
-                region: data.region,
-                variantName: data.variantName,
-                guildId: data.guildId,
-                statusUpdater: mocks.statusUpdater
-            });
-
-            expect(mocks.userCreditsRepository.getCredits).not.toHaveBeenCalled();
-        });
-    });
-
     it("should only allow one server per user with ready status", async () => {
         const { data, mocks, sut } = createTestEnvironment();
-
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
@@ -277,10 +196,6 @@ describe('CreateServerForUser Use Case', () => {
     it("should only allow one server per user with pending status", async () => {
         const { data, mocks, sut } = createTestEnvironment();
 
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
-
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
             .thenResolve([{ ...data.deployedServer, status: "pending" }]);
@@ -298,10 +213,6 @@ describe('CreateServerForUser Use Case', () => {
 
     it("should allow server creation if existing server is terminating", async () => {
         const { data, mocks, sut } = createTestEnvironment();
-
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
@@ -343,10 +254,6 @@ describe('CreateServerForUser Use Case', () => {
             }))
             .thenReject(new Error("Server manager error"));
 
-        when(mocks.userCreditsRepository.getCredits)
-            .calledWith({ userId: data.userId })
-            .thenResolve(1);
-
         when(mocks.guildParametersRepository.findById)
             .calledWith(data.guildId)
             .thenResolve(null);
@@ -377,11 +284,6 @@ describe('CreateServerForUser Use Case', () => {
             TF2_CUSTOM_MAP: "cp_badlands",
             SERVER_NAME: "Test Server"
         };
-
-        when(mocks.userCreditsRepository.getCredits)
-            .calledWith({ userId: data.userId })
-            .thenResolve(1);
-
         when(mocks.guildParametersRepository.findById)
             .calledWith(data.guildId)
             .thenResolve({

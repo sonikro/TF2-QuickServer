@@ -24,7 +24,7 @@ vi.mock("@tf2qs/providers", async () => {
 vi.mock("./commands", async (importOriginal) => {
     const actual = await importOriginal() as typeof import('./commands');
     // Forces createCommands to always return the same commands so mocks can be used
-    const commands = actual.createCommands(({ configManager: { getCreditsConfig: () => false } } as any));
+    const commands = actual.createCommands(({} as any));
     return {
         createCommands: vi.fn().mockReturnValue(commands),
     }
