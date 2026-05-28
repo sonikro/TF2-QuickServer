@@ -8,7 +8,6 @@
   "scripts": {
     "download:maps": "tsx ./downloadMaps.ts",
     "sync:fastdl": "tsx ./syncFastDL.ts",
-    "cleanup:oracle:images": "NODE_CONFIG_DIR=../../config tsx ./cleanup_old_oracle_images.ts",
     "gen:openapi": "tsx ./generateOpenApiSpec.ts"
   },
   "dependencies": {
