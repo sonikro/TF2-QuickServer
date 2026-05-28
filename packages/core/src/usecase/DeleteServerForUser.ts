@@ -3,7 +3,7 @@ import { ServerActivityRepository } from "../repository/ServerActivityRepository
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerAbortManager } from "../services/ServerAbortManager";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerManagerFactory } from '@tf2qs/core';
 
 export class DeleteServerForUser {
     constructor(

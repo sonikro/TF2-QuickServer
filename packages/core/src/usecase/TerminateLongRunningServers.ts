@@ -1,7 +1,7 @@
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerManagerFactory } from '@tf2qs/core';
 
 const MAX_HOURS = 12
 
