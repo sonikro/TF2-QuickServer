@@ -1,17 +1,15 @@
 import Chance from 'chance';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
 import { getRegionDisplayName, Region, Server } from '../domain';
 import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from '../repository/GuildParametersRepository';
 import { ServerRepository } from '../repository/ServerRepository';
-import { UserCreditsRepository } from '../repository/UserCreditsRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
 import { ServerManager } from '../services/ServerManager';
 import { ServerManagerFactory } from '@tf2qs/providers';
-import { ConfigManager } from '../utils/ConfigManager';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';
 
@@ -23,26 +21,19 @@ vi.mock("uuid", () => {
 
 const chance = new Chance();
 
-const createTestEnvironment = () => {
+function makeSut() {
     const serverRepository = mock<ServerRepository>();
     const serverManager = mock<ServerManager>();
     const serverManagerFactory = mock<ServerManagerFactory>();
-    const userCreditsRepository = mock<UserCreditsRepository>();
     const eventLogger = mock<EventLogger>();
     const sourceTvEventLogger = mock<EventLogger>();
-    const configManager = mock<ConfigManager>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
     const userBanRepository = mock<UserBanRepository>({
         isUserBanned: vi.fn().mockResolvedValue({ isBanned: false, reason: '' })
     });
 
-    // Configure the factory to return the mocked server manager for any Region
     serverManagerFactory.createServerManager.mockReturnValue(serverManager);
-
-    when(configManager.getCreditsConfig).calledWith().thenReturn({
-        enabled: true
-    });
 
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(["standard-competitive", "casual"]);
@@ -92,25 +83,22 @@ const createTestEnvironment = () => {
 
     const statusUpdater = vi.fn();
 
+    const sut = new CreateServerForUser({
+        serverManagerFactory,
+        serverRepository,
+        eventLogger,
+        sourceTvEventLogger,
+        userRepository,
+        guildParametersRepository,
+        userBanRepository,
+    });
 
     return {
-        sut: new CreateServerForUser({
-            serverManagerFactory,
-            serverRepository,
-            userCreditsRepository,
-            eventLogger,
-            sourceTvEventLogger,
-            configManager,
-            userRepository,
-            guildParametersRepository,
-            userBanRepository,
-        }),
+        sut,
         mocks: {
             serverRepository,
             serverManager,
             serverManagerFactory,
-            userCreditsRepository,
-            configManager,
             eventLogger,
             sourceTvEventLogger,
             userRepository,
@@ -127,137 +115,60 @@ const createTestEnvironment = () => {
             steamId,
             guildId
         }
-    }
+    };
 }
 
 describe('CreateServerForUser Use Case', () => {
+    it("should create a server", async () => {
+        const { data, mocks, sut } = makeSut();
 
-    describe("credits enabled", () => {
-
-        describe("user has credits", () => {
-            const { data, mocks, sut } = createTestEnvironment();
-
-            beforeAll(async () => {
-                when(mocks.serverManager.deployServer)
-                    .calledWith(expect.objectContaining({
-                        region: data.region,
-                        variantName: data.variantName,
-                        serverId: "test-uuid",
-                        sourcemodAdminSteamId: data.steamId
-                    }))
-                    .thenResolve(data.deployedServer);
-
-                when(mocks.userCreditsRepository.getCredits)
-                    .calledWith({ userId: data.userId })
-                    .thenResolve(1);
-
-                when(mocks.guildParametersRepository.findById)
-                    .calledWith(data.guildId)
-                    .thenResolve(null); // no extra envs
-
-                await sut.execute({
-                    creatorId: data.userId,
-                    region: data.region,
-                    variantName: data.variantName,
-                    guildId: data.guildId,
-                    statusUpdater: mocks.statusUpdater
-                });
-            });
-
-            it("should call serverManager.deployServer with the correct arguments", async () => {
-                expect(mocks.serverManager.deployServer).toHaveBeenCalledWith(expect.objectContaining({
-                    region: data.region,
-                    variantName: data.variantName,
-                    serverId: "test-uuid",
-                    sourcemodAdminSteamId: data.steamId,
-                    extraEnvs: {}
-                }));
-            });
-
-            it("should call serverRepository.upsertServer with the correct arguments", async () => {
-                expect(mocks.serverRepository.upsertServer).toHaveBeenCalledWith(expect.objectContaining({
-                    ...data.deployedServer,
-                    status: "ready",
-                    createdBy: data.userId,
-                }));
-            });
-
-            it("should call sourceTvEventLogger.log with SourceTV connection info", async () => {
-                const regionDisplayName = getRegionDisplayName(data.region);
-                const passwordPart = data.deployedServer.tvPassword ? `;password ${data.deployedServer.tvPassword}` : '';
-                const expectedMessage = `Server created with variant **${data.variantName}** on region **${regionDisplayName}**.\nSourceTV: \`connect ${data.deployedServer.tvIp}:${data.deployedServer.tvPort}${passwordPart}\``;
-
-                expect(mocks.sourceTvEventLogger.log).toHaveBeenCalledWith({
-                    actorId: data.userId,
-                    eventMessage: expectedMessage
-                });
-            });
-        });
-
-        describe("user has no credits", () => {
-            it("should throw a UserError saying the user has not enough credits", async () => {
-                const { data, mocks, sut } = createTestEnvironment();
-
-                when(mocks.userCreditsRepository.getCredits)
-                    .calledWith({ userId: data.userId })
-                    .thenResolve(0);
-
-                when(mocks.guildParametersRepository.findById)
-                    .calledWith(data.guildId)
-                    .thenResolve(null);
-
-                const act = () => sut.execute({
-                    creatorId: data.userId,
-                    region: data.region,
-                    variantName: data.variantName,
-                    guildId: data.guildId,
-                    statusUpdater: mocks.statusUpdater
-
-                });
-
-                await expect(act()).rejects.toThrow(new UserError("You do not have enough credits to start a server."));
-            });
-        });
-    });
-
-    describe("credits disabled", () => {
-        it("should create server without checking credits", async () => {
-            const { data, mocks, sut } = createTestEnvironment();
-
-            when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-                enabled: false
-            });
-
-            when(mocks.serverManager.deployServer)
-                .calledWith(expect.objectContaining({
-                    region: data.region,
-                    variantName: data.variantName,
-                    serverId: "test-uuid"
-                }))
-                .thenResolve(data.deployedServer);
-
-            when(mocks.guildParametersRepository.findById)
-                .calledWith(data.guildId)
-                .thenResolve(null);
-
-            await sut.execute({
-                creatorId: data.userId,
+        when(mocks.serverManager.deployServer)
+            .calledWith(expect.objectContaining({
                 region: data.region,
                 variantName: data.variantName,
-                guildId: data.guildId,
-                statusUpdater: mocks.statusUpdater
-            });
+                serverId: "test-uuid",
+                sourcemodAdminSteamId: data.steamId
+            }))
+            .thenResolve(data.deployedServer);
 
-            expect(mocks.userCreditsRepository.getCredits).not.toHaveBeenCalled();
+        when(mocks.guildParametersRepository.findById)
+            .calledWith(data.guildId)
+            .thenResolve(null); // no extra envs
+
+        await sut.execute({
+            creatorId: data.userId,
+            region: data.region,
+            variantName: data.variantName,
+            guildId: data.guildId,
+            statusUpdater: mocks.statusUpdater
+        });
+
+        expect(mocks.serverManager.deployServer).toHaveBeenCalledWith(expect.objectContaining({
+            region: data.region,
+            variantName: data.variantName,
+            serverId: "test-uuid",
+            sourcemodAdminSteamId: data.steamId,
+            extraEnvs: {}
+        }));
+
+        expect(mocks.serverRepository.upsertServer).toHaveBeenCalledWith(expect.objectContaining({
+            ...data.deployedServer,
+            status: "ready",
+            createdBy: data.userId,
+        }));
+
+        const regionDisplayName = getRegionDisplayName(data.region);
+        const passwordPart = data.deployedServer.tvPassword ? `;password ${data.deployedServer.tvPassword}` : '';
+        const expectedMessage = `Server created with variant **${data.variantName}** on region **${regionDisplayName}**.\nSourceTV: \`connect ${data.deployedServer.tvIp}:${data.deployedServer.tvPort}${passwordPart}\``;
+
+        expect(mocks.sourceTvEventLogger.log).toHaveBeenCalledWith({
+            actorId: data.userId,
+            eventMessage: expectedMessage
         });
     });
 
     it("should only allow one server per user with ready status", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
-
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
@@ -275,11 +186,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should only allow one server per user with pending status", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
-
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
@@ -297,11 +204,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should allow server creation if existing server is terminating", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
-
-        when(mocks.configManager.getCreditsConfig).calledWith().thenReturn({
-            enabled: false
-        });
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.serverRepository.getAllServersByUserId)
             .calledWith(data.userId, mocks.trx)
@@ -332,7 +235,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should add the server to the repository even if the serverManager fails", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.serverManager.deployServer)
             .calledWith(expect.objectContaining({
@@ -342,10 +245,6 @@ describe('CreateServerForUser Use Case', () => {
                 sourcemodAdminSteamId: data.steamId
             }))
             .thenReject(new Error("Server manager error"));
-
-        when(mocks.userCreditsRepository.getCredits)
-            .calledWith({ userId: data.userId })
-            .thenResolve(1);
 
         when(mocks.guildParametersRepository.findById)
             .calledWith(data.guildId)
@@ -371,16 +270,12 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should pass environment variables from guildParameters to deployServer", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
+        const { data, mocks, sut } = makeSut();
 
         const envVars = {
             TF2_CUSTOM_MAP: "cp_badlands",
             SERVER_NAME: "Test Server"
         };
-
-        when(mocks.userCreditsRepository.getCredits)
-            .calledWith({ userId: data.userId })
-            .thenResolve(1);
 
         when(mocks.guildParametersRepository.findById)
             .calledWith(data.guildId)
@@ -414,7 +309,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should throw UserError if user is not found", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.userRepository.getById)
             .calledWith(data.userId)
@@ -433,7 +328,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should throw UserError if user is missing steamIdText", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
+        const { data, mocks, sut } = makeSut();
 
         when(mocks.userRepository.getById)
             .calledWith(data.userId)
@@ -454,7 +349,7 @@ describe('CreateServerForUser Use Case', () => {
     });
 
     it("should throw UserError if user is banned", async () => {
-        const { data, mocks, sut } = createTestEnvironment();
+        const { data, mocks, sut } = makeSut();
         when(mocks.userBanRepository.isUserBanned)
             .calledWith("U:1:29162964", data.userId)
             .thenResolve({ isBanned: true, reason: 'Test ban reason' });

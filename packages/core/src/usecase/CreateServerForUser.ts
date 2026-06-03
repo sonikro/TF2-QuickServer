@@ -2,13 +2,11 @@ import { getRegionDisplayName, Region, Server, Variant } from "../domain";
 import { UserError } from "../errors/UserError";
 import { GuildParametersRepository } from "../repository/GuildParametersRepository";
 import { ServerRepository } from "../repository/ServerRepository";
-import { UserCreditsRepository } from "../repository/UserCreditsRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
 import { ServerManagerFactory } from '@tf2qs/providers';
 import { StatusUpdater } from "../services/StatusUpdater";
-import { ConfigManager } from "../utils/ConfigManager";
 import { v4 as uuid } from "uuid";
 import SteamID from "steamid";
 import { logger } from '@tf2qs/telemetry';
@@ -17,11 +15,9 @@ export class CreateServerForUser {
     constructor(private readonly dependencies: {
         serverManagerFactory: ServerManagerFactory,
         serverRepository: ServerRepository,
-        userCreditsRepository: UserCreditsRepository,
         guildParametersRepository: GuildParametersRepository,
         eventLogger: EventLogger,
         sourceTvEventLogger: EventLogger,
-        configManager: ConfigManager,
         userRepository: UserRepository,
         userBanRepository: UserBanRepository,
     }) { }
@@ -33,7 +29,7 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManagerFactory, serverRepository, userCreditsRepository, eventLogger, sourceTvEventLogger, configManager, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, eventLogger, sourceTvEventLogger, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         
         const serverManager = serverManagerFactory.createServerManager(args.region);
@@ -79,19 +75,6 @@ export class CreateServerForUser {
                 steamID3
             }
         });
-
-        const creditsConfig = configManager.getCreditsConfig();
-
-        if(creditsConfig.enabled){
-            const userCredits = await userCreditsRepository.getCredits({userId: args.creatorId})
-            if(!userCredits || userCredits <= 0){
-                await eventLogger.log({
-                    eventMessage: `User tried to create a server but has no credits.`,
-                    actorId: args.creatorId
-                });
-                throw new UserError('You do not have enough credits to start a server.')
-            }
-        }
         const serverId = uuid();
 
         await serverRepository.runInTransaction(async (trx) => {
