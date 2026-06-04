@@ -1,16 +1,20 @@
 import { Region, Server, Variant } from '@tf2qs/core';
-import { ServerCredentials } from '@tf2qs/core';
 import { DeploymentContext } from '@tf2qs/core';
-import { EnvironmentBuilderService } from '@tf2qs/core';
 import { PasswordGeneratorService } from '@tf2qs/core';
 import { ServerCommander } from '@tf2qs/core';
 import { ServerManager } from '@tf2qs/core';
 import { StatusUpdater } from '@tf2qs/core';
+import { TF2ServerConfigFactory } from '@tf2qs/core';
+import { TF2ServerConfig } from '@tf2qs/core';
 import { TF2ServerReadinessService } from '@tf2qs/core';
 import { ConfigManager } from '@tf2qs/core';
 import { OperationTracingService } from '@tf2qs/telemetry';
 import { logger } from '@tf2qs/telemetry';
-import { DefaultEnvironmentBuilderService, DefaultTF2ServerReadinessService } from '../../services';
+import {
+    DefaultEnvironmentBuilderService,
+    DefaultTF2ServerConfigFactory,
+    DefaultTF2ServerReadinessService,
+} from '../../services';
 import { AWSClientFactory } from '../../services/defaultAWSServiceFactory';
 import {
     EC2InstanceService,
@@ -56,6 +60,7 @@ export class AWSServerManager implements ServerManager {
         const ec2InstanceService = new DefaultEC2InstanceService(awsConfigService, operationTracer);
 
         const environmentBuilderService = new DefaultEnvironmentBuilderService();
+        const tf2ServerConfigFactory = new DefaultTF2ServerConfigFactory(passwordGeneratorService, environmentBuilderService);
         const tf2ServerReadinessService = new DefaultTF2ServerReadinessService(serverCommander);
 
         return new AWSServerManager(
@@ -65,8 +70,7 @@ export class AWSServerManager implements ServerManager {
             ecsServiceManager,
             networkService,
             tf2ServerReadinessService,
-            environmentBuilderService,
-            passwordGeneratorService,
+            tf2ServerConfigFactory,
             configManager
         );
     }
@@ -78,8 +82,7 @@ export class AWSServerManager implements ServerManager {
         private readonly ecsServiceManager: ECSServiceManager,
         private readonly networkService: NetworkService,
         private readonly tf2ServerReadinessService: TF2ServerReadinessService,
-        private readonly environmentBuilderService: EnvironmentBuilderService,
-        private readonly passwordGeneratorService: PasswordGeneratorService,
+        private readonly tf2ServerConfigFactory: TF2ServerConfigFactory,
         private readonly configManager: ConfigManager,
     ) { }
 
@@ -95,7 +98,6 @@ export class AWSServerManager implements ServerManager {
         sourcemodAdminSteamId?: string;
         extraEnvs?: Record<string, string>;
     }): Promise<Server> {
-        // Convert the arguments to DeploymentContext
         const context = new DeploymentContext({
             serverId: args.serverId,
             region: args.region,
@@ -113,18 +115,12 @@ export class AWSServerManager implements ServerManager {
                 attributes: { serverId: args.serverId, region: args.region, variant: args.variantName }
             });
 
-            // Generate server credentials
-            const credentials = ServerCredentials.generate(this.passwordGeneratorService);
-
-            // Get configuration
             const variantConfig = this.configManager.getVariantConfig(args.variantName);
             const regionConfig = this.configManager.getRegionConfig(args.region);
 
-            // Build environment variables
-            const environment = this.environmentBuilderService.build(context, credentials, variantConfig, regionConfig);
+            const tf2ServerConfig = await this.tf2ServerConfigFactory.build(context, variantConfig, regionConfig);
 
-            // Deployment steps
-            const result = await this.executeDeployment(context, credentials, environment, variantConfig);
+            const result = await this.executeDeployment(context, tf2ServerConfig, variantConfig);
 
             logger.emit({
                 severityText: 'INFO',
@@ -167,8 +163,7 @@ export class AWSServerManager implements ServerManager {
 
     private async executeDeployment(
         context: DeploymentContext,
-        credentials: any,
-        environment: Record<string, string>,
+        tf2ServerConfig: TF2ServerConfig,
         variantConfig: any
     ): Promise<AWSServerDeploymentResult> {
         // Update status: Creating security group
@@ -177,7 +172,11 @@ export class AWSServerManager implements ServerManager {
 
         // Update status: Creating task definition
         await context.statusUpdater("📋 [2/7] Creating task definition...");
-        const taskDefinitionArn = await this.taskDefinitionService.create(context, credentials, environment);
+        const taskDefinitionArn = await this.taskDefinitionService.create(
+            context,
+            tf2ServerConfig.credentials,
+            tf2ServerConfig.environmentVariables,
+        );
 
         // Update status: Launching EC2 instance
         await context.statusUpdater("🖥️ [3/7] Launching EC2 instance...");
@@ -204,16 +203,16 @@ export class AWSServerManager implements ServerManager {
         await context.statusUpdater("🔄 [7/7] Waiting for TF2 server to be ready to receive RCON Commands...");
         const sdrAddress = await this.tf2ServerReadinessService.waitForReady(
             publicIp,
-            credentials.rconPassword,
+            tf2ServerConfig.credentials.rconPassword,
             context.serverId
         );
 
         return new AWSServerDeploymentResult({
             serverId: context.serverId,
             publicIp,
-            rconPassword: credentials.rconPassword,
-            serverPassword: credentials.serverPassword,
-            tvPassword: credentials.tvPassword,
+            rconPassword: tf2ServerConfig.credentials.rconPassword,
+            serverPassword: tf2ServerConfig.credentials.serverPassword,
+            tvPassword: tf2ServerConfig.credentials.tvPassword,
             sdrAddress,
             instanceId,
             securityGroupId,

@@ -4,7 +4,9 @@ import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
 import { OCICredentialsFactory } from "@tf2qs/core";
-import { PasswordGeneratorService } from "@tf2qs/core";
+import { TF2ServerConfigFactory } from "@tf2qs/core";
+import { TF2ServerConfig } from "@tf2qs/core";
+import { ServerCredentials } from "@tf2qs/core";
 import { AbortError } from "@tf2qs/core";
 import { ServerCommander } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
@@ -26,13 +28,47 @@ vi.mock('@tf2qs/telemetry', async () => {
 const testRegion = Region.SA_SAOPAULO_1;
 const testVariant = "vanilla" as Variant;
 
+/** Fixed TF2ServerConfig returned by the mocked factory */
+function makeTestTF2ServerConfig(): TF2ServerConfig {
+  const credentials = new ServerCredentials({
+    serverPassword: "test-password",
+    rconPassword: "test-password",
+    tvPassword: "test-password",
+    logSecret: 123456,
+  });
+  return new TF2ServerConfig({
+    credentials,
+    environmentVariables: {
+      SERVER_HOSTNAME: "test Test Server",
+      SERVER_PASSWORD: "test-password",
+      DEMOS_TF_APIKEY: "test-demo-tf-api-key",
+      LOGS_TF_APIKEY: "test-logs-tf-api-key",
+      RCON_PASSWORD: "test-password",
+      STV_NAME: "Test STV",
+      STV_PASSWORD: "test-password",
+      ADMIN_LIST: "default_admin,12345678901234567",
+      SV_LOGSECRET: "123456",
+    },
+    containerImage: "test-image",
+    startupMap: "ctf_2fort",
+    maxPlayers: 24,
+    svPure: 1,
+    containerArgs: [
+      "-enablefakeip",
+      "+sv_pure", "1",
+      "+maxplayers", "24",
+      "+map", "ctf_2fort",
+      "+log", "on",
+      "+logaddress_add", "logaddress:port",
+      "+sv_logsecret", "123456",
+    ],
+  });
+}
+
 function createTestEnvironment() {
   const serverCommander = mock<ServerCommander>();
   const configManager = mock<ConfigManager>();
-  const passwordGeneratorService = {
-    generatePassword: vi.fn().mockReturnValue("test-password"),
-    generateNumericPassword: vi.fn().mockReturnValue(123456)
-  } as PasswordGeneratorService;
+  const tf2ServerConfigFactory = mock<TF2ServerConfigFactory>();
 
   const containerClient = mock<containerinstances.ContainerInstanceClient>();
   const vncClient = mock<core.VirtualNetworkClient>();
@@ -79,6 +115,9 @@ function createTestEnvironment() {
   configManager.getVariantConfig.mockReturnValue(variantConfig);
   configManager.getRegionConfig.mockReturnValue(regionConfig);
   configManager.getOracleConfig.mockReturnValue(oracleConfig);
+
+  // Default factory mock returns fixed TF2ServerConfig
+  tf2ServerConfigFactory.build.mockResolvedValue(makeTestTF2ServerConfig());
 
   process.env.DEMOS_TF_APIKEY = "test-demo-tf-api-key";
   process.env.LOGS_TF_APIKEY = "test-logs-tf-api-key";
@@ -164,7 +203,7 @@ edicts  : 426 used of 2048 max
   const sut = new OCIServerManager({
     serverCommander,
     configManager,
-    passwordGeneratorService,
+    tf2ServerConfigFactory,
     ociClientFactory,
     serverAbortManager,
     ociCredentialsFactory
@@ -234,7 +273,7 @@ edicts  : 426 used of 2048 max
     sut,
     serverCommander,
     configManager,
-    passwordGeneratorService,
+    tf2ServerConfigFactory,
     containerClient,
     vncClient,
     variantConfig,
@@ -271,7 +310,7 @@ describe("OCIServerManager", () => {
       expect(environment.statusUpdater).toHaveBeenNthCalledWith(5, "🔄 [5/5] Waiting for server to be ready to receive RCON commands...");
     });
 
-    it("should create the correct container instance", () => {
+    it("should create the correct container instance using TF2ServerConfig data", () => {
       const containerInstanceRequest = environment.containerClient.createContainerInstance.mock.calls[0][0];
 
       expect(containerInstanceRequest).toEqual({
@@ -291,18 +330,12 @@ describe("OCIServerManager", () => {
               imageUrl: "test-image",
               arguments: [
                 "-enablefakeip",
-                "+sv_pure",
-                "1",
-                "+maxplayers",
-                "24",
-                "+map",
-                "ctf_2fort",
-                "+log",
-                "on",
-                "+logaddress_add",
-                "logaddress:port",
-                "+sv_logsecret",
-                expect.any(String),
+                "+sv_pure", "1",
+                "+maxplayers", "24",
+                "+map", "ctf_2fort",
+                "+log", "on",
+                "+logaddress_add", "logaddress:port",
+                "+sv_logsecret", "123456",
               ],
               environmentVariables: {
                 SERVER_HOSTNAME: "test Test Server",
@@ -313,7 +346,7 @@ describe("OCIServerManager", () => {
                 STV_NAME: "Test STV",
                 STV_PASSWORD: "test-password",
                 ADMIN_LIST: "default_admin,12345678901234567",
-                SV_LOGSECRET: expect.any(String),
+                SV_LOGSECRET: "123456",
               },
               securityContext: {
                 securityContextType: "LINUX",
@@ -387,10 +420,24 @@ describe("OCIServerManager", () => {
       expect(result.hostPort).toBe(13768);
     });
 
-    it("includes generated passwords", () => {
+    it("includes credentials from TF2ServerConfig", () => {
       expect(result.rconPassword).toBe("test-password");
       expect(result.hostPassword).toBe("test-password");
       expect(result.tvPassword).toBe("test-password");
+      expect(result.logSecret).toBe(123456);
+    });
+
+    it("passes DeploymentContext to tf2ServerConfigFactory.build", () => {
+      expect(environment.tf2ServerConfigFactory.build).toHaveBeenCalledWith(
+        expect.objectContaining({
+          serverId: "test-server-id",
+          region: testRegion,
+          variantName: testVariant,
+          sourcemodAdminSteamId: "12345678901234567",
+        }),
+        expect.anything(),
+        expect.anything(),
+      );
     });
 
     it("should log all messages with serverId attribute", () => {
@@ -413,119 +460,6 @@ describe("OCIServerManager", () => {
     });
   })
 
-  describe("hostname with UUID prefix", () => {
-    it("should prepend first UUID block with # to hostname when using default hostname", async () => {
-      const { sut, containerClient, configManager } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-      const uuidServerId = "abcd1234-5678-9012-3456-789012345678";
-
-      await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: uuidServerId,
-        statusUpdater,
-      });
-
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
-
-      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("abcd1234 Test Server");
-    });
-
-    it("should prepend first UUID block with # to custom hostname", async () => {
-      const { sut, containerClient, variantConfig } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-      const uuidServerId = "xyz9876a-bcde-f012-3456-789012345678";
-      variantConfig.hostname = "Custom Server | {region} @ TF2-QuickServer";
-
-      await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: uuidServerId,
-        statusUpdater,
-      });
-
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find((c: any) => c.displayName === uuidServerId);
-
-      expect(tf2Container?.environmentVariables?.SERVER_HOSTNAME).toBe("xyz9876a Custom Server | São Paulo @ TF2-QuickServer");
-    });
-  })
-
-  describe("custom variant hostname", () => {
-    it("should use the variant hostname if provided", async () => {
-      const { sut, containerClient, variantConfig } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-      variantConfig.hostname = "custom-hostname | {region} @ TF2-QuickServer";
-      // When
-      const result = await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-id",
-        statusUpdater,
-      });
-      // Then
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      expect(containerInstanceRequest).toEqual(expect.objectContaining({
-        createContainerInstanceDetails: expect.objectContaining({
-          containers: [
-            expect.objectContaining({
-              environmentVariables: expect.objectContaining({
-                SERVER_HOSTNAME: `test custom-hostname | São Paulo @ TF2-QuickServer`,
-              }),
-            }),
-            expect.anything(),
-          ],
-        }),
-      }));
-    });
-  });
-
-  describe("extra vars", () => {
-    it("should include extraEnvs in the container environment variables", async () => {
-      const { sut, containerClient } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-      await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-extra-env",
-        extraEnvs: {
-          CUSTOM_ENV_VAR: "custom-value",
-          ANOTHER_VAR: "another-value"
-        },
-        statusUpdater,
-      });
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      const envVars = containerInstanceRequest.createContainerInstanceDetails.containers[0].environmentVariables!;
-      expect(envVars.CUSTOM_ENV_VAR).toBe("custom-value");
-      expect(envVars.ANOTHER_VAR).toBe("another-value");
-    });
-
-    it("should use firstMap override instead of variant default map", async () => {
-      const { sut, containerClient } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-
-      await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-first-map",
-        firstMap: "custom_map",
-        statusUpdater,
-      });
-
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      const tf2Args = containerInstanceRequest.createContainerInstanceDetails.containers[0].arguments as string[];
-      const mapArgIndex = tf2Args.indexOf("+map");
-
-      expect(mapArgIndex).toBeGreaterThanOrEqual(0);
-      expect(tf2Args[mapArgIndex + 1]).toBe("custom_map");
-    });
-  });
   describe("newrelic-infra sidecar", () => {
     it("should add newrelic-infra container when NEW_RELIC_LICENSE_KEY is set", async () => {
       const { sut, containerClient } = createTestEnvironment();
@@ -543,25 +477,6 @@ describe("OCIServerManager", () => {
       const newRelicContainer = containers.find((c: any) => c.displayName === "newrelic-infra");
       expect(newRelicContainer).toBeDefined();
       expect(newRelicContainer?.environmentVariables?.NRIA_LICENSE_KEY).toBe("test-newrelic-key");
-    });
-  });
-
-  describe("no default admins", () => {
-    it("should use the sourcemodAdminSteamId as the only admin", async () => {
-      const { sut, containerClient, variantConfig } = createTestEnvironment();
-      const statusUpdater = vi.fn();
-      variantConfig.admins = undefined;
-      await sut.deployServer({
-        region: testRegion,
-        variantName: testVariant,
-        sourcemodAdminSteamId: "12345678901234567",
-        serverId: "test-server-id",
-        statusUpdater,
-      });
-      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
-      const containers = containerInstanceRequest.createContainerInstanceDetails.containers;
-      const tf2Container = containers.find((c: any) => c.displayName === "test-server-id");
-      expect(tf2Container?.environmentVariables?.ADMIN_LIST).toBe("12345678901234567");
     });
   });
 

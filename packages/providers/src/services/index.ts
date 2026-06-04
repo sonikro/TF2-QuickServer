@@ -2,6 +2,7 @@ export * from './ChancePasswordGeneratorService';
 export * from './DefaultEnvironmentBuilderService';
 export * from './DefaultGracefulShutdownManager';
 export * from './DefaultServerAbortManager';
+export * from './DefaultTF2ServerConfigFactory';
 export * from './DefaultTF2ServerReadinessService';
 export * from './DiscordEventLogger';
 export * from './DiscordInteractionStatusUpdater';

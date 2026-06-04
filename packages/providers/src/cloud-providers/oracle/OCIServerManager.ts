@@ -1,19 +1,17 @@
 import { logger, tracer, meter } from '@tf2qs/telemetry';
 import { Span } from '@opentelemetry/api';
 import { containerinstances, core } from "oci-sdk";
-import { getRegionDisplayName, Region, Server, Variant } from "@tf2qs/core";
+import { Region, Server, Variant } from "@tf2qs/core";
 import { ServerStatus, ServerStatusParser } from "@tf2qs/core";
 import { ServerAbortManager } from "@tf2qs/core";
 import { ServerCommander } from "@tf2qs/core";
 import { ServerManager } from "@tf2qs/core";
-import { PasswordGeneratorService } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
+import { DeploymentContext } from "@tf2qs/core";
+import { TF2ServerConfigFactory } from "@tf2qs/core";
 import { waitUntil } from "../../utils/waitUntil";
 import { OCICredentialsFactory } from "@tf2qs/core";
 import { StatusUpdater } from "@tf2qs/core";
-import { Chance } from "chance";
-
-const chance = new Chance();
 
 const serverCreationDurationHistogram = meter.createHistogram('server_creation_duration_seconds', {
     description: 'Duration to create a server (seconds)',
@@ -24,7 +22,7 @@ export class OCIServerManager implements ServerManager {
         private readonly dependencies: {
             serverCommander: ServerCommander;
             configManager: ConfigManager;
-            passwordGeneratorService: PasswordGeneratorService;
+            tf2ServerConfigFactory: TF2ServerConfigFactory;
             ociClientFactory: (region: Region) => { containerClient: containerinstances.ContainerInstanceClient, vncClient: core.VirtualNetworkClient }
             serverAbortManager: ServerAbortManager,
             ociCredentialsFactory: OCICredentialsFactory
@@ -105,8 +103,8 @@ export class OCIServerManager implements ServerManager {
         return await tracer.startActiveSpan('OCIServerManager.deployServer', async (parentSpan: Span) => {
             parentSpan.setAttribute('serverId', args.serverId);
             const startTime = Date.now();
-            const { serverCommander, configManager, passwordGeneratorService, ociClientFactory, serverAbortManager } = this.dependencies;
-            const { region, variantName, firstMap, sourcemodAdminSteamId, serverId, extraEnvs = {}, statusUpdater } = args;
+            const { serverCommander, configManager, tf2ServerConfigFactory, ociClientFactory, serverAbortManager } = this.dependencies;
+            const { region, variantName, serverId, statusUpdater } = args;
             const abortController = serverAbortManager.getOrCreate(serverId);
             try {
 
@@ -119,43 +117,18 @@ export class OCIServerManager implements ServerManager {
                     throw new Error(`Region ${region} is not configured in Oracle config`);
                 }
 
-                const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false };
-                const serverPassword = passwordGeneratorService.generatePassword(passwordSettings);
-                const rconPassword = passwordGeneratorService.generatePassword(passwordSettings);
-                const tvPassword = passwordGeneratorService.generatePassword(passwordSettings);
+                // Build DeploymentContext and resolve all TF2-specific config via factory
+                const context = new DeploymentContext({
+                    serverId: args.serverId,
+                    region: args.region,
+                    variantName: args.variantName,
+                    firstMap: args.firstMap,
+                    statusUpdater: args.statusUpdater,
+                    sourcemodAdminSteamId: args.sourcemodAdminSteamId,
+                    extraEnvs: args.extraEnvs,
+                });
 
-                const containerImage = variantConfig.image;
-                const startupMap = firstMap ?? variantConfig.map;
-                const logSecret = chance.integer({ min: 1, max: 999999 })
-
-                const defaultCfgsEnvironment = variantConfig.defaultCfgs
-                    ? Object.entries(variantConfig.defaultCfgs).map(([key, value]) => ({
-                        [`DEFAULT_${key.toUpperCase()}_CFG`]: value,
-                    }))
-                    : [];
-
-                // the admins array is immutable, so we need to create a new array
-                const adminList = variantConfig.admins ? [...variantConfig.admins, sourcemodAdminSteamId] : [sourcemodAdminSteamId];
-
-                // Extract first UUID block (before first hyphen) for hostname prefix
-                const uuidPrefix = serverId.split('-')[0];
-
-                const hostname = variantConfig.hostname ? variantConfig.hostname.replace("{region}", getRegionDisplayName(region)) : regionConfig.srcdsHostname;
-                const finalHostname = `${uuidPrefix} ${hostname}`;
-
-                const environmentVariables: Record<string, string> = {
-                    SERVER_HOSTNAME: finalHostname,
-                    SERVER_PASSWORD: serverPassword,
-                    DEMOS_TF_APIKEY: process.env.DEMOS_TF_APIKEY || "",
-                    LOGS_TF_APIKEY: process.env.LOGS_TF_APIKEY || "",
-                    RCON_PASSWORD: rconPassword,
-                    STV_NAME: regionConfig.tvHostname,
-                    STV_PASSWORD: tvPassword,
-                    ADMIN_LIST: adminList.join(","),
-                    SV_LOGSECRET: logSecret.toString(),
-                    ...Object.assign({}, ...defaultCfgsEnvironment),
-                    ...extraEnvs,
-                };
+                const tf2ServerConfig = await tf2ServerConfigFactory.build(context, variantConfig, regionConfig);
 
                 // Notify user: Creating security group
                 let nsgId: string;
@@ -187,23 +160,9 @@ export class OCIServerManager implements ServerManager {
                             containers: [
                                 {
                                     displayName: serverId,
-                                    imageUrl: containerImage,
-                                    arguments: [
-                                        "-enablefakeip",
-                                        "+sv_pure",
-                                        variantConfig.svPure.toString(),
-                                        "+maxplayers",
-                                        variantConfig.maxPlayers.toString(),
-                                        "+map",
-                                        startupMap,
-                                        "+log",
-                                        "on",
-                                        "+logaddress_add",
-                                        process.env.SRCDS_LOG_ADDRESS || "",
-                                        "+sv_logsecret",
-                                        logSecret.toString(),
-                                    ],
-                                    environmentVariables,
+                                    imageUrl: tf2ServerConfig.containerImage,
+                                    arguments: tf2ServerConfig.containerArgs,
+                                    environmentVariables: tf2ServerConfig.environmentVariables,
                                     // Grant all capabilities to the TF2 container. This includes NET_ADMIN
                                     // which is required to set MTU inside the container for UDP fragmentation control.
                                     // Lowering MTU helps prevent SourceTV spectators from being kicked due to
@@ -220,7 +179,7 @@ export class OCIServerManager implements ServerManager {
                                     imageUrl: "sonikro/tf2-quickserver-shield:latest",
                                     environmentVariables: {
                                         MAXBYTES: "2000000",
-                                        SRCDS_PASSWORD: rconPassword,
+                                        SRCDS_PASSWORD: tf2ServerConfig.credentials.rconPassword,
                                         NSG_NAME: serverId,
                                         COMPARTMENT_ID: oracleRegionConfig.compartment_id,
                                         VCN_ID: oracleRegionConfig.vnc_id,
@@ -326,7 +285,7 @@ export class OCIServerManager implements ServerManager {
                             const result = await serverCommander.query({
                                 command: "status",
                                 host: publicIp!,
-                                password: rconPassword,
+                                password: tf2ServerConfig.credentials.rconPassword,
                                 port: 27015,
                                 timeout: 5000,
                             });
@@ -366,13 +325,13 @@ export class OCIServerManager implements ServerManager {
                     variant: variantName,
                     hostIp: sdrIp,
                     hostPort: Number(sdrPort),
-                    rconPassword,
+                    rconPassword: tf2ServerConfig.credentials.rconPassword,
                     rconAddress: publicIp as string,
-                    hostPassword: serverPassword,
+                    hostPassword: tf2ServerConfig.credentials.serverPassword,
                     tvIp: publicIp as string,
                     tvPort: 27020,
-                    tvPassword,
-                    logSecret
+                    tvPassword: tf2ServerConfig.credentials.tvPassword,
+                    logSecret: tf2ServerConfig.credentials.logSecret,
                 };
             } catch (err) {
                 parentSpan.recordException?.(err as any);

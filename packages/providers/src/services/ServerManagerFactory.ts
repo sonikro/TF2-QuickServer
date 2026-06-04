@@ -10,6 +10,8 @@ import { AWSServerManager } from "../cloud-providers";
 import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
+import { DefaultEnvironmentBuilderService } from "./DefaultEnvironmentBuilderService";
+import { DefaultTF2ServerConfigFactory } from "./DefaultTF2ServerConfigFactory";
 
 export type { ServerManagerFactory };
 
@@ -36,15 +38,21 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
                     serverCommander: this.dependencies.serverCommander,
                     passwordGeneratorService: this.dependencies.passwordGeneratorService,
                 });
-            case CloudProvider.ORACLE:
-                 return new OCIServerManager({
+            case CloudProvider.ORACLE: {
+                const environmentBuilderService = new DefaultEnvironmentBuilderService();
+                const tf2ServerConfigFactory = new DefaultTF2ServerConfigFactory(
+                    this.dependencies.passwordGeneratorService,
+                    environmentBuilderService,
+                );
+                return new OCIServerManager({
                     serverCommander: this.dependencies.serverCommander,
                     configManager: this.dependencies.configManager,
-                    passwordGeneratorService: this.dependencies.passwordGeneratorService,
+                    tf2ServerConfigFactory,
                     ociClientFactory: defaultOracleServiceFactory,
                     serverAbortManager: this.dependencies.serverAbortManager,
                     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
                 });
+            }
             default:
                 throw new Error(`Unsupported cloud provider: ${cloudProvider} for region: ${region}`);
         }

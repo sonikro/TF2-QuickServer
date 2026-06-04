@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CloudProvider, Region, Variant } from "@tf2qs/core";
+import { TF2ServerConfig } from "@tf2qs/core";
 import { ServerCredentials } from "@tf2qs/core";
-import { EnvironmentBuilderService } from "@tf2qs/core";
-import { PasswordGeneratorService } from "@tf2qs/core";
+import { TF2ServerConfigFactory } from "@tf2qs/core";
 import { TF2ServerReadinessService } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
+import { PasswordGeneratorService } from "@tf2qs/core";
 import { AWSServerManager } from "./AWSServerManager";
 import {
     EC2InstanceService,
@@ -69,9 +70,9 @@ describe("AWSServerManager", () => {
         waitForReady: vi.fn()
     } as unknown as TF2ServerReadinessService;
 
-    const mockEnvironmentBuilderService = {
+    const mockTF2ServerConfigFactory = {
         build: vi.fn()
-    } as unknown as EnvironmentBuilderService;
+    } as unknown as TF2ServerConfigFactory;
 
     const mockPasswordGeneratorService = {
         generatePassword: vi.fn(),
@@ -103,21 +104,33 @@ describe("AWSServerManager", () => {
         cloudProvider: CloudProvider.AWS
     };
 
-    const mockEnvironment = {
-        "RCON_PASSWORD": "rcon123",
-        "SERVER_PASSWORD": "server123",
-        "TV_PASSWORD": "tv123"
-    };
+    const mockCredentials = new ServerCredentials({
+        serverPassword: "server123",
+        rconPassword: "rcon123",
+        tvPassword: "tv123",
+        logSecret: 12345,
+    });
+
+    const mockTF2ServerConfig = new TF2ServerConfig({
+        credentials: mockCredentials,
+        environmentVariables: {
+            "RCON_PASSWORD": "rcon123",
+            "SERVER_PASSWORD": "server123",
+            "STV_PASSWORD": "tv123",
+        },
+        containerImage: "sonikro/tf2-standard-competitive:latest",
+        startupMap: "cp_process_final",
+        maxPlayers: 12,
+        svPure: 2,
+        containerArgs: ["-enablefakeip", "+map", "cp_process_final"],
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
 
-        // Setup default mock implementations
-        vi.mocked(mockPasswordGeneratorService.generatePassword).mockReturnValue("password123");
-        vi.mocked(mockPasswordGeneratorService.generateNumericPassword).mockReturnValue(12345);
         vi.mocked(mockConfigManager.getVariantConfig).mockReturnValue(mockVariantConfig);
         vi.mocked(mockConfigManager.getRegionConfig).mockReturnValue(mockRegionConfig);
-        vi.mocked(mockEnvironmentBuilderService.build).mockReturnValue(mockEnvironment);
+        vi.mocked(mockTF2ServerConfigFactory.build).mockResolvedValue(mockTF2ServerConfig);
 
         // Setup service mock return values
         vi.mocked(mockSecurityGroupService.create).mockResolvedValue("sg-12345");
@@ -147,30 +160,24 @@ describe("AWSServerManager", () => {
                 mockECSServiceManager,
                 mockNetworkService,
                 mockTF2ServerReadinessService,
-                mockEnvironmentBuilderService,
-                mockPasswordGeneratorService,
+                mockTF2ServerConfigFactory,
                 mockConfigManager
             );
 
             const result = await serverManager.deployServer(deployArgs);
 
-            // Verify the orchestration order and calls
+            // Verify config retrieval
             expect(mockConfigManager.getVariantConfig).toHaveBeenCalledWith("standard-competitive");
             expect(mockConfigManager.getRegionConfig).toHaveBeenCalledWith(Region.US_EAST_1_BUE_1);
 
-            expect(mockEnvironmentBuilderService.build).toHaveBeenCalledWith(
+            // Verify factory is called with correct DeploymentContext
+            expect(mockTF2ServerConfigFactory.build).toHaveBeenCalledWith(
                 expect.objectContaining({
                     serverId: "test-server-123",
                     region: Region.US_EAST_1_BUE_1,
                     variantName: "standard-competitive",
                     sourcemodAdminSteamId: "STEAM_1:1:123456789",
                     extraEnvs: { "CUSTOM_VAR": "custom_value" }
-                }),
-                expect.objectContaining({
-                    serverPassword: "password123",
-                    tvPassword: "password123",
-                    rconPassword: "password123",
-                    logSecret: 12345
                 }),
                 mockVariantConfig,
                 mockRegionConfig
@@ -183,12 +190,9 @@ describe("AWSServerManager", () => {
                 expect.objectContaining({
                     serverId: "test-server-123",
                     region: Region.US_EAST_1_BUE_1,
-                    variantName: "standard-competitive",
-                    sourcemodAdminSteamId: "STEAM_1:1:123456789",
-                    extraEnvs: { "CUSTOM_VAR": "custom_value" }
                 }),
-                expect.any(ServerCredentials),
-                mockEnvironment
+                mockTF2ServerConfig.credentials,
+                mockTF2ServerConfig.environmentVariables
             );
 
             expect(mockEC2InstanceService.create).toHaveBeenCalledWith({
@@ -213,7 +217,7 @@ describe("AWSServerManager", () => {
 
             expect(mockTF2ServerReadinessService.waitForReady).toHaveBeenCalledWith(
                 "1.2.3.4",
-                expect.any(String),
+                "rcon123",
                 "test-server-123"
             );
 
@@ -236,10 +240,10 @@ describe("AWSServerManager", () => {
                 hostPort: 27015,
                 tvIp: "1.2.3.4",
                 tvPort: 27020,
-                rconPassword: "password123",
+                rconPassword: "rcon123",
                 rconAddress: "1.2.3.4",
-                hostPassword: "password123",
-                tvPassword: "password123"
+                hostPassword: "server123",
+                tvPassword: "tv123"
             });
         });
 
@@ -254,8 +258,7 @@ describe("AWSServerManager", () => {
                 mockECSServiceManager,
                 mockNetworkService,
                 mockTF2ServerReadinessService,
-                mockEnvironmentBuilderService,
-                mockPasswordGeneratorService,
+                mockTF2ServerConfigFactory,
                 mockConfigManager
             );
 
@@ -288,8 +291,7 @@ describe("AWSServerManager", () => {
                 mockECSServiceManager,
                 mockNetworkService,
                 mockTF2ServerReadinessService,
-                mockEnvironmentBuilderService,
-                mockPasswordGeneratorService,
+                mockTF2ServerConfigFactory,
                 mockConfigManager
             );
 
@@ -324,8 +326,7 @@ describe("AWSServerManager", () => {
                 mockECSServiceManager,
                 mockNetworkService,
                 mockTF2ServerReadinessService,
-                mockEnvironmentBuilderService,
-                mockPasswordGeneratorService,
+                mockTF2ServerConfigFactory,
                 mockConfigManager
             );
 

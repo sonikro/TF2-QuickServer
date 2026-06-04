@@ -33,6 +33,7 @@ export * from './src/services/ServerCommander';
 export * from './src/services/ServerManager';
 export * from './src/services/StatusUpdater';
 export * from './src/services/TF2ServerReadinessService';
+export * from './src/services/TF2ServerConfigFactory';
 
 // Use cases
 export * from './src/usecase/CreateServerForClient';
