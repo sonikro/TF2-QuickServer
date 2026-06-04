@@ -1,4 +1,3 @@
-export * from './AdyenPaymentService';
 export * from './ChancePasswordGeneratorService';
 export * from './DefaultEnvironmentBuilderService';
 export * from './DefaultGracefulShutdownManager';
@@ -8,7 +7,6 @@ export * from './DiscordEventLogger';
 export * from './DiscordInteractionStatusUpdater';
 export * from './FileSystemOCICredentialsFactory';
 export * from './MonthlyReportFormatter';
-export * from './PaypalPaymentService';
 export * from './RCONServerCommander';
 export * from './ServerManagerFactory';
 export * from './UuidIdGenerator';

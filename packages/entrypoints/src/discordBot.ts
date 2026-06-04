@@ -1,7 +1,5 @@
 import { CreateServerForClient } from "@tf2qs/core";
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, REST, Routes } from "discord.js";
-import { ConsumeCreditsFromRunningServers } from "@tf2qs/core";
-import { CreateCreditsPurchaseOrder } from "@tf2qs/core";
 import { CreateServerForUser } from "@tf2qs/core";
 import { DeleteServer } from "@tf2qs/core";
 import { DeleteServerForUser } from "@tf2qs/core";
@@ -12,7 +10,6 @@ import { SetUserData } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
 import { TerminatePendingServers } from "@tf2qs/core";
-import { TerminateServersWithoutCredit } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
@@ -22,16 +19,13 @@ import { createDeleteServerTaskProcessor } from "@tf2qs/providers";
 import { InMemoryBackgroundTaskQueue } from "@tf2qs/providers";
 import { CsvUserBanRepository } from "@tf2qs/providers";
 import { KnexConnectionManager } from "@tf2qs/providers";
-import { SQliteCreditOrdersRepository } from "@tf2qs/providers";
 import { SQliteGuildParametersRepository } from "@tf2qs/providers";
 import { SQLiteReportRepository } from "@tf2qs/providers";
 import { SQliteServerActivityRepository } from "@tf2qs/providers";
 import { SQLiteServerRepository } from "@tf2qs/providers";
-import { SQliteUserCreditsRepository } from "@tf2qs/providers";
 import { SQliteUserRepository } from "@tf2qs/providers";
 import { SQliteServerStatusMetricsRepository } from "@tf2qs/providers";
 import { SQlitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
-import { AdyenPaymentService } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "@tf2qs/providers";
@@ -39,7 +33,6 @@ import { defaultOracleServiceFactory } from "@tf2qs/providers";
 import { DefaultServerAbortManager } from "@tf2qs/providers";
 import { DiscordEventLogger } from "@tf2qs/providers";
 import { FileSystemOCICredentialsFactory } from "@tf2qs/providers";
-import { PaypalPaymentService } from "@tf2qs/providers";
 import { RCONServerCommander } from "@tf2qs/providers";
 import { DefaultServerManagerFactory } from "@tf2qs/providers";
 import { UuidIdGenerator } from "@tf2qs/providers";
@@ -47,8 +40,7 @@ import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleConsumeCreditsRoutine, scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
-import { scheduleTerminateServersWithoutCreditRoutine } from "./jobs/TerminateServersWithoutCreditRoutine";
+import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 
 export async function startDiscordBot() {
@@ -103,27 +95,7 @@ export async function startDiscordBot() {
     const serverActivityRepository = new SQliteServerActivityRepository({
         knex: KnexConnectionManager.client,
     })
-    const userCreditsRepository = new SQliteUserCreditsRepository({
-        knex: KnexConnectionManager.client
-    })
     const userRepository = new SQliteUserRepository({
-        knex: KnexConnectionManager.client
-    })
-
-    const paypalPaymentService = new PaypalPaymentService({
-        clientId: process.env.PAYPAL_CLIENT_ID!,
-        clientSecret: process.env.PAYPAL_CLIENT_SECRET!,
-        sandbox: process.env.PAYPAL_ENV === 'sandbox'
-    })
-
-    const adyenPaymentService = new AdyenPaymentService({
-        apiKey: process.env.ADYEN_API_KEY!,
-        environment: process.env.ADYEN_ENV! as 'live' | 'test',
-        merchantAccount: process.env.ADYEN_MERCHANT_ACCOUNT!,
-        hmacKey: process.env.ADYEN_HMAC_KEY!
-    })
-
-    const creditOrdersRepository = new SQliteCreditOrdersRepository({
         knex: KnexConnectionManager.client
     })
 
@@ -184,19 +156,12 @@ export async function startDiscordBot() {
         createServerForUser: new CreateServerForUser({
             serverManagerFactory: serverManagerFactory,
             serverRepository,
-            userCreditsRepository,
             eventLogger,
             sourceTvEventLogger,
-            configManager: defaultConfigManager,
             userRepository,
             guildParametersRepository,
             userBanRepository,
             idGenerator: new UuidIdGenerator()
-        }),
-        createCreditsPurchaseOrder: new CreateCreditsPurchaseOrder({
-            creditOrdersRepository,
-            paymentService: adyenPaymentService,
-            eventLogger
         }),
         setUserData: new SetUserData({
             userRepository
@@ -207,8 +172,6 @@ export async function startDiscordBot() {
         getUserServers: new GetUserServers({
             serverRepository
         }),
-        userCreditsRepository,
-        configManager: defaultConfigManager,
         backgroundTaskQueue
     })
 
@@ -222,27 +185,6 @@ export async function startDiscordBot() {
             configManager: defaultConfigManager,
             backgroundTaskQueue
         }),
-        eventLogger
-    })
-
-    scheduleConsumeCreditsRoutine({
-        consumeCreditsFromRunningServers: new ConsumeCreditsFromRunningServers({
-            serverRepository,
-            userCreditsRepository,
-        }),
-        configManager: defaultConfigManager,
-        eventLogger
-    })
-
-    scheduleTerminateServersWithoutCreditRoutine({
-        terminateServersWithoutCredit: new TerminateServersWithoutCredit({
-            serverRepository,
-            userCreditsRepository,
-            serverManagerFactory: serverManagerFactory,
-            serverCommander,
-            eventLogger
-        }),
-        configManager: defaultConfigManager,
         eventLogger
     })
 
