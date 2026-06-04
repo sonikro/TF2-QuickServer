@@ -294,19 +294,10 @@
             "guildId": "312687261219160065"
         },
         "bf-6v6-standard": {
-            "displayName": "BF 6v6 Standard",
-            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
+            "displayName": "BF 6s",
+            "hostname": "Brasil Fortress 6s | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "bf_6v6_5cp.cfg",
-                "koth": "bf_6v6_koth.cfg"
-            },
-            "guildId": "312687261219160065"
-        },
-        "bf-6v6-invite": {
-            "displayName": "BF 6v6 Invite",
-            "hostname": "Brasil Fortress | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "bf_6v6_5cp_invite.cfg",
                 "koth": "bf_6v6_koth.cfg"
             },
             "guildId": "312687261219160065"

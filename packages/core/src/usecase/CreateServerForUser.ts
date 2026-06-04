@@ -5,9 +5,9 @@ import { ServerRepository } from "../repository/ServerRepository";
 import { UserRepository } from "../repository/UserRepository";
 import { UserBanRepository } from "../repository/UserBanRepository";
 import { EventLogger } from "../services/EventLogger";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { IdGenerator } from "../services/IdGenerator";
+import { ServerManagerFactory } from '@tf2qs/core';
 import { StatusUpdater } from "../services/StatusUpdater";
-import { v4 as uuid } from "uuid";
 import SteamID from "steamid";
 import { logger } from '@tf2qs/telemetry';
 export class CreateServerForUser {
@@ -20,6 +20,7 @@ export class CreateServerForUser {
         sourceTvEventLogger: EventLogger,
         userRepository: UserRepository,
         userBanRepository: UserBanRepository,
+        idGenerator: IdGenerator,
     }) { }
 
     public async execute(args: {
@@ -29,7 +30,7 @@ export class CreateServerForUser {
         guildId: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
-        const { serverManagerFactory, serverRepository, eventLogger, sourceTvEventLogger, userRepository, guildParametersRepository, userBanRepository } = this.dependencies;
+        const { serverManagerFactory, serverRepository, eventLogger, sourceTvEventLogger, userRepository, guildParametersRepository, userBanRepository, idGenerator } = this.dependencies;
         const statusUpdater = args.statusUpdater;
         
         const serverManager = serverManagerFactory.createServerManager(args.region);
@@ -75,7 +76,7 @@ export class CreateServerForUser {
                 steamID3
             }
         });
-        const serverId = uuid();
+        const serverId = idGenerator.generate();
 
         await serverRepository.runInTransaction(async (trx) => {
             const allServers = await serverRepository.getAllServersByUserId(args.creatorId, trx);

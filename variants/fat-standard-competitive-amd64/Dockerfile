@@ -123,13 +123,6 @@ ARG UPDATED_PAUSE_URL=https://github.com/l-Aad-l/updated-pause-plugin/releases/d
 RUN curl -L "${UPDATED_PAUSE_URL}" -o "${UPDATED_PAUSE_FILE_NAME}" \
   && unzip -q -o "${UPDATED_PAUSE_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
-# ShowSDR plugin
-ARG SHOWSDR_PLUGIN_FILE_NAME=showsdr.zip
-ARG SHOWSDR_PLUGIN_VERSION=1.0.0
-ARG SHOWSDR_PLUGIN_URL=https://github.com/Full-Buff/sdr-plugin/releases/download/${SHOWSDR_PLUGIN_VERSION}/${SHOWSDR_PLUGIN_FILE_NAME}
-RUN curl -L "${SHOWSDR_PLUGIN_URL}" -o "${SHOWSDR_PLUGIN_FILE_NAME}" \
-  && unzip -q -n "${SHOWSDR_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
-
 # SourceTV Plus extension
 ARG SRCTV_PLUS_VERSION=v3.0
 RUN curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PLUS_VERSION}/srctvplus.so" \
@@ -141,13 +134,22 @@ RUN curl -L "https://github.com/dalegaard/srctvplus/releases/download/${SRCTV_PL
 COPY variants/base/tf/addons/srctvplus_x86_64.so "${PLUGIN_INSTALL_DIR}/addons/srctvplus.so"
 
 # Dodgeball plugin
-ARG DODGEBALL_PLUGIN_VERSION_NUMBER=2.1.0
-ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-Modified.7z
-ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball/releases/download/v${DODGEBALL_PLUGIN_VERSION_NUMBER}/TF2-Dodgeball-Modified.7z
+ARG DODGEBALL_PLUGIN_VERSION_NUMBER=2.2.0-beta
+ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-2.2.0.zip
+ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball/releases/download/v${DODGEBALL_PLUGIN_VERSION_NUMBER}/${DODGEBALL_PLUGIN_FILE_NAME}
 RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
-  && 7z x -y "${DODGEBALL_PLUGIN_FILE_NAME}" \
-  && cp -r "TF2-Dodgeball-Modified/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
-  && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" "TF2-Dodgeball-Modified"
+  && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" -d tfdb \
+  && cp -r "tfdb/TF2-Dodgeball-2.2.0/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
+  && rm -f \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_airblast_prevention.smx" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_anti_switch.smx" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_no_block.smx" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/NERandSOLO.smx" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_airblast_prevention.sp" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_anti_switch.sp" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_no_block.sp" \
+  "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/NERandSOLO.sp" \
+  && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" tfdb
 
 # FBTF configs (latest version)
 ARG FBTF_CONFIGS_VERSION=25

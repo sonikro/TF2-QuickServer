@@ -6,7 +6,7 @@ import { ServerCommander } from "@tf2qs/core";
 import { ServerManager } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
 import { ServerManagerFactory } from "@tf2qs/core";
-import { AWSServerManager, OracleVMManager } from "../cloud-providers";
+import { AWSServerManager } from "../cloud-providers";
 import { OCIServerManager } from "../cloud-providers/oracle/OCIServerManager";
 import { defaultAWSServiceFactory } from "./defaultAWSServiceFactory";
 import { defaultOracleServiceFactory } from "./defaultOracleServiceFactory";
@@ -45,14 +45,6 @@ export class DefaultServerManagerFactory implements ServerManagerFactory {
                     serverAbortManager: this.dependencies.serverAbortManager,
                     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
                 });
-                // return OracleVMManager.create({
-                //     serverCommander: this.dependencies.serverCommander,
-                //     configManager: this.dependencies.configManager,
-                //     passwordGeneratorService: this.dependencies.passwordGeneratorService,
-                //     serverAbortManager: this.dependencies.serverAbortManager,
-                //     ociCredentialsFactory: this.dependencies.ociCredentialsFactory,
-                //     region,
-                // });
             default:
                 throw new Error(`Unsupported cloud provider: ${cloudProvider} for region: ${region}`);
         }

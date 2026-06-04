@@ -8,16 +8,11 @@ import { GuildParametersRepository } from '../repository/GuildParametersReposito
 import { ServerRepository } from '../repository/ServerRepository';
 import { UserRepository } from '../repository/UserRepository';
 import { EventLogger } from '../services/EventLogger';
+import { IdGenerator } from '../services/IdGenerator';
 import { ServerManager } from '../services/ServerManager';
 import { ServerManagerFactory } from '@tf2qs/providers';
 import { CreateServerForUser } from './CreateServerForUser';
 import { UserBanRepository } from '../repository/UserBanRepository';
-
-vi.mock("uuid", () => {
-    return {
-        v4: () => "test-uuid"
-    }
-})
 
 const chance = new Chance();
 
@@ -29,11 +24,14 @@ function makeSut() {
     const sourceTvEventLogger = mock<EventLogger>();
     const userRepository = mock<UserRepository>();
     const guildParametersRepository = mock<GuildParametersRepository>();
+    const idGenerator = mock<IdGenerator>();
     const userBanRepository = mock<UserBanRepository>({
         isUserBanned: vi.fn().mockResolvedValue({ isBanned: false, reason: '' })
     });
 
     serverManagerFactory.createServerManager.mockReturnValue(serverManager);
+
+    when(idGenerator.generate).calledWith().thenReturn("test-uuid");
 
     const region = chance.pickone(Object.values(Region));
     const variantName = chance.pickone(["standard-competitive", "casual"]);
@@ -91,6 +89,7 @@ function makeSut() {
         userRepository,
         guildParametersRepository,
         userBanRepository,
+        idGenerator,
     });
 
     return {
@@ -104,6 +103,7 @@ function makeSut() {
             userRepository,
             guildParametersRepository,
             userBanRepository,
+            idGenerator,
             trx,
             statusUpdater
         },

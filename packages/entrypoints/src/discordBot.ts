@@ -160,7 +160,8 @@ export async function startDiscordBot() {
             sourceTvEventLogger,
             userRepository,
             guildParametersRepository,
-            userBanRepository
+            userBanRepository,
+            idGenerator: new UuidIdGenerator()
         }),
         setUserData: new SetUserData({
             userRepository

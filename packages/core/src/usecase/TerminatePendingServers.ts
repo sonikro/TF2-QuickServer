@@ -1,5 +1,5 @@
 import { ServerRepository } from "../repository/ServerRepository";
-import { ServerManagerFactory } from '@tf2qs/providers';
+import { ServerManagerFactory } from '@tf2qs/core';
 import { EventLogger } from "../services/EventLogger";
 import { Client as DiscordClient } from "discord.js";
 import { ServerStatus } from "../domain/DeployedServer";
