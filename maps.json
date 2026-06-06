@@ -166,6 +166,11 @@
     "cp_cardinal_rc1a",
     "cp_subbase_b3a",
     "cp_mannbase_rc3",
+    "cp_albany_b7",
+    {
+        "name": "cp_glassworks_rc7a",
+        "url": "https://tf2maps.net/downloads/glassworks.46/download"
+    },
     "koth_gamma_rc1",
     "koth_coalplant_b7"
 ]
