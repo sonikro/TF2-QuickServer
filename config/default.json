@@ -67,6 +67,15 @@
             "svPure": 2,
             "image": "sonikro/fat-tf2-standard-competitive-i386:latest"
         },
+        "casual": {
+            "displayName": "Casual",
+            "defaultCfgs": {
+                "5cp": "casual.cfg",
+                "koth": "casual.cfg",
+                "pl": "casual.cfg"
+            },
+            "guildId": "1359667090092458055"
+        },
         "standard-competitive": {
             "displayName": "Standard Competitive",
             "defaultCfgs": {
