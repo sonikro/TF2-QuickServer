@@ -73,8 +73,7 @@
                 "5cp": "casual.cfg",
                 "koth": "casual.cfg",
                 "pl": "casual.cfg"
-            },
-            "guildId": "1359667090092458055"
+            }
         },
         "standard-competitive": {
             "displayName": "Standard Competitive",
