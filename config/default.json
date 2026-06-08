@@ -67,17 +67,6 @@
             "svPure": 2,
             "image": "sonikro/fat-tf2-standard-competitive-i386:latest"
         },
-        "casual": {
-            "displayName": "Casual",
-            "map": "pl_badwater",
-            "image": "sonikro/fat-tf2-casual-i386:latest",
-            "hostname": "Casual | {region} @ TF2-QuickServer",
-            "defaultCfgs": {
-                "5cp": "casual_5cp.cfg",
-                "koth": "casual_koth.cfg",
-                "pl": "casual_stopwatch.cfg"
-            }
-        },
         "pubstar-casual": {
             "displayName": "PUBSTAR Casual",
             "hostname": "PUBSTAR @ TF2-QuickServer",
