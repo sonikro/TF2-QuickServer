@@ -84,6 +84,23 @@
                 "STEAM_0:1:17186868"
             ]
         },
+        "frisbeeverse": {
+            "displayName": "Frisbeeverse",
+            "hostname": "Frisbeeverse @ TF2-QuickServer",
+            "emptyMinutesTerminate": 60,
+            "map": "pl_badwater",
+            "image": "sonikro/fat-tf2-casual-i386:latest",
+            "defaultCfgs": {
+                "5cp": "casual_5cp.cfg",
+                "koth": "casual_koth.cfg",
+                "pl": "casual_stopwatch.cfg"
+            },
+            "guildId": "1361786102503051504",
+            "admins": [
+                "STEAM_0:1:1271629",
+                "STEAM_0:0:14581482"
+            ]
+        },
         "standard-competitive": {
             "displayName": "Standard Competitive",
             "defaultCfgs": {
