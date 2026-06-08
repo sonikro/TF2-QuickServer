@@ -75,7 +75,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   ca-certificates \
   wget \
   unzip \
-  jq \
   gettext-base \
   libbsd0 \
   iproute2 \
@@ -162,16 +161,8 @@ COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/disabled/*.smx "${SER
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/scripting/* "${SERVER_DIR}/tf/addons/sourcemod/scripting/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/translations/* "${SERVER_DIR}/tf/addons/sourcemod/translations/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions/* "${SERVER_DIR}/tf/addons/sourcemod/extensions/"
-
-# Copy only the maps listed in the casual manifest
-COPY --chown=tf2 maps.casual.json /tmp/map-manifest.json
-COPY --chown=tf2 maps/ /tmp/maps-src/
-RUN mkdir -p "${SERVER_DIR}/tf/maps" \
-  && jq -r '.[]' /tmp/map-manifest.json | while IFS= read -r map_name; do \
-    [ -n "$map_name" ] || continue; \
-    cp "/tmp/maps-src/${map_name}.bsp" "${SERVER_DIR}/tf/maps/${map_name}.bsp"; \
-  done \
-  && rm -rf /tmp/maps-src /tmp/map-manifest.json
+# Copy maps
+COPY --chown=tf2 maps/ "${SERVER_DIR}/tf/maps/"
 
 # Copy custom entrypoint
 COPY --chown=tf2 variants/base/enforced_cvars.cfg $SERVER_DIR/enforced_cvars.cfg
