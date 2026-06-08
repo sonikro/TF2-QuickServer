@@ -80,6 +80,7 @@
         "pubstar-casual": {
             "displayName": "PUBSTAR Casual",
             "hostname": "PUBSTAR @ TF2-QuickServer",
+            "emptyMinutesTerminate": 60,
             "map": "pl_badwater",
             "defaultCfgs": {
                 "5cp": "casual_5cp.cfg",
