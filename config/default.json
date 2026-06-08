@@ -70,9 +70,9 @@
         "casual": {
             "displayName": "Casual",
             "defaultCfgs": {
-                "5cp": "casual.cfg",
-                "koth": "casual.cfg",
-                "pl": "casual.cfg"
+                "5cp": "casual_5cp.cfg",
+                "koth": "casual_koth.cfg",
+                "pl": "casual_stopwatch.cfg"
             }
         },
         "standard-competitive": {
