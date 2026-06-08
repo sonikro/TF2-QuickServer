@@ -99,18 +99,6 @@
     "tfdb_rocketbucks_v2",
     "tfdb_spacebox_a2",
     {
-        "name": "tfdb_catland_v1",
-        "url": "https://mirror.shana.sg/tf/maps/tfdb_catland_v1.bsp.bz2"
-    },
-    {
-        "name": "tfdb_muca_idea_b2",
-        "url": "https://mirror.shana.sg/tf/maps/tfdb_muca_idea_b2.bsp.bz2"
-    },
-    {
-        "name": "tfdb_orangebox_b2",
-        "url": "https://mirror.shana.sg/tf/maps/tfdb_orangebox_b2.bsp.bz2"
-    },
-    {
         "name": "koth_berryville_b2a",
         "url": "https://tf2maps.net/downloads/koth_berryville.8442/download"
     },
