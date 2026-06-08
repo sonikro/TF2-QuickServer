@@ -40,10 +40,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: maps/
-          key: maps-${{ inputs.variant-name }}-${{ hashFiles('maps.json', 'maps.casual.json') }}
+          key: maps-${{ contains(inputs.variant-name, 'casual') && 'casual' || 'competitive' }}-${{ contains(inputs.variant-name, 'casual') && hashFiles('maps.casual.json') || hashFiles('maps.json') }}
           restore-keys: |
-            maps-${{ inputs.variant-name }}-
-            maps-
+            maps-${{ contains(inputs.variant-name, 'casual') && 'casual' || 'competitive' }}-
 
       - name: Use Node.js from .nvmrc
         if: steps.cache-maps.outputs.cache-hit != 'true'
