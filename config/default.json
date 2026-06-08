@@ -69,6 +69,7 @@
         },
         "casual": {
             "displayName": "Casual",
+            "hostname": "Casual | {region} @ TF2-QuickServer",
             "defaultCfgs": {
                 "5cp": "casual_5cp.cfg",
                 "koth": "casual_koth.cfg",
