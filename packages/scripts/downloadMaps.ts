@@ -9,7 +9,11 @@ const BASE_URL = "https://fastdl.serveme.tf/maps/";
 
 // Resolve paths
 const mapsDir = path.resolve(__dirname, '../../maps');
-const mapsJsonPath = path.resolve(__dirname, '../../maps.json');
+const manifestArg = process.argv[2];
+const mapManifestFile = manifestArg
+    ? (manifestArg.endsWith('.json') ? manifestArg : `maps.${manifestArg}.json`)
+    : 'maps.json';
+const mapsJsonPath = path.resolve(__dirname, `../../${mapManifestFile}`);
 
 // Ensure the maps directory exists
 if (!fs.existsSync(mapsDir)) {
@@ -23,7 +27,7 @@ try {
     const mapsData = fs.readFileSync(mapsJsonPath, 'utf-8');
     maps = JSON.parse(mapsData) as MapEntry[];
 } catch (error) {
-    console.error("Error reading maps.json:", (error as Error).message);
+    console.error(`Error reading ${mapManifestFile}:`, (error as Error).message);
     process.exit(1);
 }
 

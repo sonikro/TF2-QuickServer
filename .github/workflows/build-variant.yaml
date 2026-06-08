@@ -40,8 +40,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: maps/
-          key: maps-${{ hashFiles('maps.json') }}
+          key: maps-${{ inputs.variant-name }}-${{ hashFiles('maps.json', 'maps.casual.json') }}
           restore-keys: |
+            maps-${{ inputs.variant-name }}-
             maps-
 
       - name: Use Node.js from .nvmrc
@@ -57,7 +58,12 @@ jobs:
 
       - name: Download maps
         if: steps.cache-maps.outputs.cache-hit != 'true'
-        run: npm run download:maps
+        run: |
+          if [[ "${{ inputs.variant-name }}" == *"casual"* ]]; then
+            npm run download:maps:casual
+          else
+            npm run download:maps
+          fi
 
       - name: Show disk space before cleanup
         run: df -h
