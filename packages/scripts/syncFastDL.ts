@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 
 const bzip2 = require('node-bzip2');
 
@@ -138,21 +138,6 @@ const getRemoteFileHashes = async (params: {
   return hashes;
 };
 
-const deleteRemoteFile = async (params: {
-  s3Client: S3Client;
-  bucketName: string;
-  key: string;
-}): Promise<void> => {
-  const { s3Client, bucketName, key } = params;
-  const command = new DeleteObjectCommand({
-    Bucket: bucketName,
-    Key: key,
-  });
-
-  await s3Client.send(command);
-  console.log(`Deleted: ${key}`);
-};
-
 const syncFastDL = async (): Promise<void> => {
   try {
     validateEnvironment();
@@ -188,7 +173,7 @@ const syncFastDL = async (): Promise<void> => {
     console.log(`Found ${localHashes.size} local files and ${remoteHashes.size} remote files`);
 
     let filesUploaded = 0;
-    let filesDeleted = 0;
+    let remoteOnlyFiles = 0;
 
     console.log('\nUploading new and modified files...');
     for (const [fileName, localInfo] of localHashes) {
@@ -203,18 +188,17 @@ const syncFastDL = async (): Promise<void> => {
       }
     }
 
-    console.log('\nRemoving deleted files...');
+    console.log('\nChecking remote-only files (kept as-is)...');
     for (const [fileName, _] of remoteHashes) {
       if (!localHashes.has(fileName)) {
-        const key = `${s3Prefix}/${fileName}`;
-        await deleteRemoteFile({ s3Client: dependencies.s3Client, bucketName, key });
-        filesDeleted++;
+        console.log(`Keeping remote-only file: ${fileName}`);
+        remoteOnlyFiles++;
       }
     }
 
     console.log(`\nSync completed successfully!`);
     console.log(`  Files uploaded: ${filesUploaded}`);
-    console.log(`  Files deleted: ${filesDeleted}`);
+    console.log(`  Remote-only files kept: ${remoteOnlyFiles}`);
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(`\nFastDL sync failed: ${errorMessage}`);

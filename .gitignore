@@ -252,7 +252,3 @@ packer/*.auto.pkrvars.hcl
 packer/*.pkrvars.hcl
 !packer/*.pkrvars.hcl.example
 packer/manifest.json
-
-!maps/cp_sunshine_pro3.bsp
-!maps/mge_qel2_a6.bsp
-!maps/mge_qel2_rc4.bsp
