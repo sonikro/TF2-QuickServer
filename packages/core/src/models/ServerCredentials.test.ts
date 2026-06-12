@@ -106,4 +106,66 @@ describe("ServerCredentials", () => {
         });
     });
 
+    describe("generate with publicServer option", () => {
+        it("should set serverPassword and tvPassword to empty strings when publicServer is true", () => {
+            const { mocks } = createTestEnvironment();
+            
+            mocks.passwordGeneratorService.generatePassword.mockReturnValue("rcon-generated");
+            mocks.passwordGeneratorService.generateNumericPassword.mockReturnValue(999999);
+
+            const credentials = ServerCredentials.generate(mocks.passwordGeneratorService, { publicServer: true });
+
+            expect(credentials.serverPassword).toBe("");
+            expect(credentials.tvPassword).toBe("");
+            expect(credentials.rconPassword).toBe("rcon-generated");
+            expect(credentials.logSecret).toBe(999999);
+        });
+
+        it("should only call generatePassword for rconPassword when publicServer is true", () => {
+            const { mocks } = createTestEnvironment();
+            
+            mocks.passwordGeneratorService.generatePassword.mockReturnValue("rcon-generated");
+            mocks.passwordGeneratorService.generateNumericPassword.mockReturnValue(123456);
+
+            ServerCredentials.generate(mocks.passwordGeneratorService, { publicServer: true });
+
+            // generatePassword should only be called once for rconPassword
+            expect(mocks.passwordGeneratorService.generatePassword).toHaveBeenCalledTimes(1);
+            expect(mocks.passwordGeneratorService.generatePassword).toHaveBeenCalledWith({
+                alpha: true,
+                length: 10,
+                numeric: true,
+                symbols: false
+            });
+        });
+
+        it("should still call generateNumericPassword for logSecret when publicServer is true", () => {
+            const { mocks } = createTestEnvironment();
+            
+            mocks.passwordGeneratorService.generatePassword.mockReturnValue("rcon-generated");
+            mocks.passwordGeneratorService.generateNumericPassword.mockReturnValue(123456);
+
+            ServerCredentials.generate(mocks.passwordGeneratorService, { publicServer: true });
+
+            const expectedNumericSettings = { min: 1, max: 999999 };
+
+            expect(mocks.passwordGeneratorService.generateNumericPassword).toHaveBeenCalledTimes(1);
+            expect(mocks.passwordGeneratorService.generateNumericPassword).toHaveBeenCalledWith(expectedNumericSettings);
+        });
+
+        it("should behave the same as default when publicServer is false or undefined", () => {
+            const { mocks } = createTestEnvironment();
+            
+            mocks.passwordGeneratorService.generatePassword.mockReturnValue("server-password");
+            mocks.passwordGeneratorService.generateNumericPassword.mockReturnValue(111111);
+
+            const credentialsDefault = ServerCredentials.generate(mocks.passwordGeneratorService);
+            const credentialsFalse = ServerCredentials.generate(mocks.passwordGeneratorService, { publicServer: false });
+
+            expect(credentialsDefault.serverPassword).toBe("server-password");
+            expect(credentialsDefault.tvPassword).toBe("server-password");
+            expect(credentialsFalse.serverPassword).toBe("server-password");
+            expect(credentialsFalse.tvPassword).toBe("server-password");
+        });
+    });
 });

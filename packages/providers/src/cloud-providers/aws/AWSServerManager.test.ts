@@ -243,6 +243,41 @@ describe("AWSServerManager", () => {
             });
         });
 
+        it("should pass empty serverPassword and tvPassword when publicServer is true", async () => {
+            const publicMockVariantConfig = {
+                ...mockVariantConfig,
+                publicServer: true,
+            };
+            vi.mocked(mockConfigManager.getVariantConfig).mockReturnValue(publicMockVariantConfig);
+
+            const serverManager = new AWSServerManager(
+                mockTaskDefinitionService,
+                mockSecurityGroupService,
+                mockEC2InstanceService,
+                mockECSServiceManager,
+                mockNetworkService,
+                mockTF2ServerReadinessService,
+                mockEnvironmentBuilderService,
+                mockPasswordGeneratorService,
+                mockConfigManager
+            );
+
+            await serverManager.deployServer(deployArgs);
+
+            // Verify that credentials passed to environmentBuilder have empty server/tv passwords
+            expect(mockEnvironmentBuilderService.build).toHaveBeenCalledWith(
+                expect.objectContaining({ serverId: "test-server-123" }),
+                expect.objectContaining({
+                    serverPassword: "",
+                    tvPassword: "",
+                    rconPassword: "password123",
+                    logSecret: 12345
+                }),
+                expect.objectContaining({ publicServer: true }),
+                expect.anything()
+            );
+        });
+
         it("handles deployment errors correctly", async () => {
             const error = new Error("Security group creation failed");
             vi.mocked(mockSecurityGroupService.create).mockRejectedValue(error);

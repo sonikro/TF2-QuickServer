@@ -71,6 +71,7 @@
             "displayName": "PUBSTAR Casual",
             "hostname": "PUBSTAR @ TF2-QuickServer",
             "emptyMinutesTerminate": 60,
+            "publicServer": true,
             "map": "pl_badwater",
             "image": "sonikro/fat-tf2-casual-i386:latest",
             "defaultCfgs": {
@@ -88,6 +89,7 @@
             "displayName": "Frisbeeverse",
             "hostname": "Frisbeeverse @ TF2-QuickServer",
             "emptyMinutesTerminate": 60,
+            "publicServer": true,
             "map": "pl_badwater",
             "image": "sonikro/fat-tf2-casual-i386:latest",
             "defaultCfgs": {

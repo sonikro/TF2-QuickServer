@@ -113,12 +113,12 @@ export class AWSServerManager implements ServerManager {
                 attributes: { serverId: args.serverId, region: args.region, variant: args.variantName }
             });
 
-            // Generate server credentials
-            const credentials = ServerCredentials.generate(this.passwordGeneratorService);
-
             // Get configuration
             const variantConfig = this.configManager.getVariantConfig(args.variantName);
             const regionConfig = this.configManager.getRegionConfig(args.region);
+
+            // Generate server credentials
+            const credentials = ServerCredentials.generate(this.passwordGeneratorService, { publicServer: variantConfig.publicServer });
 
             // Build environment variables
             const environment = this.environmentBuilderService.build(context, credentials, variantConfig, regionConfig);
