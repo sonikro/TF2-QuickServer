@@ -44,6 +44,14 @@ export type VariantConfig = {
      * If not set, the default server connection message will be shown.
      */
     customCreationMessage?: string;
+
+    /**
+     * If true, the server is a public server that does not need sv_password or tv_password.
+     * Both will be set to empty strings, making the server publicly joinable without a password.
+     * Useful for casual/public variants where unrestricted access is desired.
+     * The rconPassword and logSecret are still generated for server management purposes.
+     */
+    publicServer?: boolean;
 }
 
 export function getVariantConfig(variant: Variant) {

@@ -662,6 +662,55 @@ describe("OCIServerManager", () => {
     });
   });
 
+  describe("publicServer variant", () => {
+    it("should set SERVER_PASSWORD and STV_PASSWORD to empty strings when publicServer is true", async () => {
+      const { sut, containerClient, variantConfig } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+      variantConfig.publicServer = true;
+
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "public-server-test",
+        statusUpdater,
+      });
+
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find(
+        (c: any) => c.displayName === "public-server-test"
+      );
+
+      expect(tf2Container?.environmentVariables?.SERVER_PASSWORD).toBe("");
+      expect(tf2Container?.environmentVariables?.STV_PASSWORD).toBe("");
+      // RCON password should still be generated
+      expect(tf2Container?.environmentVariables?.RCON_PASSWORD).toBe("test-password");
+    });
+
+    it("should generate passwords as normal when publicServer is false or unset", async () => {
+      const { sut, containerClient, variantConfig } = createTestEnvironment();
+      const statusUpdater = vi.fn();
+
+      // Default: publicServer is undefined
+      await sut.deployServer({
+        region: testRegion,
+        variantName: testVariant,
+        sourcemodAdminSteamId: "12345678901234567",
+        serverId: "public-server-false-test",
+        statusUpdater,
+      });
+
+      const containerInstanceRequest = containerClient.createContainerInstance.mock.calls[0][0];
+      const tf2Container = containerInstanceRequest.createContainerInstanceDetails.containers.find(
+        (c: any) => c.displayName === "public-server-false-test"
+      );
+
+      expect(tf2Container?.environmentVariables?.SERVER_PASSWORD).toBe("test-password");
+      expect(tf2Container?.environmentVariables?.STV_PASSWORD).toBe("test-password");
+      expect(tf2Container?.environmentVariables?.RCON_PASSWORD).toBe("test-password");
+    });
+  });
+
   describe("abort server deployment", () => {
     it("should throw an AbortError if the deployment is aborted", async () => {
       const { sut, serverAbortManager, statusUpdater } = createTestEnvironment();

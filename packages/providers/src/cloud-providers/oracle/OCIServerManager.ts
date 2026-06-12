@@ -120,9 +120,9 @@ export class OCIServerManager implements ServerManager {
                 }
 
                 const passwordSettings = { alpha: true, length: 10, numeric: true, symbols: false };
-                const serverPassword = passwordGeneratorService.generatePassword(passwordSettings);
+                const serverPassword = variantConfig.publicServer ? '' : passwordGeneratorService.generatePassword(passwordSettings);
                 const rconPassword = passwordGeneratorService.generatePassword(passwordSettings);
-                const tvPassword = passwordGeneratorService.generatePassword(passwordSettings);
+                const tvPassword = variantConfig.publicServer ? '' : passwordGeneratorService.generatePassword(passwordSettings);
 
                 const containerImage = variantConfig.image;
                 const startupMap = firstMap ?? variantConfig.map;
