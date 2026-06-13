@@ -148,3 +148,28 @@ services:
       - NET_ADMIN
     profiles:
       - server
+
+  datasette:
+    build:
+      context: ./datasette
+      dockerfile: Dockerfile
+    container_name: tf2-datasette
+    mem_limit: 128M
+    mem_reservation: 64M
+    cpus: 0.5
+    volumes:
+      - ./db:/db:ro
+    ports:
+      - "8001:8001"
+    environment:
+      - DATASETTE_PASSWORD=${DATASETTE_PASSWORD}
+    env_file:
+      - .env
+    command:
+      - -p
+      - "8001"
+      - -h
+      - "0.0.0.0"
+      - /db/database.sqlite3
+    profiles:
+      - analytics
