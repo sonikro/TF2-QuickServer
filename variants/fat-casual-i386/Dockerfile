@@ -53,6 +53,13 @@ RUN curl -L "${F2_SOURCEMOD_PLUGINS_URL}" -o "${F2_SOURCEMOD_PLUGINS_FILE_NAME}"
   && unzip -q -j "${F2_SOURCEMOD_PLUGINS_FILE_NAME}" ${F2_ENABLED_PLUGINS} \
   -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"
 
+# SOAP-TF2DM - DM mode plugin (for warmup)
+ARG SOAP_DM_FILE_NAME=soap.zip
+ARG SOAP_DM_VERSION=4.4.8
+ARG SOAP_DM_URL=https://github.com/sapphonie/SOAP-TF2DM/releases/download/v${SOAP_DM_VERSION}/${SOAP_DM_FILE_NAME}
+RUN curl -L "${SOAP_DM_URL}" -o "${SOAP_DM_FILE_NAME}" \
+  && unzip -q "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
+
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
 
