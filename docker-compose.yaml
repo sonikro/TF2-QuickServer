@@ -149,6 +149,36 @@ services:
     profiles:
       - server
 
+  fat-casual-server-i386:
+    build:
+      context: ./
+      dockerfile: ./variants/fat-casual-i386/Dockerfile
+    container_name: tf2-fat-casual-server-i386
+    ports:
+      - 27015:27015
+      - 27015:27015/udp
+      - 27020:27020
+      - 27020:27020/udp
+    env_file:
+      - .env
+    command:
+      - "-enablefakeip"
+      - "+sv_pure"
+      - "1"
+      - "+maxplayers"
+      - "24"
+      - "+map"
+      - "pl_badwater"
+      - +log
+      - on
+      - +logaddress_add
+      - "host.docker.internal:27101"
+    # NET_ADMIN capability required to set MTU inside the container for UDP fragmentation control
+    cap_add:
+      - NET_ADMIN
+    profiles:
+      - server
+
   datasette:
     build:
       context: ./datasette
