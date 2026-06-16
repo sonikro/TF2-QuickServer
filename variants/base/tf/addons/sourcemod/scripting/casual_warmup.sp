@@ -17,6 +17,7 @@ public Plugin myinfo =
 ConVar g_hThreshold;
 ConVar g_hDelay;
 ConVar g_hEnabled;
+ConVar g_hMatchMode;
 
 bool g_bMatchMode = false;
 int g_iGraceCount = 0;
@@ -35,6 +36,13 @@ public void OnPluginStart()
 	g_hEnabled = CreateConVar("sm_casual_warmup_enabled", "1",
 		"Enable/disable the casual warmup plugin.",
 		FCVAR_NONE, true, 0.0, true, 1.0);
+
+	// Persist match mode state across plugin reloads (plugin is in disabled/
+	// and gets re-loaded on map change — this ConVar survives that cycle)
+	g_hMatchMode = CreateConVar("sm_casual_warmup_matchmode", "0",
+		"Tracks whether match mode has been triggered. DO NOT EDIT MANUALLY.",
+		FCVAR_NONE, true, 0.0, true, 1.0);
+	g_bMatchMode = g_hMatchMode.BoolValue;
 
 	// Start the periodic player check timer
 	g_hTimer = CreateTimer(5.0, Timer_CheckPlayers, _, TIMER_REPEAT);
@@ -146,6 +154,7 @@ public Action Timer_CheckPlayers(Handle timer)
 void SwitchToMatchMode()
 {
 	g_bMatchMode = true;
+	g_hMatchMode.SetBool(true);
 	g_iGraceCount = 0;
 	ClearTimer(g_hTimer);
 
