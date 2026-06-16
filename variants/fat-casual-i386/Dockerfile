@@ -141,9 +141,9 @@ RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{nextmap,funcommands,funvotes
 ENV DEMOS_TF_APIKEY= \
   LOGS_TF_APIKEY= \
   ADMIN_LIST="" \
-  DEFAULT_5CP_CFG="" \
-  DEFAULT_KOTH_CFG="" \
-  DEFAULT_PL_CFG="" \
+  DEFAULT_5CP_CFG="casual_5cp.cfg" \
+  DEFAULT_KOTH_CFG="casual_koth.cfg" \
+  DEFAULT_PL_CFG="casual_stopwatch.cfg" \
   DEFAULT_ULTIDUO_CFG="" \
   DEFAULT_PASSTIME_CFG="pt_global_pug.cfg" \
   DEFAULT_TFDB_CFG="dodgeball.cfg" \

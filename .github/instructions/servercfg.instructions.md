@@ -6,17 +6,21 @@ applyTo: "variants/**/*"
 
 ## Overview
 
-This project manages Team Fortress 2 server configurations through Docker images with different variants and configurations. All server configuration is handled through files in the `variants` directory, and map availability is controlled by the `maps.json` file in the repository root.
+This project manages Team Fortress 2 server configurations through Docker images with different variants and configurations. All server configuration is handled through files in the `variants` directory, and map availability is controlled by two files in the repository root:
+- `maps.json` — competitive/custom maps (5CP, KOTH, Payload, Ultiduo, Passtime, MGE, Dodgeball, Arena)
+- `maps.casual.json` — casual/pub-style maps (Payload, Control Points, KOTH)
 
 ## Maps Management
 
-- The `maps.json` file in the repository root defines all maps that should be available on the server
-- Maps are downloaded via the `npm run download:maps` command, which reads `maps.json`
+- The `maps.json` file in the repository root defines all maps for competitive server variants (5CP, KOTH, Payload, Ultiduo, Passtime, MGE, Dodgeball, Arena, etc.)
+- The `maps.casual.json` file in the repository root defines maps for the casual server variant (standard Valve pub-style maps: Payload, Control Points, KOTH)
+- Maps are downloaded via the `npm run download:maps` command (reads `maps.json`) or `npm run download:maps:casual` (reads `maps.casual.json`)
+- The CI workflow (`build-variant.yaml`) automatically selects the correct maps file based on the variant name — if it contains "casual", it uses `maps.casual.json`, otherwise it uses `maps.json`
 - Maps can be specified in two formats:
   - Simple string format: Just the map name (e.g., `"cp_process_f12"`) will download from serveme.tf fastDL
   - Object format: With `name` and `url` properties to specify a custom download URL
 
-Example map entry in `maps.json`:
+Example map entry in `maps.json` (competitive):
 ```json
 [
     "cp_process_f12",
@@ -24,6 +28,16 @@ Example map entry in `maps.json`:
         "name": "koth_berry_b3a",
         "url": "https://tf2maps.net/downloads/borgville.19389/download"
     }
+]
+```
+
+Example map entry in `maps.casual.json` (casual):
+```json
+[
+    "pl_badwater",
+    "pl_upward",
+    "cp_badlands",
+    "koth_viaduct"
 ]
 ```
 
@@ -36,18 +50,33 @@ Example map entry in `maps.json`:
 
 ## Docker Images
 
-This repository generates three different Docker images:
+This repository generates six different Docker images:
 
-1. **sonikro/fat-tf2-standard-competitive:latest**
-   - Same as standard-competitive but includes all maps specified in `maps.json`
-   - This is the image deployed for the majority of servers
+1. **sonikro/fat-tf2-standard-competitive-i386:latest**
+   - Includes all maps specified in `maps.json`
+   - 32-bit image deployed for the majority of competitive servers
+   - Contains competitive plugins: SOAP-TF2DM, MGEMod, TF2 Comp Fixes, F2's SourceMod plugins, ETF2L configs, RGL configs, Ultitrio configs
 
 2. **sonikro/fat-tf2-standard-competitive-amd64:latest**
-   - 64bit variant of the fat-standard-competitive image
+   - 64-bit variant of the standard-competitive image
+   - Includes the same maps and plugins as the i386 version
 
-3. **sonikro/fat-tf2-pickup:latest**
+3. **sonikro/fat-tf2-casual-i386:latest**
+   - Uses `maps.casual.json` for a curated set of casual/pub-style maps (Payload, Control Points, KOTH)
+   - 32-bit image for casual gameplay servers
+   - Lighter plugin set compared to competitive (no SOAP-TF2DM, MGEMod, ETF2L/RGL configs)
+   - Includes TF2 Comp Fixes and F2's SourceMod plugins
+   - Default map: `pl_badwater` with 24 max players
+
+4. **sonikro/fat-tf2-pickup:latest**
    - Specialized image used only for pickup game variants
    - Contains additional plugins specific to pickup games
+
+5. **sonikro/fat-tf2center:latest**
+   - Image tailored for TF2Center (pickup/league platform) integration
+
+6. **sonikro/fat-mge-tf:latest**
+   - Specialized image for MGE (My Gaming Edge) training/duel servers
 
 ## Enforced CVars
 
