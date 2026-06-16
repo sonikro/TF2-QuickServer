@@ -19,7 +19,6 @@ ConVar g_hDelay;
 ConVar g_hEnabled;
 ConVar g_hMatchMode;
 
-bool g_bMatchMode = false;
 int g_iGraceCount = 0;
 Handle g_hTimer = null;
 
@@ -40,9 +39,16 @@ public void OnPluginStart()
 	// Persist match mode state across plugin reloads (plugin is in disabled/
 	// and gets re-loaded on map change — this ConVar survives that cycle)
 	g_hMatchMode = CreateConVar("sm_casual_warmup_matchmode", "0",
-		"Tracks whether match mode has been triggered. DO NOT EDIT MANUALLY.",
+		"Tracks whether match mode has been triggered. Set to 0 to reset. (internal use)",
 		FCVAR_NONE, true, 0.0, true, 1.0);
-	g_bMatchMode = g_hMatchMode.BoolValue;
+
+	// Log initial state for debugging
+	PrintToServer("[CasualWarmup] Plugin v%s loaded. MatchMode=%s Threshold=%d Delay=%d Enabled=%s",
+		PLUGIN_VERSION,
+		g_hMatchMode.BoolValue ? "ON" : "OFF",
+		g_hThreshold.IntValue,
+		g_hDelay.IntValue,
+		g_hEnabled.BoolValue ? "YES" : "NO");
 
 	// Start the periodic player check timer
 	g_hTimer = CreateTimer(5.0, Timer_CheckPlayers, _, TIMER_REPEAT);
@@ -55,39 +61,39 @@ public void OnPluginEnd()
 
 public void OnMapStart()
 {
-	if (!g_bMatchMode)
+	if (!g_hMatchMode.BoolValue)
 	{
+		PrintToServer("[CasualWarmup] Map changed, still in warmup mode.");
 		return;
 	}
 
-	// Safety net: if match mode was already triggered, ensure SOAP DM plugins
-	// stay unloaded across map changes (e.g. if SourceMod reloaded them somehow)
-	PrintToServer("[CasualWarmup] Match mode active. Ensuring SOAP DM plugins are unloaded.");
+	PrintToServer("[CasualWarmup] Map changed, match mode still active. Ensuring SOAP DM plugins are unloaded.");
 	ServerCommand("sm plugins unload soap_tf2dm");
 	ServerCommand("sm plugins unload soap_tournament");
 }
 
 public void OnClientPutInServer(int client)
 {
-	if (g_bMatchMode)
+	if (g_hMatchMode.BoolValue)
 	{
+		PrintToServer("[CasualWarmup] Player joined but match mode is active — no warmup message sent.");
 		return;
 	}
 
 	int iThreshold = g_hThreshold.IntValue;
+	PrintToServer("[CasualWarmup] Player %N joined — warmup active (%d/%d players needed).", client, GetRealPlayerCount(), iThreshold);
 	PrintToChat(client, " \x04[Warmup]\x01 This server is in \x04Warmup / DM mode\x01. A casual match will start once \x04%d\x01 players are connected!", iThreshold);
 }
 
 public void OnConfigsExecuted()
 {
-	if (g_bMatchMode)
+	if (g_hMatchMode.BoolValue)
 	{
+		PrintToServer("[CasualWarmup] OnConfigsExecuted — match mode ON, skipping SOAP plugin load.");
 		return;
 	}
 
-	// Explicitly load SOAP DM plugins for warmup mode
-	// This ensures DM is active regardless of image state or previous reloads
-	PrintToServer("[CasualWarmup] Warmup mode active. Loading SOAP DM plugins.");
+	PrintToServer("[CasualWarmup] OnConfigsExecuted — warmup mode, loading SOAP DM plugins.");
 	ServerCommand("sm plugins load soap_tf2dm");
 	ServerCommand("sm plugins load soap_tournament");
 }
@@ -99,28 +105,22 @@ public Action Timer_CheckPlayers(Handle timer)
 		return Plugin_Continue;
 	}
 
-	if (g_bMatchMode)
+	if (g_hMatchMode.BoolValue)
 	{
-		// Already switched — no more checks needed
 		return Plugin_Continue;
 	}
 
-	// Count real human players (exclude bots, SourceTV, and unauthenticated clients)
-	int iPlayerCount = 0;
-	for (int i = 1; i <= MaxClients; i++)
-	{
-		if (IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i))
-		{
-			iPlayerCount++;
-		}
-	}
-
+	int iPlayerCount = GetRealPlayerCount();
 	int iThreshold = g_hThreshold.IntValue;
 	int iDelay = g_hDelay.IntValue;
+
+	PrintToServer("[CasualWarmup] Timer check: players=%d threshold=%d grace=%d/%d",
+		iPlayerCount, iThreshold, g_iGraceCount, iDelay);
 
 	if (iPlayerCount >= iThreshold)
 	{
 		g_iGraceCount += 5;
+		PrintToServer("[CasualWarmup] Grace count increased to %d (need %d).", g_iGraceCount, iDelay);
 
 		if (g_iGraceCount >= iDelay)
 		{
@@ -130,7 +130,6 @@ public Action Timer_CheckPlayers(Handle timer)
 		{
 			int iRemaining = iDelay - g_iGraceCount;
 
-			// Announce at 15s remaining, then every 10s
 			if (iRemaining <= 5 || iRemaining == 10 || iRemaining == 15)
 			{
 				PrintToChatAll(" \x04[Warmup]\x01 Match mode starting in \x04%ds\x01 (%d/%d players)...",
@@ -142,6 +141,7 @@ public Action Timer_CheckPlayers(Handle timer)
 	{
 		if (g_iGraceCount > 0)
 		{
+			PrintToServer("[CasualWarmup] Player count dropped below threshold. Resetting grace counter.");
 			g_iGraceCount = 0;
 			PrintToChatAll(" \x04[Warmup]\x01 Player count dropped below threshold (%d/%d). Resuming warmup.",
 				iPlayerCount, iThreshold);
@@ -153,13 +153,13 @@ public Action Timer_CheckPlayers(Handle timer)
 
 void SwitchToMatchMode()
 {
-	g_bMatchMode = true;
 	g_hMatchMode.SetBool(true);
 	g_iGraceCount = 0;
 	ClearTimer(g_hTimer);
 
 	PrintToChatAll(" \x04[Warmup]\x01 Enough players connected! Switching to match mode...");
-	PrintToServer("[CasualWarmup] Switching to match mode. Disabling SOAP DM plugins.");
+	PrintToServer("[CasualWarmup] === SWITCHING TO MATCH MODE ===");
+	PrintToServer("[CasualWarmup] Disabling SOAP DM plugins.");
 
 	// Unload SOAP DM plugins — these were active during warmup
 	ServerCommand("sm plugins unload soap_tf2dm");
@@ -169,10 +169,25 @@ void SwitchToMatchMode()
 	// We use servercfgfile which is set per-map (e.g. casual_5cp.cfg, casual_koth.cfg)
 	char sCfgFile[128];
 	FindConVar("servercfgfile").GetString(sCfgFile, sizeof(sCfgFile));
+	PrintToServer("[CasualWarmup] Executing map config: %s", sCfgFile);
 	ServerCommand("exec %s", sCfgFile);
 
 	// Force a round restart so match settings take effect immediately
+	PrintToServer("[CasualWarmup] Restarting round.");
 	ServerCommand("mp_restartgame 1");
+}
+
+int GetRealPlayerCount()
+{
+	int count = 0;
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientConnected(i) && IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i))
+		{
+			count++;
+		}
+	}
+	return count;
 }
 
 void ClearTimer(Handle &timer)
