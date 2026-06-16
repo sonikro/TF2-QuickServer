@@ -68,8 +68,8 @@ public void OnMapStart()
 	}
 
 	PrintToServer("[CasualWarmup] Map changed, match mode still active. Ensuring SOAP DM plugins are unloaded.");
-	ServerCommand("sm plugins unload soap_tf2dm");
-	ServerCommand("sm plugins unload soap_tournament");
+	ServerCommand("sm plugins unload disabled/soap_tf2dm");
+	ServerCommand("sm plugins unload disabled/soap_tournament");
 }
 
 public void OnClientPutInServer(int client)
@@ -162,8 +162,8 @@ void SwitchToMatchMode()
 	PrintToServer("[CasualWarmup] Disabling SOAP DM plugins.");
 
 	// Unload SOAP DM plugins — these were active during warmup
-	ServerCommand("sm plugins unload soap_tf2dm");
-	ServerCommand("sm plugins unload soap_tournament");
+	ServerCommand("sm plugins unload disabled/soap_tf2dm");
+	ServerCommand("sm plugins unload disabled/soap_tournament");
 
 	// Re-run the map's server config to apply match settings
 	// We use servercfgfile which is set per-map (e.g. casual_5cp.cfg, casual_koth.cfg)
