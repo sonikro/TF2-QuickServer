@@ -144,6 +144,10 @@ COPY --from=plugins --chown=tf2 /server/tf/ "${SERVER_DIR}/tf/"
 # Disable useless (and potentially harmful) plugins
 RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{nextmap,funcommands,funvotes}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
 
+# Move SOAP DM plugins to disabled/ so they only load via casual_warmup plugin
+RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tf2dm.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
+RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tournament.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
+
 # Environment variables
 ENV DEMOS_TF_APIKEY= \
   LOGS_TF_APIKEY= \

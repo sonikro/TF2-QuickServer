@@ -93,9 +93,9 @@ public void OnConfigsExecuted()
 		return;
 	}
 
-	PrintToServer("[CasualWarmup] OnConfigsExecuted — warmup mode, loading SOAP DM plugins.");
-	ServerCommand("sm plugins load soap_tf2dm");
-	ServerCommand("sm plugins load soap_tournament");
+	PrintToServer("[CasualWarmup] OnConfigsExecuted — warmup mode, loading SOAP DM plugins from disabled/.");
+	ServerCommand("sm plugins load disabled/soap_tf2dm");
+	ServerCommand("sm plugins load disabled/soap_tournament");
 }
 
 public Action Timer_CheckPlayers(Handle timer)
