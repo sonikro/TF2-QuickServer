@@ -45,6 +45,20 @@ public void OnPluginEnd()
 	ClearTimer(g_hTimer);
 }
 
+public void OnMapStart()
+{
+	if (!g_bMatchMode)
+	{
+		return;
+	}
+
+	// Safety net: if match mode was already triggered, ensure SOAP DM plugins
+	// stay unloaded across map changes (e.g. if SourceMod reloaded them somehow)
+	PrintToServer("[CasualWarmup] Match mode active. Ensuring SOAP DM plugins are unloaded.");
+	ServerCommand("sm plugins unload soap_tf2dm");
+	ServerCommand("sm plugins unload soap_tournament");
+}
+
 public void OnClientPutInServer(int client)
 {
 	if (g_bMatchMode)
