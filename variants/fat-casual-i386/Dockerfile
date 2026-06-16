@@ -58,7 +58,7 @@ ARG SOAP_DM_FILE_NAME=soap.zip
 ARG SOAP_DM_VERSION=4.4.8
 ARG SOAP_DM_URL=https://github.com/sapphonie/SOAP-TF2DM/releases/download/v${SOAP_DM_VERSION}/${SOAP_DM_FILE_NAME}
 RUN curl -L "${SOAP_DM_URL}" -o "${SOAP_DM_FILE_NAME}" \
-  && unzip -q "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
+  && unzip -q -o "${SOAP_DM_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
