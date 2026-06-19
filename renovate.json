@@ -1,0 +1,72 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Renovate Dependency Dashboard",
+  "labels": ["dependencies"],
+  "schedule": ["before 9am on Monday"],
+  "timezone": "America/Chicago",
+  "rebaseWhen": "conflicted",
+  "separateMajorMinor": true,
+  "separateMinorPatch": false,
+  "packageRules": [
+    {
+      "description": "Pin ubuntu:22.04 in variant Dockerfiles — do not update",
+      "matchManagers": ["dockerfile"],
+      "matchPackageNames": ["ubuntu"],
+      "enabled": false
+    },
+    {
+      "description": "Group all npm production dependencies in a single PR",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["dependencies"],
+      "groupName": "npm production dependencies",
+      "groupSlug": "npm-prod",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "Group all npm devDependencies in a single PR and auto-merge",
+      "matchManagers": ["npm"],
+      "matchDepTypes": ["devDependencies"],
+      "groupName": "npm dev dependencies",
+      "groupSlug": "npm-dev",
+      "automerge": true,
+      "automergeStrategy": "squash",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "Group all Docker image updates into a single PR",
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "groupName": "Docker dependencies",
+      "groupSlug": "docker",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "Group all GitHub Actions updates into a single PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions dependencies",
+      "groupSlug": "github-actions",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "Group all Go module updates into a single PR",
+      "matchManagers": ["gomod"],
+      "groupName": "Go dependencies",
+      "groupSlug": "go",
+      "schedule": ["before 9am on Monday"]
+    },
+    {
+      "description": "Keep major updates separate (they may need more attention)",
+      "matchUpdateTypes": ["major"],
+      "groupName": null,
+      "groupSlug": null,
+      "labels": ["dependencies", "major-update"]
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["dependencies", "security"],
+    "schedule": ["at any time"]
+  }
+}
