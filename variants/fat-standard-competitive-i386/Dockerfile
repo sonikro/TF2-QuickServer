@@ -150,6 +150,14 @@ RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
   && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
   && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
 
+# SteamPawn - NativePawn compiler for Pawn scripting
+ARG STEAMPAWN_FILE_NAME=package.zip
+ARG STEAMPAWN_VERSION=1.2.0.2
+ARG STEAMPAWN_URL=https://github.com/nosoop/SM-SteamPawn/releases/download/${STEAMPAWN_VERSION}/${STEAMPAWN_FILE_NAME}
+RUN curl -L "${STEAMPAWN_URL}" -o "${STEAMPAWN_FILE_NAME}" \
+  && unzip -q "${STEAMPAWN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/" \
+  && rm "${STEAMPAWN_FILE_NAME}"
+
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
 
