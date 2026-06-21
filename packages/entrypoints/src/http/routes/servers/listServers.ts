@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { GetUserServers } from '@tf2qs/core';
+import { logger } from '@tf2qs/telemetry';
 
 export function createListServersHandler(getUserServers: GetUserServers) {
     /**
@@ -27,11 +28,29 @@ export function createListServersHandler(getUserServers: GetUserServers) {
     return async (req: Request, res: Response): Promise<void> => {
         const clientId = req.auth?.payload.azp || req.auth?.payload.sub;
         if (!clientId) {
+            logger.emit({
+                severityText: 'WARN',
+                body: 'List servers request with no client ID in token',
+                attributes: { path: req.path, method: req.method },
+            });
             res.status(401).json({ error: 'Unauthorized', message: 'No client ID found in token' });
             return;
         }
 
+        logger.emit({
+            severityText: 'INFO',
+            body: 'List servers request received',
+            attributes: { clientId: clientId as string },
+        });
+
         const servers = await getUserServers.execute({ userId: clientId as string });
+
+        logger.emit({
+            severityText: 'INFO',
+            body: 'List servers response',
+            attributes: { clientId: clientId as string, serverCount: servers.length },
+        });
+
         res.json(servers);
     };
 }
