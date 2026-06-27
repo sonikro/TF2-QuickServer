@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { BackgroundTaskQueue, ServerRepository } from '@tf2qs/core';
+import { logger } from '@tf2qs/telemetry';
 
 export function createDeleteServerHandler(backgroundTaskQueue: BackgroundTaskQueue, serverRepository: ServerRepository) {
     /**
@@ -39,24 +40,51 @@ export function createDeleteServerHandler(backgroundTaskQueue: BackgroundTaskQue
     return async (req: Request, res: Response): Promise<void> => {
         const clientId = req.auth?.payload.azp || req.auth?.payload.sub;
         if (!clientId) {
+            logger.emit({
+                severityText: 'WARN',
+                body: 'Delete server request with no client ID in token',
+                attributes: { path: req.path, method: req.method },
+            });
             res.status(401).json({ error: 'Unauthorized', message: 'No client ID found in token' });
             return;
         }
 
         const { serverId } = req.params;
 
+        logger.emit({
+            severityText: 'INFO',
+            body: 'Delete server request received',
+            attributes: { clientId: clientId as string, serverId },
+        });
+
         const server = await serverRepository.findById(serverId);
         if (!server) {
+            logger.emit({
+                severityText: 'WARN',
+                body: 'Delete server failed: server not found',
+                attributes: { clientId: clientId as string, serverId },
+            });
             res.status(404).json({ error: 'Not Found', message: `Server ${serverId} not found` });
             return;
         }
 
         if (server.createdBy !== clientId) {
+            logger.emit({
+                severityText: 'WARN',
+                body: 'Delete server forbidden: client does not own server',
+                attributes: { clientId: clientId as string, serverId, serverOwner: server.createdBy },
+            });
             res.status(403).json({ error: 'Forbidden', message: 'You do not have permission to delete this server' });
             return;
         }
 
         const taskId = await backgroundTaskQueue.enqueue('delete-server', { serverId }, undefined, undefined, { ownerId: clientId as string });
+
+        logger.emit({
+            severityText: 'INFO',
+            body: 'Delete server task enqueued',
+            attributes: { clientId: clientId as string, serverId, taskId, region: server.region },
+        });
 
         res.status(202).json({ taskId });
     };
