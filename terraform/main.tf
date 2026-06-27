@@ -272,3 +272,17 @@ module "aws-backup-us-east-1" {
     aws = aws.us-east-1
   }
 }
+
+# Create Landing Page S3 bucket + CloudFront + Route53 for app.quickserver.sonikro.com
+module "aws-landing-page-us-east-1" {
+  source = "./modules/aws/landing-page"
+
+  bucket_name         = var.landing_page_bucket_name
+  domain_name         = var.landing_page_domain_name
+  hosted_zone_id      = var.route53_hosted_zone_id
+  acm_certificate_arn = var.landing_page_acm_certificate_arn
+
+  providers = {
+    aws = aws.us-east-1
+  }
+}

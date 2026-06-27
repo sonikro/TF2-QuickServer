@@ -79,3 +79,23 @@ variable "api_gateway_acm_certificate_arn" {
   description = "ARN of the ACM certificate for API Gateway HTTPS (must be in us-east-1)"
   type        = string
 }
+
+# ===========================================
+# LANDING PAGE VARIABLES
+# ===========================================
+
+variable "landing_page_bucket_name" {
+  description = "Name of the S3 bucket for the landing page assets"
+  type        = string
+}
+
+variable "landing_page_domain_name" {
+  description = "Custom domain name for the landing page (e.g., app.quickserver.sonikro.com)"
+  type        = string
+}
+
+variable "landing_page_acm_certificate_arn" {
+  description = "ARN of the ACM certificate for landing page HTTPS (must be in us-east-1)"
+  type        = string
+  sensitive   = true
+}

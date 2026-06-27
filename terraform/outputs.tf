@@ -305,3 +305,27 @@ output "api_gateway_id" {
   description = "API Gateway ID"
   value       = aws_apigatewayv2_api.quickserver_api.id
 }
+
+# ===========================================
+# LANDING PAGE OUTPUTS
+# ===========================================
+
+output "landing_page_bucket_name" {
+  description = "Name of the S3 bucket for the landing page"
+  value       = module.aws-landing-page-us-east-1.bucket_name
+}
+
+output "landing_page_bucket_arn" {
+  description = "ARN of the S3 bucket for the landing page"
+  value       = module.aws-landing-page-us-east-1.bucket_arn
+}
+
+output "landing_page_cloudfront_domain" {
+  description = "CloudFront distribution domain name for the landing page"
+  value       = module.aws-landing-page-us-east-1.cloudfront_domain_name
+}
+
+output "landing_page_url" {
+  description = "Full landing page URL"
+  value       = module.aws-landing-page-us-east-1.landing_page_url
+}
