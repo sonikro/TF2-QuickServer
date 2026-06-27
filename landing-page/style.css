@@ -109,6 +109,18 @@ body {
   color: #fff;
 }
 
+.btn-install {
+  background: #2ea043;
+  border-color: #2ea043;
+  color: #fff;
+}
+
+.btn-install:hover {
+  background: #238636;
+  border-color: #238636;
+  color: #fff;
+}
+
 /* Sections */
 .section {
   padding: 96px 0;
@@ -187,7 +199,7 @@ body {
   left: -2px;
   width: 2px;
   height: 40px;
-  background: linear-gradient(to bottom, transparent, var(--dark-bg));
+  background: linear-gradient(to bottom, transparent, var(--section-bg));
   pointer-events: none;
 }
 
@@ -229,12 +241,17 @@ body {
 .region-list li {
   padding: 8px 0;
   font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.flag-em {
-  display: inline-block;
-  width: 28px;
-  font-size: 1.2rem;
+.region-flag {
+  width: 28px !important;
+  height: 20px !important;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  flex-shrink: 0;
 }
 
 /* Commands */
@@ -259,18 +276,24 @@ body {
   white-space: nowrap;
 }
 
-/* Self-Hosting */
-pre {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 10px;
-  padding: 16px;
-  font-size: 0.8rem;
-  overflow-x: auto;
+/* Install */
+.install-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(46, 160, 67, 0.2);
+  border-radius: 16px;
 }
 
-pre code {
-  color: #c9d1d9;
+.install-icon {
+  font-size: 3rem;
+  color: #2ea043;
+}
+
+.install-description {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.7;
 }
 
 /* Footer */
