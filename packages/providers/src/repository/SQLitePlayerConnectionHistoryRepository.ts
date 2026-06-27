@@ -1,12 +1,12 @@
 import { Knex } from "knex";
 import { PlayerConnectionHistory, PlayerConnectionHistoryRepository } from "@tf2qs/core";
 
-type SQlitePlayerConnectionHistoryRepositoryDependencies = {
+type SQLitePlayerConnectionHistoryRepositoryDependencies = {
     knex: Knex;
 };
 
-export class SQlitePlayerConnectionHistoryRepository implements PlayerConnectionHistoryRepository {
-    constructor(private readonly dependencies: SQlitePlayerConnectionHistoryRepositoryDependencies) {}
+export class SQLitePlayerConnectionHistoryRepository implements PlayerConnectionHistoryRepository {
+    constructor(private readonly dependencies: SQLitePlayerConnectionHistoryRepositoryDependencies) {}
 
     async save(params: { connectionHistory: Omit<PlayerConnectionHistory, "id"> }): Promise<PlayerConnectionHistory> {
         const { connectionHistory } = params;

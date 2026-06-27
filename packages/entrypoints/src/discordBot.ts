@@ -19,13 +19,13 @@ import { createDeleteServerTaskProcessor } from "@tf2qs/providers";
 import { InMemoryBackgroundTaskQueue } from "@tf2qs/providers";
 import { CsvUserBanRepository } from "@tf2qs/providers";
 import { KnexConnectionManager } from "@tf2qs/providers";
-import { SQliteGuildParametersRepository } from "@tf2qs/providers";
+import { SQLiteGuildParametersRepository } from "@tf2qs/providers";
 import { SQLiteReportRepository } from "@tf2qs/providers";
-import { SQliteServerActivityRepository } from "@tf2qs/providers";
+import { SQLiteServerActivityRepository } from "@tf2qs/providers";
 import { SQLiteServerRepository } from "@tf2qs/providers";
-import { SQliteUserRepository } from "@tf2qs/providers";
-import { SQliteServerStatusMetricsRepository } from "@tf2qs/providers";
-import { SQlitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
+import { SQLiteUserRepository } from "@tf2qs/providers";
+import { SQLiteServerStatusMetricsRepository } from "@tf2qs/providers";
+import { SQLitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "@tf2qs/providers";
@@ -92,24 +92,24 @@ export async function startDiscordBot() {
     const serverRepository = new SQLiteServerRepository({
         knex: KnexConnectionManager.client,
     })
-    const serverActivityRepository = new SQliteServerActivityRepository({
+    const serverActivityRepository = new SQLiteServerActivityRepository({
         knex: KnexConnectionManager.client,
     })
-    const userRepository = new SQliteUserRepository({
+    const userRepository = new SQLiteUserRepository({
         knex: KnexConnectionManager.client
     })
 
-    const guildParametersRepository = new SQliteGuildParametersRepository({
+    const guildParametersRepository = new SQLiteGuildParametersRepository({
         knex: KnexConnectionManager.client
     })
 
     const userBanRepository = new CsvUserBanRepository()
 
-    const serverStatusMetricsRepository = new SQliteServerStatusMetricsRepository({
+    const serverStatusMetricsRepository = new SQLiteServerStatusMetricsRepository({
         knex: KnexConnectionManager.client
     })
 
-    const playerConnectionHistoryRepository = new SQlitePlayerConnectionHistoryRepository({
+    const playerConnectionHistoryRepository = new SQLitePlayerConnectionHistoryRepository({
         knex: KnexConnectionManager.client
     })
 
