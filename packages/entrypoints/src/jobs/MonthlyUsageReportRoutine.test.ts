@@ -62,6 +62,7 @@ describe("MonthlyUsageReportRoutine", () => {
             reportDiscordChannelId: reportChannelId,
             logChannelId: "log-channel-id",
             streamerChannelId: "streamer-channel-id",
+            supportChannelId: "1365408843676520508",
         });
 
         const sendFn = vi.fn();
