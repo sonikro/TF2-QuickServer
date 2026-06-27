@@ -2,7 +2,7 @@ import { Knex } from "knex";
 import { UserRepository } from "@tf2qs/core";
 import { User } from "@tf2qs/core";
 
-export class SQliteUserRepository implements UserRepository {
+export class SQLiteUserRepository implements UserRepository {
 
     constructor(private readonly dependencies: {
         knex: Knex

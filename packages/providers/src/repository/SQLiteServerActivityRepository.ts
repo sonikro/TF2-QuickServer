@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 
-export class SQliteServerActivityRepository {
+export class SQLiteServerActivityRepository {
     constructor(private readonly dependencies: { knex: Knex }) {}
 
     async upsert(serverActivity: { serverId: string; emptySince: Date | null; lastCheckedAt: Date | null }, trx?: Knex.Transaction): Promise<void> {

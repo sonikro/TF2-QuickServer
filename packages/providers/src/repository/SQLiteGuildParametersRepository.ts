@@ -2,7 +2,7 @@ import { Knex } from "knex";
 import { GuildParameters } from "@tf2qs/core";
 import { GuildParametersRepository } from "@tf2qs/core";
 
-export class SQliteGuildParametersRepository implements GuildParametersRepository {
+export class SQLiteGuildParametersRepository implements GuildParametersRepository {
     constructor(private readonly dependencies: { knex: Knex }) {}
 
     async findById(guildId: string): Promise<GuildParameters | null> {

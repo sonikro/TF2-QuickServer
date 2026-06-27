@@ -1,12 +1,12 @@
 import { Knex } from "knex";
 import { ServerStatusMetric, ServerStatusMetricsRepository } from "@tf2qs/core";
 
-type SQliteServerStatusMetricsRepositoryDependencies = {
+type SQLiteServerStatusMetricsRepositoryDependencies = {
     knex: Knex;
 };
 
-export class SQliteServerStatusMetricsRepository implements ServerStatusMetricsRepository {
-    constructor(private readonly dependencies: SQliteServerStatusMetricsRepositoryDependencies) {}
+export class SQLiteServerStatusMetricsRepository implements ServerStatusMetricsRepository {
+    constructor(private readonly dependencies: SQLiteServerStatusMetricsRepositoryDependencies) {}
 
     async save(params: { metric: Omit<ServerStatusMetric, "id"> }): Promise<ServerStatusMetric> {
         const { metric } = params;
