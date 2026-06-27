@@ -4,6 +4,7 @@ export type DiscordConfig = {
     logChannelId: string;
     reportDiscordChannelId: string;
     streamerChannelId: string;
+    supportChannelId: string;
 }
 
 export const getDiscordConfig = () => {

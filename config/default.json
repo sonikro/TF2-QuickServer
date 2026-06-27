@@ -420,6 +420,7 @@
     "discord": {
         "logChannelId": "1360789887208394851",
         "reportDiscordChannelId": "1378761634889076926",
-        "streamerChannelId": "1467687214350733457"
+        "streamerChannelId": "1467687214350733457",
+        "supportChannelId": "1365408843676520508"
     }
 }

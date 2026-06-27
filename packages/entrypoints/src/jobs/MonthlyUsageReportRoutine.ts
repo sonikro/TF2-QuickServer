@@ -64,7 +64,7 @@ export const scheduleMonthlyUsageReportRoutine = (
       }
 
       const formatter = new MonthlyReportFormatter();
-      const message = formatter.format(report);
+      const message = formatter.format(report, { supportChannelId: discordConfig.supportChannelId });
 
       await channel.send(message);
 

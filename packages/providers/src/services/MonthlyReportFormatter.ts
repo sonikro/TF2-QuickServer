@@ -2,13 +2,17 @@ import { MonthlyUsageReport } from "@tf2qs/core";
 import { getRegionConfig, Region } from "@tf2qs/core";
 
 export class MonthlyReportFormatter {
-  format(report: MonthlyUsageReport): string {
+  format(report: MonthlyUsageReport, options?: { supportChannelId?: string }): string {
     const monthName = this.getMonthName(report.month);
 
     const topUsersSection = this.formatTopUsers(report.topUsers);
     const regionMetricsSection = this.formatRegionMetrics(report.regionMetrics);
     const generalStatsSection = this.formatGeneralStats(report);
     const costsSection = this.formatCostsSection(report.regionCosts);
+
+    const supportLine = options?.supportChannelId
+      ? `\nSee <#${options.supportChannelId}> to help!`
+      : '';
 
     return `@everyone
 📊 **TF2-QuickServer | ${monthName} ${report.year} Metrics & Costs**
@@ -23,8 +27,7 @@ ${topUsersSection}
 ${regionMetricsSection}
 ---
 📈 **General Stats**
-${generalStatsSection}
-See <#1365408843676520508> to help!`;
+${generalStatsSection}${supportLine}`;
   }
 
   private formatCostsSection(regionCosts: Array<{ region: string; cost: number; currency: string }>): string {
