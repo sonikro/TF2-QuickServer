@@ -54,7 +54,7 @@
       <h1 class="hero-title">TF2-QuickServer</h1>
       <p class="hero-subtitle">Deploy Team Fortress 2 servers directly from Discord.<br />Powered by Docker &mdash; multi-cloud, global, and ready in minutes.</p>
       <div class="hero-cta mt-4">
-        <a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243" class="btn btn-install btn-lg me-3 mb-2" target="_blank" rel="noopener">
+        <a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243&scope=bot%20applications.commands&permissions=0" class="btn btn-install btn-lg me-3 mb-2" target="_blank" rel="noopener">
           <i class="fab fa-discord me-2"></i>Install the Bot
         </a>
         <a href="https://discord.gg/HfDgMj73cW" class="btn btn-discord btn-lg me-3 mb-2" target="_blank" rel="noopener">
@@ -195,9 +195,14 @@
                 <strong>Manage Server</strong> permission, or install it for your own user account
                 to use across all your servers.
               </p>
-              <a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243" class="btn btn-install btn-lg mt-3" target="_blank" rel="noopener">
-                <i class="fab fa-discord me-2"></i>Install on Discord
-              </a>
+              <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                <a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243&scope=bot%20applications.commands&permissions=0&integration_type=0" class="btn btn-install btn-lg" target="_blank" rel="noopener">
+                  <i class="fab fa-discord me-2"></i>Add to Server
+                </a>
+                <a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243&scope=applications.commands&integration_type=1" class="btn btn-outline-light btn-lg" target="_blank" rel="noopener">
+                  <i class="fas fa-user me-2"></i>Install for Me
+                </a>
+              </div>
               <p class="text-muted small mt-3 mb-0">
                 No credit card required. No setup needed. Works immediately after install.
               </p>
@@ -237,7 +242,6 @@
                 <li><span class="fi fi-ar region-flag" title="Argentina"></span> Buenos Aires</li>
                 <li><span class="fi fi-pe region-flag" title="Peru"></span> Lima</li>
               </ul>
-              <p class="text-muted small mt-3 mb-0">The official bot supports these regions. Self-hosted instances can use any OCI or AWS region.</p>
             </div>
           </div>
         </div>
@@ -300,7 +304,7 @@
         <div class="col-md-4">
           <h5>Get Started</h5>
           <ul class="list-unstyled footer-links">
-            <li><a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243" target="_blank" rel="noopener"><i class="fab fa-discord me-2"></i>Install Bot</a></li>
+            <li><a href="https://discord.com/oauth2/authorize?client_id=1355639481020977243&scope=bot%20applications.commands&permissions=0" target="_blank" rel="noopener"><i class="fab fa-discord me-2"></i>Install Bot</a></li>
             <li><a href="https://discord.gg/HfDgMj73cW" target="_blank" rel="noopener"><i class="fab fa-discord me-2"></i>Join Discord</a></li>
             <li><a href="https://github.com/sonikro/TF2-QuickServer/wiki" target="_blank" rel="noopener"><i class="fas fa-book me-2"></i>Wiki</a></li>
             <li><a href="https://status.sonikro.com/" target="_blank" rel="noopener"><i class="fas fa-heart-pulse me-2"></i>Status</a></li>
