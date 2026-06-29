@@ -37,7 +37,7 @@ jobs:
 
       - name: Cache maps directory
         id: cache-maps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: maps/
           key: maps-${{ contains(inputs.variant-name, 'casual') && 'casual' || 'competitive' }}-${{ contains(inputs.variant-name, 'casual') && hashFiles('maps.casual.json') || hashFiles('maps.json') }}

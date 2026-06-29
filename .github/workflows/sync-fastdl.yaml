@@ -29,7 +29,7 @@ jobs:
 
       - name: Cache maps directory
         id: cache-maps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: maps/
           key: maps-${{ hashFiles('maps.json') }}
@@ -38,7 +38,7 @@ jobs:
 
       - name: Cache fastdl directory
         id: cache-fastdl
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: fastdl/
           key: fastdl-${{ hashFiles('maps.json') }}
