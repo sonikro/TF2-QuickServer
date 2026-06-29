@@ -91,13 +91,13 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - name: Download config/default.json artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: config-file
           path: config
       
       - name: Download Ban List artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: ban-list
           path: db
