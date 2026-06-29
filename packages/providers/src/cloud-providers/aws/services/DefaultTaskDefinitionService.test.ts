@@ -39,6 +39,7 @@ describe("DefaultTaskDefinitionService", () => {
         
         // Clear any existing environment variables
         delete process.env.NEW_RELIC_LICENSE_KEY;
+        delete process.env.SRCDS_LOG_ADDRESSES;
         
         // Setup default mocks
         vi.mocked(mockAWSConfigService.getClients).mockReturnValue({
@@ -71,6 +72,7 @@ describe("DefaultTaskDefinitionService", () => {
     afterEach(() => {
         // Clean up environment variables after each test
         delete process.env.NEW_RELIC_LICENSE_KEY;
+        delete process.env.SRCDS_LOG_ADDRESSES;
     });
 
     describe("create", () => {
@@ -175,6 +177,39 @@ describe("DefaultTaskDefinitionService", () => {
                 "koth_product_final",
                 "+log",
                 "on"
+            ]);
+        });
+
+        it("includes logaddress_add entries when SRCDS_LOG_ADDRESSES is set", async () => {
+            process.env.SRCDS_LOG_ADDRESSES = "log1.example.com:27101,log2.example.com:27102";
+
+            const taskDefinitionArn = "arn:aws:ecs:us-east-1:123456789012:task-definition/test-server-123:1";
+
+            ecsClientMock.on(RegisterTaskDefinitionCommand).resolves({
+                taskDefinition: { taskDefinitionArn }
+            });
+
+            const service = new DefaultTaskDefinitionService(mockConfigManager, mockAWSConfigService, mockTracingService);
+
+            await service.create(context, credentials, environment);
+
+            const registerCall = ecsClientMock.commandCalls(RegisterTaskDefinitionCommand)[0];
+            const command = registerCall.args[0].input.containerDefinitions?.[0].command;
+
+            expect(command).toEqual([
+                "-enablefakeip",
+                "+sv_pure",
+                "2",
+                "+maxplayers",
+                "12",
+                "+map",
+                "cp_process_final",
+                "+log",
+                "on",
+                "+logaddress_add",
+                "log1.example.com:27101",
+                "+logaddress_add",
+                "log2.example.com:27102"
             ]);
         });
 

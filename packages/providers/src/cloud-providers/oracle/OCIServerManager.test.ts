@@ -1,5 +1,5 @@
 import { containerinstances, core } from "oci-sdk";
-import { beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { CloudProvider, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
@@ -245,6 +245,12 @@ edicts  : 426 used of 2048 max
 }
 
 describe("OCIServerManager", () => {
+
+  afterAll(() => {
+    delete process.env.SRCDS_LOG_ADDRESSES;
+    delete process.env.DEMOS_TF_APIKEY;
+    delete process.env.LOGS_TF_APIKEY;
+  });
 
   describe("deployServer", () => {
 
