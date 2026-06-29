@@ -82,7 +82,7 @@ function createTestEnvironment() {
 
   process.env.DEMOS_TF_APIKEY = "test-demo-tf-api-key";
   process.env.LOGS_TF_APIKEY = "test-logs-tf-api-key";
-  process.env.SRCDS_LOG_ADDRESS = "logaddress:port"
+  process.env.SRCDS_LOG_ADDRESSES = "logaddress:port"
   when(containerClient.createContainerInstance)
     .calledWith(expect.anything())
     .thenResolve(mock({

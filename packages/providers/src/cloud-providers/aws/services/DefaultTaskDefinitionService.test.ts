@@ -130,7 +130,9 @@ describe("DefaultTaskDefinitionService", () => {
                         "+maxplayers",
                         "12",
                         "+map",
-                        "cp_process_final"
+                        "cp_process_final",
+                        "+log",
+                        "on"
                     ],
                     portMappings: [
                         { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.TCP },
@@ -170,7 +172,9 @@ describe("DefaultTaskDefinitionService", () => {
                 "+maxplayers",
                 "12",
                 "+map",
-                "koth_product_final"
+                "koth_product_final",
+                "+log",
+                "on"
             ]);
         });
 
@@ -216,7 +220,9 @@ describe("DefaultTaskDefinitionService", () => {
                             "+maxplayers",
                             "12",
                             "+map",
-                            "cp_process_final"
+                            "cp_process_final",
+                            "+log",
+                            "on"
                         ],
                         portMappings: [
                             { containerPort: 27015, hostPort: 27015, protocol: TransportProtocol.TCP },

@@ -63,6 +63,9 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
                             variantConfig.maxPlayers.toString(),
                             "+map",
                             startupMap,
+                            "+log",
+                            "on",
+                            ...DefaultTaskDefinitionService.buildLogAddressArgs(),
                         ],
                         portMappings: [
                             {
@@ -186,5 +189,15 @@ export class DefaultTaskDefinitionService implements TaskDefinitionServiceInterf
             return undefined;
         }
         return taskDefinitionArn;
+    }
+
+    static buildLogAddressArgs(): string[] {
+        const addresses = process.env.SRCDS_LOG_ADDRESSES || "";
+        if (!addresses) return [];
+        return addresses
+            .split(",")
+            .map(addr => addr.trim())
+            .filter(addr => addr.length > 0)
+            .flatMap(addr => ["+logaddress_add", addr]);
     }
 }

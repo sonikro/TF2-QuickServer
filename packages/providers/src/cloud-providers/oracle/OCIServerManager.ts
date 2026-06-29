@@ -198,8 +198,7 @@ export class OCIServerManager implements ServerManager {
                                         startupMap,
                                         "+log",
                                         "on",
-                                        "+logaddress_add",
-                                        process.env.SRCDS_LOG_ADDRESS || "",
+                                        ...OCIServerManager.buildLogAddressArgs(),
                                         "+sv_logsecret",
                                         logSecret.toString(),
                                     ],
@@ -447,4 +446,13 @@ export class OCIServerManager implements ServerManager {
         });
     }
 
+    static buildLogAddressArgs(): string[] {
+        const addresses = process.env.SRCDS_LOG_ADDRESSES || "";
+        if (!addresses) return [];
+        return addresses
+            .split(",")
+            .map(addr => addr.trim())
+            .filter(addr => addr.length > 0)
+            .flatMap(addr => ["+logaddress_add", addr]);
+    }
 }
