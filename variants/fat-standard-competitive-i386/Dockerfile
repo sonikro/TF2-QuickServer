@@ -150,6 +150,14 @@ RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
   && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
   && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
 
+# ozfortress configs
+ARG OZFORTRESS_CONFIGS_VERSION=master
+ARG OZFORTRESS_CONFIGS_FILE_NAME=server-configs-${OZFORTRESS_CONFIGS_VERSION}.zip
+ARG OZFORTRESS_CONFIGS_URL=https://github.com/ozfortress/server-configs/archive/${OZFORTRESS_CONFIGS_VERSION}.zip
+RUN curl -L "${OZFORTRESS_CONFIGS_URL}" -o "${OZFORTRESS_CONFIGS_FILE_NAME}" \
+  && unzip -q "${OZFORTRESS_CONFIGS_FILE_NAME}" \
+  && cp "server-configs-${OZFORTRESS_CONFIGS_VERSION}/cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
+
 # SteamPawn - NativePawn compiler for Pawn scripting
 ARG STEAMPAWN_FILE_NAME=package.zip
 ARG STEAMPAWN_VERSION=1.2.0.2
