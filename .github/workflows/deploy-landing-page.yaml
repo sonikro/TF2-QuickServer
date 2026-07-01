@@ -26,6 +26,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    environment: landing-page-prod
     steps:
       - uses: actions/checkout@v4
 
@@ -62,6 +63,7 @@ jobs:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    environment: landing-page-prod
     steps:
       - uses: actions/checkout@v4
 
