@@ -170,6 +170,37 @@ body {
   color: var(--accent);
 }
 
+/* Text */
+.text-accent {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.text-accent:hover {
+  color: var(--accent-hover);
+}
+
+/* Video */
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 0 40px rgba(243, 156, 18, 0.08);
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
 /* Steps */
 .step-list {
   display: flex;
