@@ -2,8 +2,6 @@ locals {
   aws_region = "us-east-1"
 }
 
-terraform_version_constraint = ">= 1.8, < 2.0"
-
 remote_state {
   backend = "s3"
   config = {
