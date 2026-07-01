@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: landing-page-prod
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: landing-page-prod
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
