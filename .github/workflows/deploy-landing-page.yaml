@@ -1,0 +1,97 @@
+name: Deploy Landing Page
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "landing-page/**"
+      - "terraform/landing-page/**"
+      - ".github/workflows/deploy-landing-page.yaml"
+      - "assets/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "landing-page/**"
+      - "terraform/landing-page/**"
+      - ".github/workflows/deploy-landing-page.yaml"
+      - "assets/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    environment: landing-page-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Setup Terragrunt
+        run: |
+          TG_VERSION="0.72.6"
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+
+      - name: Terragrunt Init
+        working-directory: terraform/landing-page
+        run: terragrunt init
+        env:
+          TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
+
+      - name: Terragrunt Validate
+        working-directory: terraform/landing-page
+        run: terragrunt validate
+        env:
+          TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
+
+  apply:
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: landing-page-prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+
+      - name: Setup Terragrunt
+        run: |
+          TG_VERSION="0.72.6"
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+
+      - name: Terragrunt Init
+        working-directory: terraform/landing-page
+        run: terragrunt init
+        env:
+          TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}
+
+      - name: Terragrunt Apply
+        working-directory: terraform/landing-page
+        run: terragrunt apply -auto-approve
+        env:
+          TF_VAR_hosted_zone_id: ${{ secrets.HOSTED_ZONE_ID }}

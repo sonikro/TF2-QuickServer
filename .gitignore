@@ -217,6 +217,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Terragrunt generated provider files
+provider-generated.tf
+
 # End of https://www.toptal.com/developers/gitignore/api/terraform
 
 # Created by https://www.toptal.com/developers/gitignore/api/go
