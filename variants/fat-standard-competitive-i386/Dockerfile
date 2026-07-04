@@ -130,7 +130,7 @@ ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-2.2.0.zip
 ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball/releases/download/v${DODGEBALL_PLUGIN_VERSION_NUMBER}/${DODGEBALL_PLUGIN_FILE_NAME}
 RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" -d tfdb \
-  && cp -r "tfdb/TF2-Dodgeball-2.2.0/TF2Dodgeball/"* you "${PLUGIN_INSTALL_DIR}/" \
+  && cp -r "tfdb/TF2-Dodgeball-2.2.0/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
   && rm -f \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_airblast_prevention.smx" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_anti_switch.smx" \
