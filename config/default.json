@@ -415,6 +415,26 @@
                 "ultiduo": "rgl_ud_ultiduo.cfg"
             },
             "guildId": "1011082976840396962"
+        },
+        "ozfortress-6v6": {
+            "displayName": "OZ Fortress 6v6",
+            "hostname": "OZ Fortress 6v6 | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "ozfortress_6v6_5cp.cfg",
+                "koth": "ozfortress_6v6_koth.cfg"
+            },
+            "guildId": "82651383144120320"
+        },
+        "ozfortress-hl": {
+            "displayName": "OZ Fortress Highlander",
+            "hostname": "OZ Fortress HL | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "5cp": "ozfortress_hl_5cp.cfg",
+                "koth": "ozfortress_hl_koth.cfg",
+                "pl": "ozfortress_hl_stopwatch.cfg",
+                "cp_steel_f12": "ozfortress_hl_stopwatch.cfg"
+            },
+            "guildId": "82651383144120320"
         }
     },
     "discord": {
