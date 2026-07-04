@@ -151,14 +151,6 @@ RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/NERandSOLO.sp" \
   && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" tfdb
 
-# FBTF configs (latest version)
-ARG FBTF_CONFIGS_VERSION=25
-ARG FBTF_CONFIGS_FILE_NAME=fbtf_cfg_s${FBTF_CONFIGS_VERSION}.zip
-ARG FBTF_CONFIGS_URL=https://fbtf.tf/uploads/cfgs/${FBTF_CONFIGS_FILE_NAME}
-RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
-  && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
-  && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
-
 # ozfortress configs
 ARG OZFORTRESS_CONFIGS_VERSION=master
 ARG OZFORTRESS_CONFIGS_FILE_NAME=server-configs-${OZFORTRESS_CONFIGS_VERSION}.zip

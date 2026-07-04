@@ -130,7 +130,7 @@ ARG DODGEBALL_PLUGIN_FILE_NAME=TF2-Dodgeball-2.2.0.zip
 ARG DODGEBALL_PLUGIN_URL=https://github.com/Silorak/TF2-Dodgeball/releases/download/v${DODGEBALL_PLUGIN_VERSION_NUMBER}/${DODGEBALL_PLUGIN_FILE_NAME}
 RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   && unzip -q "${DODGEBALL_PLUGIN_FILE_NAME}" -d tfdb \
-  && cp -r "tfdb/TF2-Dodgeball-2.2.0/TF2Dodgeball/"* "${PLUGIN_INSTALL_DIR}/" \
+  && cp -r "tfdb/TF2-Dodgeball-2.2.0/TF2Dodgeball/"* you "${PLUGIN_INSTALL_DIR}/" \
   && rm -f \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_airblast_prevention.smx" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_anti_switch.smx" \
@@ -141,14 +141,6 @@ RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_no_block.sp" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/NERandSOLO.sp" \
   && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" tfdb
-
-# FBTF configs (latest version)
-ARG FBTF_CONFIGS_VERSION=25
-ARG FBTF_CONFIGS_FILE_NAME=fbtf_cfg_s${FBTF_CONFIGS_VERSION}.zip
-ARG FBTF_CONFIGS_URL=https://fbtf.tf/uploads/cfgs/${FBTF_CONFIGS_FILE_NAME}
-RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
-  && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
-  && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
 
 # ozfortress configs
 ARG OZFORTRESS_CONFIGS_VERSION=master
