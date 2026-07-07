@@ -37,6 +37,8 @@ ENV TF2PICKUPORG_OVERRIDE_INTERNAL_ADDRESS=
 ENV TF2PICKUPORG_OVERRIDE_PUBLIC_ADDRESS=
 
 COPY ./variants/fat-tf2pickup/server.cfg.template ${SERVER_DIR}/tf/cfg/server.cfg.template
+# Disable STAC — it causes STEAM VALIDATION errors in the pickup servers
+COPY ./variants/fat-tf2pickup/stac.cfg ${SERVER_DIR}/tf/cfg/sourcemod/stac.cfg
 
 # Remove rcon_block plugin to avoid conflicts with the pickup system
 RUN rm "${SERVER_DIR}/tf/addons/sourcemod/plugins/rcon_blocklist.smx"
