@@ -50,32 +50,28 @@ Example map entry in `maps.casual.json` (casual):
 
 ## Docker Images
 
-This repository generates six different Docker images:
+This repository generates five different Docker images:
 
 1. **sonikro/fat-tf2-standard-competitive-i386:latest**
    - Includes all maps specified in `maps.json`
    - 32-bit image deployed for the majority of competitive servers
    - Contains competitive plugins: SOAP-TF2DM, MGEMod, TF2 Comp Fixes, F2's SourceMod plugins, ETF2L configs, RGL configs, Ultitrio configs
 
-2. **sonikro/fat-tf2-standard-competitive-amd64:latest**
-   - 64-bit variant of the standard-competitive image
-   - Includes the same maps and plugins as the i386 version
-
-3. **sonikro/fat-tf2-casual-i386:latest**
+2. **sonikro/fat-tf2-casual-i386:latest**
    - Uses `maps.casual.json` for a curated set of casual/pub-style maps (Payload, Control Points, KOTH)
    - 32-bit image for casual gameplay servers
    - Lighter plugin set compared to competitive (no SOAP-TF2DM, MGEMod, ETF2L/RGL configs)
    - Includes TF2 Comp Fixes and F2's SourceMod plugins
    - Default map: `pl_badwater` with 24 max players
 
-4. **sonikro/fat-tf2-pickup:latest**
+3. **sonikro/fat-tf2-pickup:latest**
    - Specialized image used only for pickup game variants
    - Contains additional plugins specific to pickup games
 
-5. **sonikro/fat-tf2center:latest**
+4. **sonikro/fat-tf2center:latest**
    - Image tailored for TF2Center (pickup/league platform) integration
 
-6. **sonikro/fat-mge-tf:latest**
+5. **sonikro/fat-mge-tf:latest**
    - Specialized image for MGE (My Gaming Edge) training/duel servers
 
 ## Enforced CVars
