@@ -112,6 +112,14 @@ ARG TF2RUE_URL=https://github.com/sapphonie/tf2rue/releases/download/${TF2RUE_VE
 RUN curl -L "${TF2RUE_URL}" -o "${TF2RUE_FILE_NAME}" \
   && unzip -q -n "${TF2RUE_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/"
 
+# STeph's AntiCheat (StAC) - Anti-cheat plugin
+ARG STAC_PLUGIN_VERSION=v6.3.9
+ARG STAC_PLUGIN_FILE_NAME=stac.zip
+ARG STAC_PLUGIN_URL=https://github.com/sapphonie/StAC-tf2/releases/download/${STAC_PLUGIN_VERSION}/${STAC_PLUGIN_FILE_NAME}
+RUN curl -L "${STAC_PLUGIN_URL}" -o "${STAC_PLUGIN_FILE_NAME}" \
+  && unzip -q -o "${STAC_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/" \
+  && rm "${STAC_PLUGIN_FILE_NAME}"
+
 # Enhanced Match Timer
 RUN curl -L "https://github.com/H20Gamez/Enhanced-Match-Timer/releases/download/Release/enhanced_match_timer.smx" \
   -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/enhanced_match_timer.smx"
@@ -259,6 +267,7 @@ USER tf2
 
 # Copy custom configs and plugins from base variant
 COPY --chown=tf2 variants/base/tf/cfg/* "${SERVER_DIR}/tf/cfg/"
+COPY --chown=tf2 variants/base/tf/cfg/sourcemod/stac.cfg "${SERVER_DIR}/tf/cfg/sourcemod/stac.cfg"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/* "${SERVER_DIR}/tf/addons/sourcemod/configs/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/configs/mge/* "${SERVER_DIR}/tf/addons/sourcemod/configs/mge/"
 COPY --chown=tf2 variants/base/tf/addons/sourcemod/plugins/*.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/"
