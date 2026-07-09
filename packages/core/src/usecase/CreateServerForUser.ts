@@ -27,7 +27,7 @@ export class CreateServerForUser {
         region: Region,
         variantName: Variant,
         creatorId: string,
-        guildId: string,
+        guildId?: string,
         statusUpdater: StatusUpdater
     }): Promise<Server> {
         const { serverManagerFactory, serverRepository, eventLogger, sourceTvEventLogger, userRepository, guildParametersRepository, userBanRepository, idGenerator } = this.dependencies;
@@ -90,11 +90,12 @@ export class CreateServerForUser {
                 region: args.region,
                 variant: args.variantName,
                 createdBy: args.creatorId,
+                guildId: args.guildId,
                 status: "pending",
             } as Server, trx);
         });
 
-        const guildParameters = await guildParametersRepository.findById(args.guildId);
+        const guildParameters = args.guildId ? await guildParametersRepository.findById(args.guildId) : null;
         
         const server = await serverManager.deployServer({
             region: args.region,
@@ -120,6 +121,7 @@ export class CreateServerForUser {
         await serverRepository.upsertServer({
             ...server,
             createdBy: args.creatorId,
+            guildId: args.guildId,
             status: "ready"
         });
         return server;

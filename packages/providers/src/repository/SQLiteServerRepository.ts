@@ -22,6 +22,7 @@ export class SQLiteServerRepository implements ServerRepository {
                 tvPassword: server.tvPassword,
                 createdAt: server.createdAt ?? new Date(),
                 createdBy: server.createdBy,
+                guildId: server.guildId ?? null,
                 status: server.status,
                 sv_logsecret: server.logSecret
             } as Server)
@@ -38,6 +39,19 @@ export class SQLiteServerRepository implements ServerRepository {
     async getAllServersByUserId(userId: string, trx?: Knex.Transaction): Promise<Server[]> {
         const query = this.dependencies.knex<Server>('servers')
             .where({ createdBy: userId })
+            .select('*');
+
+        if (trx) {
+            query.transacting(trx);
+        }
+
+        const servers = await query;
+        return servers.map(this.deserialize);
+    }
+
+    async getAllServersByGuildId(guildId: string, trx?: Knex.Transaction): Promise<Server[]> {
+        const query = this.dependencies.knex<Server>('servers')
+            .where({ guildId })
             .select('*');
 
         if (trx) {

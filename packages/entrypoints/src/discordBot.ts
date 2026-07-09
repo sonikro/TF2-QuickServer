@@ -5,6 +5,7 @@ import { DeleteServer } from "@tf2qs/core";
 import { DeleteServerForUser } from "@tf2qs/core";
 import { GenerateMonthlyUsageReport } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
+import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
 import { SetUserData } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
@@ -167,6 +168,9 @@ export async function startDiscordBot() {
             userRepository
         }),
         getServerStatus: new GetServerStatus({
+            serverRepository
+        }),
+        getGuildServers: new GetGuildServers({
             serverRepository
         }),
         getUserServers: new GetUserServers({
