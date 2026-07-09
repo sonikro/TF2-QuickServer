@@ -1,10 +1,12 @@
 import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import { CreateServerForUser } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
+import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
 import { BackgroundTaskQueue } from "@tf2qs/core";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getMyServersCommandDefinition, getMyServersCommandHandlerFactory } from "./GetMyServers";
+import { getGuildServersCommandDefinition, getGuildServersCommandHandlerFactory } from "./GetGuildServers";
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "@tf2qs/core";
@@ -15,6 +17,7 @@ export type CommandDependencies = {
     setUserData: SetUserData;
     backgroundTaskQueue: BackgroundTaskQueue;
     getServerStatus: GetServerStatus;
+    getGuildServers: GetGuildServers;
     getUserServers: GetUserServers;
 }
 
@@ -47,6 +50,13 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: statusCommandDefinition,
             handler: createStatusCommandHandlerFactory({
                 getServerStatus: dependencies.getServerStatus,
+            })
+        },
+        getGuildServers: {
+            name: "get-guild-servers",
+            definition: getGuildServersCommandDefinition,
+            handler: getGuildServersCommandHandlerFactory({
+                getGuildServers: dependencies.getGuildServers,
             })
         },
         getMyServers: {

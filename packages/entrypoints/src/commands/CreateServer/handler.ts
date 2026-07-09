@@ -97,7 +97,7 @@ export function createServerCommandHandlerFactory(dependencies: {
                         region: region,
                         variantName: variantName,
                         creatorId: buttonInteraction.user.id,
-                        guildId: buttonInteraction.guildId!,
+                        guildId: buttonInteraction.guildId ?? undefined,
                         statusUpdater: createInteractionStatusUpdater(buttonInteraction)
                     });
                     const variantConfig = getVariantConfig(variantName);
