@@ -5,13 +5,12 @@ variable "bucket_name" {
 }
 
 variable "domain_name" {
-  description = "Custom domain name for the landing page (e.g., landing.quickserver.sonikro.com)"
+  description = "Custom domain name for the landing page "
   type        = string
-  default     = "landing.quickserver.sonikro.com"
 }
 
 variable "hosted_zone_id" {
-  description = "Route53 hosted zone ID for sonikro.com"
+  description = "Route53 hosted zone ID"
   type        = string
   sensitive   = true
 }
