@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits, PermissionsBitField } from "discord.js";
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
@@ -13,6 +13,16 @@ describe("GetGuildServers Command Handler", () => {
         const getGuildServers = mock<GetGuildServers>();
         const handler = getGuildServersCommandHandlerFactory({ getGuildServers });
         return { handler, getGuildServers };
+    };
+
+    const createGuildInteraction = () => {
+        const guildId = chance.guid();
+        const interaction = mock<ChatInputCommandInteraction>();
+        interaction.guildId = guildId;
+        const memberPermissions = mock<PermissionsBitField>();
+        memberPermissions.has.mockReturnValue(true);
+        interaction.memberPermissions = memberPermissions as any;
+        return { interaction, guildId, memberPermissions };
     };
 
     it("should reply with error when invoked in DMs (no guildId)", async () => {
@@ -34,9 +44,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should display message when guild has no active servers", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         when(getGuildServers.execute)
             .calledWith({ guildId })
@@ -55,9 +63,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should display an ASCII table with all server details", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         const servers: Server[] = [
             {
@@ -122,9 +128,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should display multiple servers when guild has more than one", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         const servers: Server[] = [
             {
@@ -188,9 +192,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should warn when there are too many servers to display", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         // Generate enough servers with long fields to exceed 2000 chars
         const servers: Server[] = Array.from({ length: 15 }, () => ({
@@ -226,9 +228,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should reply with error when use case throws a UserError", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         when(getGuildServers.execute)
             .calledWith({ guildId })
@@ -247,9 +247,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should reply with generic message on unexpected error", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         when(getGuildServers.execute)
             .calledWith({ guildId })
@@ -268,9 +266,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should ensure message is ephemeral for privacy", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         const servers: Server[] = [
             {
@@ -307,9 +303,7 @@ describe("GetGuildServers Command Handler", () => {
     it("should show first 8 characters of server ID", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
-        const interaction = mock<ChatInputCommandInteraction>();
-        const guildId = chance.guid();
-        interaction.guildId = guildId;
+        const { interaction, guildId } = createGuildInteraction();
 
         const serverId = "abcdefghijklmnop";
         const servers: Server[] = [
@@ -344,6 +338,45 @@ describe("GetGuildServers Command Handler", () => {
         });
         expect(interaction.reply).toHaveBeenCalledWith({
             content: expect.not.stringContaining('abcdefghijklmnop'),
+            flags: MessageFlags.Ephemeral
+        });
+    });
+
+    it("should reject when user lacks Administrator permission", async () => {
+        // Given
+        const { handler, getGuildServers } = makeSut();
+        const guildId = chance.guid();
+        const interaction = mock<ChatInputCommandInteraction>();
+        interaction.guildId = guildId;
+        const memberPermissions = mock<PermissionsBitField>();
+        memberPermissions.has.mockReturnValue(false);
+        interaction.memberPermissions = memberPermissions as any;
+
+        // When
+        await handler(interaction);
+
+        // Then
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: expect.stringContaining('Administrator'),
+            flags: MessageFlags.Ephemeral
+        });
+        expect(getGuildServers.execute).not.toHaveBeenCalled();
+    });
+
+    it("should reject when memberPermissions is null", async () => {
+        // Given
+        const { handler } = makeSut();
+        const guildId = chance.guid();
+        const interaction = mock<ChatInputCommandInteraction>();
+        interaction.guildId = guildId;
+        interaction.memberPermissions = null as any;
+
+        // When
+        await handler(interaction);
+
+        // Then
+        expect(interaction.reply).toHaveBeenCalledWith({
+            content: expect.stringContaining('Administrator'),
             flags: MessageFlags.Ephemeral
         });
     });
