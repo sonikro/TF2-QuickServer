@@ -89,45 +89,21 @@ describe("GetGuildServers Command Handler", () => {
             content: expect.stringContaining('🖥️ **Active Servers for this Guild'),
             flags: MessageFlags.Ephemeral
         });
-        // Verify the ASCII table contains expected columns
+        // Verify the compact format contains expected fields
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('ServerID'),
+            content: expect.stringContaining('| TV:'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('Public IP'),
+            content: expect.stringContaining('| SV:'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('Public Port'),
+            content: expect.stringContaining('TVP:'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('TV IP'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('TV Port'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('SV Password'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('TV Password'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('RCON Password'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('Variant Name'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('Region'),
+            content: expect.stringContaining('| RCON:'),
             flags: MessageFlags.Ephemeral
         });
         // Verify actual data values appear
@@ -140,16 +116,12 @@ describe("GetGuildServers Command Handler", () => {
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('standard-competitive'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
             content: expect.stringContaining('São Paulo'),
             flags: MessageFlags.Ephemeral
         });
-        // Table should use a code block
+        // Region should appear as second field after server ID
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('```'),
+            content: expect.stringContaining('` | São Paulo |'),
             flags: MessageFlags.Ephemeral
         });
     });
@@ -208,14 +180,6 @@ describe("GetGuildServers Command Handler", () => {
         });
         expect(interaction.reply).toHaveBeenCalledWith({
             content: expect.stringContaining('9.10.11.12'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('standard-competitive'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('casual'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
@@ -347,14 +311,14 @@ describe("GetGuildServers Command Handler", () => {
         });
     });
 
-    it("should show first 5 characters of server ID", async () => {
+    it("should show first 8 characters of server ID", async () => {
         // Given
         const { handler, getGuildServers } = makeSut();
         const interaction = mock<ChatInputCommandInteraction>();
         const guildId = chance.guid();
         interaction.guildId = guildId;
 
-        const serverId = "abc12345xyz";
+        const serverId = "abcdefghijklmnop";
         const servers: Server[] = [
             {
                 serverId,
@@ -382,11 +346,11 @@ describe("GetGuildServers Command Handler", () => {
 
         // Then
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('abc12'),
+            content: expect.stringContaining('abcdefgh'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.not.stringContaining('abc12345xyz'),
+            content: expect.not.stringContaining('abcdefghijklmnop'),
             flags: MessageFlags.Ephemeral
         });
     });

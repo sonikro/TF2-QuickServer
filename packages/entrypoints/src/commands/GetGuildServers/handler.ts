@@ -1,6 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
 import { GetGuildServers, getRegionDisplayName } from "@tf2qs/core";
-import { commandErrorHandler } from "../commandErrorHandler";
 
 type GetGuildServersCommandHandlerFactoryDependencies = {
     getGuildServers: GetGuildServers;
@@ -30,23 +29,20 @@ export function getGuildServersCommandHandlerFactory(dependencies: GetGuildServe
                 return;
             }
 
-            // Build an ASCII table with the required fields
-            const header = `\`\`\`\n${'ServerID'.padEnd(10)} ${'Public IP'.padEnd(16)} ${'Port'.padEnd(7)} ${'TV IP'.padEnd(16)} ${'TV Port'.padEnd(9)} ${'SV Pass'.padEnd(10)} ${'TV Pass'.padEnd(10)} ${'RCON Pass'.padEnd(16)} ${'Variant'.padEnd(22)} ${'Region'}\n${'─'.repeat(10)} ${'─'.repeat(16)} ${'─'.repeat(7)} ${'─'.repeat(16)} ${'─'.repeat(9)} ${'─'.repeat(10)} ${'─'.repeat(10)} ${'─'.repeat(16)} ${'─'.repeat(22)} ${'─'.repeat(10)}\n`;
-
-            const rows = servers.map(server => {
-                const serverIdShort = server.serverId.substring(0, 5);
+            // Build a compact list with the required fields
+            const lines = servers.map((server, index) => {
+                const serverIdShort = server.serverId.substring(0, 8);
                 const regionName = getRegionDisplayName(server.region);
-                return `${serverIdShort.padEnd(10)} ${(server.hostIp || '').padEnd(16)} ${String(server.hostPort || '').padEnd(7)} ${(server.tvIp || '').padEnd(16)} ${String(server.tvPort || '').padEnd(9)} ${(server.hostPassword || 'N/A').padEnd(10)} ${(server.tvPassword || 'N/A').padEnd(10)} ${(server.rconPassword || 'N/A').padEnd(16)} ${server.variant.padEnd(22)} ${regionName}`;
+                const publicAddr = `${server.hostIp}:${server.hostPort}`;
+                const tvAddr = `${server.tvIp}:${server.tvPort}`;
+                return `**${index + 1}.** \`${serverIdShort}\` | ${regionName} | ${publicAddr} | TV: ${tvAddr} | SV: ${server.hostPassword || 'N/A'} | TVP: ${server.tvPassword || 'N/A'} | RCON: ${server.rconPassword || 'N/A'}`;
             }).join('\n');
 
-            const table = header + rows + '\n```';
-
-            const content = `🖥️ **Active Servers for this Guild (${servers.length}):**\n\n${table}\n` +
-                `⚠️ *Keep these credentials secure. This message is only visible to you.*`;
+            const content = `🖥️ **Active Servers for this Guild (${servers.length}):**\n\n${lines}\n\n⚠️ *Keep these credentials secure. This message is only visible to you.*`;
 
             if (content.length > 2000) {
                 await interaction.reply({
-                    content: `⚠️ You have too many active servers (${servers.length}) to display all details at once.`,
+                    content: `⚠️ You have ${servers.length} active servers — too many to display in a single message. Please contact the bot administrator to retrieve the full list.`,
                     flags: MessageFlags.Ephemeral
                 });
                 return;
@@ -57,7 +53,15 @@ export function getGuildServersCommandHandlerFactory(dependencies: GetGuildServe
                 flags: MessageFlags.Ephemeral
             });
         } catch (error: Error | any) {
-            await commandErrorHandler(interaction, error);
+            // Use direct reply since error may occur before any reply is sent,
+            // and commandErrorHandler uses followUp which requires a prior reply
+            const message = error.name === 'UserError'
+                ? error.message
+                : '❌ An unexpected error occurred. Please try again or contact the bot administrator.';
+            await interaction.reply({
+                content: message,
+                flags: MessageFlags.Ephemeral
+            });
         }
     }
 }
