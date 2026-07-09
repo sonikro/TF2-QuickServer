@@ -29,16 +29,18 @@ export function getGuildServersCommandHandlerFactory(dependencies: GetGuildServe
                 return;
             }
 
-            // Build a compact list with the required fields
+            // Compact format with a header line so per-server lines don't need labels
+            const headerLine = '`ID` | `Region` | `Address` | `TV` | `SV Pass` | `TV Pass` | `RCON Pass`';
+
             const lines = servers.map((server, index) => {
                 const serverIdShort = server.serverId.substring(0, 8);
                 const regionName = getRegionDisplayName(server.region);
-                const publicAddr = `${server.hostIp}:${server.hostPort}`;
+                const publicAddr = `${server.rconAddress}:27015`;
                 const tvAddr = `${server.tvIp}:${server.tvPort}`;
-                return `**${index + 1}.** \`${serverIdShort}\` | ${regionName} | ${publicAddr} | TV: ${tvAddr} | SV: ${server.hostPassword || 'N/A'} | TVP: ${server.tvPassword || 'N/A'} | RCON: ${server.rconPassword || 'N/A'}`;
+                return `**${index + 1}.** \`${serverIdShort}\` | ${regionName} | ${publicAddr} | ${tvAddr} | ${server.hostPassword || 'N/A'} | ${server.tvPassword || 'N/A'} | ${server.rconPassword || 'N/A'}`;
             }).join('\n');
 
-            const content = `🖥️ **Active Servers for this Guild (${servers.length}):**\n\n${lines}\n\n⚠️ *Keep these credentials secure. This message is only visible to you.*`;
+            const content = `🖥️ **Active Servers for this Guild (${servers.length}):**\n\n${headerLine}\n${lines}\n\n⚠️ *Keep these credentials secure. This message is only visible to you.*`;
 
             if (content.length > 2000) {
                 await interaction.reply({

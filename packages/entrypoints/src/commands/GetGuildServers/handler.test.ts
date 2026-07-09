@@ -69,7 +69,7 @@ describe("GetGuildServers Command Handler", () => {
                 tvIp: "5.6.7.8",
                 tvPort: 27020,
                 rconPassword: "rcon-secret",
-                rconAddress: "1.2.3.4:27015",
+                rconAddress: "1.2.3.4",
                 hostPassword: "sv-pass",
                 tvPassword: "tv-pass",
                 status: "ready",
@@ -89,21 +89,14 @@ describe("GetGuildServers Command Handler", () => {
             content: expect.stringContaining('🖥️ **Active Servers for this Guild'),
             flags: MessageFlags.Ephemeral
         });
-        // Verify the compact format contains expected fields
+        // Verify the compact format has a header explaining columns
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('| TV:'),
+            content: expect.stringContaining('`ID` | `Region` | `Address` | `TV` | `SV Pass` | `TV Pass` | `RCON Pass`'),
             flags: MessageFlags.Ephemeral
         });
+        // Verify data values appear without per-line labels (no TV:/SV: prefixes)
         expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('| SV:'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('TVP:'),
-            flags: MessageFlags.Ephemeral
-        });
-        expect(interaction.reply).toHaveBeenCalledWith({
-            content: expect.stringContaining('| RCON:'),
+            content: expect.stringContaining('1.2.3.4:27015 | 5.6.7.8:27020 | sv-pass | tv-pass | rcon-secret'),
             flags: MessageFlags.Ephemeral
         });
         // Verify actual data values appear
@@ -143,7 +136,7 @@ describe("GetGuildServers Command Handler", () => {
                 tvIp: "5.6.7.8",
                 tvPort: 27020,
                 rconPassword: "rcon1",
-                rconAddress: "1.2.3.4:27015",
+                rconAddress: "1.2.3.4",
                 hostPassword: "sv1",
                 tvPassword: "tv1",
                 status: "ready",
@@ -158,7 +151,7 @@ describe("GetGuildServers Command Handler", () => {
                 tvIp: "13.14.15.16",
                 tvPort: 27020,
                 rconPassword: "rcon2",
-                rconAddress: "9.10.11.12:27015",
+                rconAddress: "9.10.11.12",
                 hostPassword: "sv2",
                 tvPassword: "tv2",
                 status: "ready",
@@ -209,7 +202,7 @@ describe("GetGuildServers Command Handler", () => {
             tvIp: chance.ip(),
             tvPort: 27020,
             rconPassword: chance.string({ length: 30 }),
-            rconAddress: `${chance.ip()}:27015`,
+            rconAddress: chance.ip(),
             hostPassword: chance.string({ length: 30 }),
             tvPassword: chance.string({ length: 30 }),
             status: "ready",
@@ -289,7 +282,7 @@ describe("GetGuildServers Command Handler", () => {
                 tvIp: chance.ip(),
                 tvPort: 27020,
                 rconPassword: chance.word(),
-                rconAddress: `${chance.ip()}:27015`,
+                rconAddress: chance.ip(),
                 hostPassword: chance.word(),
                 tvPassword: chance.word(),
                 status: "ready",
@@ -329,7 +322,7 @@ describe("GetGuildServers Command Handler", () => {
                 tvIp: chance.ip(),
                 tvPort: 27020,
                 rconPassword: chance.word(),
-                rconAddress: `${chance.ip()}:27015`,
+                rconAddress: chance.ip(),
                 hostPassword: chance.word(),
                 tvPassword: chance.word(),
                 status: "ready",
