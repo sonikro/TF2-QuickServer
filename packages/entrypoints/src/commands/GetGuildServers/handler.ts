@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits } from "discord.js";
 import { GetGuildServers, getRegionDisplayName } from "@tf2qs/core";
 
 type GetGuildServersCommandHandlerFactoryDependencies = {
@@ -13,6 +13,15 @@ export function getGuildServersCommandHandlerFactory(dependencies: GetGuildServe
         if (!interaction.guildId) {
             await interaction.reply({
                 content: '❌ This command is only available within a Discord server, not in direct messages.',
+                flags: MessageFlags.Ephemeral
+            });
+            return;
+        }
+
+        // Runtime check: only users with the Administrator permission can retrieve guild servers
+        if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
+            await interaction.reply({
+                content: '❌ Only users with the **Administrator** permission can retrieve guild servers.',
                 flags: MessageFlags.Ephemeral
             });
             return;
