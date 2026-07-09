@@ -60,3 +60,4 @@ alias ozf-hl-koth "exec ozfortress_hl_koth"
 alias ozf-ud-ultiduo "exec ozfortress_ultiduo"
 alias ozf-ud "exec ozfortress_ultiduo"
 
+ozf_bans_enforce 0

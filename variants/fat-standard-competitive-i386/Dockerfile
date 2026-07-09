@@ -158,6 +158,16 @@ RUN curl -L "${OZFORTRESS_CONFIGS_URL}" -o "${OZFORTRESS_CONFIGS_FILE_NAME}" \
   && unzip -q "${OZFORTRESS_CONFIGS_FILE_NAME}" \
   && cp "server-configs-${OZFORTRESS_CONFIGS_VERSION}/cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
 
+# ozfortress bans enforcement plugin
+ARG OZF_BANS_FILE_NAME=ozf_bans.zip
+ARG OZF_BANS_VERSION=2.0.3
+ARG OZF_BANS_URL=https://github.com/ozfortress/ozf-bans-enforcement/releases/download/v${OZF_BANS_VERSION}/${OZF_BANS_FILE_NAME}
+ARG OZF_BANS_CHECKSUM=9d3f9fda74c746d0f26863cc81096ca8f4c1cd7df18398f70d70e64b7c7146f8
+RUN curl -L "${OZF_BANS_URL}" -o "${OZF_BANS_FILE_NAME}" \
+  && echo "${OZF_BANS_CHECKSUM}  ${OZF_BANS_FILE_NAME}" | sha256sum -c \
+  && unzip -q "${OZF_BANS_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/" \
+  && rm "${OZF_BANS_FILE_NAME}"
+
 # SteamPawn - NativePawn compiler for Pawn scripting
 ARG STEAMPAWN_FILE_NAME=package.zip
 ARG STEAMPAWN_VERSION=1.2.0.2
