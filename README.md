@@ -6,6 +6,7 @@
 
 [![Discord](https://img.shields.io/discord/1359667090092458055?label=Join%20Our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/HfDgMj73cW)
 [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v1/monitor/21jog.svg)](https://status.sonikro.com/)
+[![Landing Page](https://img.shields.io/badge/Landing%20Page-quickserver.tf-blue?style=for-the-badge&logo=google-chrome&logoColor=white)](https://quickserver.tf/)
 
 
 <p align="center">
