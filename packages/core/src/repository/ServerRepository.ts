@@ -4,6 +4,7 @@ import { Server, ServerStatus } from "../domain";
 export interface ServerRepository {
     upsertServer(server: Server, trx?: Knex.Transaction): Promise<void>;
     getAllServersByUserId(userId: string, trx?: Knex.Transaction): Promise<Server[]>;
+    getAllServersByGuildId(guildId: string, trx?: Knex.Transaction): Promise<Server[]>;
     deleteServer(serverId: string, trx?: Knex.Transaction): Promise<void>;
     findById(serverId: string, trx?: Knex.Transaction): Promise<Server | null>;
     getAllServers(status?: ServerStatus, trx?: Knex.Transaction): Promise<Server[]>;
