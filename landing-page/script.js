@@ -45,4 +45,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.addEventListener('scroll', updateActiveLink, { passive: true });
   updateActiveLink();
+
+  // Dynamic "Days Running" counter
+  // First server deployed at 1746401054799 ms (May 2025)
+  const FIRST_SERVER_TS = 1746401054799;
+  const daysEl = document.getElementById('stat-days');
+  const daysDesc = document.getElementById('stat-days-desc');
+  if (daysEl) {
+    const msPerDay = 86400000;
+    const now = Date.now();
+    const days = Math.floor((now - FIRST_SERVER_TS) / msPerDay);
+    daysEl.textContent = days.toLocaleString();
+    if (daysDesc) {
+      const startDate = new Date(FIRST_SERVER_TS);
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      daysDesc.textContent = 'Since ' + months[startDate.getMonth()] + ' ' + startDate.getFullYear();
+    }
+  }
 });
