@@ -90,3 +90,13 @@ body {
 .section-anchor {
   scroll-margin-top: 80px;
 }
+
+/* Hide scrollbar for carousel */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
