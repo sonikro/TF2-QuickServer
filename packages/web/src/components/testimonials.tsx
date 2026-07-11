@@ -26,6 +26,13 @@ const TESTIMONIALS = [
       "TF2-QuickServer made setting up a TF2 server incredibly easy. The Discord bot lets me create and manage servers without ever having to visit a website, making the whole process much faster and more convenient. Since it's completely free with no paywall or queue, I can boot up a server whenever I need one without waiting or worrying. It just posts the connect and everything you need to run the server smoothly on your Discord server. I personally like using QuickServer for playing MGE with friends or playing scrims. My experience with QuickServer has been reliable, simple to use, and something I would definitely recommend to anyone looking for a fast and easy way to host a TF2 server.",
     avatar: "/avatars/crawdad.jpg",
   },
+  {
+    player: "eduardofer",
+    title: "Head-Admin of Brasil Fortress",
+    testimonial:
+      "TF2-QuickServer has been an excellent partner for the competitive Team Fortress 2 community. The servers offer great stability, low ping, and consistent performance, becoming essential for competitive matches and championships. Throughout the Brasil Fortress seasons, TF2-QuickServer's infrastructure has always demonstrated reliability, allowing players from different South American countries to compete in balanced, high-quality matches. For anyone looking for quality servers, TF2-QuickServer is a confidently recommended choice.",
+    avatar: "/avatars/eduardofer.jpg",
+  },
 ];
 
 export default function Testimonials() {
