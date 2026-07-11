@@ -21,6 +21,8 @@ resource "random_id" "bucket_suffix" {
   byte_length = 6
 }
 
+data "aws_region" "current" {}
+
 # ===========================================
 # S3 BUCKET (PRIVATE)
 # ===========================================
@@ -63,39 +65,29 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "landing_page" {
 
 locals {
   web_out_dir = "${path.module}/../../packages/web/out"
-  web_files   = fileset(local.web_out_dir, "**")
-
-  mime_types = {
-    ".html"  = "text/html; charset=utf-8"
-    ".js"    = "application/javascript"
-    ".css"   = "text/css"
-    ".json"  = "application/json"
-    ".png"   = "image/png"
-    ".svg"   = "image/svg+xml"
-    ".webp"  = "image/webp"
-    ".jpg"   = "image/jpeg"
-    ".jpeg"  = "image/jpeg"
-    ".gif"   = "image/gif"
-    ".ico"   = "image/x-icon"
-    ".txt"   = "text/plain"
-    ".woff2"  = "font/woff2"
-    ".woff"  = "font/woff"
-    ".ttf"   = "font/ttf"
-    ".otf"   = "font/otf"
-    ".map"   = "application/json"
-    ".xml"   = "application/xml"
-  }
 }
 
-resource "aws_s3_object" "web_files" {
-  for_each = local.web_files
+resource "null_resource" "sync_web_files" {
+  triggers = {
+    index_hash = filebase64sha1("${local.web_out_dir}/index.html")
+  }
 
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = each.value
-  source        = "${local.web_out_dir}/${each.value}"
-  content_type  = try(local.mime_types[regex("\\.[^.]+$", each.value)], "application/octet-stream")
-  etag          = filemd5("${local.web_out_dir}/${each.value}")
-  cache_control = can(regex("^_next/", each.value)) ? "max-age=604800" : "max-age=3600"
+  provisioner "local-exec" {
+    command = <<-EOT
+      aws s3 sync ${local.web_out_dir}/ s3://${aws_s3_bucket.landing_page.id}/ \
+        --region ${data.aws_region.current.name} \
+        --delete \
+        --cache-control "max-age=3600" \
+        --exclude "_next/*"
+
+      aws s3 sync ${local.web_out_dir}/ s3://${aws_s3_bucket.landing_page.id}/ \
+        --region ${data.aws_region.current.name} \
+        --delete \
+        --cache-control "max-age=604800" \
+        --exclude "*" \
+        --include "_next/*"
+    EOT
+  }
 }
 
 # ===========================================
@@ -222,7 +214,7 @@ resource "aws_cloudfront_distribution" "landing_page" {
   }
 
   depends_on = [
-    aws_s3_object.web_files,
+    null_resource.sync_web_files,
   ]
 }
 
