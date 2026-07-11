@@ -16,10 +16,9 @@ components:
     oauth2:
       type: oauth2
       description: >-
-        Auth0 OAuth2 Client Credentials flow for M2M authentication.
-        When using Bruno or Insomnia, add `audience: https://tf2-quickserver.sonikro.com`
-        as an extra token body parameter — Auth0 requires this field but it is not part
-        of the standard OAuth2 spec. See docs/oauth.md for full instructions.
+        Auth0 OAuth2 Client Credentials flow for M2M authentication. When using Bruno or Insomnia, add `audience:
+        https://tf2-quickserver.sonikro.com` as an extra token body parameter — Auth0 requires this field but it is not
+        part of the standard OAuth2 spec. See docs/oauth.md for full instructions.
       flows:
         clientCredentials:
           tokenUrl: https://tf2-quickserver.us.auth0.com/oauth/token
@@ -87,6 +86,10 @@ components:
           type: string
           example: standard-competitive
           description: The server variant to deploy
+        firstMap:
+          type: string
+          example: cp_process_f12
+          description: Optional startup map override. If omitted, the variant default map is used.
         extraEnvs:
           type: object
           additionalProperties:

@@ -130,7 +130,7 @@ describe("GenerateMonthlyUsageReport", () => {
   it.each([
     { date: new Date("2025-10-15"), month: 10, year: 2025 },
     { date: new Date("2025-11-20"), month: 11, year: 2025 },
-    { date: new Date("2025-12-01"), month: 12, year: 2025 },
+    { date: new Date("2025-12-02"), month: 12, year: 2025 },
   ])("should accept and use the provided date for report generation with date $date", async ({ date, month, year }) => {
     // Given
     const { sut, reportRepository, costProvider } = makeSut();

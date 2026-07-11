@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --accent: #f39c12;
+  --accent-rgb: 243, 156, 18;
+  --dark-bg: #0d1117;
+  --section-bg: #161b22;
+  --card-bg: #1c2333;
+  --text-muted: #8b949e;
+}
+
+@theme inline {
+  --color-accent: #f39c12;
+  --color-dark-bg: #0d1117;
+  --color-section-bg: #161b22;
+  --color-card-bg: #1c2333;
+  --color-text-muted: #8b949e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: #e6edf3;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: linear-gradient(135deg, #0d1117 0%, #162033 50%, #0d1117 100%);
+}
+
+.hero-glow {
+  background: radial-gradient(
+    circle at 30% 50%,
+    rgba(243, 156, 18, 0.04) 0%,
+    transparent 50%
+  );
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Step list connector */
+.step-connector {
+  border-left: 2px solid rgba(243, 156, 18, 0.2);
+}
+
+/* Video wrapper */
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Inline code styling */
+.inline-code {
+  background: rgba(243, 156, 18, 0.12);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+/* Command table */
+.command-table thead th {
+  background: rgba(243, 156, 18, 0.1);
+  color: var(--accent);
+  border-bottom: 2px solid rgba(243, 156, 18, 0.2);
+  font-weight: 600;
+}
+
+/* Scroll padding for fixed navbar */
+.section-anchor {
+  scroll-margin-top: 80px;
+}

@@ -4,6 +4,9 @@
 # Standalone terraform configuration for hosting the TF2-QuickServer
 # landing page on a private S3 bucket served via CloudFront with HTTPS.
 #
+# The site is built by the web package (packages/web/) as a Next.js static
+# export. Run `npm run build:web` before applying this configuration.
+#
 # Usage:
 #   cd terraform/landing-page
 #   terraform init
@@ -17,6 +20,8 @@
 resource "random_id" "bucket_suffix" {
   byte_length = 6
 }
+
+data "aws_region" "current" {}
 
 # ===========================================
 # S3 BUCKET (PRIVATE)
@@ -55,43 +60,34 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "landing_page" {
 }
 
 # ===========================================
-# LANDING PAGE FILES (UPLOAD)
+# LANDING PAGE FILES (NEXT.JS STATIC EXPORT)
 # ===========================================
 
-resource "aws_s3_object" "logo" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "assets/logo.png"
-  source        = "${path.module}/../../assets/logo.png"
-  content_type  = "image/png"
-  cache_control = "max-age=604800"
-  etag          = filemd5("${path.module}/../../assets/logo.png")
+locals {
+  web_out_dir = "${path.module}/../../packages/web/out"
 }
 
-resource "aws_s3_object" "index_html" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "index.html"
-  source        = "${path.module}/../../landing-page/index.html"
-  content_type  = "text/html; charset=utf-8"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/index.html")
-}
+resource "null_resource" "sync_web_files" {
+  triggers = {
+    index_hash = filebase64sha512("${local.web_out_dir}/index.html")
+  }
 
-resource "aws_s3_object" "script_js" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "script.js"
-  source        = "${path.module}/../../landing-page/script.js"
-  content_type  = "application/javascript"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/script.js")
-}
+  provisioner "local-exec" {
+    command = <<-EOT
+      aws s3 sync ${local.web_out_dir}/ s3://${aws_s3_bucket.landing_page.id}/ \
+        --region ${data.aws_region.current.name} \
+        --delete \
+        --cache-control "max-age=3600" \
+        --exclude "_next/*"
 
-resource "aws_s3_object" "style_css" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "style.css"
-  source        = "${path.module}/../../landing-page/style.css"
-  content_type  = "text/css"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/style.css")
+      aws s3 sync ${local.web_out_dir}/ s3://${aws_s3_bucket.landing_page.id}/ \
+        --region ${data.aws_region.current.name} \
+        --delete \
+        --cache-control "max-age=604800" \
+        --exclude "*" \
+        --include "_next/*"
+    EOT
+  }
 }
 
 # ===========================================
@@ -199,6 +195,12 @@ resource "aws_cloudfront_distribution" "landing_page" {
 
   price_class = "PriceClass_100"
 
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/404.html"
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -212,10 +214,7 @@ resource "aws_cloudfront_distribution" "landing_page" {
   }
 
   depends_on = [
-    aws_s3_object.logo,
-    aws_s3_object.index_html,
-    aws_s3_object.script_js,
-    aws_s3_object.style_css,
+    null_resource.sync_web_files,
   ]
 }
 
