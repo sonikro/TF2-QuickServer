@@ -21,6 +21,8 @@
     "skipLibCheck": true                                /* Skip type checking all .d.ts files. */
   },
   "exclude": [
-    "packages/web/**"
+    "packages/web/**",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

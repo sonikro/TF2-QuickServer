@@ -14,7 +14,7 @@ RUN apt-get update -y && apt-get install -y cmake
 RUN npm install
 
 COPY . .
-RUN npm run build
+RUN npm run build:backend
 
 # Stage 2: Runtime Stage
 FROM node:24-slim AS runtime
