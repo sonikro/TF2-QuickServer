@@ -70,6 +70,6 @@
     "typescript": "^5",
     "vitest": "^3.0.9",
     "vitest-mock-extended": "^3.0.1",
-    "vitest-when": "^0.6.0"
+    "vitest-when": "^0.10.0"
   }
 }
