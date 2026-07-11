@@ -120,9 +120,13 @@ RUN curl -L "${STAC_PLUGIN_URL}" -o "${STAC_PLUGIN_FILE_NAME}" \
   && unzip -q -o "${STAC_PLUGIN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/" \
   && rm "${STAC_PLUGIN_FILE_NAME}"
 
-# Enhanced Match Timer
-RUN curl -L "https://github.com/H20Gamez/Enhanced-Match-Timer/releases/download/Release/enhanced_match_timer.smx" \
-  -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/enhanced_match_timer.smx"
+# Enhanced Match Timer (ozfortress)
+ARG EMT_VERSION=v1.5.2
+ARG EMT_FILE_NAME=enhanced_match_timer.zip
+ARG EMT_URL=https://github.com/ozfortress/Enhanced-Match-Timer/releases/download/${EMT_VERSION}/${EMT_FILE_NAME}
+RUN curl -L "${EMT_URL}" -o "${EMT_FILE_NAME}" \
+  && unzip -q -j "${EMT_FILE_NAME}" "plugins/enhanced_match_timer.smx" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/" \
+  && rm "${EMT_FILE_NAME}"
 
 # Updated Pause Plugin
 ARG UPDATED_PAUSE_FILE_NAME=updated-pause-plugin.zip
