@@ -4,6 +4,9 @@
 # Standalone terraform configuration for hosting the TF2-QuickServer
 # landing page on a private S3 bucket served via CloudFront with HTTPS.
 #
+# The site is built by the web package (packages/web/) as a Next.js static
+# export. Run `npm run build:web` before applying this configuration.
+#
 # Usage:
 #   cd terraform/landing-page
 #   terraform init
@@ -55,43 +58,44 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "landing_page" {
 }
 
 # ===========================================
-# LANDING PAGE FILES (UPLOAD)
+# LANDING PAGE FILES (NEXT.JS STATIC EXPORT)
 # ===========================================
 
-resource "aws_s3_object" "logo" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "assets/logo.png"
-  source        = "${path.module}/../../assets/logo.png"
-  content_type  = "image/png"
-  cache_control = "max-age=604800"
-  etag          = filemd5("${path.module}/../../assets/logo.png")
+locals {
+  web_out_dir = "${path.module}/../../packages/web/out"
+  web_files   = fileset(local.web_out_dir, "**")
+
+  mime_types = {
+    ".html"  = "text/html; charset=utf-8"
+    ".js"    = "application/javascript"
+    ".css"   = "text/css"
+    ".json"  = "application/json"
+    ".png"   = "image/png"
+    ".svg"   = "image/svg+xml"
+    ".webp"  = "image/webp"
+    ".jpg"   = "image/jpeg"
+    ".jpeg"  = "image/jpeg"
+    ".gif"   = "image/gif"
+    ".ico"   = "image/x-icon"
+    ".txt"   = "text/plain"
+    ".woff2"  = "font/woff2"
+    ".woff"  = "font/woff"
+    ".ttf"   = "font/ttf"
+    ".otf"   = "font/otf"
+    ".map"   = "application/json"
+    ".xml"   = "application/xml"
+  }
 }
 
-resource "aws_s3_object" "index_html" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "index.html"
-  source        = "${path.module}/../../landing-page/index.html"
-  content_type  = "text/html; charset=utf-8"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/index.html")
-}
+resource "aws_s3_object" "web_files" {
+  for_each = local.web_files
 
-resource "aws_s3_object" "script_js" {
   bucket        = aws_s3_bucket.landing_page.id
-  key           = "script.js"
-  source        = "${path.module}/../../landing-page/script.js"
-  content_type  = "application/javascript"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/script.js")
-}
-
-resource "aws_s3_object" "style_css" {
-  bucket        = aws_s3_bucket.landing_page.id
-  key           = "style.css"
-  source        = "${path.module}/../../landing-page/style.css"
-  content_type  = "text/css"
-  cache_control = "max-age=3600"
-  etag          = filemd5("${path.module}/../../landing-page/style.css")
+  key           = each.value
+  source        = "${local.web_out_dir}/${each.value}"
+  content_type  = try(local.mime_types[regex("\\.[^.]+$", each.value)], "application/octet-stream")
+  etag          = filemd5("${local.web_out_dir}/${each.value}")
+  cache_control = can(regex("^_next/", each.value)) ? "max-age=604800" : "max-age=3600"
 }
 
 # ===========================================
@@ -199,6 +203,12 @@ resource "aws_cloudfront_distribution" "landing_page" {
 
   price_class = "PriceClass_100"
 
+  custom_error_response {
+    error_code         = 404
+    response_code      = 404
+    response_page_path = "/404.html"
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "none"
@@ -212,10 +222,7 @@ resource "aws_cloudfront_distribution" "landing_page" {
   }
 
   depends_on = [
-    aws_s3_object.logo,
-    aws_s3_object.index_html,
-    aws_s3_object.script_js,
-    aws_s3_object.style_css,
+    aws_s3_object.web_files,
   ]
 }
 
