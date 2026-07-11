@@ -69,7 +69,7 @@ locals {
 
 resource "null_resource" "sync_web_files" {
   triggers = {
-    index_hash = filebase64sha1("${local.web_out_dir}/index.html")
+    index_hash = filebase64sha512("${local.web_out_dir}/index.html")
   }
 
   provisioner "local-exec" {
