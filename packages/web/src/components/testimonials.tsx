@@ -6,11 +6,18 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const TESTIMONIALS = [
   {
-    player: "firedust",
-    title: "Organizer of br.tf2pickup.org",
+    player: "eduardofer",
+    title: "Head-Admin of Brasil Fortress",
     testimonial:
-      "QuickServer has really helped us on our community, especially with the br.pickup.org integration, pugs and officials. It has every usable config, really stable servers and smooth gameplay.",
-    avatar: "/avatars/firedust.jpg",
+      "TF2-QuickServer has been an excellent partner for the competitive Team Fortress 2 community. The servers offer great stability, low ping, and consistent performance, becoming essential for competitive matches and championships. Throughout the Brasil Fortress seasons, TF2-QuickServer's infrastructure has always demonstrated reliability, allowing players from different South American countries to compete in balanced, high-quality matches. For anyone looking for quality servers, TF2-QuickServer is a confidently recommended choice.",
+    avatar: "/avatars/eduardofer.jpg",
+  },
+  {
+    player: "AC130",
+    title: "Head-Admin of FBTF",
+    testimonial:
+      "After the fall of Server Me SA, the South American community suffered a lot with the absence of stable and high quality servers. TF2-QuickServer solved that issue and went beyond; TF2-QuickServer brought easy to use servers not only for us in South America, but for the majority of other regions who required reliable and free servers. We in South America use TF2-QuickServer as our main form of hosting matches in the principal Brazilian Leagues. Today, we have access to servers to all the regions, thanks to Sonikro and his commitment with the TF2 community to always provide servers that are 100% updated, have all configs, maps and reliability that we require in competitive and other popular game modes.",
+    avatar: "/avatars/ac130.jpg",
   },
   {
     player: "erasqer",
@@ -20,6 +27,13 @@ const TESTIMONIALS = [
     avatar: "/avatars/erasqer.jpg",
   },
   {
+    player: "H20Gamez",
+    title: "Admin for TFArena, UGC, CLTF2",
+    testimonial:
+      "Being from NA, TF2-QuickServers was unheard of at the time and only through my friend Dax did I eventually learn about such a great platform. During a time of large growth, especially with newer players, TF2-QuickServers was an asset due to its ease of use in any league server, as well as its importance on being free and fast for all who use it. I am so grateful to see the platform expand to so many more players, especially the NA ones!",
+    avatar: "/avatars/h20gamez.jpg",
+  },
+  {
     player: "Crawdad",
     title: "Competitive TF2 Player",
     testimonial:
@@ -27,11 +41,11 @@ const TESTIMONIALS = [
     avatar: "/avatars/crawdad.jpg",
   },
   {
-    player: "eduardofer",
-    title: "Head-Admin of Brasil Fortress",
+    player: "firedust",
+    title: "Organizer of br.tf2pickup.org",
     testimonial:
-      "TF2-QuickServer has been an excellent partner for the competitive Team Fortress 2 community. The servers offer great stability, low ping, and consistent performance, becoming essential for competitive matches and championships. Throughout the Brasil Fortress seasons, TF2-QuickServer's infrastructure has always demonstrated reliability, allowing players from different South American countries to compete in balanced, high-quality matches. For anyone looking for quality servers, TF2-QuickServer is a confidently recommended choice.",
-    avatar: "/avatars/eduardofer.jpg",
+      "QuickServer has really helped us on our community, especially with the br.pickup.org integration, pugs and officials. It has every usable config, really stable servers and smooth gameplay.",
+    avatar: "/avatars/firedust.jpg",
   },
 ];
 
