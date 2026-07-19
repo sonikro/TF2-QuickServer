@@ -152,6 +152,9 @@ RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_anti_switch.sp" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/tfdb_no_block.sp" \
   "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/NERandSOLO.sp" \
+  && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled" \
+  && mv "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/dodgeball.smx" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/dodgeball.smx" \
+  && mv "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_pvb.smx" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/tfdb_pvb.smx" \
   && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" tfdb
 
 # ozfortress configs

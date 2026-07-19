@@ -28,9 +28,6 @@ recordstv_path "demos"
 log on
 sv_logsecret "${SV_LOGSECRET}"
 
-// Keep Dodgeball plugins disabled by default; enabled only by dodgeball.cfg on tfdb maps.
-sm plugins unload dodgeball
-sm plugins unload tfdb_pvb
 
 // ---------------------------------------------------------------------------
 // Ozfortress config aliases
