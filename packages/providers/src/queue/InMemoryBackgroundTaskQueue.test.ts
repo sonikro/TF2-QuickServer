@@ -95,7 +95,7 @@ describe('InMemoryBackgroundTaskQueue', () => {
       expect(processor.process).toHaveBeenCalled();
     });
 
-    it('should process multiple tasks in order', async () => {
+    it('should process all ready tasks concurrently', async () => {
       const processor = mock<BackgroundTaskProcessor>();
       processor.process.mockResolvedValue(undefined);
       
@@ -330,7 +330,7 @@ describe('InMemoryBackgroundTaskQueue', () => {
       expect(onSuccess).toHaveBeenCalledWith({ success: true });
     });
 
-    it('should process retried tasks in order with other tasks', async () => {
+    it('should process retried tasks concurrently with other tasks', async () => {
       const processor = mock<BackgroundTaskProcessor>();
       const results: string[] = [];
 
@@ -351,9 +351,13 @@ describe('InMemoryBackgroundTaskQueue', () => {
 
       await sut.start();
 
-      await vi.advanceTimersByTimeAsync(3500);
-      expect(results).toEqual(['2', '3']);
+      // Concurrent contract: all ready tasks are processed within the first tick.
+      // '2' and '3' complete immediately; '1' fails and is retried after the 1s backoff.
+      await vi.advanceTimersByTimeAsync(1100);
+      expect(results).toEqual(expect.arrayContaining(['2', '3']));
+      expect(results).not.toContain('1');
 
+      // After advancing past the retry backoff, '1' is re-processed
       await vi.advanceTimersByTimeAsync(1500);
       expect(results).toEqual(['2', '3', '1']);
 

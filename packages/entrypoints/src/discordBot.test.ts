@@ -2,8 +2,10 @@ import { Client, CommandInteraction, REST, Routes } from 'discord.js';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mock, mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { KnexConnectionManager } from '@tf2qs/providers';
+import { KnexConnectionManager, InMemoryBackgroundTaskQueue } from '@tf2qs/providers';
+import { CreateServerForUser, ExecuteScheduledServers } from "@tf2qs/core";
 import { createCommands } from './commands';
+import { scheduleScheduledServerCreationRoutine } from "./jobs";
 import { startDiscordBot } from "./discordBot";
 
 vi.mock("@tf2qs/providers", async () => {
@@ -27,6 +29,14 @@ vi.mock("./commands", async (importOriginal) => {
     const commands = actual.createCommands(mock() as any);
     return {
         createCommands: vi.fn().mockReturnValue(commands),
+    }
+})
+
+vi.mock("./jobs", async (importOriginal) => {
+    const actual = await importOriginal() as typeof import('./jobs');
+    return {
+        ...actual,
+        scheduleScheduledServerCreationRoutine: vi.fn(),
     }
 })
 
@@ -100,6 +110,36 @@ describe("startDiscordBot", () => {
 
         it("should set the token for the REST client", () => {
             expect(rest.setToken).toHaveBeenCalledWith('valid_token');
+        })
+
+        describe("scheduled server wiring", () => {
+            it("should schedule the scheduled server creation routine with an ExecuteScheduledServers use case", () => {
+                expect(scheduleScheduledServerCreationRoutine).toHaveBeenCalledWith({
+                    executeScheduledServers: expect.any(ExecuteScheduledServers),
+                    eventLogger: expect.anything(),
+                });
+            })
+
+            it("should pass the shared createServerForUser instance to createCommands", () => {
+                // startDiscordBot calls createCommands once; the first call is the module-scope mock
+                const lastCreateCommandsCall = vi.mocked(createCommands).mock.calls[vi.mocked(createCommands).mock.calls.length - 1];
+                const commandDependencies = lastCreateCommandsCall[0];
+                expect(commandDependencies.createServerForUser).toBeInstanceOf(CreateServerForUser);
+            })
+
+            it("should pass the backgroundTaskQueue to ExecuteScheduledServers", () => {
+                const jobDependencies = vi.mocked(scheduleScheduledServerCreationRoutine).mock.calls[0][0];
+                // The backgroundTaskQueue is constructed inside startDiscordBot (new
+                // InMemoryBackgroundTaskQueue(...)) and is not injectable or mockable at this
+                // boundary, so the only way to verify it was wired into ExecuteScheduledServers is
+                // to reach into its TS-private `dependencies` field. This guards against a
+                // regression where the routine is scheduled without a queue, which would silently
+                // drop all create-scheduled-server enqueues.
+                const executeScheduledServers = jobDependencies.executeScheduledServers as unknown as {
+                    dependencies: { backgroundTaskQueue: InMemoryBackgroundTaskQueue };
+                };
+                expect(executeScheduledServers.dependencies.backgroundTaskQueue).toBeInstanceOf(InMemoryBackgroundTaskQueue);
+            })
         })
 
         describe("interaction handlers", () => {

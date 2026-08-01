@@ -128,17 +128,25 @@ export class InMemoryBackgroundTaskQueue implements BackgroundTaskQueue {
     }
 
     const now = new Date();
-    const readyTaskIndex = this.tasks.findIndex((task) => !task.scheduledAt || task.scheduledAt <= now);
+    const readyTasks = this.tasks.filter((task) => !task.scheduledAt || task.scheduledAt <= now);
 
-    if (readyTaskIndex === -1) {
+    if (readyTasks.length === 0) {
       return;
     }
 
-    const task = this.tasks.splice(readyTaskIndex, 1)[0];
-    if (!task) {
-      return;
-    }
+    this.tasks = this.tasks.filter((task) => !readyTasks.includes(task));
 
+    // Overlap safety: ready tasks are removed from this.tasks before processing, and
+    // retries are re-pushed with a future scheduledAt, so two overlapping processTasks
+    // invocations (e.g. if a batch outlives the 1s tick) can never double-process a task.
+
+    // Process all ready tasks concurrently. allSettled keeps one failing task's
+    // internal handling (already try/caught in processTask) from rejecting the
+    // whole batch; it is the safe choice even though processTask never rejects.
+    await Promise.allSettled(readyTasks.map((task) => this.processTask(task)));
+  }
+
+  private async processTask(task: BackgroundTask): Promise<void> {
     const processor = this.processors.get(task.type);
     if (!processor) {
       logger.emit({

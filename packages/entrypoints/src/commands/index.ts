@@ -3,6 +3,9 @@ import { CreateServerForUser } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
 import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
+import { GetUserSchedules } from "@tf2qs/core";
+import { CreateScheduledServer } from "@tf2qs/core";
+import { CancelScheduledServer } from "@tf2qs/core";
 import { BackgroundTaskQueue } from "@tf2qs/core";
 import { createServerCommandDefinition, createServerCommandHandlerFactory } from "./CreateServer";
 import { getMyServersCommandDefinition, getMyServersCommandHandlerFactory } from "./GetMyServers";
@@ -11,6 +14,9 @@ import { terminateServerCommandDefinition, terminateServerHandlerFactory } from 
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
+import { scheduleCommandDefinition, createScheduleCommandHandlerFactory } from "./Schedule";
+import { showSchedulesCommandDefinition, showSchedulesCommandHandlerFactory } from "./ShowSchedules";
+import { cancelScheduleCommandDefinition, cancelScheduleCommandHandlerFactory } from "./CancelSchedule";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -19,6 +25,9 @@ export type CommandDependencies = {
     getServerStatus: GetServerStatus;
     getGuildServers: GetGuildServers;
     getUserServers: GetUserServers;
+    getUserSchedules: GetUserSchedules;
+    createScheduledServer: CreateScheduledServer;
+    cancelScheduledServer: CancelScheduledServer;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -64,6 +73,27 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: getMyServersCommandDefinition,
             handler: getMyServersCommandHandlerFactory({
                 getUserServers: dependencies.getUserServers,
+            })
+        },
+        schedule: {
+            name: "schedule",
+            definition: scheduleCommandDefinition,
+            handler: createScheduleCommandHandlerFactory({
+                createScheduledServer: dependencies.createScheduledServer,
+            })
+        },
+        showSchedules: {
+            name: "show-schedules",
+            definition: showSchedulesCommandDefinition,
+            handler: showSchedulesCommandHandlerFactory({
+                getUserSchedules: dependencies.getUserSchedules,
+            })
+        },
+        cancelSchedule: {
+            name: "cancel-schedule",
+            definition: cancelScheduleCommandDefinition,
+            handler: cancelScheduleCommandHandlerFactory({
+                cancelScheduledServer: dependencies.cancelScheduledServer,
             })
         }
     } satisfies Record<string, {
