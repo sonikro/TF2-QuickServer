@@ -5,6 +5,19 @@ const COMMANDS = [
       "Launches a server in the selected region (prompts for variant)",
   },
   {
+    command: "/schedule <region> <time> <timezone>",
+    description:
+      "Schedules a server to be created and ready at a specific time",
+  },
+  {
+    command: "/show-schedules",
+    description: "Shows your scheduled server(s)",
+  },
+  {
+    command: "/cancel-schedule",
+    description: "Cancels your scheduled server (before creation starts)",
+  },
+  {
     command: "/get-my-servers",
     description:
       "Retrieves all your active server details (IPs, passwords, etc.)",

@@ -30,6 +30,7 @@ TF2-QuickServer is a Discord bot that spawns TF2 servers across multiple regions
 ## Features
 
 - **Quick Server Deployment** – Spin up a TF2 server in 3 minutes with a simple Discord command
+- **Scheduled Deployments** – Have a server ready at a specific time: run `/schedule` with a region, time (24h HH:mm), and timezone, and the bot creates it automatically so it's ready on time
 - **Multi-Cloud Global Deployment** – Deploy across Oracle Cloud regions and AWS Local Zones for low latency
 - **DDoS Protection** – TF2-QuickServer-Shield monitors and blocks attacks in real time with in-game notifications
 - **Containerized Architecture** – Each server runs in an isolated Docker container
@@ -73,6 +74,9 @@ See the full lists: [Oracle Cloud Regions](https://www.oracle.com/cloud/public-c
 | Command | Description |
 |--------|-------------|
 | `/create-server <region>` | Launches a server in the selected region (you'll be prompted to select a variant) |
+| `/schedule <region> <time> <timezone>` | Schedules a server to be created and ready at a specific time (24h HH:mm, e.g. 21:30) |
+| `/show-schedules` | Shows your scheduled server(s) |
+| `/cancel-schedule` | Cancels your scheduled server (only possible before creation starts) |
 | `/get-my-servers` | Retrieves all your active server details (IPs, passwords, etc.) in case you lost the original message |
 | `/get-guild-servers` | **Admin only.** Lists all active servers belonging to the Discord guild (IPs, passwords, etc.) |
 | `/status` | Shows the current status of all servers across all regions (running, pending, terminating counts) |

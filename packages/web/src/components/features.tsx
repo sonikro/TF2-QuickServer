@@ -1,5 +1,6 @@
 import {
   FaBolt,
+  FaCalendarAlt,
   FaGlobeAmericas,
   FaShieldAlt,
   FaProjectDiagram,
@@ -9,6 +10,7 @@ import {
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   "fa-bolt": FaBolt,
+  "fa-calendar-alt": FaCalendarAlt,
   "fa-globe-americas": FaGlobeAmericas,
   "fa-shield-halved": FaShieldAlt,
   "fa-diagram-project": FaProjectDiagram,
@@ -22,6 +24,12 @@ const FEATURES = [
     title: "QuickServer Deployment",
     description:
       "Create a new TF2 Server from scratch in 4 minutes. From 0 to a fully running server with one Discord command.",
+  },
+  {
+    icon: "fa-calendar-alt",
+    title: "Scheduled Deployments",
+    description:
+      "Have a server ready at a specific time — run /schedule with a region, time (24h HH:mm), and timezone, and the bot creates it automatically so it's ready on time.",
   },
   {
     icon: "fa-globe-americas",
