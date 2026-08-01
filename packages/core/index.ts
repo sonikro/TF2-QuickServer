@@ -17,6 +17,7 @@ export * from './src/repository/UserRepository';
 export * from './src/repository/UserBanRepository';
 export * from './src/repository/ServerStatusMetricsRepository';
 export * from './src/repository/PlayerConnectionHistoryRepository';
+export * from './src/repository/ScheduledServerRepository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
@@ -37,12 +38,17 @@ export * from './src/services/TF2ServerReadinessService';
 // Use cases
 export * from './src/usecase/CreateServerForClient';
 export * from './src/usecase/CreateServerForUser';
+export * from './src/usecase/CreateScheduledServer';
+export * from './src/usecase/CancelScheduledServer';
 export * from './src/usecase/DeleteServer';
 export * from './src/usecase/DeleteServerForUser';
+export * from './src/usecase/ExecuteScheduledServerCreation';
+export * from './src/usecase/ExecuteScheduledServers';
 export * from './src/usecase/GenerateMonthlyUsageReport';
 export * from './src/usecase/GetServerStatus';
 export * from './src/usecase/GetGuildServers';
 export * from './src/usecase/GetUserServers';
+export * from './src/usecase/GetUserSchedules';
 export * from './src/usecase/SetUserData';
 export * from './src/usecase/TerminateEmptyServers';
 export * from './src/usecase/TerminateLongRunningServers';
@@ -51,3 +57,5 @@ export * from './src/usecase/TerminatePendingServers';
 // Utils
 export * from './src/utils/ConfigManager';
 export * from './src/utils/interpolateString';
+export * from './src/utils/scheduleTime';
+export * from './src/utils/failSafeDirectMessage';

@@ -18,6 +18,11 @@ export type RegionConfig = {
     tvHostname: string;
     cloudProvider: CloudProvider;
     homeRegion?: string;
+    /**
+     * How many minutes before the user's scheduled ready time the server should start being created.
+     * @default 5
+     */
+    scheduledCreationLeadMinutes?: number;
 }
 
 export function isValidRegion(region: string): region is Region {
@@ -58,4 +63,15 @@ export function getRegions(): Region[] {
 export function getCloudProvider(region: Region): CloudProvider {
     const regionConfig = getRegionConfig(region);
     return regionConfig.cloudProvider;
+}
+
+/**
+ * Gets the lead time in minutes before a scheduled server should start being created.
+ *
+ * @param region - The region to check
+ * @returns The lead time in minutes (defaults to 5)
+ */
+export function getScheduledCreationLeadMinutes(region: Region): number {
+    const regionConfig = getRegionConfig(region);
+    return regionConfig.scheduledCreationLeadMinutes ?? 5;
 }

@@ -1,6 +1,11 @@
 import { CreateServerForClient } from "@tf2qs/core";
 import { ChatInputCommandInteraction, Client, GatewayIntentBits, MessageFlags, REST, Routes } from "discord.js";
 import { CreateServerForUser } from "@tf2qs/core";
+import { CancelScheduledServer } from "@tf2qs/core";
+import { CreateScheduledServer } from "@tf2qs/core";
+import { ExecuteScheduledServers } from "@tf2qs/core";
+import { ExecuteScheduledServerCreation } from "@tf2qs/core";
+import { GetUserSchedules } from "@tf2qs/core";
 import { DeleteServer } from "@tf2qs/core";
 import { DeleteServerForUser } from "@tf2qs/core";
 import { GenerateMonthlyUsageReport } from "@tf2qs/core";
@@ -17,6 +22,7 @@ import { DefaultCostProvider } from "@tf2qs/providers";
 import { createServerForClientTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerForUserTaskProcessor } from "@tf2qs/providers";
 import { createDeleteServerTaskProcessor } from "@tf2qs/providers";
+import { createScheduledServerTaskProcessor } from "@tf2qs/providers";
 import { InMemoryBackgroundTaskQueue } from "@tf2qs/providers";
 import { CsvUserBanRepository } from "@tf2qs/providers";
 import { KnexConnectionManager } from "@tf2qs/providers";
@@ -24,6 +30,7 @@ import { SQLiteGuildParametersRepository } from "@tf2qs/providers";
 import { SQLiteReportRepository } from "@tf2qs/providers";
 import { SQLiteServerActivityRepository } from "@tf2qs/providers";
 import { SQLiteServerRepository } from "@tf2qs/providers";
+import { SQLiteScheduledServerRepository } from "@tf2qs/providers";
 import { SQLiteUserRepository } from "@tf2qs/providers";
 import { SQLiteServerStatusMetricsRepository } from "@tf2qs/providers";
 import { SQLitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
@@ -41,8 +48,9 @@ import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
+import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleScheduledServerCreationRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
+import { formatServerMessage } from "./commands/formatServerMessage";
 
 export async function startDiscordBot() {
 
@@ -153,17 +161,52 @@ export async function startDiscordBot() {
         createServerForClientTaskProcessor(createServerForClientUseCase)
     );
 
+    const createServerForUser = new CreateServerForUser({
+        serverManagerFactory: serverManagerFactory,
+        serverRepository,
+        eventLogger,
+        sourceTvEventLogger,
+        userRepository,
+        guildParametersRepository,
+        userBanRepository,
+        idGenerator: new UuidIdGenerator()
+    });
+
+    const scheduledServerRepository = new SQLiteScheduledServerRepository({
+        knex: KnexConnectionManager.client,
+    })
+
+    const executeScheduledServerCreation = new ExecuteScheduledServerCreation({
+        scheduledServerRepository,
+        createServerForUser,
+        discordBot: client,
+        eventLogger,
+        serverMessageFormatter: formatServerMessage,
+    });
+
+    backgroundTaskQueue.registerProcessor(
+        'create-scheduled-server',
+        createScheduledServerTaskProcessor(executeScheduledServerCreation)
+    );
+
+    const createScheduledServer = new CreateScheduledServer({
+        scheduledServerRepository,
+        idGenerator: new UuidIdGenerator(),
+        discordBot: client,
+        eventLogger
+    });
+
+    const getUserSchedules = new GetUserSchedules({
+        scheduledServerRepository
+    });
+
+    const cancelScheduledServer = new CancelScheduledServer({
+        scheduledServerRepository,
+        eventLogger
+    });
+
     const discordCommands = createCommands({
-        createServerForUser: new CreateServerForUser({
-            serverManagerFactory: serverManagerFactory,
-            serverRepository,
-            eventLogger,
-            sourceTvEventLogger,
-            userRepository,
-            guildParametersRepository,
-            userBanRepository,
-            idGenerator: new UuidIdGenerator()
-        }),
+        createServerForUser,
         setUserData: new SetUserData({
             userRepository
         }),
@@ -176,6 +219,9 @@ export async function startDiscordBot() {
         getUserServers: new GetUserServers({
             serverRepository
         }),
+        getUserSchedules,
+        createScheduledServer,
+        cancelScheduledServer,
         backgroundTaskQueue
     })
 
@@ -209,6 +255,18 @@ export async function startDiscordBot() {
             serverCommander,
             eventLogger
         }),
+        eventLogger
+    })
+
+    const executeScheduledServers = new ExecuteScheduledServers({
+        scheduledServerRepository,
+        backgroundTaskQueue,
+        discordBot: client,
+        eventLogger,
+    });
+
+    scheduleScheduledServerCreationRoutine({
+        executeScheduledServers,
         eventLogger
     })
 

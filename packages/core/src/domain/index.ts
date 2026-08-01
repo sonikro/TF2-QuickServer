@@ -1,4 +1,5 @@
 export * from "./DeployedServer"
+export * from "./ScheduledServer";
 export * from "./Region";
 export * from "./Variant";
 export * from "./DiscordConfig";
