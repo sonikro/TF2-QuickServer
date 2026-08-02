@@ -1,4 +1,4 @@
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -6,7 +6,7 @@ export default defineConfig({
     alias: {
       // Resolves the `@/*` path alias (packages/web/tsconfig.json) for the
       // web workspace tests; only web source uses the bare `@` alias.
-      "@": fileURLToPath(new URL("./packages/web/src", import.meta.url)),
+      "@": path.resolve(__dirname, "packages/web/src"),
     },
   },
   test: {
