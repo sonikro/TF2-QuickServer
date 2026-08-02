@@ -78,7 +78,7 @@ The landing page stacks sections vertically, linked via anchor IDs (`#features`,
 
 The docs page at `/docs/` renders the Markdown files in `docs/` at build time via `react-markdown` (+ `remark-gfm`, `rehype-slug`). Each file's first `# ` heading becomes a section title; `rehype-slug` derives anchor ids from heading text, and those ids MUST be unique across all docs files (duplicates fail the build).
 
-`trailingSlash: true` in `next.config.ts` is REQUIRED: the site is served from a private S3 bucket via CloudFront (non-website origin), which will not resolve extension-less paths — without it, `/docs` would 404. ALL internal links must therefore use explicit trailing slashes (e.g. `/docs/`, never `/docs`).
+`trailingSlash: true` in `next.config.ts` is REQUIRED: it produces the folder-style output (`out/docs/index.html`) that the CloudFront/S3 origin can serve. The `directory-index` CloudFront Function (see `terraform/landing-page/main.tf`) rewrites extension-less viewer requests such as `/docs` and `/docs/` to `/docs/index.html`, so both spellings work. Keep using explicit trailing slashes (`/docs/`) in internal links for consistency.
 
 ### Client Components With `"use client"`
 
@@ -133,6 +133,7 @@ Key resources:
 | `aws_cloudfront_origin_access_identity.landing_page` | OAI so only CloudFront can read the bucket |
 | `aws_s3_bucket_policy.landing_page` | Bucket policy granting `s3:GetObject` to the OAI |
 | `aws_cloudfront_distribution.landing_page` | CloudFront distribution (HTTP/2+3, PriceClass_100, caching optimized, HTTPS only) |
+| `aws_cloudfront_function.directory_index` | CloudFront Function rewriting extension-less paths (`/docs`, `/docs/`) to `/docs/index.html` |
 | `aws_route53_record.landing_page` | DNS A record aliased to CloudFront |
 | `aws_acm_certificate.landing_page` | TLS certificate validated via DNS (Route53) |
 | `null_resource.sync_web_files` | Upload via `aws s3 sync` with different cache headers |
@@ -145,6 +146,10 @@ Two `aws s3 sync` commands set appropriate cache lifetimes:
 |---------|--------------|-----------|
 | All files except `_next/*` | `max-age=3600` | HTML can change on each deploy |
 | `_next/*` | `max-age=604800` (7 days) | Content-hashed, immutable |
+
+### Directory Index Rewriting
+
+The `aws_cloudfront_function.directory_index` function (associated with the default cache behavior as a `viewer-request` event) appends `/index.html` to any URI without a file extension. Without it, `https://quickserver.tf/docs` returns **403 Access Denied**: the private bucket grants only `s3:GetObject` (no `s3:ListBucket`), so S3 hides the missing key and CloudFront forwards the 403 to the viewer. The function rewrites the URI to `/docs/index.html` before it reaches S3, so `/docs`, `/docs/`, and `/` all resolve.
 
 ### 404 Handling
 

@@ -109,8 +109,8 @@ resource "aws_s3_bucket_policy" "landing_page" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "CloudFrontOAIRead"
-        Effect    = "Allow"
+        Sid    = "CloudFrontOAIRead"
+        Effect = "Allow"
         Principal = {
           AWS = aws_cloudfront_origin_access_identity.landing_page.iam_arn
         }
@@ -166,6 +166,43 @@ data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = "Managed-CachingOptimized"
 }
 
+# ===========================================
+# CLOUDFRONT FUNCTION (DIRECTORY INDEX REWRITE)
+# ===========================================
+# The default root object only applies to the root URL, not subdirectories.
+# A non-website S3 origin will not resolve extension-less paths like /docs or
+# /docs/ by itself — the object "docs" does not exist, and the private bucket
+# returns 403 Access Denied (no s3:ListBucket) instead of 404. This viewer
+# request function rewrites extension-less URIs to <path>/index.html so the
+# S3 origin can serve them.
+
+resource "aws_cloudfront_function" "directory_index" {
+  name    = "directory-index"
+  runtime = "cloudfront-js-2.0"
+  comment = "Rewrite extension-less paths (e.g. /docs) to <path>/index.html for the S3 origin"
+  publish = true
+
+  code = <<-EOT
+    function handler(event) {
+      var request = event.request;
+      var uri = request.uri;
+
+      // Requests that point to an actual file (URI contains a dot) pass through.
+      if (uri.includes('.')) {
+        return request;
+      }
+
+      // Normalize to a trailing slash, then append the index document.
+      if (!uri.endsWith('/')) {
+        uri = uri + '/';
+      }
+
+      request.uri = uri + 'index.html';
+      return request;
+    }
+  EOT
+}
+
 resource "aws_cloudfront_distribution" "landing_page" {
   enabled             = true
   is_ipv6_enabled     = true
@@ -191,6 +228,11 @@ resource "aws_cloudfront_distribution" "landing_page" {
 
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
+
+    function_association {
+      event_type   = "viewer-request"
+      function_arn = aws_cloudfront_function.directory_index.arn
+    }
   }
 
   price_class = "PriceClass_100"
