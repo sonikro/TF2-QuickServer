@@ -55,10 +55,8 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/sonikro/TF2-QuickServer/wiki"
+                  href="/docs/"
                   className="text-text-muted no-underline text-sm hover:text-accent transition-colors"
-                  target="_blank"
-                  rel="noopener"
                 >
                   <FaBook className="me-2 inline" />
                   Wiki

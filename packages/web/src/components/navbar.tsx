@@ -11,7 +11,22 @@ const NAV_ITEMS = [
   { label: "Regions", href: "#regions" },
   { label: "Commands", href: "#commands" },
   { label: "Install Bot", href: "#install" },
+  { label: "Docs", href: "/docs/" },
 ] as const;
+
+export function isInternalAnchorHref(href: string): boolean {
+  return href.startsWith("#");
+}
+
+export function isNavItemActive(
+  itemHref: string,
+  activeSection: string,
+): boolean {
+  return (
+    (itemHref === "/docs/" && activeSection === "docs") ||
+    itemHref === `#${activeSection}`
+  );
+}
 
 export default function Navbar() {
   const [activeSection, setActiveSection] = useState("");
@@ -22,6 +37,10 @@ export default function Navbar() {
     const sections = document.querySelectorAll("section[id]");
 
     function updateActiveLink() {
+      if (window.location.pathname.endsWith("/docs/")) {
+        setActiveSection("docs");
+        return;
+      }
       const navHeight = nav?.offsetHeight ?? 72;
       let current = "";
       sections.forEach((section) => {
@@ -40,9 +59,14 @@ export default function Navbar() {
 
   function handleNavClick(href: string) {
     setMobileOpen(false);
+    if (!isInternalAnchorHref(href)) {
+      return;
+    }
     const target = document.querySelector(href);
     if (target) {
       target.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      window.location.assign("/" + href);
     }
   }
 
@@ -60,7 +84,7 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-dark-bg/92 backdrop-blur-md border-b border-white/10 py-3">
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
-        <a href="#" className="flex items-center gap-2 no-underline">
+        <a href="/" className="flex items-center gap-2 no-underline">
           <Image
             src="/logo.png"
             alt="TF2-QuickServer"
@@ -105,11 +129,15 @@ export default function Navbar() {
                 <a
                   href={item.href}
                   onClick={(e) => {
-                    e.preventDefault();
-                    handleNavClick(item.href);
+                    if (isInternalAnchorHref(item.href)) {
+                      e.preventDefault();
+                      handleNavClick(item.href);
+                    } else {
+                      setMobileOpen(false);
+                    }
                   }}
                   className={`block px-4 py-2 rounded-lg text-sm font-medium no-underline transition-colors duration-200 ${
-                    activeSection === item.href.slice(1)
+                    isNavItemActive(item.href, activeSection)
                       ? "text-accent"
                       : "text-text-muted hover:text-white hover:bg-white/5"
                   }`}

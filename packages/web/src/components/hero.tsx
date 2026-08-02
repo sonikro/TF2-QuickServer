@@ -43,10 +43,8 @@ export default function Hero() {
             Join Discord
           </a>
           <a
-            href="https://github.com/sonikro/TF2-QuickServer/wiki"
+            href="/docs/"
             className="inline-flex items-center gap-2 px-7 py-3 rounded-xl font-semibold text-white no-underline border border-white/30 hover:bg-white/10 transition-colors"
-            target="_blank"
-            rel="noopener"
           >
             <FaBook />
             Wiki

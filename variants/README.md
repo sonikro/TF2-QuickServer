@@ -171,7 +171,7 @@ docker build -f variants/fat-standard-competitive/Dockerfile -t my-tf2-server .
 ## 🔗 Related Links
 
 - 📖 [TF2-QuickServer Main Repository](https://github.com/sonikro/TF2-QuickServer)
-- 📖 [TF2-QuickServer Wiki](https://github.com/sonikro/TF2-QuickServer/wiki)
+- 📖 [TF2-QuickServer Docs](https://quickserver.tf/docs/)
 - 🎮 [Join our Discord](https://discord.gg/HfDgMj73cW)
 - 🐳 [Base Image: melkortf/tf2-servers](https://github.com/melkortf/tf2-servers)
 

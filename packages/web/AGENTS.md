@@ -26,7 +26,7 @@ This means:
 - **No server-side features.** API routes, server actions, `getServerSideProps`, `getStaticProps`, `getStaticPaths`, middleware, rewrites, and redirects do not work in static export mode.
 - **No `next/image` optimization.** Images are served as-is from `/public/`.
 - **No ISR or on-demand revalidation.** The site is rebuilt and re-deployed as a whole.
-- **No `next/link` prefetching** with dynamic routes — there is only one page (the landing page).
+- **No `next/link` prefetching** with dynamic routes — there are exactly two static pages (the landing page and the docs page).
 
 Everything must run on the client. Interactive components use the `"use client"` directive.
 
@@ -34,12 +34,17 @@ Everything must run on the client. Interactive components use the `"use client"`
 
 ```
 packages/web/
-├── public/              # Static assets (logo.png, avatars/*.jpg)
+├── docs/               # Markdown source of truth for the /docs/ page (rendered at build time)
+├── public/             # Static assets (logo.png, avatars/*.jpg)
 ├── src/
 │   ├── app/
 │   │   ├── globals.css  # Tailwind imports + custom CSS
 │   │   ├── layout.tsx   # Root layout (metadata, fonts, body wrapper)
-│   │   └── page.tsx     # Single landing page (composes all sections)
+│   │   ├── page.tsx     # Landing page (composes all sections)
+│   │   └── docs/
+│   │       └── page.tsx # Docs page (renders docs/*.md at build time)
+│   ├── lib/
+│   │   └── docs.ts      # Build-time loader for docs/*.md (node:fs, process.cwd())
 │   └── components/
 │       ├── navbar.tsx       # Fixed nav with scroll-aware active link
 │       ├── hero.tsx         # Hero section with CTA buttons
@@ -51,7 +56,11 @@ packages/web/
 │       ├── install-bot.tsx  # Discord bot install CTA
 │       ├── regions.tsx      # Supported regions (OCI + AWS)
 │       ├── commands.tsx     # Discord commands table
-│       └── footer.tsx       # Site footer with links
+│       ├── footer.tsx       # Site footer with links
+│       └── docs/
+│           ├── markdown-components.tsx # react-markdown component mapping (shared styling)
+│           ├── docs-toc.tsx            # Table of contents builder + renderer
+│           └── docs-section.tsx        # Spacing wrapper for each docs markdown file
 ├── out/                # Build output (gitignored) — static files for upload
 ├── next.config.ts      # Static export config
 ├── postcss.config.mjs  # PostCSS with Tailwind
@@ -61,9 +70,15 @@ packages/web/
 
 ## Key Conventions
 
-### Only One Page
+### Two Static Pages
 
-This is a single-page application. There is no routing, no `[param]` dynamic segments, and no multi-page navigation. All sections are stacked vertically and linked via anchor IDs (`#features`, `#stats`, `#regions`, `#commands`, `#how-it-works`, `#install`).
+There are exactly two static pages: the landing page at `/` and the docs page at `/docs/`. There is no routing, no `[param]` dynamic segments, and no other multi-page navigation.
+
+The landing page stacks sections vertically, linked via anchor IDs (`#features`, `#stats`, `#regions`, `#commands`, `#how-it-works`, `#install`).
+
+The docs page at `/docs/` renders the Markdown files in `docs/` at build time via `react-markdown` (+ `remark-gfm`, `rehype-slug`). Each file's first `# ` heading becomes a section title; `rehype-slug` derives anchor ids from heading text, and those ids MUST be unique across all docs files (duplicates fail the build).
+
+`trailingSlash: true` in `next.config.ts` is REQUIRED: the site is served from a private S3 bucket via CloudFront (non-website origin), which will not resolve extension-less paths — without it, `/docs` would 404. ALL internal links must therefore use explicit trailing slashes (e.g. `/docs/`, never `/docs`).
 
 ### Client Components With `"use client"`
 
@@ -72,7 +87,7 @@ Components that use React hooks (`useState`, `useEffect`, `useRef`) MUST have `"
 - `navbar.tsx` — scroll-based active section tracking, mobile menu toggle
 - `stats.tsx` — calculates days-since-first-server from `Date.now()` (hydration-safe)
 
-Components without hooks (hero, features, testimonials, video-overview, how-it-works, install-bot, regions, commands, footer) are server components that render to static HTML at build time.
+Components without hooks (hero, features, testimonials, video-overview, how-it-works, install-bot, regions, commands, footer, docs page, docs components) are server components that render to static HTML at build time.
 
 ### Images
 
@@ -149,10 +164,10 @@ An ACM certificate (DNS-validated via Route53) is attached to the CloudFront dis
 ## What NOT To Do
 
 - Do NOT add API routes (`app/api/`). They do not work in static export mode.
-- Do NOT use `getServerSideProps`, `getStaticProps`, `getStaticPaths`, or `generateStaticParams` — they are unnecessary or unsupported for a single-page static export.
+- Do NOT use `getServerSideProps`, `getStaticProps`, `getStaticPaths`, or `generateStaticParams` — they are unnecessary or unsupported for a static export (pages render at build time by default).
 - Do NOT add server actions (`"use server"`). They do not work in static export mode.
 - Do NOT add middleware or rewrite/redirect rules in `next.config.ts`. They do not work in static export mode.
-- Do NOT add dynamic routes (`[slug]`) unless adding multi-page navigation (currently there is only one page).
+- Do NOT add dynamic routes (`[slug]`) — no dynamic segments; currently exactly two static pages.
 - Do NOT use `next/image` with external domains or optimization — it is disabled.
-- Do NOT import server-only modules (fs, crypto, database clients) in components.
+- Do NOT import server-only modules (fs, crypto, database clients) in client components or anywhere at runtime. Build-time-only `fs` reads inside server components used for static generation ARE allowed — the docs page loads `docs/*.md` via `src/lib/docs.ts` using `process.cwd()` (resolves to `packages/web` during the build).
 - Do NOT add `next/font` with variable fonts that require a server — `Inter` from `next/font/google` is safe (downloaded at build time).
