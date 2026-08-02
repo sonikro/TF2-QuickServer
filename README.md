@@ -2,7 +2,7 @@
 
 > For a simpler approach to TF2 servers on Oracle Cloud, see the [Terraform Module](https://github.com/sonikro/terraform-oracle-tf2-server).
 
-[![Read the Wiki – How to Use TF2-QuickServer](https://img.shields.io/badge/Wiki-How%20to%20Use%20TF2--QuickServer-blueviolet?style=for-the-badge&logo=github)](https://github.com/sonikro/TF2-QuickServer/wiki)
+[![Read the Docs – How to Use TF2-QuickServer](https://img.shields.io/badge/Docs-How%20to%20Use%20TF2--QuickServer-blueviolet?style=for-the-badge&logo=github)](https://quickserver.tf/docs/)
 
 [![Discord](https://img.shields.io/discord/1359667090092458055?label=Join%20Our%20Discord&logo=discord&style=for-the-badge)](https://discord.gg/HfDgMj73cW)
 [![Better Stack Badge](https://uptime.betterstack.com/status-badges/v1/monitor/21jog.svg)](https://status.sonikro.com/)
