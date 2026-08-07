@@ -463,6 +463,16 @@
                 "cp_steel_f12": "ozfortress_hl_stopwatch.cfg"
             },
             "guildId": "1243180086031679488"
+        },
+        "cltf2": {
+            "displayName": "CLTF2",
+            "hostname": "CLTF2 | {region} @ TF2-QuickServer",
+            "defaultCfgs": {
+                "pl": "rgl_HL_stopwatch.cfg",
+                "koth": "rgl_HL_koth.cfg",
+                "5cp": "rgl_HL_stopwatch.cfg"
+            },
+            "guildId": "533945103837036554"
         }
     },
     "discord": {
