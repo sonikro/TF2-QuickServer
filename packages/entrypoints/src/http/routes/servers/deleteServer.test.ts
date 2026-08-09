@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { describe, it, expect } from 'vitest';
 import { when } from 'vitest-when';
-import { makeSut, makeServer, TEST_CLIENT_ID } from '../testHelpers';
+import { makeSut, makeServer, TEST_CLIENT_ID, injectAuth } from '../testHelpers';
 
 describe('DELETE /api/servers/:serverId', () => {
     it('should return 202 with a taskId when the client owns the server', async () => {
@@ -46,5 +46,18 @@ describe('DELETE /api/servers/:serverId', () => {
         // Then
         expect(response.status).toBe(403);
         expect(response.body).toMatchObject({ error: 'Forbidden' });
+    });
+
+    it('should return 403 when the client lacks the manage:servers scope', async () => {
+        // Given
+        const { app, backgroundTaskQueue } = makeSut(injectAuth(TEST_CLIENT_ID, 'read:sourcetv:all'));
+
+        // When
+        const response = await request(app).delete('/api/servers/server-xyz');
+
+        // Then
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({ error: 'Forbidden' });
+        expect(backgroundTaskQueue.enqueue).not.toHaveBeenCalled();
     });
 });

@@ -12,10 +12,12 @@ export function createDeleteServerHandler(backgroundTaskQueue: BackgroundTaskQue
      *       Enqueues a server deletion task and returns a task ID immediately.
      *       Server deletion typically takes 1-3 minutes. Poll `GET /api/tasks/{taskId}` to check status.
      *       Only the client that created the server may delete it.
+     *       Requires the `manage:servers` scope.
      *     tags:
      *       - Servers
      *     security:
      *       - bearerAuth: []
+     *       - oauth2: [manage:servers]
      *     parameters:
      *       - in: path
      *         name: serverId

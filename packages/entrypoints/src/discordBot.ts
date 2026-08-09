@@ -12,6 +12,7 @@ import { GenerateMonthlyUsageReport } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
 import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
+import { GetSourceTvInfo } from "@tf2qs/core";
 import { SetUserData } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
@@ -397,6 +398,7 @@ export async function startDiscordBot() {
             getUserServers: new GetUserServers({ serverRepository }),
             backgroundTaskQueue,
             serverRepository,
+            getSourceTvInfo: new GetSourceTvInfo({ serverRepository }),
         }
     })
 

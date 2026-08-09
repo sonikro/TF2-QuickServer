@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { describe, it, expect } from 'vitest';
 import { when } from 'vitest-when';
-import { makeSut, makeServer, TEST_CLIENT_ID } from '../testHelpers';
+import { makeSut, makeServer, TEST_CLIENT_ID, injectAuth } from '../testHelpers';
 
 describe('GET /api/servers', () => {
     it('should return the list of servers for the authenticated client', async () => {
@@ -60,5 +60,18 @@ describe('GET /api/servers', () => {
 
         // Then
         expect(getUserServers.execute).toHaveBeenCalledWith({ userId: TEST_CLIENT_ID });
+    });
+
+    it('should return 403 when the client lacks the manage:servers scope', async () => {
+        // Given
+        const { app, getUserServers } = makeSut(injectAuth(TEST_CLIENT_ID, 'read:sourcetv:all'));
+
+        // When
+        const response = await request(app).get('/api/servers');
+
+        // Then
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({ error: 'Forbidden' });
+        expect(getUserServers.execute).not.toHaveBeenCalled();
     });
 });

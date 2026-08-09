@@ -46,6 +46,7 @@ export * from './src/usecase/ExecuteScheduledServerCreation';
 export * from './src/usecase/ExecuteScheduledServers';
 export * from './src/usecase/GenerateMonthlyUsageReport';
 export * from './src/usecase/GetServerStatus';
+export * from './src/usecase/GetSourceTvInfo';
 export * from './src/usecase/GetGuildServers';
 export * from './src/usecase/GetUserServers';
 export * from './src/usecase/GetUserSchedules';

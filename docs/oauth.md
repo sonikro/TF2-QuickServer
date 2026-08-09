@@ -75,12 +75,19 @@ In the Auth0 Dashboard:
 In the **Permissions** tab, add the following scopes:
 
 ```
-read:servers         - Allows reading data from all servers
-create:servers       - Allow creating servers
-read:servers:own     - Allows only reading data from the servers created by the client
-delete:servers:own   - Allows deleting your own created servers
-delete:servers       - Allows deleting all servers
+manage:servers       - Allows managing TF2 servers (list, create, delete, and task status)
+read:sourcetv:all    - Allows reading SourceTV connection info (IP, port, TV password) for all servers via GET /api/sourcetv-connections
 ```
+
+> **Scope requirements by endpoint:**
+>
+> - `GET /api/servers`, `POST /api/servers`, `DELETE /api/servers/{serverId}`, and `GET /api/tasks/{taskId}` require `manage:servers`.
+> - `GET /api/sourcetv-connections` requires `read:sourcetv:all`.
+> - `GET /api/profile` is available to any authenticated client and returns the scopes granted to it.
+>
+> **Note:** `read:sourcetv:all` is intended for monitoring partners. It only exposes SourceTV
+> connection data (server IP/port, TV address, and TV password); RCON and join passwords are
+> never returned.
 
 ### 4. Create Machine-to-Machine Application
 
