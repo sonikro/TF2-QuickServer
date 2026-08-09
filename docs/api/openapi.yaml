@@ -22,7 +22,9 @@ components:
       flows:
         clientCredentials:
           tokenUrl: https://tf2-quickserver.us.auth0.com/oauth/token
-          scopes: {}
+          scopes:
+            manage:servers: Manage TF2 servers (list, create, delete, and task status)
+            read:sourcetv:all: Read SourceTV connection info for all servers
   schemas:
     Server:
       type: object
@@ -72,6 +74,29 @@ components:
             - pending
             - ready
             - terminating
+    SourceTvInfo:
+      type: object
+      description: SourceTV connection information for a ready server. RCON and join passwords are never included.
+      properties:
+        serverId:
+          type: string
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        hostIp:
+          type: string
+          example: 1.2.3.4
+        hostPort:
+          type: integer
+          example: 27015
+        tvIp:
+          type: string
+          example: 1.2.3.4
+        tvPort:
+          type: integer
+          example: 27020
+        tvPassword:
+          type: string
+          example: tvpass123
+          description: SourceTV password (omitted when not set)
     CreateServerRequest:
       type: object
       required:
@@ -184,10 +209,13 @@ paths:
         Enqueues a server creation task and returns a task ID immediately.
         Server creation typically takes 4-6 minutes. Poll `GET /api/tasks/{taskId}` to check status.
         When completed, the task result contains the full server details including credentials.
+        Requires the `manage:servers` scope.
       tags:
         - Servers
       security:
         - bearerAuth: []
+        - oauth2:
+            - manage:servers
       requestBody:
         required: true
         content:
@@ -207,11 +235,13 @@ paths:
           $ref: '#/components/responses/Unauthorized'
     get:
       summary: List all servers for the authenticated client
-      description: Returns all TF2 game servers associated with the authenticated API client.
+      description: Returns all TF2 game servers associated with the authenticated API client. Requires the `manage:servers` scope.
       tags:
         - Servers
       security:
         - bearerAuth: []
+        - oauth2:
+            - manage:servers
       responses:
         '200':
           description: A list of servers
@@ -230,10 +260,13 @@ paths:
         Enqueues a server deletion task and returns a task ID immediately.
         Server deletion typically takes 1-3 minutes. Poll `GET /api/tasks/{taskId}` to check status.
         Only the client that created the server may delete it.
+        Requires the `manage:servers` scope.
       tags:
         - Servers
       security:
         - bearerAuth: []
+        - oauth2:
+            - manage:servers
       parameters:
         - in: path
           name: serverId
@@ -262,10 +295,13 @@ paths:
         (e.g. server creation or deletion). When `status` is `completed`, the `result`
         field contains the full server object. When `status` is `failed`, the `error`
         field contains the failure reason.
+        Requires the `manage:servers` scope.
       tags:
         - Tasks
       security:
         - bearerAuth: []
+        - oauth2:
+            - manage:servers
       parameters:
         - in: path
           name: taskId
@@ -286,4 +322,29 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /api/sourcetv-connections:
+    get:
+      summary: List SourceTV information for all servers
+      description: |
+        Returns SourceTV connection information for all ready TF2 game servers across QuickServer.
+        Requires the `read:sourcetv:all` scope. RCON and server join passwords are never exposed.
+      tags:
+        - SourceTV
+      security:
+        - bearerAuth: []
+        - oauth2:
+            - read:sourcetv:all
+      responses:
+        '200':
+          description: A list of SourceTV information for all ready servers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceTvInfo'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 tags: []

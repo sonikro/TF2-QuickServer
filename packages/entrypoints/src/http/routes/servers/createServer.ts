@@ -13,10 +13,12 @@ export function createCreateServerHandler(backgroundTaskQueue: BackgroundTaskQue
      *       Enqueues a server creation task and returns a task ID immediately.
      *       Server creation typically takes 4-6 minutes. Poll `GET /api/tasks/{taskId}` to check status.
      *       When completed, the task result contains the full server details including credentials.
+     *       Requires the `manage:servers` scope.
      *     tags:
      *       - Servers
      *     security:
      *       - bearerAuth: []
+     *       - oauth2: [manage:servers]
      *     requestBody:
      *       required: true
      *       content:

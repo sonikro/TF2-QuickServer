@@ -2,7 +2,7 @@ import request from 'supertest';
 import { describe, it, expect } from 'vitest';
 import { when } from 'vitest-when';
 import { TaskStatus } from '@tf2qs/core';
-import { makeSut, makeServer, TEST_CLIENT_ID } from '../testHelpers';
+import { makeSut, makeServer, TEST_CLIENT_ID, injectAuth } from '../testHelpers';
 
 describe('GET /api/tasks/:taskId', () => {
     it('should return the task status for a known taskId owned by the requester', async () => {
@@ -105,5 +105,18 @@ describe('GET /api/tasks/:taskId', () => {
         // Then
         expect(response.status).toBe(200);
         expect(response.body.status).toBe(status);
+    });
+
+    it('should return 403 when the client lacks the manage:servers scope', async () => {
+        // Given
+        const { app, backgroundTaskQueue } = makeSut(injectAuth(TEST_CLIENT_ID, 'read:sourcetv:all'));
+
+        // When
+        const response = await request(app).get('/api/tasks/task-123');
+
+        // Then
+        expect(response.status).toBe(403);
+        expect(response.body).toMatchObject({ error: 'Forbidden' });
+        expect(backgroundTaskQueue.getTask).not.toHaveBeenCalled();
     });
 });

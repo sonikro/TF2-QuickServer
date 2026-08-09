@@ -29,7 +29,10 @@ export const swaggerOptions: swaggerJsdoc.Options = {
                     flows: {
                         clientCredentials: {
                             tokenUrl: 'https://tf2-quickserver.us.auth0.com/oauth/token',
-                            scopes: {},
+                            scopes: {
+                                'manage:servers': 'Manage TF2 servers (list, create, delete, and task status)',
+                                'read:sourcetv:all': 'Read SourceTV connection info for all servers',
+                            },
                         },
                     },
                 },
@@ -52,6 +55,18 @@ export const swaggerOptions: swaggerJsdoc.Options = {
                         createdAt: { type: 'string', format: 'date-time' },
                         createdBy: { type: 'string', description: 'Client ID of the creator' },
                         status: { type: 'string', enum: ['pending', 'ready', 'terminating'] },
+                    },
+                },
+                SourceTvInfo: {
+                    type: 'object',
+                    description: 'SourceTV connection information for a ready server. RCON and join passwords are never included.',
+                    properties: {
+                        serverId: { type: 'string', example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890' },
+                        hostIp: { type: 'string', example: '1.2.3.4' },
+                        hostPort: { type: 'integer', example: 27015 },
+                        tvIp: { type: 'string', example: '1.2.3.4' },
+                        tvPort: { type: 'integer', example: 27020 },
+                        tvPassword: { type: 'string', example: 'tvpass123', description: 'SourceTV password (omitted when not set)' },
                     },
                 },
                 CreateServerRequest: {
@@ -136,5 +151,7 @@ export const swaggerOptions: swaggerJsdoc.Options = {
         path.join(__dirname, '../routes/servers/*.js'),
         path.join(__dirname, '../routes/tasks/*.ts'),
         path.join(__dirname, '../routes/tasks/*.js'),
+        path.join(__dirname, '../routes/sourcetv/*.ts'),
+        path.join(__dirname, '../routes/sourcetv/*.js'),
     ],
 };

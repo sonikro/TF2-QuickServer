@@ -12,10 +12,12 @@ export function createGetTaskStatusHandler(backgroundTaskQueue: BackgroundTaskQu
      *       (e.g. server creation or deletion). When `status` is `completed`, the `result`
      *       field contains the full server object. When `status` is `failed`, the `error`
      *       field contains the failure reason.
+     *       Requires the `manage:servers` scope.
      *     tags:
      *       - Tasks
      *     security:
      *       - bearerAuth: []
+     *       - oauth2: [manage:servers]
      *     parameters:
      *       - in: path
      *         name: taskId
