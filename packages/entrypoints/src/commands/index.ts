@@ -13,10 +13,12 @@ import { getGuildServersCommandDefinition, getGuildServersCommandHandlerFactory 
 import { terminateServerCommandDefinition, terminateServerHandlerFactory } from "./TerminateServer";
 import { setUserDataDefinition, setUserDataHandlerFactory } from "./SetUserData";
 import { SetUserData } from "@tf2qs/core";
+import { ComparePlayerSharedIps } from "@tf2qs/core";
 import { statusCommandDefinition, createStatusCommandHandlerFactory } from "./Status";
 import { scheduleCommandDefinition, createScheduleCommandHandlerFactory } from "./Schedule";
 import { showSchedulesCommandDefinition, showSchedulesCommandHandlerFactory } from "./ShowSchedules";
 import { cancelScheduleCommandDefinition, cancelScheduleCommandHandlerFactory } from "./CancelSchedule";
+import { checkSharedIpsCommandDefinition, checkSharedIpsCommandHandlerFactory } from "./CheckSharedIps";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -28,6 +30,8 @@ export type CommandDependencies = {
     getUserSchedules: GetUserSchedules;
     createScheduledServer: CreateScheduledServer;
     cancelScheduledServer: CancelScheduledServer;
+    comparePlayerSharedIps: ComparePlayerSharedIps;
+    ipHistoryAdminDiscordIds: string[];
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -94,6 +98,14 @@ export function createCommands(dependencies: CommandDependencies) {
             definition: cancelScheduleCommandDefinition,
             handler: cancelScheduleCommandHandlerFactory({
                 cancelScheduledServer: dependencies.cancelScheduledServer,
+            })
+        },
+        checkSharedIps: {
+            name: "check-shared-ips",
+            definition: checkSharedIpsCommandDefinition,
+            handler: checkSharedIpsCommandHandlerFactory({
+                comparePlayerSharedIps: dependencies.comparePlayerSharedIps,
+                allowedUserIds: dependencies.ipHistoryAdminDiscordIds,
             })
         }
     } satisfies Record<string, {

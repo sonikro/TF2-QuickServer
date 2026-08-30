@@ -40,6 +40,7 @@ export * from './src/usecase/CreateServerForClient';
 export * from './src/usecase/CreateServerForUser';
 export * from './src/usecase/CreateScheduledServer';
 export * from './src/usecase/CancelScheduledServer';
+export * from './src/usecase/ComparePlayerSharedIps';
 export * from './src/usecase/DeleteServer';
 export * from './src/usecase/DeleteServerForUser';
 export * from './src/usecase/ExecuteScheduledServerCreation';
@@ -58,5 +59,8 @@ export * from './src/usecase/TerminatePendingServers';
 // Utils
 export * from './src/utils/ConfigManager';
 export * from './src/utils/interpolateString';
+export * from './src/utils/isLinkLocalIp';
 export * from './src/utils/scheduleTime';
 export * from './src/utils/failSafeDirectMessage';
+export * from './src/utils/maskIp';
+export * from './src/utils/normalizeSteamId3';
