@@ -141,7 +141,7 @@ describe("CheckSharedIps Command Handler", () => {
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('192.168.1.x'),
+            content: expect.stringContaining('x.x.1.5'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
@@ -182,11 +182,11 @@ describe("CheckSharedIps Command Handler", () => {
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('192.168.1.x'),
+            content: expect.stringContaining('x.x.1.5'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('10.0.0.x'),
+            content: expect.stringContaining('x.x.0.1'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
