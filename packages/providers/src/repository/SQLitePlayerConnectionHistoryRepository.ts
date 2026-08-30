@@ -1,5 +1,5 @@
 import { Knex } from "knex";
-import { PlayerConnectionHistory, PlayerConnectionHistoryRepository } from "@tf2qs/core";
+import { PlayerConnectionHistory, PlayerConnectionHistoryRepository, PlayerIpFirstSeen } from "@tf2qs/core";
 
 type SQLitePlayerConnectionHistoryRepositoryDependencies = {
     knex: Knex;
@@ -26,11 +26,16 @@ export class SQLitePlayerConnectionHistoryRepository implements PlayerConnection
         };
     }
 
-    async getDistinctIpsBySteamId3(steamId3: string): Promise<string[]> {
+    async getFirstSeenIpsBySteamId3(steamId3: string): Promise<PlayerIpFirstSeen[]> {
         const { knex } = this.dependencies;
         const rows = await knex("player_connection_history")
             .where({ steam_id_3: steamId3 })
-            .distinct("ip_address");
-        return rows.map(row => row.ip_address);
+            .select("ip_address")
+            .min("timestamp as first_seen_at")
+            .groupBy("ip_address");
+        return rows.map(row => ({
+            ipAddress: row.ip_address,
+            firstSeenAt: new Date(row.first_seen_at),
+        }));
     }
 }

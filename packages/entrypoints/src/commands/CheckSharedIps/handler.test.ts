@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits, Permiss
 import { describe, expect, it } from "vitest";
 import { mock } from "vitest-mock-extended";
 import { when } from "vitest-when";
-import { ComparePlayerSharedIps } from "@tf2qs/core";
+import { ComparePlayerSharedIps, formatDateTimeInTimeZone, SharedIp } from "@tf2qs/core";
 import { checkSharedIpsCommandHandlerFactory } from "./handler";
 import Chance from "chance";
 
@@ -31,6 +31,12 @@ describe("CheckSharedIps Command Handler", () => {
             .thenReturn('[U:1:1234567]');
         return { interaction, memberPermissions };
     };
+
+    const createSharedIp = (ipAddress: string, playerAFirstSeenAt: Date, playerBFirstSeenAt: Date): SharedIp => ({
+        ipAddress,
+        playerAFirstSeenAt,
+        playerBFirstSeenAt,
+    });
 
     it("should deny the command when invoked in DMs (no guildId)", async () => {
         // Given
@@ -109,17 +115,18 @@ describe("CheckSharedIps Command Handler", () => {
         expect(comparePlayerSharedIps.execute).not.toHaveBeenCalled();
     });
 
-    it("should reply with a single masked shared IP when players shared one IP", async () => {
+    it("should reply with the masked shared IP and both first-seen timestamps when players shared one IP", async () => {
         // Given
         const { handler, comparePlayerSharedIps } = makeSut();
         const { interaction } = createAuthorizedInteraction();
+        const sharedIp = createSharedIp('192.168.1.5', new Date('2026-08-01T10:00:00.000Z'), new Date('2026-08-02T11:00:00.000Z'));
 
         when(comparePlayerSharedIps.execute)
             .calledWith({ steamId3TextA: '[U:1:29162964]', steamId3TextB: '[U:1:1234567]' })
             .thenResolve({
                 steamId3a: 'U:1:29162964',
                 steamId3b: 'U:1:1234567',
-                sharedIps: ['192.168.1.5']
+                sharedIps: [sharedIp]
             });
 
         // When
@@ -130,7 +137,7 @@ describe("CheckSharedIps Command Handler", () => {
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('Players have shared 1 IP address(es)'),
+            content: expect.stringContaining('Players have shared 1 IP address(es):'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
@@ -141,19 +148,29 @@ describe("CheckSharedIps Command Handler", () => {
             content: expect.not.stringContaining('192.168.1.5'),
             flags: MessageFlags.Ephemeral
         });
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: expect.stringContaining(
+                `first seen by U:1:29162964 at ${formatDateTimeInTimeZone(sharedIp.playerAFirstSeenAt, 'UTC')} UTC; by U:1:1234567 at ${formatDateTimeInTimeZone(sharedIp.playerBFirstSeenAt, 'UTC')} UTC`
+            ),
+            flags: MessageFlags.Ephemeral
+        });
     });
 
-    it("should reply with multiple masked shared IPs when players shared several IPs", async () => {
+    it("should reply with one line per masked shared IP when players shared several IPs", async () => {
         // Given
         const { handler, comparePlayerSharedIps } = makeSut();
         const { interaction } = createAuthorizedInteraction();
+        const sharedIps = [
+            createSharedIp('192.168.1.5', new Date('2026-08-01T10:00:00.000Z'), new Date('2026-08-02T11:00:00.000Z')),
+            createSharedIp('10.0.0.1', new Date('2026-08-03T12:00:00.000Z'), new Date('2026-08-04T13:00:00.000Z')),
+        ];
 
         when(comparePlayerSharedIps.execute)
             .calledWith({ steamId3TextA: '[U:1:29162964]', steamId3TextB: '[U:1:1234567]' })
             .thenResolve({
                 steamId3a: 'U:1:29162964',
                 steamId3b: 'U:1:1234567',
-                sharedIps: ['192.168.1.5', '10.0.0.1']
+                sharedIps
             });
 
         // When
@@ -161,7 +178,15 @@ describe("CheckSharedIps Command Handler", () => {
 
         // Then
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('192.168.1.x, 10.0.0.x'),
+            content: expect.stringContaining('Players have shared 2 IP address(es):'),
+            flags: MessageFlags.Ephemeral
+        });
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: expect.stringContaining('192.168.1.x'),
+            flags: MessageFlags.Ephemeral
+        });
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: expect.stringContaining('10.0.0.x'),
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
@@ -170,6 +195,12 @@ describe("CheckSharedIps Command Handler", () => {
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
             content: expect.not.stringContaining('10.0.0.1'),
+            flags: MessageFlags.Ephemeral
+        });
+        expect(interaction.followUp).toHaveBeenCalledWith({
+            content: expect.stringContaining(
+                `first seen by U:1:29162964 at ${formatDateTimeInTimeZone(sharedIps[1].playerAFirstSeenAt, 'UTC')} UTC; by U:1:1234567 at ${formatDateTimeInTimeZone(sharedIps[1].playerBFirstSeenAt, 'UTC')} UTC`
+            ),
             flags: MessageFlags.Ephemeral
         });
     });

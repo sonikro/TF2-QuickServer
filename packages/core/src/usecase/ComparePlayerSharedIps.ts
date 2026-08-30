@@ -3,10 +3,16 @@ import { PlayerConnectionHistoryRepository } from "../repository/PlayerConnectio
 import { isLinkLocalIp } from "../utils/isLinkLocalIp";
 import { normalizeSteamId3 } from "../utils/normalizeSteamId3";
 
+export type SharedIp = {
+    ipAddress: string;
+    playerAFirstSeenAt: Date;
+    playerBFirstSeenAt: Date;
+};
+
 export type ComparePlayerSharedIpsResult = {
     steamId3a: string;
     steamId3b: string;
-    sharedIps: string[];
+    sharedIps: SharedIp[];
 };
 
 type ComparePlayerSharedIpsParams = {
@@ -31,15 +37,25 @@ export class ComparePlayerSharedIps {
         }
 
         const [ipsA, ipsB] = await Promise.all([
-            playerConnectionHistoryRepository.getDistinctIpsBySteamId3(steamId3a),
-            playerConnectionHistoryRepository.getDistinctIpsBySteamId3(steamId3b),
+            playerConnectionHistoryRepository.getFirstSeenIpsBySteamId3(steamId3a),
+            playerConnectionHistoryRepository.getFirstSeenIpsBySteamId3(steamId3b),
         ]);
 
-        const filteredIpsA = ipsA.filter(ip => !isLinkLocalIp(ip));
-        const filteredIpsB = ipsB.filter(ip => !isLinkLocalIp(ip));
+        const filteredIpsA = ipsA.filter(ip => !isLinkLocalIp(ip.ipAddress));
+        const filteredIpsB = ipsB.filter(ip => !isLinkLocalIp(ip.ipAddress));
 
-        const ipsBSet = new Set(filteredIpsB);
-        const sharedIps = filteredIpsA.filter(ip => ipsBSet.has(ip));
+        const ipsBByAddress = new Map(filteredIpsB.map(ip => [ip.ipAddress, ip]));
+        const sharedIps: SharedIp[] = [];
+        for (const ip of filteredIpsA) {
+            const match = ipsBByAddress.get(ip.ipAddress);
+            if (match) {
+                sharedIps.push({
+                    ipAddress: ip.ipAddress,
+                    playerAFirstSeenAt: ip.firstSeenAt,
+                    playerBFirstSeenAt: match.firstSeenAt,
+                });
+            }
+        }
 
         return { steamId3a, steamId3b, sharedIps };
     }

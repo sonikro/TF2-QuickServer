@@ -5,15 +5,17 @@ import { SQLitePlayerConnectionHistoryRepository } from "./SQLitePlayerConnectio
 type SeedConnectionParams = {
     steamId3: string;
     ipAddress: string;
+    timestamp: string;
     nickname?: string;
 };
 
 async function seedConnection(knex: Knex, params: SeedConnectionParams): Promise<void> {
-    const { steamId3, ipAddress, nickname = "player" } = params;
+    const { steamId3, ipAddress, timestamp, nickname = "player" } = params;
     await knex("player_connection_history").insert({
         steam_id_3: steamId3,
         ip_address: ipAddress,
         nickname,
+        timestamp,
     });
 }
 
@@ -46,34 +48,40 @@ describe("SQLitePlayerConnectionHistoryRepository", () => {
         return { sut, knex };
     }
 
-    it("should return distinct IPs for a steam ID", async () => {
+    it("should return each distinct IP with its earliest detected timestamp for a steam ID", async () => {
         // Given
         const { sut, knex } = makeSut();
-        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1" });
-        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1" });
-        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "2.2.2.2" });
+        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1", timestamp: "2026-08-01T10:00:00.000Z" });
+        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1", timestamp: "2026-08-03T10:00:00.000Z" });
+        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "2.2.2.2", timestamp: "2026-08-02T10:00:00.000Z" });
 
         // When
-        const result = await sut.getDistinctIpsBySteamId3("U:1:111");
+        const result = await sut.getFirstSeenIpsBySteamId3("U:1:111");
 
         // Then
         expect(result).toHaveLength(2);
-        expect(result).toEqual(expect.arrayContaining(["1.1.1.1", "2.2.2.2"]));
+        expect(result).toEqual(expect.arrayContaining([
+            { ipAddress: "1.1.1.1", firstSeenAt: new Date("2026-08-01T10:00:00.000Z") },
+            { ipAddress: "2.2.2.2", firstSeenAt: new Date("2026-08-02T10:00:00.000Z") },
+        ]));
     });
 
     it("should return only the queried steam ID's IPs", async () => {
         // Given
         const { sut, knex } = makeSut();
-        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1" });
-        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "3.3.3.3" });
-        await seedConnection(knex, { steamId3: "U:1:222", ipAddress: "9.9.9.9" });
+        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "1.1.1.1", timestamp: "2026-08-01T10:00:00.000Z" });
+        await seedConnection(knex, { steamId3: "U:1:111", ipAddress: "3.3.3.3", timestamp: "2026-08-02T10:00:00.000Z" });
+        await seedConnection(knex, { steamId3: "U:1:222", ipAddress: "9.9.9.9", timestamp: "2026-08-03T10:00:00.000Z" });
 
         // When
-        const result = await sut.getDistinctIpsBySteamId3("U:1:111");
+        const result = await sut.getFirstSeenIpsBySteamId3("U:1:111");
 
         // Then
         expect(result).toHaveLength(2);
-        expect(result).toEqual(expect.arrayContaining(["1.1.1.1", "3.3.3.3"]));
+        expect(result).toEqual(expect.arrayContaining([
+            { ipAddress: "1.1.1.1", firstSeenAt: new Date("2026-08-01T10:00:00.000Z") },
+            { ipAddress: "3.3.3.3", firstSeenAt: new Date("2026-08-02T10:00:00.000Z") },
+        ]));
     });
 
     it("should return an empty array for an unknown steam ID", async () => {
@@ -81,7 +89,7 @@ describe("SQLitePlayerConnectionHistoryRepository", () => {
         const { sut } = makeSut();
 
         // When
-        const result = await sut.getDistinctIpsBySteamId3("U:1:999");
+        const result = await sut.getFirstSeenIpsBySteamId3("U:1:999");
 
         // Then
         expect(result).toEqual([]);

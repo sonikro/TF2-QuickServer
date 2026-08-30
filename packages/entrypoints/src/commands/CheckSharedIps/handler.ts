@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, MessageFlags, PermissionFlagsBits } from "discord.js";
-import { ComparePlayerSharedIps, maskIp } from "@tf2qs/core";
+import { ComparePlayerSharedIps, formatDateTimeInTimeZone, maskIp, SharedIp } from "@tf2qs/core";
 import { commandErrorHandler } from "../commandErrorHandler";
 
 type CheckSharedIpsCommandHandlerFactoryDependencies = {
@@ -51,13 +51,19 @@ export function checkSharedIpsCommandHandlerFactory(dependencies: CheckSharedIps
                 return;
             }
 
-            const maskedIps = result.sharedIps.map(maskIp).join(', ');
+            const sharedIpLines = result.sharedIps.map(formatSharedIpLine(result.steamId3a, result.steamId3b)).join('\n');
             await interaction.followUp({
-                content: `Players have shared ${result.sharedIps.length} IP address(es): ${maskedIps}`,
+                content: `Players have shared ${result.sharedIps.length} IP address(es):\n${sharedIpLines}`,
                 flags: MessageFlags.Ephemeral
             });
         } catch (error: Error | any) {
             await commandErrorHandler(interaction, error);
         }
+    };
+}
+
+function formatSharedIpLine(steamId3a: string, steamId3b: string) {
+    return (sharedIp: SharedIp): string => {
+        return `**${maskIp(sharedIp.ipAddress)}** — first seen by ${steamId3a} at ${formatDateTimeInTimeZone(sharedIp.playerAFirstSeenAt, 'UTC')} UTC; by ${steamId3b} at ${formatDateTimeInTimeZone(sharedIp.playerBFirstSeenAt, 'UTC')} UTC`;
     };
 }
