@@ -480,6 +480,12 @@
         "reportDiscordChannelId": "1378761634889076926",
         "streamerChannelId": "1467687214350733457",
         "supportChannelId": "1365408843676520508",
-        "ipHistoryAdminDiscordIds": ["226828637586849795"]
+        "ipHistoryAdminDiscordIds": [
+            "226828637586849795",
+            "128666888149401600",
+            "264546068744634368",
+            "481598720165675009",
+            "759144874095280168"
+        ]
     }
 }
