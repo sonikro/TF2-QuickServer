@@ -14,6 +14,7 @@ import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
 import { GetSourceTvInfo } from "@tf2qs/core";
 import { SetUserData } from "@tf2qs/core";
+import { ComparePlayerSharedIps } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
 import { TerminatePendingServers } from "@tf2qs/core";
@@ -223,7 +224,9 @@ export async function startDiscordBot() {
         getUserSchedules,
         createScheduledServer,
         cancelScheduledServer,
-        backgroundTaskQueue
+        backgroundTaskQueue,
+        comparePlayerSharedIps: new ComparePlayerSharedIps({ playerConnectionHistoryRepository }),
+        ipHistoryAdminDiscordIds: defaultConfigManager.getDiscordConfig().ipHistoryAdminDiscordIds,
     })
 
     // Schedule jobs

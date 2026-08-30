@@ -25,4 +25,12 @@ export class SQLitePlayerConnectionHistoryRepository implements PlayerConnection
             nickname: connectionHistory.nickname,
         };
     }
+
+    async getDistinctIpsBySteamId3(steamId3: string): Promise<string[]> {
+        const { knex } = this.dependencies;
+        const rows = await knex("player_connection_history")
+            .where({ steam_id_3: steamId3 })
+            .distinct("ip_address");
+        return rows.map(row => row.ip_address);
+    }
 }
