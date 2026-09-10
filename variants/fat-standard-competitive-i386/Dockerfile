@@ -295,6 +295,9 @@ COPY --chown=tf2 variants/base/tf/addons/sourcemod/extensions/* "${SERVER_DIR}/t
 # Copy maps
 COPY --chown=tf2 maps/ "${SERVER_DIR}/tf/maps/"
 
+# Copy vscripts
+COPY --chown=tf2 variants/base/tf/scripts/vscripts/ "${SERVER_DIR}/tf/scripts/vscripts/"
+
 # Copy custom entrypoint
 COPY --chown=tf2 variants/base/enforced_cvars.cfg $SERVER_DIR/enforced_cvars.cfg
 COPY --chown=tf2 variants/base/custom_entrypoint.sh .
