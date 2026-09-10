@@ -464,6 +464,17 @@
             },
             "guildId": "1243180086031679488"
         },
+        "ozfortress-ahh": {
+            "displayName": "ozfortress AHH",
+            "hostname": "ozfortress AHH | {region} @ TF2-QuickServer",
+            "map": "plr_hightower",
+            "defaultCfgs": {
+                "plr_hightower": "ahh_plr.cfg",
+                "plr_hightower_event": "ahh_plr.cfg",
+                "koth_snowtower": "ahh_koth.cfg"
+            },
+            "guildId": "82651383144120320"
+        },
         "cltf2": {
             "displayName": "CLTF2",
             "hostname": "CLTF2 | {region} @ TF2-QuickServer",
