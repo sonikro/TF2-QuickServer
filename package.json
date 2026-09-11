@@ -29,6 +29,7 @@
     "build:fat:mge-tf": "docker build -t sonikro/fat-mge-tf:latest -f ./variants/fat-mge-tf/Dockerfile .",
     "build:fat:tf2center": "docker build -t sonikro/fat-tf2center:latest -f ./variants/fat-tf2center/Dockerfile .",
     "push:fat:mge-tf": "docker push sonikro/fat-mge-tf:latest",
+    "test:image-size": "bash ./packages/scripts/check_image_size.sh",
     "build:backend": "tsc"
   },
   "repository": {
