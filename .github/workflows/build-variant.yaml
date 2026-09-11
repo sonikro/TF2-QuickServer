@@ -79,6 +79,9 @@ jobs:
       - name: Build ${{ inputs.variant-name }} image
         run: docker build -f ${{ inputs.dockerfile-path }} -t ${{ inputs.image-name }}:latest .
 
+      - name: Check image size (OCI Container Instances limit)
+        run: bash ./packages/scripts/check_image_size.sh ${{ inputs.image-name }}:latest
+
       - name: Run container and check health
         run: bash ./packages/scripts/test_image.sh ${{ inputs.image-name }}:latest
 

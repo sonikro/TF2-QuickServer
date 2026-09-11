@@ -166,6 +166,23 @@ npm run download:maps
 docker build -f variants/fat-standard-competitive/Dockerfile -t my-tf2-server .
 ```
 
+## 📏 Image Size Check (OCI Container Instances)
+
+OCI Container Instances provide a fixed **15 GB ephemeral storage** shared between
+the container image and the container's writable overlay, and Oracle recommends
+keeping the image under **7.5 GB** so pull/unpack has headroom. To prevent
+pushing an image that cannot start in production, CI and local builds validate
+the extracted filesystem size:
+
+```bash
+npm run test:image-size sonikro/fat-tf2-standard-competitive-i386:latest
+```
+
+The limit defaults to 14 GB and can be overridden per run with
+`OCI_MAX_IMAGE_SIZE_GB` or as the second positional argument. The check runs in
+the build workflow (`.github/workflows/build-variant.yaml`) on every variant
+push and fails the build when the image exceeds it.
+
 ---
 
 ## 🔗 Related Links

@@ -190,9 +190,6 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   && export TZ=Etc/UTC \
   && dpkg --add-architecture i386 \
   && apt-get -y update \
-  && apt-get install -y software-properties-common \
-  && add-apt-repository multiverse \
-  && apt-get -y update \
   && apt-get install -y --no-install-recommends --no-install-suggests \
   lib32gcc-s1 \
   lib32z1 \
@@ -202,6 +199,7 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   libtinfo5:i386 \
   libcurl3-gnutls:i386 \
   libssl3:i386 \
+  libglib2.0-0 \
   ca-certificates \
   wget \
   unzip \
@@ -229,12 +227,17 @@ WORKDIR $HOME
 COPY ./variants/base/maps_to_keep ./variants/base/tf2.txt.template ./tf2version.txt $HOME/
 COPY --chmod=755 ./variants/base/install_tf2.sh $HOME/
 RUN envsubst < $HOME/tf2.txt.template > $HOME/tf2.txt \
-  && steamcmd +help +quit \
   && $HOME/install_tf2.sh \
   && find $SERVER_DIR/tf/maps -type f | grep -v "$(cat maps_to_keep)" | xargs rm -rf \
   && rm maps_to_keep \
   && mkdir -p $HOME/.steam \
-  && ln -s $HOME/.local/share/Steam/steamcmd/linux32 $HOME/.steam/sdk32
+  && ln -s $HOME/.local/share/Steam/steamcmd/linux32 $HOME/.steam/sdk32 \
+  && ln -s $HOME/.local/share/Steam/steamcmd $HOME/.steam/steamcmd
+
+RUN find $SERVER_DIR/hl2 $SERVER_DIR/tf -maxdepth 1 -name '*.sound.cache' -delete \
+  && rm -rf $HOME/.local/share/Steam/steamcmd/linux64 \
+    $HOME/.local/share/Steam/steamcmd/siteserverui \
+    $HOME/tf2version.txt
 
 COPY ./variants/base/tf/cfg/server.cfg.template ${SERVER_DIR}/tf/cfg/server.cfg.template
 COPY ./variants/base/rcon ${SERVER_DIR}/rcon
@@ -306,6 +309,9 @@ COPY --chown=tf2 variants/base/custom_entrypoint.sh .
 # Must be owned by root and run as root
 USER root
 COPY --chmod=755 variants/base/root_entrypoint.sh .
+
+# Prune fat that is not needed at runtime (TF2 install and autoupdate run as tf2)
+RUN rm -rf /root/.local/share/Steam /root/.steam
 
 ENTRYPOINT [ "./root_entrypoint.sh" ]
 CMD ["+sv_pure", "1", "+map", "cp_badlands", "+maxplayers", "24"]
