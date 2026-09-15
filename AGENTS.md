@@ -27,7 +27,7 @@ image" server variants.
 | `variants/` | Per-variant Dockerfiles + TF2 `cfg`/SourceMod configs ("fat" images bake in maps) |
 | `terraform/` | OCI + AWS + landing-page IaC (Terragrunt for landing-page) |
 | `docs/`, `adr/`, `tests/` | Architecture docs, ADRs, vitest setup (`setup.ts`) |
-| `.github/` | CI workflows + `skills/` (progressive-disclosure agent rules) |
+| `.agents/skills/` | Progressive-disclosure agent rules (Agent Skills format) |
 
 ## Tooling & Commands
 
@@ -47,11 +47,11 @@ image" server variants.
 
 - **Clean Architecture**: keep `core` free of infra/framework imports; implement core interfaces in `providers`; wire it all together in `entrypoints`.
 - **Naming**: snake_case filenames, camelCase functions/variables, PascalCase classes/types. Strict TS (`strict: true`), NodeNext modules, imports via `@tf2qs/*` workspace aliases.
-- **Style**: SOLID, DRY, no code comments, DI via one grouped constructor-params object marked `private readonly`, functions take a single named-params object, prefer composition and strategy/factory patterns, favor pure immutable functions. Activate **`.github/skills/code-style/skill.md`**.
-- **Layer rules**: when editing a layer, activate its skill — `core-layer`, `providers-layer`, `entrypoints-layer` (under `.github/skills/`).
-- **Tests**: Vitest, Given/When/Then `it` names, a `makeSut` factory per file, mocks via `vitest-mock-extended`/`vitest-when` (`aws-sdk-client-mock` for AWS, `msw` for fetch). Mock setup lives inside `makeSut`/tests, never in global `beforeEach`. Activate **`.github/skills/tests/skill.md`**.
-- **Other domains**: see `.github/skills/` for `telemetry`, `database`, `server-config` (variants/maps), `bans`, `shield`.
-- **Commits/PRs**: Conventional Commits with scopes (`feat(api):`, `fix(cfg):`, `chore(maps):`, `docs:`), body states what/why, PR ref `(#NNN)`. Follow **`.github/skills/conventional-commits/skill.md`** when committing or writing PR descriptions.
+- **Style**: SOLID, DRY, no code comments, DI via one grouped constructor-params object marked `private readonly`, functions take a single named-params object, prefer composition and strategy/factory patterns, favor pure immutable functions. Activate **`.agents/skills/code-style/SKILL.md`**.
+- **Layer rules**: when editing a layer, activate its skill — `core-layer`, `providers-layer`, `entrypoints-layer` (under `.agents/skills/`).
+- **Tests**: Vitest, Given/When/Then `it` names, a `makeSut` factory per file, mocks via `vitest-mock-extended`/`vitest-when` (`aws-sdk-client-mock` for AWS, `msw` for fetch). Mock setup lives inside `makeSut`/tests, never in global `beforeEach`. Activate **`.agents/skills/tests/SKILL.md`**.
+- **Other domains**: see `.agents/skills/` for `telemetry`, `database`, `server-config` (variants/maps), `bans`, `shield`.
+- **Commits/PRs**: Conventional Commits with scopes (`feat(api):`, `fix(cfg):`, `chore(maps):`, `docs:`), body states what/why, PR ref `(#NNN)`. Follow **`.agents/skills/conventional-commits/SKILL.md`** when committing or writing PR descriptions.
 - **Safety**: never commit secrets, `.env`, or `keys/`. `maps/`, `config/local.json`, `out/`, `.terraform` are gitignored. Keep README and docs in sync with code changes.
 
 ## Self-Correction
@@ -59,4 +59,4 @@ image" server variants.
 This map goes stale as the repo evolves. If any section is wrong, or a user gives a
 stylistic or structural correction, update AGENTS.md immediately so subsequent
 sessions retain that working knowledge. Likewise, extract any new repeatable task
-pattern into `.github/skills/` rather than growing this file.
+pattern into `.agents/skills/` rather than growing this file.
