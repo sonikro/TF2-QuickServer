@@ -157,6 +157,15 @@ RUN curl -L "${DODGEBALL_PLUGIN_URL}" -o "${DODGEBALL_PLUGIN_FILE_NAME}" \
   && mv "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/tfdb_pvb.smx" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/disabled/tfdb_pvb.smx" \
   && rm -rf "${DODGEBALL_PLUGIN_FILE_NAME}" tfdb
 
+
+# FBTF configs (latest version)
+ARG FBTF_CONFIGS_FILE_NAME=FBTF-Config-Files.zip
+ARG FBTF_CONFIGS_URL=https://github.com/joaokoehlerz/FBTF-Config-Files/releases/latest/download/${FBTF_CONFIGS_FILE_NAME}
+
+RUN curl -L "${FBTF_CONFIGS_URL}" -o "${FBTF_CONFIGS_FILE_NAME}" \
+  && unzip -q "${FBTF_CONFIGS_FILE_NAME}" \
+  && mv "fbtf_cfg/"* "${PLUGIN_INSTALL_DIR}/cfg/"
+
 # ozfortress configs
 ARG OZFORTRESS_CONFIGS_VERSION=master
 ARG OZFORTRESS_CONFIGS_FILE_NAME=server-configs-${OZFORTRESS_CONFIGS_VERSION}.zip
