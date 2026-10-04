@@ -47,10 +47,10 @@ RUN curl -L "${F2_SOURCEMOD_PLUGINS_URL}" -o "${F2_SOURCEMOD_PLUGINS_FILE_NAME}"
   && unzip -q -j "${F2_SOURCEMOD_PLUGINS_FILE_NAME}" ${F2_ENABLED_PLUGINS} \
   -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/"
 
-# MGEMod (by Maxijabase)
+# MGEMod (mge.tf maintained fork — required by mge.tf spawn configs)
 ARG MGEMOD_FILE_NAME=mge.zip
-ARG MGEMOD_VERSION=v3.1.0-beta16
-ARG MGEMOD_URL=https://github.com/maxijabase/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
+ARG MGEMOD_VERSION=v3.1.0-beta38
+ARG MGEMOD_URL=https://github.com/mgetf/MGEMod/releases/download/${MGEMOD_VERSION}/${MGEMOD_FILE_NAME}
 RUN curl -L "${MGEMOD_URL}" -o "${MGEMOD_FILE_NAME}" \
   && unzip -q -n "${MGEMOD_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
 
