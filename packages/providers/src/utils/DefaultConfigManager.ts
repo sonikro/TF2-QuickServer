@@ -1,4 +1,4 @@
-import { AWSConfig, DiscordConfig, getAWSConfig, getDiscordConfig, getOracleConfig, getRegionConfig, getVariantConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
+import { AWSConfig, DiscordConfig, getAWSConfig, getDiscordConfig, getGithubConfig, getOracleConfig, getRegionConfig, getVariantConfig, GithubConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
 
 export class DefaultConfigManager implements ConfigManager {
@@ -16,6 +16,9 @@ export class DefaultConfigManager implements ConfigManager {
     }
     getAWSConfig(): AWSConfig {
         return getAWSConfig();
+    }
+    getGithubConfig(): GithubConfig {
+        return getGithubConfig();
     }
 }
 export const defaultConfigManager = new DefaultConfigManager();

@@ -32,11 +32,15 @@ export * from './src/services/PasswordGeneratorService';
 export * from './src/services/ServerAbortManager';
 export * from './src/services/ServerCommander';
 export * from './src/services/ServerManager';
+export * from './src/services/SteamUpdateChecker';
+export * from './src/services/Tf2VersionReader';
+export * from './src/services/WorkflowDispatcher';
 export * from './src/services/StatusUpdater';
 export * from './src/services/TF2ServerReadinessService';
 
 // Use cases
 export * from './src/usecase/CreateServerForClient';
+export * from './src/usecase/CheckForTf2Update';
 export * from './src/usecase/CreateServerForUser';
 export * from './src/usecase/CreateScheduledServer';
 export * from './src/usecase/CancelScheduledServer';

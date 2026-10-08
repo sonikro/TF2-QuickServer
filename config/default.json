@@ -499,5 +499,10 @@
             "759144874095280168",
             "135608307065946112"
         ]
+    },
+    "github": {
+        "repository": "sonikro/TF2-QuickServer",
+        "workflowFileName": "check-tf2-update.yaml",
+        "appId": 440
     }
 }

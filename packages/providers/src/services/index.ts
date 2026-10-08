@@ -10,5 +10,8 @@ export * from './MonthlyReportFormatter';
 export * from './RCONServerCommander';
 export * from './ServerManagerFactory';
 export * from './UuidIdGenerator';
+export * from './SteamUpdateCheckerProvider';
+export * from './GithubTf2VersionReaderProvider';
+export * from './GithubWorkflowDispatcherProvider';
 export * from './defaultAWSServiceFactory';
 export * from './defaultOracleServiceFactory';
