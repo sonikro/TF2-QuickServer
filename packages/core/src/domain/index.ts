@@ -3,6 +3,7 @@ export * from "./ScheduledServer";
 export * from "./Region";
 export * from "./Variant";
 export * from "./DiscordConfig";
+export * from "./GithubConfig";
 export * from "./OracleConfig";
 export * from "./AWSConfig";
 export * from "./CloudProvider";

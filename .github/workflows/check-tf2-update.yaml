@@ -1,8 +1,6 @@
 name: Check for TF2 Update
 
 on:
-  schedule:
-    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 permissions:

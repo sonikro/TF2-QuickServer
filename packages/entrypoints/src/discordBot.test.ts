@@ -3,10 +3,11 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { mock, mockDeep } from "vitest-mock-extended";
 import { when } from "vitest-when";
 import { KnexConnectionManager, InMemoryBackgroundTaskQueue } from '@tf2qs/providers';
-import { CreateServerForUser, ExecuteScheduledServers } from "@tf2qs/core";
+import { CheckForTf2Update, CreateServerForUser, ExecuteScheduledServers } from "@tf2qs/core";
 import { createCommands } from './commands';
-import { scheduleScheduledServerCreationRoutine } from "./jobs";
+import { scheduleScheduledServerCreationRoutine, scheduleTf2UpdateCheckRoutine } from "./jobs";
 import { startDiscordBot } from "./discordBot";
+import { logger } from "@tf2qs/telemetry";
 
 vi.mock("@tf2qs/providers", async () => {
     const actual = await vi.importActual("@tf2qs/providers") as any;
@@ -37,6 +38,7 @@ vi.mock("./jobs", async (importOriginal) => {
     return {
         ...actual,
         scheduleScheduledServerCreationRoutine: vi.fn(),
+        scheduleTf2UpdateCheckRoutine: vi.fn(),
     }
 })
 
@@ -48,6 +50,10 @@ vi.mock('discord.js', async (importOriginal) => {
         REST: vi.fn(),
     };
 })
+
+vi.mock("./udp/srcdsCommandListener", () => ({
+    startSrcdsCommandListener: vi.fn(),
+}))
 
 describe("startDiscordBot", () => {
 
@@ -177,6 +183,47 @@ describe("startDiscordBot", () => {
                 expect(interaction.reply).toHaveBeenCalledWith({ content: 'Command not found' });
             })
 
+        })
+
+        describe("TF2 update check wiring", () => {
+            it("should skip the routine and warn when GH_TOKEN is not configured", async () => {
+                // Given
+                process.env.DISCORD_TOKEN = 'valid_token';
+                process.env.DISCORD_CLIENT_ID = 'valid_client_id';
+                delete process.env.GH_TOKEN;
+                vi.mocked(scheduleTf2UpdateCheckRoutine).mockClear();
+                const emitSpy = vi.spyOn(logger, "emit");
+                emitSpy.mockClear();
+
+                // When
+                await startDiscordBot();
+
+                // Then
+                expect(scheduleTf2UpdateCheckRoutine).not.toHaveBeenCalled();
+                expect(emitSpy).toHaveBeenCalledWith(expect.objectContaining({
+                    severityText: "WARN",
+                    body: "GH_TOKEN is not configured; TF2 Update Check Routine is skipped.",
+                }));
+                emitSpy.mockRestore();
+            })
+
+            it("should schedule the routine when GH_TOKEN is configured", async () => {
+                // Given
+                process.env.DISCORD_TOKEN = 'valid_token';
+                process.env.DISCORD_CLIENT_ID = 'valid_client_id';
+                process.env.GH_TOKEN = 'test-gh-token';
+                vi.mocked(scheduleTf2UpdateCheckRoutine).mockClear();
+
+                // When
+                await startDiscordBot();
+
+                // Then
+                expect(scheduleTf2UpdateCheckRoutine).toHaveBeenCalledWith({
+                    checkForTf2Update: expect.any(CheckForTf2Update),
+                    eventLogger: expect.anything(),
+                });
+                delete process.env.GH_TOKEN;
+            })
         })
 
     })

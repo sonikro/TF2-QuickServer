@@ -15,6 +15,7 @@ import { GetUserServers } from "@tf2qs/core";
 import { GetSourceTvInfo } from "@tf2qs/core";
 import { SetUserData } from "@tf2qs/core";
 import { ComparePlayerSharedIps } from "@tf2qs/core";
+import { CheckForTf2Update } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
 import { TerminatePendingServers } from "@tf2qs/core";
@@ -45,12 +46,15 @@ import { DiscordEventLogger } from "@tf2qs/providers";
 import { FileSystemOCICredentialsFactory } from "@tf2qs/providers";
 import { RCONServerCommander } from "@tf2qs/providers";
 import { DefaultServerManagerFactory } from "@tf2qs/providers";
+import { GithubTf2VersionReaderProvider } from "@tf2qs/providers";
+import { GithubWorkflowDispatcherProvider } from "@tf2qs/providers";
+import { SteamUpdateCheckerProvider } from "@tf2qs/providers";
 import { UuidIdGenerator } from "@tf2qs/providers";
 import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleScheduledServerCreationRoutine, scheduleTerminateLongRunningServerRoutine } from "./jobs";
+import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleScheduledServerCreationRoutine, scheduleTerminateLongRunningServerRoutine, scheduleTf2UpdateCheckRoutine } from "./jobs";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 import { formatServerMessage } from "./commands/formatServerMessage";
 
@@ -301,6 +305,22 @@ export async function startDiscordBot() {
         eventLogger,
         discordClient: client,
     })
+
+    const ghToken = process.env.GH_TOKEN;
+    if (!ghToken) {
+        logger.emit({
+            severityText: "WARN",
+            body: "GH_TOKEN is not configured; TF2 Update Check Routine is skipped."
+        });
+    } else {
+        const checkForTf2Update = new CheckForTf2Update({
+            tf2VersionReader: new GithubTf2VersionReaderProvider({ token: ghToken }),
+            steamUpdateChecker: new SteamUpdateCheckerProvider(),
+            workflowDispatcher: new GithubWorkflowDispatcherProvider({ token: ghToken }),
+            configManager: defaultConfigManager,
+        });
+        scheduleTf2UpdateCheckRoutine({ checkForTf2Update, eventLogger });
+    }
 
     // Slash commands
     const commands = Object.values(discordCommands).map(command => command.definition)
