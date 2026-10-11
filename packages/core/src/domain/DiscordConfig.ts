@@ -6,6 +6,8 @@ export type DiscordConfig = {
     streamerChannelId: string;
     supportChannelId: string;
     ipHistoryAdminDiscordIds: string[];
+    moneyChannelId: string;
+    moneyOwnerDiscordIds: string[];
 }
 
 export const getDiscordConfig = () => {
