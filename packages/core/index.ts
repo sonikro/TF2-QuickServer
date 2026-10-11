@@ -18,6 +18,7 @@ export * from './src/repository/UserBanRepository';
 export * from './src/repository/ServerStatusMetricsRepository';
 export * from './src/repository/PlayerConnectionHistoryRepository';
 export * from './src/repository/ScheduledServerRepository';
+export * from './src/repository/ledger_repository';
 
 // Services
 export * from './src/services/BackgroundTaskQueue';
@@ -36,6 +37,7 @@ export * from './src/services/SteamUpdateChecker';
 export * from './src/services/Tf2VersionReader';
 export * from './src/services/WorkflowDispatcher';
 export * from './src/services/StatusUpdater';
+export * from './src/services/exchange_rate_provider';
 export * from './src/services/TF2ServerReadinessService';
 
 // Use cases
@@ -59,6 +61,10 @@ export * from './src/usecase/SetUserData';
 export * from './src/usecase/TerminateEmptyServers';
 export * from './src/usecase/TerminateLongRunningServers';
 export * from './src/usecase/TerminatePendingServers';
+export * from './src/usecase/register_donation';
+export * from './src/usecase/register_cost';
+export * from './src/usecase/get_balance';
+export * from './src/usecase/monthly_cost_settlement';
 
 // Utils
 export * from './src/utils/ConfigManager';
