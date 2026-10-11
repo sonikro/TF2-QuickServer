@@ -15,6 +15,10 @@ import { GetUserServers } from "@tf2qs/core";
 import { GetSourceTvInfo } from "@tf2qs/core";
 import { SetUserData } from "@tf2qs/core";
 import { ComparePlayerSharedIps } from "@tf2qs/core";
+import { GetBalance } from "@tf2qs/core";
+import { MonthlyCostSettlement } from "@tf2qs/core";
+import { RegisterCost } from "@tf2qs/core";
+import { RegisterDonation } from "@tf2qs/core";
 import { CheckForTf2Update } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
@@ -37,6 +41,8 @@ import { SQLiteScheduledServerRepository } from "@tf2qs/providers";
 import { SQLiteUserRepository } from "@tf2qs/providers";
 import { SQLiteServerStatusMetricsRepository } from "@tf2qs/providers";
 import { SQLitePlayerConnectionHistoryRepository } from "@tf2qs/providers";
+import { BcbPtaxProvider } from "@tf2qs/providers";
+import { SQLiteLedgerRepository } from "@tf2qs/providers";
 import { ChancePasswordGeneratorService } from "@tf2qs/providers";
 import { defaultAWSServiceFactory } from "@tf2qs/providers";
 import { defaultGracefulShutdownManager, ShutdownInProgressError } from "@tf2qs/providers";
@@ -211,6 +217,21 @@ export async function startDiscordBot() {
         eventLogger
     });
 
+    const ledgerRepository = new SQLiteLedgerRepository({
+        knex: KnexConnectionManager.client,
+    });
+
+    const exchangeRateProvider = new BcbPtaxProvider({});
+
+    const registerDonation = new RegisterDonation({
+        ledgerRepository,
+        exchangeRateProvider,
+    });
+
+    const getBalance = new GetBalance({
+        ledgerRepository,
+    });
+
     const discordCommands = createCommands({
         createServerForUser,
         setUserData: new SetUserData({
@@ -231,6 +252,11 @@ export async function startDiscordBot() {
         backgroundTaskQueue,
         comparePlayerSharedIps: new ComparePlayerSharedIps({ playerConnectionHistoryRepository }),
         ipHistoryAdminDiscordIds: defaultConfigManager.getDiscordConfig().ipHistoryAdminDiscordIds,
+        registerDonation,
+        getBalance,
+        moneyOwnerDiscordIds: defaultConfigManager.getDiscordConfig().moneyOwnerDiscordIds,
+        moneyChannelId: defaultConfigManager.getDiscordConfig().moneyChannelId,
+        discordClient: client,
     })
 
     // Schedule jobs
@@ -304,6 +330,13 @@ export async function startDiscordBot() {
         configManager: defaultConfigManager,
         eventLogger,
         discordClient: client,
+        monthlyCostSettlement: new MonthlyCostSettlement({
+            costProvider: defaultCostProvider,
+            exchangeRateProvider,
+            registerCost: new RegisterCost({ ledgerRepository }),
+            eventLogger,
+        }),
+        getBalance,
     })
 
     const ghToken = process.env.GH_TOKEN;

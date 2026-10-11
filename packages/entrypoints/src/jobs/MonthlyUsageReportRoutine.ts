@@ -1,8 +1,12 @@
 import { Client, ChannelType } from "discord.js";
 import schedule from "node-schedule";
+import { DiscordConfig } from "@tf2qs/core";
 import { GenerateMonthlyUsageReport } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
 import { EventLogger } from "@tf2qs/core";
+import { GetBalance } from "@tf2qs/core";
+import { MonthlyCostSettlement } from "@tf2qs/core";
+import { toDisplayBrl } from "@tf2qs/core";
 import { logger } from "@tf2qs/telemetry";
 import { MonthlyReportFormatter } from "@tf2qs/providers";
 
@@ -11,6 +15,8 @@ export type ScheduleMonthlyUsageReportRoutineDependencies = {
   configManager: ConfigManager;
   eventLogger: EventLogger;
   discordClient: Client;
+  monthlyCostSettlement: MonthlyCostSettlement;
+  getBalance: GetBalance;
 };
 
 export const scheduleMonthlyUsageReportRoutine = (
@@ -77,6 +83,16 @@ export const scheduleMonthlyUsageReportRoutine = (
         eventMessage: `Monthly Usage Report for ${report.month}/${report.year} posted successfully.`,
         actorId: "system",
       });
+
+      await settleMonthlyCosts({
+        monthlyCostSettlement: dependencies.monthlyCostSettlement,
+        getBalance: dependencies.getBalance,
+        discordConfig,
+        discordClient,
+        eventLogger,
+        month: report.month,
+        year: report.year,
+      });
     } catch (error) {
       logger.emit({
         severityText: "ERROR",
@@ -95,3 +111,77 @@ export const scheduleMonthlyUsageReportRoutine = (
   });
 
 };
+
+type SettleMonthlyCostsParams = {
+  monthlyCostSettlement: MonthlyCostSettlement;
+  getBalance: GetBalance;
+  discordConfig: DiscordConfig;
+  discordClient: Client;
+  eventLogger: EventLogger;
+  month: number;
+  year: number;
+};
+
+async function settleMonthlyCosts(params: SettleMonthlyCostsParams): Promise<void> {
+  const { monthlyCostSettlement, getBalance, discordConfig, discordClient, eventLogger, month, year } = params;
+
+  try {
+    const moneyChannelId = discordConfig.moneyChannelId;
+
+    if (!moneyChannelId) {
+      logger.emit({
+        severityText: "WARN",
+        body: "Money Channel ID is not configured. Skipping money settlement post.",
+      });
+      return;
+    }
+
+    const settlement = await monthlyCostSettlement.execute({ month, year });
+    const { balanceBrlCents } = await getBalance.execute();
+
+    const channel = discordClient.channels.cache.get(moneyChannelId);
+
+    if (!channel) {
+      logger.emit({
+        severityText: "ERROR",
+        body: `Money Channel not found: ${moneyChannelId}`,
+      });
+      await eventLogger.log({
+        eventMessage: `Money Channel not found: ${moneyChannelId}`,
+        actorId: "system",
+      });
+      return;
+    }
+
+    if (channel.type !== ChannelType.GuildText) {
+      logger.emit({
+        severityText: "ERROR",
+        body: `Money Channel is not a text channel: ${moneyChannelId}`,
+      });
+      return;
+    }
+
+    await channel.send(
+      `💰 **Money ledger — costs for ${month}/${year} settled**\n* New cost entries: ${settlement.inserted}\n* Already recorded: ${settlement.skipped}\n* Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}`
+    );
+
+    await eventLogger.log({
+      eventMessage: `Monthly costs for ${month}/${year} settled and posted to money channel.`,
+      actorId: "system",
+    });
+  } catch (error) {
+    logger.emit({
+      severityText: "ERROR",
+      body: "Error during monthly cost settlement",
+      attributes: {
+        error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      },
+    });
+    await eventLogger.log({
+      eventMessage: `Error during monthly cost settlement: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+      actorId: "system",
+    });
+  }
+}
