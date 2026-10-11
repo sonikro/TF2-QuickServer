@@ -2,6 +2,7 @@
 export * from './src/services';
 export * from './src/services/ServerManagerFactory';
 export * from './src/cloud-providers';
+export * from './src/fx';
 export * from './src/cost-providers/DefaultCostProvider';
 export * from './src/queue';
 export * from './src/repository';
