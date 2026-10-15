@@ -15,7 +15,7 @@ describe("BcbPtaxProvider", () => {
 
     function usePtaxHandler(requests: string[], quotesByDay: Record<string, number>) {
         server.use(
-            http.get(/olinda\.bcb\.gov\.br.*CotacaoMoedaDia/, ({ request }) => {
+            http.get(/olinda\.bcb\.gov\.br.*CotacaoDolarDia/, ({ request }) => {
                 requests.push(request.url);
                 const day = (new URL(request.url).searchParams.get("@dataCotacao") ?? "").replace(/'/g, "");
                 const rate = day ? quotesByDay[day] : undefined;
@@ -107,7 +107,7 @@ describe("BcbPtaxProvider", () => {
         // Given
         const { sut } = makeSut();
         server.use(
-            http.get(/olinda\.bcb\.gov\.br.*CotacaoMoedaDia/, () => new HttpResponse(null, { status: 500 }))
+            http.get(/olinda\.bcb\.gov\.br.*CotacaoDolarDia/, () => new HttpResponse(null, { status: 500 }))
         );
 
         // When
@@ -115,5 +115,48 @@ describe("BcbPtaxProvider", () => {
 
         // Then
         await expect(attempt).rejects.toThrow("status 500");
+    });
+
+    it("Given a requested date When converting Then requests the closing bulletin with a MM-DD-YYYY literal", async () => {
+        // Given
+        const { sut, requests } = makeSut();
+        usePtaxHandler(requests, { "10-06-2026": 5.4321 });
+
+        // When
+        await sut.getBrlPerUsd({ date: new Date("2026-10-06T12:00:00.000Z") });
+
+        // Then
+        const requestedUrl = decodeURIComponent(requests[0]);
+        expect(requestedUrl).toContain("CotacaoDolarDia(dataCotacao=@dataCotacao)");
+        expect(requestedUrl).toContain("@dataCotacao='10-06-2026'");
+        expect(requestedUrl).not.toContain("2026-10-06");
+    });
+
+    it("Given a non-JSON PTAX body When converting Then throws", async () => {
+        // Given
+        const { sut } = makeSut();
+        server.use(
+            http.get(/olinda\.bcb\.gov\.br.*CotacaoDolarDia/, () => new HttpResponse("<html>bad gateway</html>", { status: 200, headers: { "Content-Type": "text/html" } }))
+        );
+
+        // When
+        const attempt = sut.getBrlPerUsd({ date: new Date("2026-10-06T12:00:00.000Z") });
+
+        // Then
+        await expect(attempt).rejects.toThrow("not valid JSON");
+    });
+
+    it("Given a rejected PTAX request When converting Then throws", async () => {
+        // Given
+        const { sut } = makeSut();
+        server.use(
+            http.get(/olinda\.bcb\.gov\.br.*CotacaoDolarDia/, () => HttpResponse.error())
+        );
+
+        // When
+        const attempt = sut.getBrlPerUsd({ date: new Date("2026-10-06T12:00:00.000Z") });
+
+        // Then
+        await expect(attempt).rejects.toThrow();
     });
 });

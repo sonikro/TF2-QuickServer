@@ -77,8 +77,8 @@ function stepBackDays(params: DateParams & { daysBack: number }): Date {
 
 function buildQuoteUrl(params: DateParams): string {
   const { date } = params;
-  return `${PTAX_BASE_URL}/CotacaoMoedaDia(moeda=@moeda,dataCotacao=@dataCotacao)` +
-    `?@moeda='USD'&@dataCotacao='${toPtaxDay({ date })}'&$format=json&$select=cotacaoVenda,dataHoraCotacao`;
+  return `${PTAX_BASE_URL}/CotacaoDolarDia(dataCotacao=@dataCotacao)` +
+    `?@dataCotacao='${toPtaxDay({ date })}'&$format=json&$select=cotacaoVenda,dataHoraCotacao`;
 }
 
 type ReadJsonParams = {
