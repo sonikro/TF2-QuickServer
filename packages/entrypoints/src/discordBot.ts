@@ -334,6 +334,7 @@ export async function startDiscordBot() {
             costProvider: defaultCostProvider,
             exchangeRateProvider,
             registerCost: new RegisterCost({ ledgerRepository }),
+            moneyConfig: defaultConfigManager.getMoneyConfig(),
             eventLogger,
         }),
         getBalance,
