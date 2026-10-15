@@ -24,6 +24,7 @@ describe('MoneyConfig', () => {
       { amount: '0.01', currency: 'USD', expected: 1 },
       { amount: '0', currency: 'USD', expected: 0 },
       { amount: '5.05', currency: 'BRL', expected: 505 },
+      { amount: '90071992547409.91', currency: 'USD', expected: 9007199254740991 },
     ])('should parse amount $amount in $currency into $expected minor units', ({ amount, currency, expected }) => {
       // Given
       const source = { fixedMonthlyInfrastructureCost: { amount, currency } };
@@ -54,6 +55,9 @@ describe('MoneyConfig', () => {
       { amount: '5.05', currency: undefined, expectedMessage: 'expected "BRL" or "USD"' },
       { amount: '5.05', currency: null, expectedMessage: 'expected "BRL" or "USD"' },
       { amount: '5.05', currency: 42, expectedMessage: 'expected "BRL" or "USD"' },
+      { amount: '9007199254740992', currency: 'USD', expectedMessage: 'expected minor units within the safe integer range' },
+      { amount: '99999999999999999999.99', currency: 'USD', expectedMessage: 'expected minor units within the safe integer range' },
+      { amount: '99999999999999999999999999999999999999999', currency: 'USD', expectedMessage: 'expected minor units within the safe integer range' },
     ])('should reject the invalid money config amount $amount and currency $currency', ({ amount, currency, expectedMessage }) => {
       // Given
       const source = { fixedMonthlyInfrastructureCost: { amount, currency } };

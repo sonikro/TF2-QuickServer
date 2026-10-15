@@ -32,13 +32,19 @@ export function parseMoneyConfig(params: ParseMoneyConfigParams): MoneyConfig {
   if (typeof amount !== "string" || !AMOUNT_PATTERN.test(amount)) {
     throw new Error(`Invalid fixed monthly infrastructure cost amount ${JSON.stringify(amount)}: expected a non-negative decimal string with at most two fraction digits.`);
   }
+
+  const amountInMinorUnits = Math.round(Number(amount) * 100);
+  if (!Number.isSafeInteger(amountInMinorUnits)) {
+    throw new Error(`Invalid fixed monthly infrastructure cost amount ${JSON.stringify(amount)}: expected minor units within the safe integer range.`);
+  }
+
   if (!isLedgerCurrency(currency)) {
     throw new Error(`Invalid fixed monthly infrastructure cost currency ${JSON.stringify(currency)}: expected "BRL" or "USD".`);
   }
 
   return {
     fixedMonthlyInfrastructureCost: {
-      amountInMinorUnits: Math.round(Number(amount) * 100),
+      amountInMinorUnits,
       currency,
     },
   };

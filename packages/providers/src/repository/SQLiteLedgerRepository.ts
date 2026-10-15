@@ -100,6 +100,15 @@ function toDomain(row: LedgerRow): LedgerTransaction {
     source: row.source,
     actorDiscordId: row.actor_discord_id,
     dedupeKey: row.dedupe_key,
-    createdAt: new Date(row.created_at),
+    createdAt: parseUtcTimestamp({ value: row.created_at }),
   };
+}
+
+type ParseUtcTimestampParams = {
+  value: string;
+};
+
+function parseUtcTimestamp(params: ParseUtcTimestampParams): Date {
+  const { value } = params;
+  return new Date(`${value.replace(' ', 'T')}Z`);
 }

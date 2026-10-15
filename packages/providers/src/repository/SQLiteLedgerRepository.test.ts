@@ -176,6 +176,19 @@ describe("SQLiteLedgerRepository", () => {
     expect(error?.name).not.toBe("UserError");
   });
 
+  it("should read created_at back as the UTC instant the database stored", async () => {
+    // Given
+    await sut.insert({ entry: makeEntry() });
+    await knex("ledger_transactions").update({ created_at: "2026-10-15 12:47:38" });
+
+    // When
+    const recent = await sut.listRecent({ limit: 1 });
+
+    // Then
+    expect(recent[0].createdAt.toISOString()).toBe("2026-10-15T12:47:38.000Z");
+    expect(recent[0].createdAt.getTime()).toBe(Date.UTC(2026, 9, 15, 12, 47, 38));
+  });
+
   it("should round-trip the migration down and up", async () => {
     // Given
     await sut.insert({ entry: makeEntry() });
