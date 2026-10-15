@@ -42,6 +42,13 @@ export class SQLiteLedgerRepository implements LedgerRepository {
     return Boolean(row);
   }
 
+  async hasTransactions(): Promise<boolean> {
+    const row = await this.dependencies.knex('ledger_transactions')
+      .select('id')
+      .first();
+    return Boolean(row);
+  }
+
   async getBalance(): Promise<number> {
     const row = await this.dependencies.knex('ledger_transactions')
       .sum('amount_brl_cents as total')
