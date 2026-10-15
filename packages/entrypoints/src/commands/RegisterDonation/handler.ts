@@ -1,6 +1,7 @@
-import { ChannelType, ChatInputCommandInteraction, Client, MessageFlags, PermissionFlagsBits } from "discord.js";
+import { ChannelType, ChatInputCommandInteraction, Client, MessageFlags } from "discord.js";
 import { GetBalance, LedgerCurrency, LedgerTransaction, RegisterDonation, toDisplayBrl } from "@tf2qs/core";
 import { commandErrorHandler } from "../commandErrorHandler";
+import { requireMoneyOwner } from "../requireMoneyOwner";
 
 type RegisterDonationCommandHandlerFactoryDependencies = {
     registerDonation: RegisterDonation;
@@ -14,27 +15,8 @@ export function createRegisterDonationCommandHandlerFactory(dependencies: Regist
     return async function registerDonationCommandHandler(interaction: ChatInputCommandInteraction) {
         const { registerDonation, getBalance, allowedUserIds, moneyChannelId, discordClient } = dependencies;
 
-        if (!interaction.guildId) {
-            await interaction.reply({
-                content: '❌ This command is only available within a Discord server, not in direct messages.',
-                flags: MessageFlags.Ephemeral
-            });
-            return;
-        }
-
-        if (!interaction.memberPermissions?.has(PermissionFlagsBits.Administrator)) {
-            await interaction.reply({
-                content: '❌ Only users with the **Administrator** permission can register donations.',
-                flags: MessageFlags.Ephemeral
-            });
-            return;
-        }
-
-        if (!allowedUserIds.includes(interaction.user.id)) {
-            await interaction.reply({
-                content: '❌ You are not authorized to use this command.',
-                flags: MessageFlags.Ephemeral
-            });
+        const authorized = await requireMoneyOwner({ interaction, allowedUserIds, action: 'register donations' });
+        if (!authorized) {
             return;
         }
 
