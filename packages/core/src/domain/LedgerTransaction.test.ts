@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildCostDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl } from './ledger_transaction';
+import { buildCostDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl } from './LedgerTransaction';
 
-describe('ledger_transaction helpers', () => {
+describe('LedgerTransaction helpers', () => {
   it.each([
     { amount: 10, fxRate: 5.4321, expected: 5432 },
     { amount: 10, fxRate: 5.5, expected: 5500 },

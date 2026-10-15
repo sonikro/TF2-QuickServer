@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { LedgerCurrency, LedgerFxSource, LedgerTransaction } from '../domain/ledger_transaction';
-import { LedgerRepository } from '../repository/ledger_repository';
-import { RegisterCost } from './register_cost';
+import { LedgerCurrency, LedgerFxSource, LedgerTransaction } from '../domain/LedgerTransaction';
+import { LedgerRepository } from '../repository/LedgerRepository';
+import { RegisterCost } from './RegisterCost';
 
 describe('RegisterCost', () => {
   function makeSut() {

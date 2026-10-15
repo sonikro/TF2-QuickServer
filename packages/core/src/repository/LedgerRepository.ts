@@ -1,4 +1,4 @@
-import { LedgerTransaction, NewLedgerEntry } from "../domain/ledger_transaction";
+import { LedgerTransaction, NewLedgerEntry } from "../domain/LedgerTransaction";
 
 export interface LedgerRepository {
   insert(params: { entry: NewLedgerEntry }): Promise<LedgerTransaction>;

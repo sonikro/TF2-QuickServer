@@ -5,7 +5,7 @@ import { Knex, knex as createKnex } from "knex";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { NewLedgerEntry } from "@tf2qs/core";
 import { down, up } from "../../../../migrations/20261011000000_ledger_transactions";
-import { SQLiteLedgerRepository } from "./sqlite_ledger_repository";
+import { SQLiteLedgerRepository } from "./SQLiteLedgerRepository";
 
 function makeEntry(overrides: Partial<NewLedgerEntry> = {}): NewLedgerEntry {
   return {

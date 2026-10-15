@@ -1,5 +1,5 @@
-import { LedgerCurrency, LedgerFxSource, LedgerTransaction, toBrlCents } from "../domain/ledger_transaction";
-import { LedgerRepository } from "../repository/ledger_repository";
+import { LedgerCurrency, LedgerFxSource, LedgerTransaction, toBrlCents } from "../domain/LedgerTransaction";
+import { LedgerRepository } from "../repository/LedgerRepository";
 import { UserError } from "../errors/UserError";
 
 type RegisterCostDependencies = {

@@ -1,4 +1,4 @@
-import { LedgerRepository } from "../repository/ledger_repository";
+import { LedgerRepository } from "../repository/LedgerRepository";
 
 type GetBalanceDependencies = {
   ledgerRepository: LedgerRepository;

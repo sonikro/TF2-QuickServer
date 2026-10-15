@@ -3,12 +3,12 @@ import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
 import { getRegions } from '../domain/Region';
 import { BOT_INFRASTRUCTURE_COST_USD } from '../domain/ledger_constants';
-import { LedgerTransaction } from '../domain/ledger_transaction';
+import { LedgerTransaction } from '../domain/LedgerTransaction';
 import { CostProvider } from '../services/CostProvider';
 import { EventLogger } from '../services/EventLogger';
-import { ExchangeRateProvider } from '../services/exchange_rate_provider';
-import { MonthlyCostSettlement } from './monthly_cost_settlement';
-import { RegisterCost } from './register_cost';
+import { ExchangeRateProvider } from '../services/ExchangeRateProvider';
+import { MonthlyCostSettlement } from './MonthlyCostSettlement';
+import { RegisterCost } from './RegisterCost';
 
 describe('MonthlyCostSettlement', () => {
   function makeSut() {

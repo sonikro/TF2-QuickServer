@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { LedgerRepository } from '../repository/ledger_repository';
-import { GetBalance } from './get_balance';
+import { LedgerRepository } from '../repository/LedgerRepository';
+import { GetBalance } from './GetBalance';
 
 describe('GetBalance', () => {
   function makeSut() {

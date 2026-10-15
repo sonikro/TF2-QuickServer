@@ -1,6 +1,6 @@
-import { LedgerCurrency, LedgerTransaction, toBrlCents } from "../domain/ledger_transaction";
-import { LedgerRepository } from "../repository/ledger_repository";
-import { ExchangeRateProvider } from "../services/exchange_rate_provider";
+import { LedgerCurrency, LedgerTransaction, toBrlCents } from "../domain/LedgerTransaction";
+import { LedgerRepository } from "../repository/LedgerRepository";
+import { ExchangeRateProvider } from "../services/ExchangeRateProvider";
 import { UserError } from "../errors/UserError";
 
 type RegisterDonationDependencies = {

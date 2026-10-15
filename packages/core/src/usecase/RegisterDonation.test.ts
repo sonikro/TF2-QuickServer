@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 import { when } from 'vitest-when';
-import { LedgerCurrency, LedgerTransaction } from '../domain/ledger_transaction';
-import { LedgerRepository } from '../repository/ledger_repository';
-import { ExchangeRateProvider } from '../services/exchange_rate_provider';
-import { RegisterDonation } from './register_donation';
+import { LedgerCurrency, LedgerTransaction } from '../domain/LedgerTransaction';
+import { LedgerRepository } from '../repository/LedgerRepository';
+import { ExchangeRateProvider } from '../services/ExchangeRateProvider';
+import { RegisterDonation } from './RegisterDonation';
 
 describe('RegisterDonation', () => {
   function makeSut() {

@@ -12,7 +12,7 @@ export * from "./User";
 export * from "./GuildParameters";
 export * from "./Cost";
 export * from "./ledger_constants";
-export * from "./ledger_transaction";
+export * from "./LedgerTransaction";
 export * from "./DateRange";
 export * from "./ServerActivity";
 export * from "./PlayerConnectionHistory";
