@@ -8,14 +8,18 @@ export async function up(knex: Knex): Promise<void> {
     table.text('type').notNullable();
     table.float('amount_original').notNullable();
     table.text('currency_original').notNullable();
-    table.integer('amount_brl').notNullable();
+    table.integer('amount_brl_cents').notNullable();
     table.float('fx_rate').notNullable();
     table.text('fx_source').notNullable();
     table.text('source').notNullable();
     table.text('actor_discord_id').notNullable();
     table.text('dedupe_key').notNullable();
-    table.timestamp('created_at').defaultTo(knex.fn.now());
+    table.timestamp('created_at').notNullable().defaultTo(knex.fn.now());
     table.unique('dedupe_key', { indexName: 'uq_ledger_dedupe' });
+    table.check("type IN ('OPENING', 'COST', 'DONATION', 'ADJUSTMENT')");
+    table.check("currency_original IN ('BRL', 'USD')");
+    table.check("fx_source IN ('PTAX', 'NONE')");
+    table.check("typeof(amount_brl_cents) = 'integer'");
   });
 }
 

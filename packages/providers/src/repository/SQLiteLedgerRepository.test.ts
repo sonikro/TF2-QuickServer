@@ -139,6 +139,38 @@ describe("SQLiteLedgerRepository", () => {
     await expect(duplicate).rejects.toThrow();
   });
 
+  it("should store the balance in integer cents", async () => {
+    // Given
+    const amountBrlCents = 123456789;
+    await sut.insert({ entry: makeEntry({ amountBrlCents }) });
+
+    // When
+    const stored = await knex("ledger_transactions")
+      .select("amount_brl_cents", knex.raw("typeof(amount_brl_cents) as storage_class"))
+      .first();
+
+    // Then
+    expect(typeof stored?.amount_brl_cents).toBe("number");
+    expect(stored?.storage_class).toBe("integer");
+    expect(stored?.amount_brl_cents).toBe(amountBrlCents);
+  });
+
+  it.each([
+    { description: "an unknown type", overrides: { type: "BOGUS" } },
+    { description: "an unsupported currency", overrides: { currencyOriginal: "EUR" } },
+    { description: "an unsupported fx source", overrides: { fxSource: "BCB" } },
+    { description: "fractional cents", overrides: { amountBrlCents: 13000.5 } },
+  ])("should reject a ledger entry with $description", async ({ description, overrides }) => {
+    // Given
+    const entry = { ...makeEntry(), ...overrides, dedupeKey: `invalid:${description}` } as NewLedgerEntry;
+
+    // When
+    const attempt = sut.insert({ entry });
+
+    // Then
+    await expect(attempt).rejects.toThrow(/CHECK constraint failed/);
+  });
+
   it("should round-trip the migration down and up", async () => {
     // Given
     await sut.insert({ entry: makeEntry() });

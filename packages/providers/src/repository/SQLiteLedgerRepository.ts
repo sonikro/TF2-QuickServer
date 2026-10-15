@@ -8,7 +8,7 @@ type LedgerRow = {
   type: LedgerTransaction['type'];
   amount_original: number;
   currency_original: LedgerTransaction['currencyOriginal'];
-  amount_brl: number;
+  amount_brl_cents: number;
   fx_rate: number;
   fx_source: LedgerTransaction['fxSource'];
   source: string;
@@ -37,7 +37,7 @@ export class SQLiteLedgerRepository implements LedgerRepository {
 
   async getBalance(): Promise<number> {
     const row = await this.dependencies.knex('ledger_transactions')
-      .sum('amount_brl as total')
+      .sum('amount_brl_cents as total')
       .first();
     return Number((row as { total: number | null } | undefined)?.total ?? 0);
   }
@@ -57,7 +57,7 @@ function toRow(entry: NewLedgerEntry): Omit<LedgerRow, 'id' | 'created_at'> {
     type: entry.type,
     amount_original: entry.amountOriginal,
     currency_original: entry.currencyOriginal,
-    amount_brl: entry.amountBrlCents,
+    amount_brl_cents: entry.amountBrlCents,
     fx_rate: entry.fxRate,
     fx_source: entry.fxSource,
     source: entry.source,
@@ -73,7 +73,7 @@ function toDomain(row: LedgerRow): LedgerTransaction {
     type: row.type,
     amountOriginal: row.amount_original,
     currencyOriginal: row.currency_original,
-    amountBrlCents: row.amount_brl,
+    amountBrlCents: row.amount_brl_cents,
     fxRate: row.fx_rate,
     fxSource: row.fx_source,
     source: row.source,
