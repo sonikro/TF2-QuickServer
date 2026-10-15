@@ -11,7 +11,7 @@ export * from "./MonthlyUsageReport";
 export * from "./User";
 export * from "./GuildParameters";
 export * from "./Cost";
-export * from "./ledger_constants";
+export * from "./MoneyConfig";
 export * from "./LedgerTransaction";
 export * from "./DateRange";
 export * from "./ServerActivity";

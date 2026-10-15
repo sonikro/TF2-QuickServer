@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCostDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl } from './LedgerTransaction';
+import { buildCostDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl, toMajorUnits } from './LedgerTransaction';
 
 describe('LedgerTransaction helpers', () => {
   it.each([
@@ -28,6 +28,20 @@ describe('LedgerTransaction helpers', () => {
 
     // Then
     expect(balance).toBe(185);
+  });
+
+  it.each([
+    { amountInMinorUnits: 505, expected: 5.05 },
+    { amountInMinorUnits: 999, expected: 9.99 },
+    { amountInMinorUnits: 1, expected: 0.01 },
+    { amountInMinorUnits: 0, expected: 0 },
+    { amountInMinorUnits: -250, expected: -2.5 },
+  ])('should convert $amountInMinorUnits minor units to $expected major units', ({ amountInMinorUnits, expected }) => {
+    // When
+    const majorUnits = toMajorUnits({ amountInMinorUnits });
+
+    // Then
+    expect(majorUnits).toBe(expected);
   });
 
   it.each([

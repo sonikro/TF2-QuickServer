@@ -1,4 +1,4 @@
-import { AWSConfig, DiscordConfig, GithubConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../domain";
+import { AWSConfig, DiscordConfig, GithubConfig, MoneyConfig, OracleConfig, Region, RegionConfig, Variant, VariantConfig } from "../domain";
 
 export interface ConfigManager {
     getVariantConfig(variant: Variant): VariantConfig;
@@ -7,4 +7,5 @@ export interface ConfigManager {
     getAWSConfig(): AWSConfig;
     getDiscordConfig(): DiscordConfig;
     getGithubConfig(): GithubConfig;
+    getMoneyConfig(): MoneyConfig;
 }

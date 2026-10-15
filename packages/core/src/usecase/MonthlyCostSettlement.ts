@@ -1,6 +1,6 @@
 import { Region, getRegions } from "../domain/Region";
-import { BOT_INFRASTRUCTURE_COST_USD } from "../domain/ledger_constants";
-import { LedgerCurrency, buildCostDedupeKey, buildSettlementOccurredAt } from "../domain/LedgerTransaction";
+import { LedgerCurrency, buildCostDedupeKey, buildSettlementOccurredAt, toMajorUnits } from "../domain/LedgerTransaction";
+import { MoneyConfig } from "../domain/MoneyConfig";
 import { CostProvider } from "../services/CostProvider";
 import { EventLogger } from "../services/EventLogger";
 import { ExchangeRateProvider } from "../services/ExchangeRateProvider";
@@ -11,7 +11,7 @@ type MonthlyCostSettlementDependencies = {
   costProvider: CostProvider;
   exchangeRateProvider: ExchangeRateProvider;
   registerCost: RegisterCost;
-  botInfrastructureCostUsd?: number;
+  moneyConfig: MoneyConfig;
   eventLogger?: EventLogger;
 };
 
@@ -23,22 +23,22 @@ type MonthlyCostSettlementExecuteParams = {
 type MonthlyCostSettlementResult = {
   inserted: number;
   skipped: number;
+  failed: number;
 };
 
 export class MonthlyCostSettlement {
   constructor(private readonly dependencies: MonthlyCostSettlementDependencies) {}
 
   async execute(params: MonthlyCostSettlementExecuteParams): Promise<MonthlyCostSettlementResult> {
-    const { costProvider, exchangeRateProvider, registerCost } = this.dependencies;
+    const { costProvider, exchangeRateProvider, registerCost, moneyConfig } = this.dependencies;
     const { month, year } = params;
-    const botInfrastructureCostUsd = this.dependencies.botInfrastructureCostUsd ?? BOT_INFRASTRUCTURE_COST_USD;
 
     validateSettlement({ month });
 
     const occurredAt = buildSettlementOccurredAt({ month, year });
     const dateRange = {
-      startDate: new Date(year, month - 1, 1),
-      endDate: new Date(year, month, 0),
+      startDate: new Date(Date.UTC(year, month - 1, 1)),
+      endDate: new Date(Date.UTC(year, month, 0)),
     };
     const fx = await exchangeRateProvider.getBrlPerUsd({ date: occurredAt });
 
@@ -49,17 +49,18 @@ export class MonthlyCostSettlement {
 
     let inserted = 0;
     let skipped = 0;
+    let failed = 0;
 
     for (const { segment, region } of segments) {
       try {
-        const settled = await settleSegment({ segment, region, costProvider, registerCost, fxRate: fx.rate, month, year, occurredAt, dateRange, botInfrastructureCostUsd });
+        const settled = await settleSegment({ segment, region, costProvider, registerCost, moneyConfig, fxRate: fx.rate, month, year, occurredAt, dateRange });
         if (settled) {
           inserted += 1;
         } else {
           skipped += 1;
         }
       } catch (error) {
-        skipped += 1;
+        failed += 1;
         await this.dependencies.eventLogger?.log({
           eventMessage: `Monthly cost settlement failed for ${year}-${String(month).padStart(2, '0')} ${segment}: ${error instanceof Error ? error.message : String(error)}`,
           actorId: 'system',
@@ -67,7 +68,7 @@ export class MonthlyCostSettlement {
       }
     }
 
-    return { inserted, skipped };
+    return { inserted, skipped, failed };
   }
 }
 
@@ -76,19 +77,23 @@ type SettleSegmentParams = {
   region: Region | null;
   costProvider: CostProvider;
   registerCost: RegisterCost;
+  moneyConfig: MoneyConfig;
   fxRate: number;
   month: number;
   year: number;
   occurredAt: Date;
   dateRange: { startDate: Date; endDate: Date };
-  botInfrastructureCostUsd: number;
 };
 
 async function settleSegment(params: SettleSegmentParams): Promise<boolean> {
-  const { segment, region, costProvider, registerCost, fxRate, month, year, occurredAt, dateRange, botInfrastructureCostUsd } = params;
+  const { segment, region, costProvider, registerCost, moneyConfig, fxRate, month, year, occurredAt, dateRange } = params;
+  const { fixedMonthlyInfrastructureCost } = moneyConfig;
   const cost = region
     ? await costProvider.fetchCost({ region, dateRange })
-    : { currency: 'USD', value: botInfrastructureCostUsd };
+    : {
+        currency: fixedMonthlyInfrastructureCost.currency,
+        value: toMajorUnits({ amountInMinorUnits: fixedMonthlyInfrastructureCost.amountInMinorUnits }),
+      };
   if (cost.value <= 0) {
     return false;
   }

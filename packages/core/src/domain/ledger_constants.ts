@@ -1,1 +1,0 @@
-export const BOT_INFRASTRUCTURE_COST_USD = 5.05;

@@ -37,9 +37,14 @@ export function toBrlCents(params: { amount: number; fxRate: number }): number {
   return Math.round(amount * fxRate * 100);
 }
 
+export function toMajorUnits(params: { amountInMinorUnits: number }): number {
+  const { amountInMinorUnits } = params;
+  return amountInMinorUnits / 100;
+}
+
 export function toBalanceBrl(params: { balanceBrlCents: number }): number {
   const { balanceBrlCents } = params;
-  return balanceBrlCents / 100;
+  return toMajorUnits({ amountInMinorUnits: balanceBrlCents });
 }
 
 export function toDisplayBrl(params: { balanceBrlCents: number }): string {
