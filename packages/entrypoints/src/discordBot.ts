@@ -19,6 +19,7 @@ import { GetBalance } from "@tf2qs/core";
 import { MonthlyCostSettlement } from "@tf2qs/core";
 import { RegisterCost } from "@tf2qs/core";
 import { RegisterDonation } from "@tf2qs/core";
+import { SetLedgerOpening } from "@tf2qs/core";
 import { CheckForTf2Update } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
@@ -232,6 +233,11 @@ export async function startDiscordBot() {
         ledgerRepository,
     });
 
+    const setLedgerOpening = new SetLedgerOpening({
+        ledgerRepository,
+        exchangeRateProvider,
+    });
+
     const discordCommands = createCommands({
         createServerForUser,
         setUserData: new SetUserData({
@@ -253,6 +259,7 @@ export async function startDiscordBot() {
         comparePlayerSharedIps: new ComparePlayerSharedIps({ playerConnectionHistoryRepository }),
         ipHistoryAdminDiscordIds: defaultConfigManager.getDiscordConfig().ipHistoryAdminDiscordIds,
         registerDonation,
+        setLedgerOpening,
         getBalance,
         moneyOwnerDiscordIds: defaultConfigManager.getDiscordConfig().moneyOwnerDiscordIds,
         moneyChannelId: defaultConfigManager.getDiscordConfig().moneyChannelId,
