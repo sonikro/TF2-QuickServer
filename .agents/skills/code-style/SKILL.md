@@ -1,6 +1,6 @@
 ---
 name: code-style
-description: "Use when writing, editing, or reviewing TypeScript/JavaScript code in packages/* and src/ of this repository. Enforces the project's coding style — snake_case filenames, camelCase functions/variables, PascalCase classes/types, SOLID and DRY, no code comments, constructor dependency injection via one grouped params object marked private readonly, functions taking a single named-params object, strategy/factory patterns, and pure immutable functions. Do not use for Go code in shield/ or TF2 cfg/variant files."
+description: "Use when writing, editing, or reviewing TypeScript/JavaScript code in packages/* and src/ of this repository. Enforces the project's coding style — PascalCase filenames for class/type modules and camelCase for function modules (snake_case only for migrations), camelCase functions/variables, PascalCase classes/types, SOLID and DRY, no code comments, constructor dependency injection via one grouped params object marked private readonly, functions taking a single named-params object, strategy/factory patterns, and pure immutable functions. Do not use for Go code in shield/ or TF2 cfg/variant files."
 ---
 
 # TypeScript Code Style
@@ -17,7 +17,7 @@ code patterns.
 - Avoid writing code that isn't needed; favor built-in functions and libraries.
 - Use camelCase for variable and function names.
 - Use PascalCase for class and type names.
-- Use snake_case for file names (e.g. `server-manager.ts`).
+- Use **PascalCase** for file names whose main export is a class or a type (`SQLiteLedgerRepository.ts`, `MonthlyCostSettlement.ts`), and **camelCase** for modules whose main export is a function (`maskIp.ts`, `commandErrorHandler.ts`). Use snake_case **only** for migrations: `YYYYMMDDHHMMSS_descriptive_name.ts`.
 - Favor composition over inheritance.
 - Write pure functions whenever possible; favor immutability over mutating state.
 - For complex logic, break it down into smaller functions with descriptive names.

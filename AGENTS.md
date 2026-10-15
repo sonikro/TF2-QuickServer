@@ -46,7 +46,7 @@ image" server variants.
 ## Local Norms
 
 - **Clean Architecture**: keep `core` free of infra/framework imports; implement core interfaces in `providers`; wire it all together in `entrypoints`.
-- **Naming**: snake_case filenames, camelCase functions/variables, PascalCase classes/types. Strict TS (`strict: true`), NodeNext modules, imports via `@tf2qs/*` workspace aliases.
+- **Naming**: PascalCase filenames when the main export is a class or type (`SQLiteLedgerRepository.ts`, `MonthlyCostSettlement.ts`), camelCase when it is a function (`maskIp.ts`, `commandErrorHandler.ts`), snake_case only for migrations (`YYYYMMDDHHMMSS_descriptive_name.ts`). camelCase functions/variables, PascalCase classes/types. Strict TS (`strict: true`), NodeNext modules, imports via `@tf2qs/*` workspace aliases.
 - **Style**: SOLID, DRY, no code comments, DI via one grouped constructor-params object marked `private readonly`, functions take a single named-params object, prefer composition and strategy/factory patterns, favor pure immutable functions. Activate **`.agents/skills/code-style/SKILL.md`**.
 - **Layer rules**: when editing a layer, activate its skill — `core-layer`, `providers-layer`, `entrypoints-layer` (under `.agents/skills/`).
 - **Tests**: Vitest, Given/When/Then `it` names, a `makeSut` factory per file, mocks via `vitest-mock-extended`/`vitest-when` (`aws-sdk-client-mock` for AWS, `msw` for fetch). Mock setup lives inside `makeSut`/tests, never in global `beforeEach`. Activate **`.agents/skills/tests/SKILL.md`**.
