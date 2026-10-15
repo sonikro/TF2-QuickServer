@@ -57,6 +57,10 @@ export function buildCostDedupeKey(params: { month: number; year: number; segmen
   return `cost:${year}-${String(month).padStart(2, '0')}:${segment}`;
 }
 
+export function buildOpeningDedupeKey(): string {
+  return 'opening:ledger';
+}
+
 export function buildSettlementOccurredAt(params: { month: number; year: number }): Date {
   const { month, year } = params;
   return new Date(Date.UTC(year, month, 0, 12, 0, 0));

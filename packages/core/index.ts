@@ -65,6 +65,7 @@ export * from './src/usecase/RegisterDonation';
 export * from './src/usecase/RegisterCost';
 export * from './src/usecase/GetBalance';
 export * from './src/usecase/MonthlyCostSettlement';
+export * from './src/usecase/SetLedgerOpening';
 
 // Utils
 export * from './src/utils/ConfigManager';
