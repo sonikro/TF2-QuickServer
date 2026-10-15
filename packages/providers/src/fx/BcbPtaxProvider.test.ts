@@ -2,7 +2,7 @@ import { HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { toBrlCents } from "@tf2qs/core";
-import { BcbPtaxProvider } from "./bcb_ptax_provider";
+import { BcbPtaxProvider } from "./BcbPtaxProvider";
 
 describe("BcbPtaxProvider", () => {
     const server = setupServer();

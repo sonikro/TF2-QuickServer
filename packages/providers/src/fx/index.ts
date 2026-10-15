@@ -1,1 +1,1 @@
-export * from './bcb_ptax_provider';
+export * from './BcbPtaxProvider';
