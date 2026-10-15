@@ -38,6 +38,17 @@ export const scheduleMonthlyUsageReportRoutine = (
       const report = await generateMonthlyUsageReport.execute({ date: previousMonthDate });
 
       const discordConfig = configManager.getDiscordConfig();
+
+      await settleMonthlyCosts({
+        monthlyCostSettlement: dependencies.monthlyCostSettlement,
+        getBalance: dependencies.getBalance,
+        discordConfig,
+        discordClient,
+        eventLogger,
+        month: report.month,
+        year: report.year,
+      });
+
       const reportChannelId = discordConfig.reportDiscordChannelId;
 
       if (!reportChannelId) {
@@ -84,16 +95,6 @@ export const scheduleMonthlyUsageReportRoutine = (
         eventMessage: `Monthly Usage Report for ${report.month}/${report.year} posted successfully.`,
         actorId: "system",
       });
-
-      await settleMonthlyCosts({
-        monthlyCostSettlement: dependencies.monthlyCostSettlement,
-        getBalance: dependencies.getBalance,
-        discordConfig,
-        discordClient,
-        eventLogger,
-        month: report.month,
-        year: report.year,
-      });
     } catch (error) {
       logger.emit({
         severityText: "ERROR",
@@ -129,33 +130,33 @@ async function settleMonthlyCosts(params: SettleMonthlyCostsParams): Promise<voi
   try {
     const moneyChannelId = discordConfig.moneyChannelId;
 
-    if (!moneyChannelId) {
-      logger.emit({
-        severityText: "WARN",
-        body: "Money Channel ID is not configured. Skipping money settlement post.",
-      });
-      return;
-    }
-
     const settlement = await monthlyCostSettlement.execute({ month, year });
     const { balanceBrlCents } = await getBalance.execute();
+
+    const moneySummaryHeader = settlement.failed > 0
+      ? `⚠️ **Money ledger — costs for ${month}/${year}: ${settlement.failed} failed segment(s)**`
+      : `💰 **Money ledger — costs for ${month}/${year} settled**`;
 
     const delivered = await sendMoneyChannelMessage({
       discordClient,
       moneyChannelId,
-      content: `💰 **Money ledger — costs for ${month}/${year} settled**\n* New cost entries: ${settlement.inserted}\n* Already recorded: ${settlement.skipped}\n* Failed: ${settlement.failed}\n* Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}`,
+      content: `${moneySummaryHeader}\n* New cost entries: ${settlement.inserted}\n* Already recorded: ${settlement.skipped}\n* No cost: ${settlement.noCost}\n* Failed: ${settlement.failed}\n* Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}`,
     });
 
     if (!delivered) {
       await eventLogger.log({
-        eventMessage: `Money Channel not delivered: ${moneyChannelId}`,
+        eventMessage: moneyChannelId
+          ? `Money Channel not delivered: ${moneyChannelId}`
+          : "Money Channel is not configured, so the monthly cost summary was not posted.",
         actorId: "system",
       });
       return;
     }
 
     await eventLogger.log({
-      eventMessage: `Monthly costs for ${month}/${year} settled and posted to money channel.`,
+      eventMessage: settlement.failed > 0
+        ? `Monthly costs for ${month}/${year} posted with ${settlement.failed} failed segment(s).`
+        : `Monthly costs for ${month}/${year} settled and posted to money channel.`,
       actorId: "system",
     });
   } catch (error) {

@@ -8,7 +8,7 @@ export const setLedgerOpeningCommandDefinition = new SlashCommandBuilder()
         option.setName('amount')
             .setDescription('Opening balance amount, must be greater than zero')
             .setRequired(true)
-            .setMinValue(0))
+            .setMinValue(0.01))
     .addStringOption(option =>
         option.setName('currency')
             .setDescription('Opening balance currency')

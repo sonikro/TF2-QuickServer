@@ -61,7 +61,7 @@ describe('MonthlyCostSettlement', () => {
     const result = await sut.execute({ month: 9, year: 2026 });
 
     // Then
-    expect(result).toEqual({ inserted: expectedSegments, skipped: 0, failed: 0 });
+    expect(result).toEqual({ inserted: expectedSegments, skipped: 0, noCost: 0, failed: 0 });
     expect(registerCost.execute).toHaveBeenCalledTimes(expectedSegments);
     expect(registerCost.execute).toHaveBeenCalledWith(expect.objectContaining({
       dedupeKey: 'cost:2026-09:bot-infra',
@@ -83,10 +83,10 @@ describe('MonthlyCostSettlement', () => {
     const result = await sut.execute({ month: 9, year: 2026 });
 
     // Then
-    expect(result).toEqual({ inserted: 0, skipped: expectedSegments, failed: 0 });
+    expect(result).toEqual({ inserted: 0, skipped: expectedSegments, noCost: 0, failed: 0 });
   });
 
-  it('should skip zero-value region costs without registering them', async () => {
+  it('should count zero-value region costs as no cost instead of already recorded', async () => {
     // Given
     const { sut, costProvider, exchangeRateProvider, registerCost } = makeSut();
     givenExchangeRate(exchangeRateProvider);
@@ -97,7 +97,7 @@ describe('MonthlyCostSettlement', () => {
     const result = await sut.execute({ month: 9, year: 2026 });
 
     // Then
-    expect(result).toEqual({ inserted: 1, skipped: getRegions().length, failed: 0 });
+    expect(result).toEqual({ inserted: 1, skipped: 0, noCost: getRegions().length, failed: 0 });
     expect(registerCost.execute).toHaveBeenCalledTimes(1);
     expect(registerCost.execute).toHaveBeenCalledWith(expect.objectContaining({
       dedupeKey: 'cost:2026-09:bot-infra',
@@ -161,7 +161,7 @@ describe('MonthlyCostSettlement', () => {
     const result = await sut.execute({ month: 9, year: 2026 });
 
     // Then
-    expect(result).toEqual({ inserted: regions.length, skipped: 0, failed: 1 });
+    expect(result).toEqual({ inserted: regions.length, skipped: 0, noCost: 0, failed: 1 });
     expect(registerCost.execute).toHaveBeenCalledWith(expect.objectContaining({
       dedupeKey: 'cost:2026-09:bot-infra',
     }));
@@ -193,7 +193,7 @@ describe('MonthlyCostSettlement', () => {
     const result = await sut.execute({ month: 9, year: 2026 });
 
     // Then
-    expect(result).toEqual({ inserted: regions.length, skipped: 0, failed: 1 });
+    expect(result).toEqual({ inserted: regions.length, skipped: 0, noCost: 0, failed: 1 });
     expect(registerCost.execute).toHaveBeenCalledWith(expect.objectContaining({
       dedupeKey: 'cost:2026-09:bot-infra',
     }));

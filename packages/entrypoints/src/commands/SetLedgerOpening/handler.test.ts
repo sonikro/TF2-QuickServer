@@ -154,9 +154,8 @@ describe("SetLedgerOpening Command Handler", () => {
             content: expect.stringContaining('New balance: R$ 185.00'),
             flags: MessageFlags.Ephemeral
         });
-        expect(moneyChannel.send).toHaveBeenCalledWith(expect.stringContaining('Opening balance recorded: R$ 130.00'));
-        expect(moneyChannel.send).toHaveBeenCalledWith(expect.stringContaining('from "Opening balance from #money history"'));
-        expect(moneyChannel.send).toHaveBeenCalledWith(expect.stringContaining('Current balance: R$ 185.00'));
+        expect(moneyChannel.send).toHaveBeenCalledWith("💰 Opening balance recorded: R$ 130.00. Current balance: R$ 185.00.");
+        expect(moneyChannel.send).toHaveBeenCalledWith(expect.not.stringContaining("from \""));
     });
 
     it("should surface the ledger-not-empty rejection and post nothing to #money", async () => {

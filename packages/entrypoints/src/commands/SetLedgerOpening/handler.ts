@@ -60,7 +60,7 @@ async function postOpeningToMoneyChannel(params: PostOpeningParams): Promise<voi
     const delivered = await sendMoneyChannelMessage({
         discordClient,
         moneyChannelId,
-        content: `💰 Opening balance recorded: ${formatLedgerEntryAmount({ entry })} from "${entry.source}". Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`,
+        content: `💰 Opening balance recorded: ${formatLedgerEntryAmount({ entry })}. Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`,
     });
     if (!delivered) {
         await interaction.followUp({
