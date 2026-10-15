@@ -1,5 +1,5 @@
 import { MonthlyUsageReport } from "@tf2qs/core";
-import { getRegionConfig, Region } from "@tf2qs/core";
+import { getMoneyConfig, getRegionConfig, Region, toMajorUnits } from "@tf2qs/core";
 
 export class MonthlyReportFormatter {
   format(report: MonthlyUsageReport, options?: { supportChannelId?: string }): string {
@@ -33,7 +33,6 @@ ${generalStatsSection}${supportLine}`;
   private formatCostsSection(regionCosts: Array<{ region: string; cost: number; currency: string }>): string {
     const costMap = new Map(regionCosts.map(rc => [rc.region, { cost: rc.cost, currency: rc.currency }]));
     
-    // Group costs by currency
     const costsByCurrency = new Map<string, number>();
 
     const formattedRegions = [
@@ -57,12 +56,12 @@ ${generalStatsSection}${supportLine}`;
       })
       .join("\n");
 
-    const botInfrastructureCost = 5.05;
-    const botInfrastructureCurrency = 'USD';
+    const { fixedMonthlyInfrastructureCost } = getMoneyConfig();
+    const botInfrastructureCost = toMajorUnits({ amountInMinorUnits: fixedMonthlyInfrastructureCost.amountInMinorUnits });
+    const botInfrastructureCurrency = fixedMonthlyInfrastructureCost.currency;
     const botInfrastructureTotal = (costsByCurrency.get(botInfrastructureCurrency) || 0) + botInfrastructureCost;
     costsByCurrency.set(botInfrastructureCurrency, botInfrastructureTotal);
 
-    // Format totals by currency
     const totalsSection = Array.from(costsByCurrency.entries())
       .map(([currency, total]) => `**${currency}:** **$${total.toFixed(2)} ${currency}**`)
       .join(" + ");
