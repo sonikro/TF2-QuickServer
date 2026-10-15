@@ -17,13 +17,15 @@ describe("MonthlyUsageReportRoutine", () => {
         const scheduleMock = vi.mocked(schedule)
 
         const channelGetFn = vi.fn();
+        const channelFetchFn = vi.fn();
         const dependencies = {
             configManager: mock<ConfigManager>(),
             discordClient: mock<Client>({
                 channels: mock({
                     cache: {
                         get: channelGetFn
-                    }
+                    },
+                    fetch: channelFetchFn
                 }) as any
             }),
             eventLogger: mock<EventLogger>(),
@@ -37,6 +39,7 @@ describe("MonthlyUsageReportRoutine", () => {
             scheduleMock,
             dependencies,
             channelGetFn,
+            channelFetchFn,
         }
     }
 
@@ -57,7 +60,7 @@ describe("MonthlyUsageReportRoutine", () => {
 
     describe("Job Execution", () => {
         // Given
-        const { sut, dependencies, scheduleMock, channelGetFn } = makeSut();
+        const { sut, dependencies, scheduleMock, channelGetFn, channelFetchFn } = makeSut();
         const now = new Date("2025-11-15T10:00:00Z"); // Fixed current date to Nov 15, 2025
         vi.setSystemTime(now);
 
@@ -74,17 +77,18 @@ describe("MonthlyUsageReportRoutine", () => {
 
         const sendFn = vi.fn();
         const moneySendFn = vi.fn();
-        channelGetFn.mockImplementation((channelId: string) => {
+        channelGetFn.mockReturnValue({
+            type: 0, // GuildText
+            send: sendFn,
+        });
+        channelFetchFn.mockImplementation((channelId: string) => {
             if (channelId === moneyChannelId) {
                 return { type: 0, send: moneySendFn };
             }
-            return {
-                type: 0, // GuildText
-                send: sendFn,
-            };
+            return undefined;
         });
 
-        dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 9, skipped: 0 });
+        dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 9, skipped: 0, failed: 0 });
         dependencies.getBalance.execute.mockResolvedValue({ balanceBrlCents: 12345 });
 
         dependencies.generateMonthlyUsageReport.execute.mockResolvedValue({
@@ -153,8 +157,11 @@ See <#1365408843676520508> to help!`);
 
         it("should post the cost and balance summary to the money channel", async () => {
             await jobPromise;
-            expect(channelGetFn).toHaveBeenCalledWith(moneyChannelId);
+            expect(channelFetchFn).toHaveBeenCalledWith(moneyChannelId);
             expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("costs for 10/2025 settled"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("New cost entries: 9"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("Already recorded: 0"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("Failed: 0"));
             expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("R$ 123.45"));
         })
     })
@@ -175,7 +182,7 @@ See <#1365408843676520508> to help!`);
         });
 
         const makeFailureSut = () => {
-            const { sut, scheduleMock, dependencies, channelGetFn } = makeSut();
+            const { sut, scheduleMock, dependencies, channelGetFn, channelFetchFn } = makeSut();
             const now = new Date("2025-11-15T10:00:00Z");
             vi.setSystemTime(now);
             dependencies.configManager.getDiscordConfig.mockReturnValue({
@@ -187,9 +194,13 @@ See <#1365408843676520508> to help!`);
                 moneyOwnerDiscordIds: ["owner-id"],
             } as any);
             const sendFn = vi.fn();
+            const moneySendFn = vi.fn();
             channelGetFn.mockReturnValue({ type: 0, send: sendFn });
+            channelFetchFn.mockImplementation((channelId: string) =>
+                channelId === "money-channel-id" ? { type: 0, send: moneySendFn } : undefined
+            );
             dependencies.generateMonthlyUsageReport.execute.mockResolvedValue(makeReport() as any);
-            return { sut, scheduleMock, dependencies, channelGetFn, sendFn, now };
+            return { sut, scheduleMock, dependencies, channelGetFn, channelFetchFn, sendFn, moneySendFn, now };
         }
 
         const runJob = async (sut: ReturnType<typeof makeSut>["sut"], dependencies: any, scheduleMock: any, now: Date) => {
@@ -214,13 +225,30 @@ See <#1365408843676520508> to help!`);
             }));
         })
 
+        it("should report the failed segments in the money summary", async () => {
+            // Given
+            const { sut, scheduleMock, dependencies, moneySendFn, now } = makeFailureSut();
+            dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 8, skipped: 0, failed: 1 });
+            dependencies.getBalance.execute.mockResolvedValue({ balanceBrlCents: 12345 });
+
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("costs for 10/2025 settled"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("New cost entries: 8"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("Already recorded: 0"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("Failed: 1"));
+            expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("R$ 123.45"));
+        })
+
         it("should still deliver the report when the money channel is missing", async () => {
             // Given
-            const { sut, scheduleMock, dependencies, channelGetFn, sendFn, now } = makeFailureSut();
-            channelGetFn.mockImplementation((channelId: string) =>
+            const { sut, scheduleMock, dependencies, channelFetchFn, sendFn, moneySendFn, now } = makeFailureSut();
+            channelFetchFn.mockImplementation((channelId: string) =>
                 channelId === "money-channel-id" ? undefined : { type: 0, send: sendFn }
             );
-            dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 0, skipped: 9 });
+            dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 0, skipped: 9, failed: 0 });
             dependencies.getBalance.execute.mockResolvedValue({ balanceBrlCents: 100 });
 
             // When
@@ -228,8 +256,27 @@ See <#1365408843676520508> to help!`);
 
             // Then
             expect(sendFn).toHaveBeenCalled();
+            expect(moneySendFn).not.toHaveBeenCalled();
             expect(dependencies.eventLogger.log).toHaveBeenCalledWith(expect.objectContaining({
-                eventMessage: expect.stringContaining("Money Channel not found"),
+                eventMessage: "Money Channel not delivered: money-channel-id",
+            }));
+        })
+
+        it("should still deliver the report when the money channel fetch rejects", async () => {
+            // Given
+            const { sut, scheduleMock, dependencies, channelFetchFn, sendFn, moneySendFn, now } = makeFailureSut();
+            channelFetchFn.mockRejectedValue(new Error("fetch boom"));
+            dependencies.monthlyCostSettlement.execute.mockResolvedValue({ inserted: 0, skipped: 9, failed: 0 });
+            dependencies.getBalance.execute.mockResolvedValue({ balanceBrlCents: 100 });
+
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
+            expect(sendFn).toHaveBeenCalled();
+            expect(moneySendFn).not.toHaveBeenCalled();
+            expect(dependencies.eventLogger.log).toHaveBeenCalledWith(expect.objectContaining({
+                eventMessage: "Money Channel not delivered: money-channel-id",
             }));
         })
     })

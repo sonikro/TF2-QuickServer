@@ -1,7 +1,9 @@
-import { ChannelType, ChatInputCommandInteraction, Client, MessageFlags } from "discord.js";
+import { ChatInputCommandInteraction, Client, MessageFlags } from "discord.js";
 import { GetBalance, LedgerCurrency, LedgerTransaction, RegisterDonation, toDisplayBrl } from "@tf2qs/core";
 import { commandErrorHandler } from "../commandErrorHandler";
 import { requireMoneyOwner } from "../requireMoneyOwner";
+import { sendMoneyChannelMessage } from "../../discord/sendMoneyChannelMessage";
+import { formatLedgerEntryAmount } from "../formatLedgerEntryAmount";
 
 type RegisterDonationCommandHandlerFactoryDependencies = {
     registerDonation: RegisterDonation;
@@ -36,7 +38,7 @@ export function createRegisterDonationCommandHandlerFactory(dependencies: Regist
             const { balanceBrlCents } = await getBalance.execute();
 
             await interaction.followUp({
-                content: `✅ Donation registered: ${formatDonationAmount({ entry })} from "${entry.source}". New balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`,
+                content: `✅ Donation registered: ${formatLedgerEntryAmount({ entry })} from "${entry.source}". New balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`,
                 flags: MessageFlags.Ephemeral
             });
 
@@ -45,18 +47,6 @@ export function createRegisterDonationCommandHandlerFactory(dependencies: Regist
             await commandErrorHandler(interaction, error);
         }
     };
-}
-
-type FormatDonationAmountParams = {
-    entry: LedgerTransaction;
-};
-
-function formatDonationAmount(params: FormatDonationAmountParams): string {
-    const { entry } = params;
-    if (entry.currencyOriginal === 'BRL') {
-        return `R$ ${toDisplayBrl({ balanceBrlCents: entry.amountBrlCents })}`;
-    }
-    return `${entry.amountOriginal.toFixed(2)} USD (~R$ ${toDisplayBrl({ balanceBrlCents: entry.amountBrlCents })})`;
 }
 
 type PostDonationParams = {
@@ -69,21 +59,14 @@ type PostDonationParams = {
 
 async function postDonationToMoneyChannel(params: PostDonationParams): Promise<void> {
     const { discordClient, moneyChannelId, entry, balanceBrlCents, interaction } = params;
-    try {
-        const channel = await discordClient.channels.fetch(moneyChannelId);
-        if (!channel || channel.type !== ChannelType.GuildText) {
-            await interaction.followUp({
-                content: '⚠️ Donation recorded, but the #money channel could not be found.',
-                flags: MessageFlags.Ephemeral
-            });
-            return;
-        }
-        await channel.send(
-            `💰 New donation: ${formatDonationAmount({ entry })} from "${entry.source}". Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`
-        );
-    } catch {
+    const delivered = await sendMoneyChannelMessage({
+        discordClient,
+        moneyChannelId,
+        content: `💰 New donation: ${formatLedgerEntryAmount({ entry })} from "${entry.source}". Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}.`,
+    });
+    if (!delivered) {
         await interaction.followUp({
-            content: '⚠️ Donation recorded, but posting to #money failed.',
+            content: '⚠️ Donation recorded, but it could not be posted to #money.',
             flags: MessageFlags.Ephemeral
         });
     }

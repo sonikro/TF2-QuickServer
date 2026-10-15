@@ -223,7 +223,7 @@ describe("RegisterDonation Command Handler", () => {
             flags: MessageFlags.Ephemeral
         });
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('could not be found'),
+            content: '⚠️ Donation recorded, but it could not be posted to #money.',
             flags: MessageFlags.Ephemeral
         });
         expect(moneyChannel.send).not.toHaveBeenCalled();
@@ -244,7 +244,7 @@ describe("RegisterDonation Command Handler", () => {
 
         // Then
         expect(interaction.followUp).toHaveBeenCalledWith({
-            content: expect.stringContaining('could not be found'),
+            content: '⚠️ Donation recorded, but it could not be posted to #money.',
             flags: MessageFlags.Ephemeral
         });
         expect(moneyChannel.send).not.toHaveBeenCalled();

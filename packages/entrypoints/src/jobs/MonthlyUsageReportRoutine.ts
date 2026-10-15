@@ -9,6 +9,7 @@ import { MonthlyCostSettlement } from "@tf2qs/core";
 import { toDisplayBrl } from "@tf2qs/core";
 import { logger } from "@tf2qs/telemetry";
 import { MonthlyReportFormatter } from "@tf2qs/providers";
+import { sendMoneyChannelMessage } from "../discord/sendMoneyChannelMessage";
 
 export type ScheduleMonthlyUsageReportRoutineDependencies = {
   generateMonthlyUsageReport: GenerateMonthlyUsageReport;
@@ -139,31 +140,19 @@ async function settleMonthlyCosts(params: SettleMonthlyCostsParams): Promise<voi
     const settlement = await monthlyCostSettlement.execute({ month, year });
     const { balanceBrlCents } = await getBalance.execute();
 
-    const channel = discordClient.channels.cache.get(moneyChannelId);
+    const delivered = await sendMoneyChannelMessage({
+      discordClient,
+      moneyChannelId,
+      content: `💰 **Money ledger — costs for ${month}/${year} settled**\n* New cost entries: ${settlement.inserted}\n* Already recorded: ${settlement.skipped}\n* Failed: ${settlement.failed}\n* Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}`,
+    });
 
-    if (!channel) {
-      logger.emit({
-        severityText: "ERROR",
-        body: `Money Channel not found: ${moneyChannelId}`,
-      });
+    if (!delivered) {
       await eventLogger.log({
-        eventMessage: `Money Channel not found: ${moneyChannelId}`,
+        eventMessage: `Money Channel not delivered: ${moneyChannelId}`,
         actorId: "system",
       });
       return;
     }
-
-    if (channel.type !== ChannelType.GuildText) {
-      logger.emit({
-        severityText: "ERROR",
-        body: `Money Channel is not a text channel: ${moneyChannelId}`,
-      });
-      return;
-    }
-
-    await channel.send(
-      `💰 **Money ledger — costs for ${month}/${year} settled**\n* New cost entries: ${settlement.inserted}\n* Already recorded: ${settlement.skipped}\n* Current balance: R$ ${toDisplayBrl({ balanceBrlCents })}`
-    );
 
     await eventLogger.log({
       eventMessage: `Monthly costs for ${month}/${year} settled and posted to money channel.`,
