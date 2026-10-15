@@ -27,6 +27,12 @@ export class RegisterDonation {
     validateDonation({ amount, currency, source, actorDiscordId });
 
     const normalizedSource = source.trim();
+    const dedupeKey = buildDonationDedupeKey({ actorDiscordId, amount, currency, source: normalizedSource });
+    const alreadyRegistered = await ledgerRepository.existsByDedupeKey({ dedupeKey });
+    if (alreadyRegistered) {
+      throw new UserError(`A donation of ${amount} ${currency} from "${normalizedSource}" is already registered.`);
+    }
+
     const fxRate = currency === 'BRL'
       ? 1
       : (await exchangeRateProvider.getBrlPerUsd({ date: occurredAt })).rate;
@@ -42,7 +48,7 @@ export class RegisterDonation {
         fxSource: currency === 'BRL' ? 'NONE' : 'PTAX',
         source: normalizedSource,
         actorDiscordId,
-        dedupeKey: buildDonationDedupeKey({ occurredAt, actorDiscordId, amount, currency, source: normalizedSource }),
+        dedupeKey,
       },
     });
   }
@@ -72,7 +78,6 @@ function validateDonation(params: ValidateDonationParams): void {
 }
 
 type BuildDonationDedupeKeyParams = {
-  occurredAt: Date;
   actorDiscordId: string;
   amount: number;
   currency: LedgerCurrency;
@@ -80,6 +85,6 @@ type BuildDonationDedupeKeyParams = {
 };
 
 function buildDonationDedupeKey(params: BuildDonationDedupeKeyParams): string {
-  const { occurredAt, actorDiscordId, amount, currency, source } = params;
-  return `donation:${occurredAt.toISOString()}:${actorDiscordId}:${amount}:${currency}:${source}`;
+  const { actorDiscordId, amount, currency, source } = params;
+  return `donation:${actorDiscordId}:${amount}:${currency}:${source}`;
 }

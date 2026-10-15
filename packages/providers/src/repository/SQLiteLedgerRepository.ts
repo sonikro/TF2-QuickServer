@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { LedgerTransaction, NewLedgerEntry } from "@tf2qs/core";
-import { LedgerRepository } from "@tf2qs/core";
+import { LedgerRepository, UserError } from "@tf2qs/core";
 
 type LedgerRow = {
   id: number;
@@ -22,9 +22,16 @@ export class SQLiteLedgerRepository implements LedgerRepository {
 
   async insert(params: { entry: NewLedgerEntry }): Promise<LedgerTransaction> {
     const { entry } = params;
-    const [id] = await this.dependencies.knex('ledger_transactions').insert(toRow(entry));
-    const row = await this.dependencies.knex('ledger_transactions').where({ id }).first();
-    return toDomain(row as LedgerRow);
+    try {
+      const [id] = await this.dependencies.knex('ledger_transactions').insert(toRow(entry));
+      const row = await this.dependencies.knex('ledger_transactions').where({ id }).first();
+      return toDomain(row as LedgerRow);
+    } catch (error) {
+      if (isDuplicateDedupeKeyError({ error })) {
+        throw new UserError('This ledger entry is already recorded.');
+      }
+      throw error;
+    }
   }
 
   async existsByDedupeKey(params: { dedupeKey: string }): Promise<boolean> {
@@ -49,6 +56,20 @@ export class SQLiteLedgerRepository implements LedgerRepository {
       .limit(limit);
     return (rows as LedgerRow[]).map(toDomain);
   }
+}
+
+type IsDuplicateDedupeKeyErrorParams = {
+  error: unknown;
+};
+
+function isDuplicateDedupeKeyError(params: IsDuplicateDedupeKeyErrorParams): boolean {
+  const { error } = params;
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  const code = (error as Error & { code?: string }).code;
+  return code === 'SQLITE_CONSTRAINT'
+    && error.message.includes('UNIQUE constraint failed: ledger_transactions.dedupe_key');
 }
 
 function toRow(entry: NewLedgerEntry): Omit<LedgerRow, 'id' | 'created_at'> {

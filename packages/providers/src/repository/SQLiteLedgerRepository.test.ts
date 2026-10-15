@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Knex, knex as createKnex } from "knex";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { NewLedgerEntry } from "@tf2qs/core";
+import { NewLedgerEntry, UserError } from "@tf2qs/core";
 import { down, up } from "../../../../migrations/20261011000000_ledger_transactions";
 import { SQLiteLedgerRepository } from "./SQLiteLedgerRepository";
 
@@ -128,7 +128,7 @@ describe("SQLiteLedgerRepository", () => {
     expect(recent.map((entry) => entry.dedupeKey)).toEqual(["donation:third", "donation:second"]);
   });
 
-  it("should reject a duplicate dedupe key", async () => {
+  it("should reject a duplicate dedupe key as a user error", async () => {
     // Given
     await sut.insert({ entry: makeEntry() });
 
@@ -136,7 +136,10 @@ describe("SQLiteLedgerRepository", () => {
     const duplicate = sut.insert({ entry: makeEntry() });
 
     // Then
-    await expect(duplicate).rejects.toThrow();
+    const error = await duplicate.then(() => undefined, (thrown: unknown) => thrown as UserError);
+    expect(error).toBeInstanceOf(UserError);
+    expect(error?.name).toBe("UserError");
+    expect(error?.message).toBe("This ledger entry is already recorded.");
   });
 
   it("should store the balance in integer cents", async () => {
@@ -168,7 +171,9 @@ describe("SQLiteLedgerRepository", () => {
     const attempt = sut.insert({ entry });
 
     // Then
-    await expect(attempt).rejects.toThrow(/CHECK constraint failed/);
+    const error = await attempt.then(() => undefined, (thrown: unknown) => thrown as Error);
+    expect(error?.message).toMatch(/CHECK constraint failed/);
+    expect(error?.name).not.toBe("UserError");
   });
 
   it("should round-trip the migration down and up", async () => {

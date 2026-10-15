@@ -36,6 +36,7 @@ describe('RegisterDonation', () => {
     // Given
     const { sut, ledgerRepository, exchangeRateProvider } = makeSut();
     const stored = makeStoredEntry();
+    when(ledgerRepository.existsByDedupeKey).calledWith(expect.anything()).thenResolve(false);
     when(ledgerRepository.insert).calledWith(expect.anything()).thenResolve(stored);
 
     // When
@@ -61,6 +62,7 @@ describe('RegisterDonation', () => {
     // Given
     const { sut, ledgerRepository, exchangeRateProvider } = makeSut();
     const occurredAt = new Date('2026-10-06T12:00:00.000Z');
+    when(ledgerRepository.existsByDedupeKey).calledWith(expect.anything()).thenResolve(false);
     when(exchangeRateProvider.getBrlPerUsd)
       .calledWith({ date: occurredAt })
       .thenResolve({ rate: 5.5, source: 'PTAX', quotedAt: occurredAt });
@@ -83,6 +85,61 @@ describe('RegisterDonation', () => {
     expect(inserted.fxSource).toBe('PTAX');
   });
 
+  it('should build a stable dedupe key without the occurrence timestamp', async () => {
+    // Given
+    const { sut, ledgerRepository } = makeSut();
+    when(ledgerRepository.existsByDedupeKey).calledWith(expect.anything()).thenResolve(false);
+    when(ledgerRepository.insert).calledWith(expect.anything()).thenResolve(makeStoredEntry());
+
+    // When
+    await sut.execute({
+      amount: 130,
+      currency: 'BRL',
+      source: '  Monthly support  ',
+      actorDiscordId: '226828637586849795',
+      occurredAt: new Date('2026-10-06T12:00:00.000Z'),
+    });
+    await sut.execute({
+      amount: 130,
+      currency: 'BRL',
+      source: 'Monthly support',
+      actorDiscordId: '226828637586849795',
+      occurredAt: new Date('2026-12-24T23:15:00.000Z'),
+    });
+
+    // Then
+    const [first, second] = ledgerRepository.insert.mock.calls.map(([call]) => call.entry);
+    expect(first.dedupeKey).toBe('donation:226828637586849795:130:BRL:Monthly support');
+    expect(second.dedupeKey).toBe(first.dedupeKey);
+    expect(first.source).toBe('Monthly support');
+  });
+
+  it.each([
+    { currency: 'BRL' as LedgerCurrency, amount: 130, message: 'A donation of 130 BRL from "Monthly support" is already registered.' },
+    { currency: 'USD' as LedgerCurrency, amount: 10, message: 'A donation of 10 USD from "Monthly support" is already registered.' },
+  ])('should reject an already registered $currency donation without calling the FX provider', async ({ currency, amount, message }) => {
+    // Given
+    const { sut, ledgerRepository, exchangeRateProvider } = makeSut();
+    when(ledgerRepository.existsByDedupeKey).calledWith(expect.anything()).thenResolve(true);
+
+    // When
+    const attempt = sut.execute({
+      amount,
+      currency,
+      source: 'Monthly support',
+      actorDiscordId: '226828637586849795',
+      occurredAt: new Date('2026-10-06T12:00:00.000Z'),
+    });
+
+    // Then
+    await expect(attempt).rejects.toThrow(message);
+    expect(ledgerRepository.existsByDedupeKey).toHaveBeenCalledWith({
+      dedupeKey: `donation:226828637586849795:${amount}:${currency}:Monthly support`,
+    });
+    expect(ledgerRepository.insert).not.toHaveBeenCalled();
+    expect(exchangeRateProvider.getBrlPerUsd).not.toHaveBeenCalled();
+  });
+
   it.each([
     { amount: 0, currency: 'BRL' as LedgerCurrency, source: 'Monthly support', actorDiscordId: '226828637586849795' },
     { amount: -5, currency: 'BRL' as LedgerCurrency, source: 'Monthly support', actorDiscordId: '226828637586849795' },
@@ -100,6 +157,7 @@ describe('RegisterDonation', () => {
 
     // Then
     await expect(attempt).rejects.toThrow();
+    expect(ledgerRepository.existsByDedupeKey).not.toHaveBeenCalled();
     expect(ledgerRepository.insert).not.toHaveBeenCalled();
   });
 });
