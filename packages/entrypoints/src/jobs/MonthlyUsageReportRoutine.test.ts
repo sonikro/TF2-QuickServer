@@ -7,9 +7,21 @@ import { GenerateMonthlyUsageReport } from "@tf2qs/core";
 import { ConfigManager } from "@tf2qs/core";
 import { GetBalance } from "@tf2qs/core";
 import { MonthlyCostSettlement } from "@tf2qs/core";
+import { logger } from "@tf2qs/telemetry";
 import { scheduleMonthlyUsageReportRoutine } from "./MonthlyUsageReportRoutine";
 
 vi.mock("node-schedule")
+
+vi.mock("@tf2qs/telemetry", async (importActual) => {
+    const actual = await importActual<typeof import("@tf2qs/telemetry")>();
+    return {
+        ...actual,
+        logger: {
+            ...actual.logger,
+            emit: vi.fn(),
+        },
+    };
+})
 
 describe("MonthlyUsageReportRoutine", () => {
 
@@ -58,6 +70,7 @@ describe("MonthlyUsageReportRoutine", () => {
     });
 
     const runJob = async (sut: ReturnType<typeof makeSut>["sut"], dependencies: any, scheduleMock: any, now: Date) => {
+        vi.setSystemTime(now);
         sut(dependencies);
         const scheduledJobCallback = scheduleMock.scheduleJob.mock.calls[scheduleMock.scheduleJob.mock.calls.length - 1][1];
         await scheduledJobCallback(now);
@@ -124,22 +137,22 @@ describe("MonthlyUsageReportRoutine", () => {
             year: 2025,
             uniqueUsersCount: 25,
         })
-        // When
 
-        sut(dependencies);
+        it("should call generateMonthlyUsageReport.execute with the previous month's date", async () => {
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
 
-        const scheduledJobCallback = scheduleMock.scheduleJob.mock.calls[0][1];
-        const jobPromise = scheduledJobCallback(now);
-
-        // Then
-
-        it("should call generateMonthlyUsageReport.execute with the previous month's date", () => {
+            // Then
             expect(dependencies.generateMonthlyUsageReport.execute).toHaveBeenCalledWith({
                 date: new Date(2025, 9, 1) // October 1, 2025
             })
         })
 
         it("should send the report to the configured Discord channel", async () => {
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
             expect(channelGetFn).toHaveBeenCalledWith(reportChannelId);
             expect(sendFn).toHaveBeenCalledWith(`@everyone
 📊 **TF2-QuickServer | October 2025 Metrics & Costs**
@@ -171,12 +184,18 @@ See <#1365408843676520508> to help!`);
         })
 
         it("should settle costs for the reported month and year", async () => {
-            await jobPromise;
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
             expect(dependencies.monthlyCostSettlement.execute).toHaveBeenCalledWith({ month: 10, year: 2025 });
         })
 
         it("should post the cost and balance summary to the money channel", async () => {
-            await jobPromise;
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
             expect(channelFetchFn).toHaveBeenCalledWith(moneyChannelId);
             expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("costs for 10/2025 settled"));
             expect(moneySendFn).toHaveBeenCalledWith(expect.stringContaining("New cost entries: 9"));
@@ -223,6 +242,31 @@ See <#1365408843676520508> to help!`);
             expect(sendFn).toHaveBeenCalled();
             expect(dependencies.eventLogger.log).toHaveBeenCalledWith(expect.objectContaining({
                 eventMessage: expect.stringContaining("Error during monthly cost settlement"),
+            }));
+        })
+
+        it("should still deliver the report when the settlement error path cannot log", async () => {
+            // Given
+            const { sut, scheduleMock, dependencies, sendFn, now } = makeFailureSut();
+            dependencies.monthlyCostSettlement.execute.mockRejectedValue(new Error("PTAX down"));
+            dependencies.getBalance.execute.mockResolvedValue({ balanceBrlCents: 0 });
+            dependencies.eventLogger.log.mockImplementation(async ({ eventMessage }: { eventMessage: string }) => {
+                if (eventMessage.includes("Error during monthly cost settlement")) {
+                    throw new Error("Discord log channel gone");
+                }
+            });
+
+            // When
+            await runJob(sut, dependencies, scheduleMock, now);
+
+            // Then
+            expect(sendFn).toHaveBeenCalled();
+            expect(vi.mocked(logger.emit)).toHaveBeenCalledWith(expect.objectContaining({
+                severityText: "ERROR",
+                body: "Failed to record a monthly cost settlement event",
+                attributes: expect.objectContaining({
+                    eventMessage: expect.stringContaining("Error during monthly cost settlement"),
+                }),
             }));
         })
 

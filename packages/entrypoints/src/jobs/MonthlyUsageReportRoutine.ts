@@ -144,20 +144,20 @@ async function settleMonthlyCosts(params: SettleMonthlyCostsParams): Promise<voi
     });
 
     if (!delivered) {
-      await eventLogger.log({
+      await logSettlementEvent({
+        eventLogger,
         eventMessage: moneyChannelId
           ? `Money Channel not delivered: ${moneyChannelId}`
           : "Money Channel is not configured, so the monthly cost summary was not posted.",
-        actorId: "system",
       });
       return;
     }
 
-    await eventLogger.log({
+    await logSettlementEvent({
+      eventLogger,
       eventMessage: settlement.failed > 0
         ? `Monthly costs for ${month}/${year} posted with ${settlement.failed} failed segment(s).`
         : `Monthly costs for ${month}/${year} settled and posted to money channel.`,
-      actorId: "system",
     });
   } catch (error) {
     logger.emit({
@@ -167,11 +167,32 @@ async function settleMonthlyCosts(params: SettleMonthlyCostsParams): Promise<voi
         error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
       },
     });
-    await eventLogger.log({
+    await logSettlementEvent({
+      eventLogger,
       eventMessage: `Error during monthly cost settlement: ${
         error instanceof Error ? error.message : String(error)
       }`,
-      actorId: "system",
+    });
+  }
+}
+
+type LogSettlementEventParams = {
+  eventLogger: EventLogger;
+  eventMessage: string;
+};
+
+async function logSettlementEvent(params: LogSettlementEventParams): Promise<void> {
+  const { eventLogger, eventMessage } = params;
+  try {
+    await eventLogger.log({ eventMessage, actorId: "system" });
+  } catch (error) {
+    logger.emit({
+      severityText: "ERROR",
+      body: "Failed to record a monthly cost settlement event",
+      attributes: {
+        eventMessage,
+        error: JSON.stringify(error, Object.getOwnPropertyNames(error)),
+      },
     });
   }
 }
