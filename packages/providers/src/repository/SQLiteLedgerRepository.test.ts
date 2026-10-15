@@ -25,16 +25,14 @@ function makeEntry(overrides: Partial<NewLedgerEntry> = {}): NewLedgerEntry {
 
 describe("SQLiteLedgerRepository", () => {
   let knex: Knex;
-  let directory: string;
   let sut: SQLiteLedgerRepository;
 
   async function makeSut() {
-    directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
     knex = createKnex({
       client: "sqlite3",
-      connection: { filename: join(directory, "ledger.sqlite3") },
+      connection: { filename: ":memory:" },
       useNullAsDefault: true,
-      pool: { min: 0, max: 1 },
+      pool: { min: 1, max: 1 },
     });
     await up(knex);
     sut = new SQLiteLedgerRepository({ knex });
@@ -47,7 +45,6 @@ describe("SQLiteLedgerRepository", () => {
 
   afterEach(async () => {
     await knex.destroy();
-    await rm(directory, { recursive: true, force: true });
   });
 
   it("should insert and read back an entry with deserialized dates", async () => {
@@ -191,20 +188,35 @@ describe("SQLiteLedgerRepository", () => {
 
   it("should round-trip the migration down and up", async () => {
     // Given
-    await sut.insert({ entry: makeEntry() });
+    const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
+    const fileKnex = createKnex({
+      client: "sqlite3",
+      connection: { filename: join(directory, "ledger.sqlite3") },
+      useNullAsDefault: true,
+      pool: { min: 1, max: 1 },
+    });
 
-    // When
-    await down(knex);
+    try {
+      await up(fileKnex);
+      const fileSut = new SQLiteLedgerRepository({ knex: fileKnex });
+      await fileSut.insert({ entry: makeEntry() });
 
-    // Then
-    await expect(knex("ledger_transactions").select("*")).rejects.toThrow();
+      // When
+      await down(fileKnex);
 
-    // When
-    await up(knex);
-    const stored = await sut.insert({ entry: makeEntry() });
+      // Then
+      await expect(fileKnex("ledger_transactions").select("*")).rejects.toThrow();
 
-    // Then
-    expect(stored.amountBrlCents).toBe(13000);
-    expect(await sut.getBalance()).toBe(13000);
+      // When
+      await up(fileKnex);
+      const stored = await fileSut.insert({ entry: makeEntry() });
+
+      // Then
+      expect(stored.amountBrlCents).toBe(13000);
+      expect(await fileSut.getBalance()).toBe(13000);
+    } finally {
+      await fileKnex.destroy();
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
