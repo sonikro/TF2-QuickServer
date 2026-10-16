@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCostDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl, toMajorUnits } from './LedgerTransaction';
+import { buildCostDedupeKey, buildOpeningDedupeKey, buildSettlementOccurredAt, toBalanceBrl, toBrlCents, toDisplayBrl, toMajorUnits } from './LedgerTransaction';
 
 describe('LedgerTransaction helpers', () => {
   it.each([
@@ -63,6 +63,14 @@ describe('LedgerTransaction helpers', () => {
 
     // Then
     expect(key).toBe('cost:2026-09:sa-saopaulo-1');
+  });
+
+  it('should build the stable opening dedupe key', () => {
+    // When
+    const key = buildOpeningDedupeKey();
+
+    // Then
+    expect(key).toBe('opening:ledger');
   });
 
   it('should settle on the last day of the month at noon UTC', () => {

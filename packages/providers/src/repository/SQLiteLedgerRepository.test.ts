@@ -70,6 +70,25 @@ describe("SQLiteLedgerRepository", () => {
     expect(balance).toBe(0);
   });
 
+  it("should report an empty ledger", async () => {
+    // When
+    const hasTransactions = await sut.hasTransactions();
+
+    // Then
+    expect(hasTransactions).toBe(false);
+  });
+
+  it("should report a ledger with one entry", async () => {
+    // Given
+    await sut.insert({ entry: makeEntry() });
+
+    // When
+    const hasTransactions = await sut.hasTransactions();
+
+    // Then
+    expect(hasTransactions).toBe(true);
+  });
+
   it("should sum opening plus donation minus cost entries", async () => {
     // Given
     await sut.insert({

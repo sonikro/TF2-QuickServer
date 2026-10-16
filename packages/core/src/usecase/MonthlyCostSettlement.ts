@@ -23,6 +23,7 @@ type MonthlyCostSettlementExecuteParams = {
 type MonthlyCostSettlementResult = {
   inserted: number;
   skipped: number;
+  noCost: number;
   failed: number;
 };
 
@@ -49,15 +50,18 @@ export class MonthlyCostSettlement {
 
     let inserted = 0;
     let skipped = 0;
+    let noCost = 0;
     let failed = 0;
 
     for (const { segment, region } of segments) {
       try {
-        const settled = await settleSegment({ segment, region, costProvider, registerCost, moneyConfig, fxRate: fx.rate, month, year, occurredAt, dateRange });
-        if (settled) {
+        const outcome = await settleSegment({ segment, region, costProvider, registerCost, moneyConfig, fxRate: fx.rate, month, year, occurredAt, dateRange });
+        if (outcome === 'inserted') {
           inserted += 1;
-        } else {
+        } else if (outcome === 'already-recorded') {
           skipped += 1;
+        } else {
+          noCost += 1;
         }
       } catch (error) {
         failed += 1;
@@ -68,7 +72,7 @@ export class MonthlyCostSettlement {
       }
     }
 
-    return { inserted, skipped, failed };
+    return { inserted, skipped, noCost, failed };
   }
 }
 
@@ -85,7 +89,9 @@ type SettleSegmentParams = {
   dateRange: { startDate: Date; endDate: Date };
 };
 
-async function settleSegment(params: SettleSegmentParams): Promise<boolean> {
+type SettleSegmentOutcome = 'inserted' | 'already-recorded' | 'no-cost';
+
+async function settleSegment(params: SettleSegmentParams): Promise<SettleSegmentOutcome> {
   const { segment, region, costProvider, registerCost, moneyConfig, fxRate, month, year, occurredAt, dateRange } = params;
   const { fixedMonthlyInfrastructureCost } = moneyConfig;
   const cost = region
@@ -95,7 +101,7 @@ async function settleSegment(params: SettleSegmentParams): Promise<boolean> {
         value: toMajorUnits({ amountInMinorUnits: fixedMonthlyInfrastructureCost.amountInMinorUnits }),
       };
   if (cost.value <= 0) {
-    return false;
+    return 'no-cost';
   }
   const currency = cost.currency as LedgerCurrency;
   const settled = await registerCost.execute({
@@ -107,7 +113,7 @@ async function settleSegment(params: SettleSegmentParams): Promise<boolean> {
     fxRate: currency === 'BRL' ? 1 : fxRate,
     fxSource: currency === 'BRL' ? 'NONE' : 'PTAX',
   });
-  return settled !== null;
+  return settled === null ? 'already-recorded' : 'inserted';
 }
 
 type ValidateSettlementParams = {

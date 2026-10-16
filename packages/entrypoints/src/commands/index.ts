@@ -1,5 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandOptionsOnlyBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Client, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import { CreateServerForUser } from "@tf2qs/core";
+import { GetBalance } from "@tf2qs/core";
+import { RegisterDonation } from "@tf2qs/core";
+import { SetLedgerOpening } from "@tf2qs/core";
 import { GetServerStatus } from "@tf2qs/core";
 import { GetGuildServers } from "@tf2qs/core";
 import { GetUserServers } from "@tf2qs/core";
@@ -19,6 +22,9 @@ import { scheduleCommandDefinition, createScheduleCommandHandlerFactory } from "
 import { showSchedulesCommandDefinition, showSchedulesCommandHandlerFactory } from "./ShowSchedules";
 import { cancelScheduleCommandDefinition, cancelScheduleCommandHandlerFactory } from "./CancelSchedule";
 import { checkSharedIpsCommandDefinition, checkSharedIpsCommandHandlerFactory } from "./CheckSharedIps";
+import { registerDonationCommandDefinition, createRegisterDonationCommandHandlerFactory } from "./RegisterDonation";
+import { balanceCommandDefinition, createBalanceCommandHandlerFactory } from "./Balance";
+import { setLedgerOpeningCommandDefinition, createSetLedgerOpeningCommandHandlerFactory } from "./SetLedgerOpening";
 
 export type CommandDependencies = {
     createServerForUser: CreateServerForUser;
@@ -32,6 +38,12 @@ export type CommandDependencies = {
     cancelScheduledServer: CancelScheduledServer;
     comparePlayerSharedIps: ComparePlayerSharedIps;
     ipHistoryAdminDiscordIds: string[];
+    registerDonation: RegisterDonation;
+    setLedgerOpening: SetLedgerOpening;
+    getBalance: GetBalance;
+    moneyOwnerDiscordIds: string[];
+    moneyChannelId: string;
+    discordClient: Client;
 }
 
 export function createCommands(dependencies: CommandDependencies) {
@@ -106,6 +118,36 @@ export function createCommands(dependencies: CommandDependencies) {
             handler: checkSharedIpsCommandHandlerFactory({
                 comparePlayerSharedIps: dependencies.comparePlayerSharedIps,
                 allowedUserIds: dependencies.ipHistoryAdminDiscordIds,
+            })
+        },
+        registerDonation: {
+            name: "register-donation",
+            definition: registerDonationCommandDefinition,
+            handler: createRegisterDonationCommandHandlerFactory({
+                registerDonation: dependencies.registerDonation,
+                getBalance: dependencies.getBalance,
+                allowedUserIds: dependencies.moneyOwnerDiscordIds,
+                moneyChannelId: dependencies.moneyChannelId,
+                discordClient: dependencies.discordClient,
+            })
+        },
+        balance: {
+            name: "balance",
+            definition: balanceCommandDefinition,
+            handler: createBalanceCommandHandlerFactory({
+                getBalance: dependencies.getBalance,
+                allowedUserIds: dependencies.moneyOwnerDiscordIds,
+            })
+        },
+        setLedgerOpening: {
+            name: "set-ledger-opening",
+            definition: setLedgerOpeningCommandDefinition,
+            handler: createSetLedgerOpeningCommandHandlerFactory({
+                setLedgerOpening: dependencies.setLedgerOpening,
+                getBalance: dependencies.getBalance,
+                allowedUserIds: dependencies.moneyOwnerDiscordIds,
+                moneyChannelId: dependencies.moneyChannelId,
+                discordClient: dependencies.discordClient,
             })
         }
     } satisfies Record<string, {
