@@ -8,3 +8,4 @@ export * from './SQLiteUserRepository';
 export * from './SQLiteServerStatusMetricsRepository';
 export * from './SQLitePlayerConnectionHistoryRepository';
 export * from './SQLiteScheduledServerRepository';
+export * from './SQLiteLedgerRepository';

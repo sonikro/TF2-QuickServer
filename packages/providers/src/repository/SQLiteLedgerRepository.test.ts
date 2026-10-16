@@ -1,0 +1,222 @@
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { Knex, knex as createKnex } from "knex";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { NewLedgerEntry, UserError } from "@tf2qs/core";
+import { down, up } from "../../../../migrations/20261011000000_ledger_transactions";
+import { SQLiteLedgerRepository } from "./SQLiteLedgerRepository";
+
+function makeEntry(overrides: Partial<NewLedgerEntry> = {}): NewLedgerEntry {
+  return {
+    occurredAt: new Date("2026-10-06T12:00:00.000Z"),
+    type: "DONATION",
+    amountOriginal: 130,
+    currencyOriginal: "BRL",
+    amountBrlCents: 13000,
+    fxRate: 1,
+    fxSource: "NONE",
+    source: "Monthly support",
+    actorDiscordId: "226828637586849795",
+    dedupeKey: "donation:2026-10-06:226828637586849795:130:BRL:Monthly support",
+    ...overrides,
+  };
+}
+
+describe("SQLiteLedgerRepository", () => {
+  let knex: Knex;
+  let sut: SQLiteLedgerRepository;
+
+  async function makeSut() {
+    knex = createKnex({
+      client: "sqlite3",
+      connection: { filename: ":memory:" },
+      useNullAsDefault: true,
+      pool: { min: 1, max: 1 },
+    });
+    await up(knex);
+    sut = new SQLiteLedgerRepository({ knex });
+    return { sut, knex };
+  }
+
+  beforeEach(async () => {
+    await makeSut();
+  });
+
+  afterEach(async () => {
+    await knex.destroy();
+  });
+
+  it("should insert and read back an entry with deserialized dates", async () => {
+    // Given
+    const entry = makeEntry();
+
+    // When
+    const stored = await sut.insert({ entry });
+
+    // Then
+    expect(stored.id).toBeGreaterThan(0);
+    expect(stored.occurredAt).toEqual(entry.occurredAt);
+    expect(stored.createdAt).toBeInstanceOf(Date);
+    expect(await sut.existsByDedupeKey({ dedupeKey: entry.dedupeKey })).toBe(true);
+    expect(await sut.existsByDedupeKey({ dedupeKey: "donation:missing" })).toBe(false);
+  });
+
+  it("should report zero balance on an empty ledger", async () => {
+    // When
+    const balance = await sut.getBalance();
+
+    // Then
+    expect(balance).toBe(0);
+  });
+
+  it("should sum opening plus donation minus cost entries", async () => {
+    // Given
+    await sut.insert({
+      entry: makeEntry({
+        type: "OPENING",
+        amountOriginal: 130,
+        amountBrlCents: 13000,
+        source: "Opening balance from #money history",
+        actorDiscordId: "system",
+        dedupeKey: "opening:seed",
+      }),
+    });
+    await sut.insert({
+      entry: makeEntry({
+        amountOriginal: 10,
+        currencyOriginal: "USD",
+        amountBrlCents: 5500,
+        fxRate: 5.5,
+        fxSource: "PTAX",
+        dedupeKey: "donation:usd-10",
+      }),
+    });
+    await sut.insert({
+      entry: makeEntry({
+        type: "COST",
+        amountOriginal: 5.05,
+        currencyOriginal: "USD",
+        amountBrlCents: -2778,
+        fxRate: 5.5,
+        fxSource: "PTAX",
+        actorDiscordId: "system",
+        dedupeKey: "cost:2026-09:bot-infra",
+      }),
+    });
+
+    // When
+    const balance = await sut.getBalance();
+
+    // Then
+    expect(balance).toBe(13000 + 5500 - 2778);
+  });
+
+  it("should list recent entries newest first honoring the limit", async () => {
+    // Given
+    await sut.insert({ entry: makeEntry({ dedupeKey: "donation:first" }) });
+    await sut.insert({ entry: makeEntry({ dedupeKey: "donation:second" }) });
+    await sut.insert({ entry: makeEntry({ dedupeKey: "donation:third" }) });
+
+    // When
+    const recent = await sut.listRecent({ limit: 2 });
+
+    // Then
+    expect(recent.map((entry) => entry.dedupeKey)).toEqual(["donation:third", "donation:second"]);
+  });
+
+  it("should reject a duplicate dedupe key as a user error", async () => {
+    // Given
+    await sut.insert({ entry: makeEntry() });
+
+    // When
+    const duplicate = sut.insert({ entry: makeEntry() });
+
+    // Then
+    const error = await duplicate.then(() => undefined, (thrown: unknown) => thrown as UserError);
+    expect(error).toBeInstanceOf(UserError);
+    expect(error?.name).toBe("UserError");
+    expect(error?.message).toBe("This ledger entry is already recorded.");
+  });
+
+  it("should store the balance in integer cents", async () => {
+    // Given
+    const amountBrlCents = 123456789;
+    await sut.insert({ entry: makeEntry({ amountBrlCents }) });
+
+    // When
+    const stored = await knex("ledger_transactions")
+      .select("amount_brl_cents", knex.raw("typeof(amount_brl_cents) as storage_class"))
+      .first();
+
+    // Then
+    expect(typeof stored?.amount_brl_cents).toBe("number");
+    expect(stored?.storage_class).toBe("integer");
+    expect(stored?.amount_brl_cents).toBe(amountBrlCents);
+  });
+
+  it.each([
+    { description: "an unknown type", overrides: { type: "BOGUS" } },
+    { description: "an unsupported currency", overrides: { currencyOriginal: "EUR" } },
+    { description: "an unsupported fx source", overrides: { fxSource: "BCB" } },
+    { description: "fractional cents", overrides: { amountBrlCents: 13000.5 } },
+  ])("should reject a ledger entry with $description", async ({ description, overrides }) => {
+    // Given
+    const entry = { ...makeEntry(), ...overrides, dedupeKey: `invalid:${description}` } as NewLedgerEntry;
+
+    // When
+    const attempt = sut.insert({ entry });
+
+    // Then
+    const error = await attempt.then(() => undefined, (thrown: unknown) => thrown as Error);
+    expect(error?.message).toMatch(/CHECK constraint failed/);
+    expect(error?.name).not.toBe("UserError");
+  });
+
+  it("should read created_at back as the UTC instant the database stored", async () => {
+    // Given
+    await sut.insert({ entry: makeEntry() });
+    await knex("ledger_transactions").update({ created_at: "2026-10-15 12:47:38" });
+
+    // When
+    const recent = await sut.listRecent({ limit: 1 });
+
+    // Then
+    expect(recent[0].createdAt.toISOString()).toBe("2026-10-15T12:47:38.000Z");
+    expect(recent[0].createdAt.getTime()).toBe(Date.UTC(2026, 9, 15, 12, 47, 38));
+  });
+
+  it("should round-trip the migration down and up", async () => {
+    // Given
+    const directory = await mkdtemp(join(tmpdir(), "ledger-test-"));
+    const fileKnex = createKnex({
+      client: "sqlite3",
+      connection: { filename: join(directory, "ledger.sqlite3") },
+      useNullAsDefault: true,
+      pool: { min: 1, max: 1 },
+    });
+
+    try {
+      await up(fileKnex);
+      const fileSut = new SQLiteLedgerRepository({ knex: fileKnex });
+      await fileSut.insert({ entry: makeEntry() });
+
+      // When
+      await down(fileKnex);
+
+      // Then
+      await expect(fileKnex("ledger_transactions").select("*")).rejects.toThrow();
+
+      // When
+      await up(fileKnex);
+      const stored = await fileSut.insert({ entry: makeEntry() });
+
+      // Then
+      expect(stored.amountBrlCents).toBe(13000);
+      expect(await fileSut.getBalance()).toBe(13000);
+    } finally {
+      await fileKnex.destroy();
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+});

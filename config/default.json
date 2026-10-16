@@ -500,6 +500,12 @@
             "135608307065946112"
         ]
     },
+    "money": {
+        "fixedMonthlyInfrastructureCost": {
+            "amount": "5.05",
+            "currency": "USD"
+        }
+    },
     "github": {
         "repository": "sonikro/TF2-QuickServer",
         "workflowFileName": "check-tf2-update.yaml",
