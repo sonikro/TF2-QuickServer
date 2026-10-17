@@ -4,7 +4,20 @@ import Image from "next/image";
 import { useCallback, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const TESTIMONIALS = [
+export type Testimonial = {
+  player: string;
+  title: string;
+  testimonial: string | readonly string[];
+  avatar: string;
+};
+
+export function toParagraphs(
+  testimonial: string | readonly string[],
+): readonly string[] {
+  return typeof testimonial === "string" ? [testimonial] : testimonial;
+}
+
+export const TESTIMONIALS: readonly Testimonial[] = [
   {
     player: "eduardofer",
     title: "Head-Admin of Brasil Fortress",
@@ -46,6 +59,16 @@ const TESTIMONIALS = [
     testimonial:
       "QuickServer has really helped us on our community, especially with the br.pickup.org integration, pugs and officials. It has every usable config, really stable servers and smooth gameplay.",
     avatar: "/avatars/firedust.jpg",
+  },
+  {
+    player: "pepito",
+    title: "Founder of Vanguard.tf",
+    testimonial: [
+      "When we created Vanguard.tf, a mix (PUG) community built by and for the South American TF2 scene, one of our biggest challenges was finding a reliable and sustainable way to host our games. Traditional dedicated servers were expensive and often plagued by technical issues, making it difficult to provide a consistent experience for our players.",
+      "Our partnership with QuickServer has been instrumental in overcoming these challenges. Through our integration, Vanguard.tf can launch games on demand, leveraging QuickServer's reliable service and exclusive features to deliver a smoother, more accessible experience for the community. This collaboration has become an important part of how Vanguard.tf operates, allowing us to focus on what matters most: bringing players together and growing the scene.",
+      "On behalf of the entire community, we'd like to thank QuickServer and, especially, Sonikro for the partnership, ongoing support, and contribution to the growth of TF2 in South America!",
+    ],
+    avatar: "/avatars/pepito.jpg",
   },
 ];
 
@@ -90,9 +113,18 @@ export default function Testimonials() {
                     className="rounded-full shrink-0 mt-0.5"
                   />
                   <div>
-                    <p className="text-text-muted text-sm leading-relaxed italic">
-                      &ldquo;{item.testimonial}&rdquo;
-                    </p>
+                    {toParagraphs(item.testimonial).map(
+                      (paragraph, index, paragraphs) => (
+                        <p
+                          key={`${item.player}-${index}`}
+                          className={`text-text-muted text-sm leading-relaxed italic${index > 0 ? " mt-3" : ""}`}
+                        >
+                          {index === 0 && <>&ldquo;</>}
+                          {paragraph}
+                          {index === paragraphs.length - 1 && <>&rdquo;</>}
+                        </p>
+                      ),
+                    )}
                     <div className="mt-3">
                       <span className="font-semibold text-accent">
                         {item.player}
