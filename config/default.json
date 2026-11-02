@@ -235,6 +235,17 @@
             ],
             "guildId": "1151219992432492677"
         },
+        "vanguard": {
+            "displayName": "vanguard.tf",
+            "hostname": "vanguard.tf",
+            "image": "sonikro/fat-tf2-pickup:latest",
+            "emptyMinutesTerminate": 60,
+            "customCreationMessage": "🎉 **Server Created Successfully!** 🎉\n\n🤖 This server is managed by Vanguard.\n📋 It will be configured for the match automatically.\n✅ No further action is needed - the server is ready to go!",
+            "admins": [
+                "STEAM_0:0:28716120"
+            ],
+            "guildId": "1557804419666677761"
+        },
         "tf2center": {
             "displayName": "TF2Center",
             "hostname": "TF2Center | {region} @ TF2-QuickServer",
