@@ -29,6 +29,13 @@ RUN \
 # Keep SOAP DM plugins disabled/ because pickup runs mp_tournament_readymode 1; a variant can load them explicitly
 RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tf2dm.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tournament.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 
+# SOAP's own cfgs name the plugin without the disabled/ prefix; rewrite them so match start and end unload and reload it
+RUN sed -i 's|^sm plugins unload soap_tf2dm$|sm plugins unload disabled/soap_tf2dm|' "${SERVER_DIR}/tf/cfg/sourcemod/soap_live.cfg" \
+  && sed -i 's|^sm plugins load soap_tf2dm$|sm plugins load disabled/soap_tf2dm|' "${SERVER_DIR}/tf/cfg/sourcemod/soap_notlive.cfg" \
+  && grep -q '^sm plugins unload disabled/soap_tf2dm$' "${SERVER_DIR}/tf/cfg/sourcemod/soap_live.cfg" \
+  && grep -q '^sm plugins load disabled/soap_tf2dm$' "${SERVER_DIR}/tf/cfg/sourcemod/soap_notlive.cfg" \
+  && chown tf2:tf2 "${SERVER_DIR}/tf/cfg/sourcemod/soap_live.cfg" "${SERVER_DIR}/tf/cfg/sourcemod/soap_notlive.cfg"
+
 ENV TEAM_SIZE=6
 ENV TF2PICKUPORG_API_ADDRESS=
 ENV TF2PICKUPORG_SECRET=
