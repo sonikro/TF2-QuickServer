@@ -60,6 +60,8 @@ Instances do not support shared filesystems):
 3. `tf2pickup` — specialized for pickup game variants.
 4. `tf2center` — tailored for TF2Center (pickup/league platform) integration.
 5. `mge-tf` — specialized for MGE training/duel servers.
+6. `vanguard` — `tf2pickup` plus SOAP-TF2DM for vanguard.tf, which uses team
+   ready-up (`mp_tournament_readymode 0`) set by the site over RCON.
 
 Build/push via `npm run build:fat:<variant>` / `npm run push:fat:<variant>`.
 

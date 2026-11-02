@@ -48,6 +48,17 @@ jobs:
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
+  build-fat-vanguard:
+    needs: build-fat-tf2-pickup
+    uses: ./.github/workflows/build-variant.yaml
+    with:
+      variant-name: fat-vanguard
+      dockerfile-path: ./variants/fat-vanguard/Dockerfile
+      image-name: sonikro/fat-vanguard
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   build-fat-tf2center:
     needs: build-fat-tf2-standard-competitive-i386
     uses: ./.github/workflows/build-variant.yaml
