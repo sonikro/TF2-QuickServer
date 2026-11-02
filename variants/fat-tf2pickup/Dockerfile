@@ -24,10 +24,10 @@ RUN \
   && mv "${TEAMS_PLUGIN_FILE_NAME}" "$SERVER_DIR/tf/addons/sourcemod/plugins/${TEAMS_PLUGIN_FILE_NAME}" \
   # cleanup
   && rm "${SYSTEM2_FILE_NAME}" \
-  && rm "checksum.md5" \
-  # DM is conflicting with the ready up mode
-  && rm "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tf2dm.smx" \
-  "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tournament.smx"
+  && rm "checksum.md5"
+
+# Keep SOAP DM plugins disabled/ because pickup runs mp_tournament_readymode 1; a variant can load them explicitly
+RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tf2dm.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/soap_tournament.smx" "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/"
 
 ENV TEAM_SIZE=6
 ENV TF2PICKUPORG_API_ADDRESS=

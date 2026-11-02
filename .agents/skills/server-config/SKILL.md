@@ -57,11 +57,13 @@ Instances do not support shared filesystems):
    Ultitrio configs); primary image for competitive servers.
 2. `casual-i386` — `maps.casual.json` maps; lighter plugin set (no SOAP-TF2DM,
    MGEMod, or ETF2L/RGL configs); default map `pl_badwater`, 24 max players.
-3. `tf2pickup` — specialized for pickup game variants.
+3. `tf2pickup` — specialized for pickup game variants; also used by
+   `hlbr-tf2pickup` and `vanguard`, which loads SOAP DM from `plugins/disabled/`.
+   vanguard expects team ready-up (`mp_tournament_readymode 0`); the Vanguard
+   site sets it over RCON for every match, and `vanguard.cfg` re-asserts it
+   before loading SOAP DM.
 4. `tf2center` — tailored for TF2Center (pickup/league platform) integration.
 5. `mge-tf` — specialized for MGE training/duel servers.
-6. `vanguard` — `tf2pickup` plus SOAP-TF2DM for vanguard.tf, which uses team
-   ready-up (`mp_tournament_readymode 0`) set by the site over RCON.
 
 Build/push via `npm run build:fat:<variant>` / `npm run push:fat:<variant>`.
 

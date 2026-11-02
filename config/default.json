@@ -238,7 +238,7 @@
         "vanguard": {
             "displayName": "vanguard.tf",
             "hostname": "vanguard.tf",
-            "image": "sonikro/fat-vanguard:latest",
+            "image": "sonikro/fat-tf2-pickup:latest",
             "emptyMinutesTerminate": 60,
             "customCreationMessage": "🎉 **Server Created Successfully!** 🎉\n\n🤖 This server is managed by Vanguard.\n📋 It will be configured for the match automatically.\n✅ No further action is needed - the server is ready to go!",
             "admins": [

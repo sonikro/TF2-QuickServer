@@ -27,8 +27,6 @@
     "push:fat:casual-i386": "docker push sonikro/fat-tf2-casual-i386:latest",
     "build:fat:tf2pickup": "docker build -t sonikro/fat-tf2-pickup:latest -f ./variants/fat-tf2pickup/Dockerfile .",
     "build:fat:mge-tf": "docker build -t sonikro/fat-mge-tf:latest -f ./variants/fat-mge-tf/Dockerfile .",
-    "build:fat:vanguard": "docker build -t sonikro/fat-vanguard:latest -f ./variants/fat-vanguard/Dockerfile .",
-    "push:fat:vanguard": "docker push sonikro/fat-vanguard:latest",
     "build:fat:tf2center": "docker build -t sonikro/fat-tf2center:latest -f ./variants/fat-tf2center/Dockerfile .",
     "push:fat:mge-tf": "docker push sonikro/fat-mge-tf:latest",
     "test:image-size": "bash ./packages/scripts/check_image_size.sh",
