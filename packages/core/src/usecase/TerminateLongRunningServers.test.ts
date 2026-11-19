@@ -137,5 +137,7 @@ describe("TerminateLongRunningServers", () => {
         mocks.serverManager.deleteServer.mockRejectedValue(new Error("fail"));
 
         await expect(sut.execute()).resolves.toBeUndefined();
+        expect(mocks.serverRepository.deleteServer).not.toHaveBeenCalled();
+        expect(mocks.eventLogger.log).not.toHaveBeenCalled();
     });
 });

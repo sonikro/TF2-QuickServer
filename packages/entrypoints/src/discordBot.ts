@@ -284,6 +284,7 @@ export async function startDiscordBot() {
             serverManagerFactory: serverManagerFactory,
             serverRepository,
             serverActivityRepository,
+            serverAbortManager,
             eventLogger,
             discordBot: client
         }),

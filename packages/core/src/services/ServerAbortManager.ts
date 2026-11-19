@@ -7,5 +7,6 @@ export class AbortError extends Error {
 
 export interface ServerAbortManager {
     getOrCreate(id: string): AbortController;
+    has(id: string): boolean;
     delete(id: string): void;
 }

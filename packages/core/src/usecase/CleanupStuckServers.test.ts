@@ -6,6 +6,7 @@ import { Server } from "../domain/DeployedServer";
 import { ServerActivityRepository } from "../repository/ServerActivityRepository";
 import { ServerRepository } from "../repository/ServerRepository";
 import { EventLogger } from "../services/EventLogger";
+import { ServerAbortManager } from "../services/ServerAbortManager";
 import { ServerManager } from "../services/ServerManager";
 import { ServerManagerFactory } from '@tf2qs/providers';
 import { CleanupStuckServers } from "./CleanupStuckServers";
@@ -36,6 +37,7 @@ describe("CleanupStuckServers", () => {
     let serverManagerFactory: ReturnType<typeof mock<ServerManagerFactory>>;
     let serverRepository: ReturnType<typeof mock<ServerRepository>>;
     let serverActivityRepository: ReturnType<typeof mock<ServerActivityRepository>>;
+    let serverAbortManager: ReturnType<typeof mock<ServerAbortManager>>;
     let eventLogger: ReturnType<typeof mock<EventLogger>>;
     let discordBot: ReturnType<typeof mock<DiscordClient>>;
     let user: ReturnType<typeof mock<User>>;
@@ -54,12 +56,15 @@ describe("CleanupStuckServers", () => {
         serverManagerFactory = mock<ServerManagerFactory>();
         serverRepository = mock<ServerRepository>();
         serverActivityRepository = mock<ServerActivityRepository>();
+        serverAbortManager = mock<ServerAbortManager>();
         eventLogger = mock<EventLogger>();
         discordBot = mock<DiscordClient>({ users: mock() });
         user = mock<User>();
 
         when(serverManagerFactory.createServerManager).calledWith(expect.anything()).thenReturn(serverManager);
         serverRepository.runInTransaction.mockImplementation(async (fn: any) => fn(mock()));
+        serverAbortManager.has.mockReturnValue(false);
+        serverAbortManager.getOrCreate.mockReturnValue(mock<AbortController>());
         givenServers({});
         (discordBot.users as any).fetch.mockResolvedValue(user);
 
@@ -67,6 +72,7 @@ describe("CleanupStuckServers", () => {
             serverManagerFactory,
             serverRepository,
             serverActivityRepository,
+            serverAbortManager,
             eventLogger,
             discordBot
         });
@@ -88,6 +94,7 @@ describe("CleanupStuckServers", () => {
             eventMessage: expect.stringContaining(pendingServer.serverId),
             actorId: pendingServer.createdBy,
         });
+        expect(serverAbortManager.getOrCreate(pendingServer.serverId).abort).toHaveBeenCalled();
         expect(user.send).toHaveBeenCalledWith(expect.stringContaining(pendingServer.serverId));
     });
 
@@ -101,8 +108,22 @@ describe("CleanupStuckServers", () => {
         expect(eventLogger.log).not.toHaveBeenCalled();
     });
 
+    it("does not terminate a pending server whose deployment is still running", async () => {
+        const pendingServer = createServer();
+        givenServers({ pending: [pendingServer] });
+        serverAbortManager.has.mockReturnValue(true);
+
+        await sut.execute();
+
+        expect(serverManager.deleteServer).not.toHaveBeenCalled();
+        expect(serverRepository.deleteServer).not.toHaveBeenCalled();
+    });
+
     it("retries the termination of servers stuck in terminating for more than 15 minutes", async () => {
-        const terminatingServer = createServer({ status: "terminating" });
+        const terminatingServer = createServer({
+            status: "terminating",
+            terminatingAt: new Date(Date.now() - STUCK_MS),
+        });
         givenServers({ terminating: [terminatingServer] });
 
         await sut.execute();
@@ -119,8 +140,12 @@ describe("CleanupStuckServers", () => {
         });
     });
 
-    it("does not retry servers terminating for less than 15 minutes", async () => {
-        givenServers({ terminating: [createServer({ status: "terminating", createdAt: new Date(Date.now() - FRESH_MS) })] });
+    it("does not retry a termination that started less than 15 minutes ago", async () => {
+        const terminatingServer = createServer({
+            status: "terminating",
+            terminatingAt: new Date(Date.now() - FRESH_MS),
+        });
+        givenServers({ terminating: [terminatingServer] });
 
         await sut.execute();
 
@@ -128,41 +153,49 @@ describe("CleanupStuckServers", () => {
         expect(serverRepository.deleteServer).not.toHaveBeenCalled();
     });
 
-    it("deletes the server record when the cloud resource is already gone", async () => {
-        const pendingServer = createServer();
-        givenServers({ pending: [pendingServer] });
-        serverManager.deleteServer.mockRejectedValue(new Error("No container instance found"));
-
-        await sut.execute();
-
-        expect(serverRepository.deleteServer).toHaveBeenCalledWith(pendingServer.serverId, expect.anything());
-        expect(eventLogger.log).toHaveBeenCalledWith({
-            eventMessage: expect.stringContaining(pendingServer.serverId),
-            actorId: pendingServer.createdBy,
+    it("does not retry a termination that started recently on an old server", async () => {
+        const terminatingServer = createServer({
+            status: "terminating",
+            createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            terminatingAt: new Date(Date.now() - FRESH_MS),
         });
-    });
-
-    it("deletes the record of a terminating server whose cloud resource is already gone", async () => {
-        const terminatingServer = createServer({ status: "terminating" });
         givenServers({ terminating: [terminatingServer] });
-        serverManager.deleteServer.mockRejectedValue(new Error("No container instance found"));
 
         await sut.execute();
 
-        expect(serverRepository.deleteServer).toHaveBeenCalledWith(terminatingServer.serverId, expect.anything());
+        expect(serverManager.deleteServer).not.toHaveBeenCalled();
     });
 
-    it("throws if a termination fails with an unhandled error", async () => {
+    it("skips terminating servers that have no termination timestamp", async () => {
+        givenServers({ terminating: [createServer({ status: "terminating", terminatingAt: undefined })] });
+
+        await sut.execute();
+
+        expect(serverManager.deleteServer).not.toHaveBeenCalled();
+    });
+
+    it("keeps the record when the deletion fails with an unhandled error", async () => {
         givenServers({ pending: [createServer()] });
         serverManager.deleteServer.mockRejectedValue(new Error("fail"));
 
         await expect(sut.execute()).rejects.toThrow("One or more server terminations failed: Error: fail");
+        expect(serverRepository.deleteServer).not.toHaveBeenCalled();
+        expect(serverActivityRepository.deleteById).not.toHaveBeenCalled();
+        expect(eventLogger.log).not.toHaveBeenCalled();
+    });
+
+    it("keeps the record of a terminating server when the retried deletion fails", async () => {
+        givenServers({ terminating: [createServer({ status: "terminating", terminatingAt: new Date(Date.now() - STUCK_MS) })] });
+        serverManager.deleteServer.mockRejectedValue(new Error("fail"));
+
+        await expect(sut.execute()).rejects.toThrow("One or more server terminations failed: Error: fail");
+        expect(serverRepository.deleteServer).not.toHaveBeenCalled();
     });
 
     it("throws if one of multiple terminations fails", async () => {
         givenServers({
             pending: [createServer({ serverId: "server-1" })],
-            terminating: [createServer({ serverId: "server-2", status: "terminating" })],
+            terminating: [createServer({ serverId: "server-2", status: "terminating", terminatingAt: new Date(Date.now() - STUCK_MS) })],
         });
         serverManager.deleteServer.mockImplementation(async ({ serverId }: { serverId: string }) => {
             if (serverId === "server-2") throw new Error("fail-2");
