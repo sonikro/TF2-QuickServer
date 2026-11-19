@@ -1,13 +1,15 @@
+import { logger } from '@tf2qs/telemetry';
+import { Server } from "../domain";
 import { ServerRepository } from "../repository/ServerRepository";
-import { EventLogger } from "../services/EventLogger";
 import { ServerCommander } from "../services/ServerCommander";
 import { ServerManagerFactory } from '@tf2qs/core';
+import { EventLogger } from "../services/EventLogger";
 
 const MAX_HOURS = 12
 
 export class TerminateLongRunningServers {
-    private readonly warningThresholdMs = (MAX_HOURS - 1) * 60 * 60 * 1000; 
-    private readonly terminateThresholdMs = MAX_HOURS * 60 * 60 * 1000; 
+    private readonly warningThresholdMs = (MAX_HOURS - 1) * 60 * 60 * 1000;
+    private readonly terminateThresholdMs = MAX_HOURS * 60 * 60 * 1000;
 
     constructor(private readonly dependencies: {
         serverRepository: ServerRepository,
@@ -17,40 +19,40 @@ export class TerminateLongRunningServers {
     }) {}
 
     async execute() {
-        const { serverRepository, serverManagerFactory, serverCommander, eventLogger } = this.dependencies;
-        const servers = await serverRepository.getAllServers();
+        const { serverRepository } = this.dependencies;
+        const servers = await serverRepository.getAllServers("ready");
         const now = Date.now();
-        const settledPromises: PromiseSettledResult<any>[] = [];
+        const runningMs = (server: Server) => server.createdAt ? now - new Date(server.createdAt).getTime() : 0;
 
-        // Send warning to servers running >11h but <12h
-        const warningPromises = await Promise.allSettled(servers.filter(server => {
-            if (!server.createdAt) return false;
-            const runningMs = now - new Date(server.createdAt).getTime();
-            return runningMs > this.warningThresholdMs && runningMs < this.terminateThresholdMs;
-        }).map(async server => {
-            await serverCommander.query({
-                command: `say The server has been running for too long and will be automatically terminated when it reaches ${MAX_HOURS} hours`,
-                host: server.rconAddress,
-                port: 27015,
-                password: server.rconPassword,
-                timeout: 5000
-            });
-        }));
-        settledPromises.push(...warningPromises);
+        const serversToWarn = servers.filter(server => {
+            const running = runningMs(server);
+            return running > this.warningThresholdMs && running < this.terminateThresholdMs;
+        });
+        const serversToTerminate = servers.filter(server => runningMs(server) >= this.terminateThresholdMs);
 
-        // Terminate servers running >=12h
-        const terminatePromises = await Promise.allSettled(servers.filter(server => {
-            if (!server.createdAt) return false;
-            const runningMs = now - new Date(server.createdAt).getTime();
-            return runningMs >= this.terminateThresholdMs;
-        }).map(async server => {
-            await serverCommander.query({
-                command: `say The server has been running for too long and is now being terminated.`,
-                host: server.rconAddress,
-                port: 27015,
-                password: server.rconPassword,
-                timeout: 5000
-            });
+        await Promise.allSettled([
+            ...serversToWarn.map(server => this.warn(server)),
+            ...serversToTerminate.map(server => this.terminate(server)),
+        ]);
+    }
+
+    private async warn(server: Server) {
+        try {
+            await this.say(server, `say The server has been running for too long and will be automatically terminated when it reaches ${MAX_HOURS} hours`);
+        } catch (error) {
+            this.logFailure(server, 'warn', error);
+        }
+    }
+
+    private async terminate(server: Server) {
+        const { serverManagerFactory, serverRepository, eventLogger } = this.dependencies;
+        try {
+            await this.say(server, `say The server has been running for too long and is now being terminated.`);
+        } catch (error) {
+            this.logFailure(server, 'warn before termination', error);
+        }
+
+        try {
             const serverManager = serverManagerFactory.createServerManager(server.region);
             await serverManager.deleteServer({
                 serverId: server.serverId,
@@ -61,13 +63,30 @@ export class TerminateLongRunningServers {
                 eventMessage: `Server ${server.serverId} terminated for exceeding ${MAX_HOURS} hours runtime.`,
                 actorId: server.createdBy!
             });
-        }));
-        settledPromises.push(...terminatePromises);
-
-        // Throw an error if any of the promises failed
-        const errors = settledPromises.filter(result => result.status === 'rejected').map(result => (result as PromiseRejectedResult).reason);
-        if (errors.length > 0) {
-            throw new Error(`Failed to terminate or warn some servers: ${errors.join(', ')}`);
+        } catch (error) {
+            this.logFailure(server, 'terminate', error);
         }
+    }
+
+    private async say(server: Server, command: string) {
+        const { serverCommander } = this.dependencies;
+        await serverCommander.query({
+            command,
+            host: server.rconAddress,
+            port: 27015,
+            password: server.rconPassword,
+            timeout: 5000
+        });
+    }
+
+    private logFailure(server: Server, action: string, error: unknown) {
+        logger.emit({
+            severityText: 'ERROR',
+            body: `Failed to ${action} long running server ${server.serverId}`,
+            attributes: {
+                serverId: server.serverId,
+                error: JSON.stringify(error, Object.getOwnPropertyNames(error))
+            }
+        });
     }
 }

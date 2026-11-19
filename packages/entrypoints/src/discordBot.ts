@@ -23,7 +23,7 @@ import { SetLedgerOpening } from "@tf2qs/core";
 import { CheckForTf2Update } from "@tf2qs/core";
 import { TerminateEmptyServers } from "@tf2qs/core";
 import { TerminateLongRunningServers } from "@tf2qs/core";
-import { TerminatePendingServers } from "@tf2qs/core";
+import { CleanupStuckServers } from "@tf2qs/core";
 import { AWSCostProvider } from "@tf2qs/providers";
 import { OracleCostProvider } from "@tf2qs/providers";
 import { DefaultCostProvider } from "@tf2qs/providers";
@@ -61,7 +61,7 @@ import { defaultConfigManager } from "@tf2qs/providers";
 import { logger } from "@tf2qs/telemetry";
 import { createCommands } from "./commands";
 import { initializeExpress } from "./http/express";
-import { scheduleMonthlyUsageReportRoutine, schedulePendingServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleScheduledServerCreationRoutine, scheduleTerminateLongRunningServerRoutine, scheduleTf2UpdateCheckRoutine } from "./jobs";
+import { scheduleMonthlyUsageReportRoutine, scheduleStuckServerCleanupRoutine, scheduleServerCleanupRoutine, scheduleScheduledServerCreationRoutine, scheduleTerminateLongRunningServerRoutine, scheduleTf2UpdateCheckRoutine } from "./jobs";
 import { startSrcdsCommandListener } from "./udp/srcdsCommandListener";
 import { formatServerMessage } from "./commands/formatServerMessage";
 
@@ -279,10 +279,11 @@ export async function startDiscordBot() {
         eventLogger
     })
 
-    schedulePendingServerCleanupRoutine({
-        terminatePendingServers: new TerminatePendingServers({
+    scheduleStuckServerCleanupRoutine({
+        cleanupStuckServers: new CleanupStuckServers({
             serverManagerFactory: serverManagerFactory,
             serverRepository,
+            serverActivityRepository,
             eventLogger,
             discordBot: client
         }),

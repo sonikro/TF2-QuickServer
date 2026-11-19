@@ -1,5 +1,5 @@
 export * from "./ServerCleanupRoutine"
-export * from "./PendingServerCleanupRoutine";
+export * from "./StuckServerCleanupRoutine";
 export * from "./TerminateLongRunningServerRoutine";
 export * from "./MonthlyUsageReportRoutine";
 export * from "./ScheduledServerCreationRoutine";
