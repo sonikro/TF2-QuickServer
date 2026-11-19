@@ -24,7 +24,7 @@ export class SQLiteServerRepository implements ServerRepository {
                 createdBy: server.createdBy,
                 guildId: server.guildId ?? null,
                 status: server.status,
-                terminatingAt: server.terminatingAt ?? null,
+                ...(server.terminatingAt ? { terminatingAt: server.terminatingAt } : {}),
                 sv_logsecret: server.logSecret
             } as Server)
             .onConflict('serverId')

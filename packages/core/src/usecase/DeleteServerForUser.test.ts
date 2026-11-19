@@ -100,6 +100,10 @@ describe("DeleteServerForUser", () => {
         await deleteServerForUser.execute({ userId });
 
         for (const server of servers) {
+            expect(mockServerRepository.upsertServer).toHaveBeenCalledWith(
+                expect.objectContaining({ serverId: server.serverId, status: "terminating", terminatingAt: expect.any(Date) }),
+                mockTransaction
+            );
             expect(mockServerManager.deleteServer).toHaveBeenCalledWith({
                 serverId: server.serverId,
                 region: server.region,

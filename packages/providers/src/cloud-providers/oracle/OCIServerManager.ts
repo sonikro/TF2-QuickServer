@@ -374,6 +374,7 @@ export class OCIServerManager implements ServerManager {
                     logSecret
                 };
             } catch (err) {
+                serverAbortManager.delete(serverId); // A failed deploy is no longer in flight
                 parentSpan.recordException?.(err as any);
                 parentSpan.setStatus?.({ code: 2, message: String(err) });
                 parentSpan.end();

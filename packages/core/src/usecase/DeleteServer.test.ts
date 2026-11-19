@@ -81,6 +81,10 @@ describe("DeleteServer", () => {
 
         await deleteServer.execute({ serverId });
 
+        expect(mockServerRepository.upsertServer).toHaveBeenCalledWith(
+            expect.objectContaining({ status: "terminating", terminatingAt: expect.any(Date) }),
+            mockTransaction
+        );
         expect(mockServerManager.deleteServer).toHaveBeenCalledWith({
             serverId,
             region: server.region,
