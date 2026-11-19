@@ -60,7 +60,7 @@ export * from './src/usecase/GetUserSchedules';
 export * from './src/usecase/SetUserData';
 export * from './src/usecase/TerminateEmptyServers';
 export * from './src/usecase/TerminateLongRunningServers';
-export * from './src/usecase/TerminatePendingServers';
+export * from './src/usecase/CleanupStuckServers';
 export * from './src/usecase/RegisterDonation';
 export * from './src/usecase/RegisterCost';
 export * from './src/usecase/GetBalance';

@@ -13,6 +13,10 @@ export class DefaultServerAbortManager implements ServerAbortManager
         return controller;
     }
 
+    has(id: string): boolean {
+        return this.controllers.has(id);
+    }
+
     delete(id: string): void {
         this.controllers.delete(id);
     }

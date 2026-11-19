@@ -96,4 +96,48 @@ describe("TerminateLongRunningServers", () => {
         expect(mocks.serverManager.deleteServer).not.toHaveBeenCalled();
         expect(mocks.serverRepository.deleteServer).not.toHaveBeenCalled();
     });
+
+    it("only considers servers in ready status", async () => {
+        const { sut, mocks } = createTestEnvironment();
+        mocks.serverRepository.getAllServers.mockResolvedValue([]);
+        await sut.execute();
+        expect(mocks.serverRepository.getAllServers).toHaveBeenCalledWith("ready");
+    });
+
+    it("should still terminate a server when the rcon warning fails", async () => {
+        const { sut, mocks } = createTestEnvironment();
+        const serverTerminate = createServer(ms(12.1));
+        mocks.serverRepository.getAllServers.mockResolvedValue([serverTerminate]);
+        mocks.serverCommander.query.mockRejectedValue(new Error("Not connected"));
+
+        await expect(sut.execute()).resolves.toBeUndefined();
+
+        expect(mocks.serverManager.deleteServer).toHaveBeenCalledWith({
+            serverId: serverTerminate.serverId,
+            region: serverTerminate.region
+        });
+        expect(mocks.serverRepository.deleteServer).toHaveBeenCalledWith(serverTerminate.serverId);
+    });
+
+    it("should not fail when a server cannot be warned", async () => {
+        const { sut, mocks } = createTestEnvironment();
+        const serverWarn = createServer(ms(11.5));
+        mocks.serverRepository.getAllServers.mockResolvedValue([serverWarn]);
+        mocks.serverCommander.query.mockRejectedValue(new Error("Not connected"));
+
+        await expect(sut.execute()).resolves.toBeUndefined();
+
+        expect(mocks.serverManager.deleteServer).not.toHaveBeenCalled();
+    });
+
+    it("should not fail when a termination fails", async () => {
+        const { sut, mocks } = createTestEnvironment();
+        const serverTerminate = createServer(ms(12.1));
+        mocks.serverRepository.getAllServers.mockResolvedValue([serverTerminate]);
+        mocks.serverManager.deleteServer.mockRejectedValue(new Error("fail"));
+
+        await expect(sut.execute()).resolves.toBeUndefined();
+        expect(mocks.serverRepository.deleteServer).not.toHaveBeenCalled();
+        expect(mocks.eventLogger.log).not.toHaveBeenCalled();
+    });
 });
