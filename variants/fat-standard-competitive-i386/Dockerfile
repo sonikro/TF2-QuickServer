@@ -276,6 +276,11 @@ COPY --from=sourcemod-metamod --chown=tf2 /server/tf/ "${SERVER_DIR}/tf/"
 # Copy plugins and configs from build stage
 COPY --from=plugins --chown=tf2 /server/tf/ "${SERVER_DIR}/tf/"
 
+# MetaMod asks for PROT_EXEC when patching its own vtable, which SELinux denies
+# on some container hosts (ADR 0004); the page only holds pointers, so RW is enough.
+COPY --chmod=755 ./variants/base/patch_metamod.sh .
+RUN ./patch_metamod.sh "${SERVER_DIR}"
+
 # Disable useless (and potentially harmful) plugins
 RUN mv "${SERVER_DIR}/tf/addons/sourcemod/plugins/"{nextmap,funcommands,funvotes}.smx "${SERVER_DIR}/tf/addons/sourcemod/plugins/disabled/" || true
 
