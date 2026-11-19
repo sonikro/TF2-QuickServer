@@ -63,12 +63,13 @@ both builds start, and both builds issue the same `mprotect(..., RWX)` call. The
 one run where git1230 appeared to fix a failing host was host variance, not a
 version difference.
 
-The denial was transient. Between roughly 00:25 and 01:20 UTC freshly created
-instances reproduced it consistently in `sa-saopaulo-1`, `us-chicago-1` and
-`sa-santiago-1` (both tenancies); from about 01:50 UTC every new instance
-started the unchanged `git1219` image successfully. The host-side change was
-therefore rolled back or rolled out unevenly by Oracle, which is also what
-happened in the December 2025 incident recorded in ADR 0002.
+The denial is not stable across hosts. Between roughly 00:25 and 01:20 UTC
+freshly created instances reproduced it consistently in `sa-saopaulo-1`,
+`us-chicago-1` and `sa-santiago-1` (both tenancies); from about 01:50 UTC new
+instances started the unchanged `git1219` image successfully, and at about
+02:39 UTC it came back in `sa-saopaulo-1`. The host-side change is being rolled
+out or reverted unevenly by Oracle, which is also what happened in the December
+2025 incident recorded in ADR 0002.
 
 ## Decision
 
@@ -109,9 +110,9 @@ the standard competitive image. The MetaMod pin stays on
 - The images patch a third-party binary at build time. The script is pinned to
   MetaMod's current code generation and fails the build when the pattern
   changes, so a MetaMod bump requires re-verifying the patch.
-- The patch is verified statically (call sites and build assertion) and by
-  disassembly. It could not be exercised against a real `execmod` denial,
-  because the denial stopped reproducing before the fix was ready.
+- The build-time patch has to be re-checked whenever the MetaMod pin moves,
+  because it targets the code generation of the pinned build. The script fails
+  the build when the call sites are not found, which makes the move visible.
 
 ### Neutral
 
@@ -145,6 +146,13 @@ the standard competitive image. The MetaMod pin stays on
 - The patch changes exactly those call sites: `push $0x7` becomes `push $0x3`
   at `0x2ce6`, `0x2d6b` and the two `mm_GameDllRequest` sites, and the build
   script asserts that no `RWX` site remains.
+- On 2026-11-19 at 02:44 UTC, while the denial was active again in
+  `sa-saopaulo-1`, one container instance ran both images on the same host: the
+  patched image reached `[META] Loaded 1 plugin.` and
+  `Started map "cp_process_f12"` and loaded its SourceMod plugins, while the
+  unpatched `:latest` image on that host faulted right after its second
+  `ProtoDefs loaded` at 02:48:18. That is the same-host A/B that separates the
+  patch from host variance.
 
 ## References
 
