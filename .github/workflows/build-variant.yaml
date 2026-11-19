@@ -23,7 +23,11 @@ on:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    # ubuntu-latest now maps to Ubuntu 26.04, whose Docker 29.4.2 denies
+    # socketcall(2) in its default seccomp profile. The 32-bit SteamCMD cannot
+    # create sockets there, so the TF2 install fails (ADR 0005). Move back once
+    # the runner image ships Docker 29.4.3 or later.
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
