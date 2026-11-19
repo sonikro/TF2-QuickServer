@@ -32,7 +32,8 @@ export class DeleteServerForUser {
             for (const s of server) {
                 await serverRepository.upsertServer({
                     ...s,
-                    status: "terminating"
+                    status: "terminating",
+                    terminatingAt: new Date()
                 }, trx);
             }
         });

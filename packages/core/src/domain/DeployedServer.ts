@@ -18,5 +18,6 @@ export interface Server {
     createdBy?: string;
     guildId?: string;
     status?: ServerStatus;
+    terminatingAt?: Date;
     logSecret?: number;
 }
