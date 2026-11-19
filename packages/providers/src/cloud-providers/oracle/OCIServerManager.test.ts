@@ -374,6 +374,10 @@ describe("OCIServerManager", () => {
       });
     });
 
+    it("releases the abort controller after a successful deployment", () => {
+      expect(environment.serverAbortManager.has("test-server-id")).toBe(false);
+    });
+
     it("returns a server object with correct serverId", () => {
       expect(result.serverId).toBe("test-server-id");
     });
@@ -729,6 +733,7 @@ describe("OCIServerManager", () => {
         serverId: "test-server-id",
         statusUpdater: statusUpdater,
       })).rejects.toThrow(new AbortError("Operation aborted"));
+      expect(serverAbortManager.has("test-server-id")).toBe(false);
     });
   })
 

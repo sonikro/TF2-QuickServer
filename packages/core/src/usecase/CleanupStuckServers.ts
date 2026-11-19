@@ -33,6 +33,8 @@ export class CleanupStuckServers {
         ]);
 
         const results = await Promise.allSettled([
+            // Only the OCI manager registers an abort controller; AWS pending
+            // rows are reaped on the grace period alone, as they were before.
             ...pendingServers
                 .filter(server => this.isPendingStuck(server, now))
                 .filter(server => !serverAbortManager.has(server.serverId))
