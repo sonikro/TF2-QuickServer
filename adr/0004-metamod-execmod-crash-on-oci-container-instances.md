@@ -94,6 +94,15 @@ after copying the addons; `fat-tf2pickup` and `fat-tf2center` inherit it from
 the standard competitive image. The MetaMod pin stays on
 `1.12.0-git1219`.
 
+## Deployment
+
+The five published `latest` tags were republished on 2026-11-19 with a derived
+layer over the 2026-11-02 images (same base layers, only `patch_metamod.sh`
+applied), because the CI image builds could not reach Steam from the runners.
+A same-host OCI A/B at 03:23:56 UTC confirmed that the new `latest` starts while
+the previous digest still segfaults. Merging this change republishes the same
+images from these Dockerfiles.
+
 ## Consequences
 
 ### Positive
