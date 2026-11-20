@@ -1,8 +1,8 @@
-// Whitelist generated at Sat, 10 Oct 2026 20:53:01 +0200
-// Custom Whitelist ID: 20072
+// Whitelist generated at Fri, 20 Nov 2026 18:25:28 +0100
+// Custom Whitelist ID: 20116
 
 // Share or view this whitelist:
-//	https://whitelist.tf/20072
+//	https://whitelist.tf/20116
 
 // New items added to the game are: allowed
 // Hats are: allowed
@@ -18,7 +18,6 @@
 
 // Blocked weapons for Multiple classes
 // - Secondary
-//  * B.A.S.E. Jumper
 //  * Reserve Shooter
 
 // Blocked weapons for Scout
@@ -32,6 +31,7 @@
 
 // Blocked weapons for Soldier
 // - Primary
+//  * Beggar's Bazooka
 //  * Cow Mangler 5000
 //  * Rocket Jumper
 // - Melee
@@ -81,7 +81,6 @@
 
 	//------------- Blocked weapons/reskins (Total: 34) -------------\\
 	//______________________ Multiple classes _______________________\\
-	"The B.A.S.E. Jumper"						"0"
 	"The Reserve Shooter"						"0"
 	//____________________________ Scout ____________________________\\
 	"Bonk! Atomic Punch"						"0"
@@ -94,6 +93,7 @@
 	"The Soda Popper"						"0"
 	//___________________________ Soldier ___________________________\\
 	"Rocket Jumper"							"0"
+	"The Beggar's Bazooka"						"0"
 	"The Cow Mangler 5000"						"0"
 	"The Disciplinary Action"					"0"
 	//____________________________ Pyro _____________________________\\
@@ -167,103 +167,4 @@
 	"Elf Ignition"							"0"
 	"The Jingle Belt"						"0"
 	"Elf Care Provider"						"0"
-
-	//--------------------- Taunts (Total: 87) ----------------------\\
-	//_________________________ All classes _________________________\\
-	"Conga Taunt"							"0"
-	"Flippin' Awesome Taunt"					"0"
-	"High Five Taunt"						"0"
-	"RPS Taunt"							"0"
-	"Skullcracker Taunt"						"0"
-	"Square Dance Taunt"						"0"
-	"Taunt: Commending Clap"					"0"
-	"Taunt: Flying Colors"						"0"
-	"Taunt: Kazotsky Kick"						"0"
-	"Taunt: Mannrobics"						"0"
-	"Taunt: Mourning Mercs"						"0"
-	"Taunt: Peace!"							"0"
-	"Taunt: The Critical Fail"					"0"
-	"Taunt: The Final Score"					"0"
-	"Taunt: The Fist Bump"						"0"
-	"Taunt: The Victory Lap"					"0"
-	"Taunt: Unleashed Rage"						"0"
-	"Taunt: Zoomin' Broom"						"0"
-	//____________________________ Scout ____________________________\\
-	"Taunt: Chairholder"						"0"
-	"Taunt: Healthcare Hog"						"0"
-	"Taunt: Peace Out"						"0"
-	"Taunt: Runner's Rhythm"					"0"
-	"Taunt: Showrunner's Spirit"					"0"
-	"Taunt: Spin-to-Win"						"0"
-	"Taunt: The Boston Boarder"					"0"
-	"Taunt: The Bunnyhopper"					"0"
-	"Taunt: The Carlton"						"0"
-	"Taunt: The Homerunner's Hobby"					"0"
-	"Taunt: The Scooty Scoot"					"0"
-	//___________________________ Soldier ___________________________\\
-	"Fresh Brewed Victory Taunt"					"0"
-	"Taunt: Buffoon's Bivouac"					"0"
-	"Taunt: Can It!"						"0"
-	"Taunt: Neck Snap"						"0"
-	"Taunt: One-Eyed Punt"						"0"
-	"Taunt: Panzer Pants"						"0"
-	"Taunt: Rocket Jockey"						"0"
-	//____________________________ Pyro _____________________________\\
-	"Pool Party Taunt"						"0"
-	"Taunt: Cremator's Condolences"					"0"
-	"Taunt: Friendly Fire"						"0"
-	"Taunt: Roasty Toasty"						"0"
-	"Taunt: Scorcher's Solo"					"0"
-	"Taunt: Sear You Later"						"0"
-	"Taunt: The Balloonibouncer"					"0"
-	"Taunt: The Hot Wheeler"					"0"
-	"Taunt: The Skating Scorcher"					"0"
-	//___________________________ Demoman ___________________________\\
-	"Taunt: Barrel Roll"						"0"
-	"Taunt: Dead Mann's Drink"					"0"
-	"Taunt: Drunk Mann's Cannon"					"0"
-	"Taunt: Fore-Head Slice"					"0"
-	"Taunt: Scotsmann's Stagger"					"0"
-	"Taunt: Shanty Shipmate"					"0"
-	"Taunt: The Drunken Sailor"					"0"
-	"Taunt: The Pooped Deck"					"0"
-	//____________________________ Heavy ____________________________\\
-	"Taunt: Bare Knuckle Beatdown"					"0"
-	"Taunt: Bear Hug"						"0"
-	"Taunt: Crushing Defeat"					"0"
-	"Taunt: Ring King"						"0"
-	"Taunt: Russian Rubdown"					"0"
-	"Taunt: The Boiling Point"					"0"
-	"Taunt: The Circuit Breaker"					"0"
-	"Taunt: The Road Rager"						"0"
-	"Taunt: The Russian Arms Race"					"0"
-	"Taunt: The Soviet Strongarm"					"0"
-	"Taunt: The Table Tantrum"					"0"
-	//__________________________ Engineer ___________________________\\
-	"Rancho Relaxo Taunt"						"0"
-	"Taunt: Bucking Bronco"						"0"
-	"Taunt: Texan Trickshot"					"0"
-	"Taunt: Texas Truckin"						"0"
-	"Taunt: The Dueling Banjo"					"0"
-	"Taunt: The Jumping Jack"					"0"
-	//____________________________ Medic ____________________________\\
-	"Taunt: Heartbreaker"						"0"
-	"Taunt: Hippocratic Hypocrite"					"0"
-	"Taunt: Surgeon's Squeezebox"					"0"
-	"Taunt: The Mannbulance!"					"0"
-	"Taunt: Time Out Therapy"					"0"
-	//___________________________ Sniper ____________________________\\
-	"Taunt: Didgeridrongo"						"0"
-	"Taunt: Shooter's Stakeout"					"0"
-	"Taunt: Straight Shooter Tutor"					"0"
-	//_____________________________ Spy _____________________________\\
-	"Taunt: Curtain Call"						"0"
-	"Taunt: Faux-calization"					"0"
-	"Taunt: Luxury Lounge"						"0"
-	"Taunt: Tailored Terminal"					"0"
-	"Taunt: The Boxtrot"						"0"
-	"Taunt: The Crypt Creeper"					"0"
-	"Taunt: The Punchline"						"0"
-	"Taunt: The Travel Agent"					"0"
-	"Taunt: Tuefort Tango"						"0"
 }
