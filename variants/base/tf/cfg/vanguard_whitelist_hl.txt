@@ -1,8 +1,8 @@
-// Whitelist generated at Tue, 13 Oct 2026 17:40:49 +0200
-// Custom Whitelist ID: 20075
+// Whitelist generated at Fri, 20 Nov 2026 18:28:51 +0100
+// Custom Whitelist ID: 20117
 
 // Share or view this whitelist:
-//	https://whitelist.tf/20075
+//	https://whitelist.tf/20117
 
 // New items added to the game are: allowed
 // Hats are: allowed
@@ -114,81 +114,4 @@
 	"Elf Ignition"							"0"
 	"The Jingle Belt"						"0"
 	"Elf Care Provider"						"0"
-
-	//--------------------- Taunts (Total: 65) ----------------------\\
-	//_________________________ All classes _________________________\\
-	"Conga Taunt"							"0"
-	"Flippin' Awesome Taunt"					"0"
-	"High Five Taunt"						"0"
-	"RPS Taunt"							"0"
-	"Skullcracker Taunt"						"0"
-	"Square Dance Taunt"						"0"
-	"Taunt: Flying Colors"						"0"
-	"Taunt: Kazotsky Kick"						"0"
-	"Taunt: Mannrobics"						"0"
-	"Taunt: The Fist Bump"						"0"
-	"Taunt: The Scaredy-cat!"					"0"
-	"Taunt: The Victory Lap"					"0"
-	"Taunt: Zoomin' Broom"						"0"
-	//____________________________ Scout ____________________________\\
-	"Taunt: Chairholder"						"0"
-	"Taunt: Runner's Rhythm"					"0"
-	"Taunt: Showrunner's Spirit"					"0"
-	"Taunt: Spin-to-Win"						"0"
-	"Taunt: The Boston Boarder"					"0"
-	"Taunt: The Bunnyhopper"					"0"
-	"Taunt: The Carlton"						"0"
-	"Taunt: The Homerunner's Hobby"					"0"
-	"Taunt: The Scooty Scoot"					"0"
-	//___________________________ Soldier ___________________________\\
-	"Taunt: Buffoon's Bivouac"					"0"
-	"Taunt: Neck Snap"						"0"
-	"Taunt: One-Eyed Punt"						"0"
-	"Taunt: Panzer Pants"						"0"
-	"Taunt: Rocket Jockey"						"0"
-	//____________________________ Pyro _____________________________\\
-	"Pool Party Taunt"						"0"
-	"Taunt: Roasty Toasty"						"0"
-	"Taunt: Scorcher's Solo"					"0"
-	"Taunt: Sear You Later"						"0"
-	"Taunt: The Balloonibouncer"					"0"
-	"Taunt: The Hot Wheeler"					"0"
-	"Taunt: The Skating Scorcher"					"0"
-	//___________________________ Demoman ___________________________\\
-	"Taunt: Barrel Roll"						"0"
-	"Taunt: Drunk Mann's Cannon"					"0"
-	"Taunt: Scotsmann's Stagger"					"0"
-	"Taunt: Shanty Shipmate"					"0"
-	"Taunt: The Drunken Sailor"					"0"
-	"Taunt: The Pooped Deck"					"0"
-	//____________________________ Heavy ____________________________\\
-	"Taunt: Bare Knuckle Beatdown"					"0"
-	"Taunt: Bear Hug"						"0"
-	"Taunt: Russian Rubdown"					"0"
-	"Taunt: The Boiling Point"					"0"
-	"Taunt: The Road Rager"						"0"
-	"Taunt: The Russian Arms Race"					"0"
-	"Taunt: The Soviet Strongarm"					"0"
-	"Taunt: The Table Tantrum"					"0"
-	//__________________________ Engineer ___________________________\\
-	"Rancho Relaxo Taunt"						"0"
-	"Taunt: Bucking Bronco"						"0"
-	"Taunt: Texas Truckin"						"0"
-	"Taunt: The Dueling Banjo"					"0"
-	"Taunt: The Jumping Jack"					"0"
-	//____________________________ Medic ____________________________\\
-	"Taunt: Hippocratic Hypocrite"					"0"
-	"Taunt: Surgeon's Squeezebox"					"0"
-	"Taunt: The Mannbulance!"					"0"
-	"Taunt: Time Out Therapy"					"0"
-	//___________________________ Sniper ____________________________\\
-	"Taunt: Didgeridrongo"						"0"
-	"Taunt: Shooter's Stakeout"					"0"
-	//_____________________________ Spy _____________________________\\
-	"Taunt: Luxury Lounge"						"0"
-	"Taunt: Tailored Terminal"					"0"
-	"Taunt: The Boxtrot"						"0"
-	"Taunt: The Crypt Creeper"					"0"
-	"Taunt: The Travel Agent"					"0"
-	"Taunt: Tuefort Tango"						"0"
 }
