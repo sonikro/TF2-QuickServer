@@ -89,14 +89,6 @@ RUN curl -L "${RGL_CONFIGS_URL}" -o "${RGL_CONFIGS_FILE_NAME}" \
   && mkdir -p "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/disabled" \
   && cp "addons/sourcemod/scripting/disabled/roundtimer_override.sp" "${PLUGIN_INSTALL_DIR}/addons/sourcemod/scripting/disabled/"
 
-# Ultitrio configs
-ARG ULTITRIO_CONFIGS_VERSION=3.2.1
-ARG ULTITRIO_CONFIGS_FILE_NAME=Ultitrio-${ULTITRIO_CONFIGS_VERSION}.zip
-ARG ULTITRIO_CONFIGS_URL=https://github.com/CoolstuffTF2/Ultitrio/archive/refs/tags/v${ULTITRIO_CONFIGS_VERSION}.zip
-RUN curl -L "${ULTITRIO_CONFIGS_URL}" -o "${ULTITRIO_CONFIGS_FILE_NAME}" \
-  && unzip -q "${ULTITRIO_CONFIGS_FILE_NAME}" \
-  && cp "Ultitrio-${ULTITRIO_CONFIGS_VERSION}/ultitrio_"*.{cfg,txt} "${PLUGIN_INSTALL_DIR}/cfg/"
-
 # MapDownloader plugin
 RUN curl -L "https://github.com/spiretf/mapdownloader/raw/refs/heads/master/plugin/mapdownloader.smx" \
   -o "${PLUGIN_INSTALL_DIR}/addons/sourcemod/plugins/mapdownloader.smx"
