@@ -11,10 +11,16 @@ ARG METAMOD_CHECKSUM=f16e67d8de30a46edb2aee8909a885f9f025993284596bb0cfc83b5b32e
 ADD --checksum=sha256:${METAMOD_CHECKSUM} ${METAMOD_URL} .
 RUN tar xf "${METAMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
 
-ARG SOURCEMOD_VERSION=1.12.0-git7259
+# TF2 11267535 repacked tier1's KeyValues layout and SourceMod compiles its own copy
+# of it, so stock builds misread every KeyValues handed to the game and crash the
+# server (weapon inspect, logstf's post-match panel). This is serveme.tf's rebuild of
+# 1.12-dev with the matching layout (Arie/sourcemod release 1.12.0.7262-tf2); go back
+# to the smdrop tarball once upstream ships a build with the fix.
+ARG SOURCEMOD_VERSION=1.12.0-git7262-tf2
+ARG SOURCEMOD_RELEASE_TAG=1.12.0.7262-tf2
 ARG SOURCEMOD_FILE_NAME=sourcemod-${SOURCEMOD_VERSION}-linux.tar.gz
-ARG SOURCEMOD_URL=https://sm.alliedmods.net/smdrop/1.12/${SOURCEMOD_FILE_NAME}
-ARG SOURCEMOD_CHECKSUM=1025717c46119c15c6e73fd9b4a190fd8da480987307d133e1281eb9a6f5c91c
+ARG SOURCEMOD_URL=https://github.com/Arie/sourcemod/releases/download/${SOURCEMOD_RELEASE_TAG}/${SOURCEMOD_FILE_NAME}
+ARG SOURCEMOD_CHECKSUM=d4c434282c52298d7c1f8f47e5754d22b90dcbf14f633d8acd7a5d8f08d1594d
 ADD --checksum=sha256:${SOURCEMOD_CHECKSUM} ${SOURCEMOD_URL} .
 RUN tar xf "${SOURCEMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
 
@@ -47,10 +53,21 @@ RUN curl -L "${SOAP_DM_URL}" -o "${SOAP_DM_FILE_NAME}" \
 
 # TF2 Competitive Fixes
 ARG COMP_FIXES_FILE_NAME=tf2-comp-fixes.zip
-ARG COMP_FIXES_VERSION=1.16.19
+ARG COMP_FIXES_VERSION=1.18.2
 ARG COMP_FIXES_URL=https://github.com/ldesgoui/tf2-comp-fixes/releases/download/v${COMP_FIXES_VERSION}/${COMP_FIXES_FILE_NAME}
+ARG COMP_FIXES_CHECKSUM=5ae2d191d62b567a1eb83d12de8e3d73903a518237dd782426c7a1b1d262227f
+# TF2 11267535 inserted a virtual into the game rules classes, moving every later vtable
+# slot up by one, so v1.18.2's RestartTournament hook lands on IsValveMap and its
+# SetWinningTeam call on TimerMayExpire. The override below is v1.18.2's gamedata with
+# those two offsets bumped (ldesgoui/tf2-comp-fixes#120); move both pins together.
+ARG COMP_FIXES_GAMEDATA_URL=https://raw.githubusercontent.com/Arie/tf2-comp-fixes/9a0abe414ee8e6dd1efebcf44040d3bfab1fa862/gamedata/tf2-comp-fixes.games.txt
+ARG COMP_FIXES_GAMEDATA_CHECKSUM=534da8d3e37995ee231d3fb40c44ca0c3798605c0b6267e6908e07d10fada0fd
 RUN curl -L "${COMP_FIXES_URL}" -o "${COMP_FIXES_FILE_NAME}" \
-  && unzip -q -o "${COMP_FIXES_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/"
+  && echo "${COMP_FIXES_CHECKSUM}  ${COMP_FIXES_FILE_NAME}" | sha256sum -c \
+  && unzip -q -o "${COMP_FIXES_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/" \
+  && curl -L "${COMP_FIXES_GAMEDATA_URL}" -o /tmp/tf2-comp-fixes.games.txt \
+  && echo "${COMP_FIXES_GAMEDATA_CHECKSUM}  /tmp/tf2-comp-fixes.games.txt" | sha256sum -c \
+  && mv /tmp/tf2-comp-fixes.games.txt "${PLUGIN_INSTALL_DIR}/addons/sourcemod/gamedata/tf2-comp-fixes.games.txt"
 
 # MGEMod (by Maxijabase)
 ARG MGEMOD_FILE_NAME=mge.zip
@@ -183,6 +200,10 @@ ARG STEAMPAWN_URL=https://github.com/nosoop/SM-SteamPawn/releases/download/${STE
 RUN curl -L "${STEAMPAWN_URL}" -o "${STEAMPAWN_FILE_NAME}" \
   && unzip -q "${STEAMPAWN_FILE_NAME}" -d "${PLUGIN_INSTALL_DIR}/addons/sourcemod/" \
   && rm "${STEAMPAWN_FILE_NAME}"
+
+# Nothing later in this stage may unpack over the gamedata override; fail the build if one does.
+RUN grep -q '"linux" "215"' "${PLUGIN_INSTALL_DIR}/addons/sourcemod/gamedata/tf2-comp-fixes.games.txt" \
+  && grep -q '"linux" "167"' "${PLUGIN_INSTALL_DIR}/addons/sourcemod/gamedata/tf2-comp-fixes.games.txt"
 
 # Stage 3 : Final image
 FROM steamcmd/steamcmd:ubuntu-22
