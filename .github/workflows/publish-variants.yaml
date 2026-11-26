@@ -102,3 +102,50 @@ jobs:
             `${{ steps.commit.outputs.message }}`
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+
+  publish-failure-notes:
+    runs-on: ubuntu-latest
+    needs:
+      - build-fat-tf2-standard-competitive-i386
+      - build-fat-tf2-casual-i386
+      - build-fat-mge-tf
+      - build-fat-tf2-pickup
+      - build-fat-tf2center
+    if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Find the failed job
+        id: failed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          row=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/jobs?per_page=100" \
+            --jq '[.jobs[] | select(.conclusion == "failure")] | first | "\(.name)\t\(.html_url)"' \
+            2>/dev/null || true)
+          job_name="${row%%$'\t'*}"
+          job_url="${row#*$'\t'}"
+          if [ -z "${row}" ] || [ "${job_name}" = "${job_url}" ]; then
+            job_name="build jobs"
+            job_url="${run_url}"
+          fi
+          echo "name=${job_name}" >> "$GITHUB_OUTPUT"
+          echo "url=${job_url}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish failure to Discord
+        uses: Ilshidur/action-discord@master
+        with:
+          args: |
+            ⚠️ **TF2-QuickServer — image publish failed**
+
+            A variant build failed, so no images were published in this run.
+
+            **Failed job:** `${{ steps.failed.outputs.name }}`
+            **Details:** ${{ steps.failed.outputs.url }}
+            **Commit:** `${{ github.sha }}`
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_RELEASE_WEBHOOK_URL }}
+
