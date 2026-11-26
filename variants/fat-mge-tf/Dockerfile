@@ -13,14 +13,14 @@ RUN tar xf "${METAMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
 
 # TF2 11267535 repacked tier1's KeyValues layout and SourceMod compiles its own copy
 # of it, so stock builds misread every KeyValues handed to the game and crash the
-# server (weapon inspect, logstf's post-match panel). This is serveme.tf's rebuild of
-# 1.12-dev with the matching layout (Arie/sourcemod release 1.12.0.7262-tf2); go back
-# to the smdrop tarball once upstream ships a build with the fix.
-ARG SOURCEMOD_VERSION=1.12.0-git7262-tf2
-ARG SOURCEMOD_RELEASE_TAG=1.12.0.7262-tf2
+# server (weapon inspect, logstf's post-match panel). Upstream fixed this in
+# 03865e00 (2026-10-02, "Fix crash related to KeyValues for sdk2013/2025 games"),
+# shipped from 1.12.0-git7262 onwards, so we are back on the official smdrop tarball
+# and no longer depend on the serveme.tf rebuild.
+ARG SOURCEMOD_VERSION=1.12.0-git7263
 ARG SOURCEMOD_FILE_NAME=sourcemod-${SOURCEMOD_VERSION}-linux.tar.gz
-ARG SOURCEMOD_URL=https://github.com/Arie/sourcemod/releases/download/${SOURCEMOD_RELEASE_TAG}/${SOURCEMOD_FILE_NAME}
-ARG SOURCEMOD_CHECKSUM=d4c434282c52298d7c1f8f47e5754d22b90dcbf14f633d8acd7a5d8f08d1594d
+ARG SOURCEMOD_URL=https://sm.alliedmods.net/smdrop/1.12/${SOURCEMOD_FILE_NAME}
+ARG SOURCEMOD_CHECKSUM=42b2289a0089790661714d661b389135151fd926d309848565e2f7e64f8e7983
 ADD --checksum=sha256:${SOURCEMOD_CHECKSUM} ${SOURCEMOD_URL} .
 RUN tar xf "${SOURCEMOD_FILE_NAME}" -C "${INSTALL_DIR}/"
 
